@@ -22,6 +22,8 @@ const STICKERS=[
   {n:9,src:"assets/cat-social.png",from:"little-planet"},
   {n:10,src:"assets/ui/ghost.png",from:"doodles"},
   {n:11,src:"assets/ui/virus.png",from:"virus-and-war"},
+  {n:12,src:"assets/ui/astronaut.png",from:"nft-3"},
+  {n:13,src:"assets/ui/radio-explorer.png",from:"nft-9"},
 ];
 const MAX_STICKERS=12, MAX_CUSTOM=3;
 const bySlug=s=>PROJECTS.find(p=>p.slug===s);
