@@ -1,14 +1,16 @@
 # Backlog: "Try Ekky", round 1
 
-**Status: proposed by Game Director, pending UX lead approval.**
+**Status: proposed by Game Director, pending UX lead approval.** Decisions marked **Owner decided** are settled by the owner and are not up for approval.
 
 Author: Game Director. Gate G1. This file merges `docs/game-brief.md` ("brief #n", 26 tickets) and `docs/ux-audit.md` ("audit #n", 24 fixes) into one prioritized list with no duplicates. It serves the goal, share loop, asset rule and scorecard in `docs/plan.md`. UX Portfolio is the team lead and gives final acceptance. Where the brief and the audit conflict, **the audit's choice comes first**, with the Director's alternative and its reason next to it (see Decisions).
 
 ## Owner direction (2026-10-27)
 
-1. **"Make the games actually very simple."** Every game is understood in one look and played with one finger, with no rules to learn. Round 1 therefore drops the whole meta-game: coins, packs, rarity drops, XP, player levels and long trophy lists. See D0.
+1. **"Make the games actually very simple."** Every game is understood in one look and played with one finger, with no rules to learn. Round 1 therefore drops the whole meta-game: coins, packs, rarity drops, XP, player levels, trophies and lives. See D0.
 2. **"Use De-Gamification: flexibility to play your way."** See the principles below and D0c.
-3. **No locked features.** Every visitor gets every feature, with no login, no coins and no unlocking. Round 1 is static and has no login at all (project rule). If a login ever comes, it only keeps your colorings across devices; it never unlocks anything. See D0b. (Owner question 13 checks that this is what the owner meant.)
+3. **No locked features.** Every visitor gets every feature, with no login, no coins and no unlocking. Round 1 is static and has no login at all (project rule). If a login ever comes, it only keeps your colorings across devices; it never unlocks anything. See D0b.
+4. **Owner answer (2026-10-27): "no trophies, no lives, nothing ever locked."** This settles D0b, D0c, D1 and D2, and closes owner questions 12 and 13.
+5. **Owner answer (2026-10-27): "Ekky has the rights to all NFT".** NFT #3 (Astronaut) and NFT #9 (Radio Explorer) are his own work, `own: true`. They can be icons, stickers and share-card art. This closes the rights half of owner question 3; larger files are still wanted.
 
 ## Design principles: de-gamification, play your way
 
@@ -19,6 +21,8 @@ Every ticket below is checked against these five rules. They come from the owner
 3. **No forced order, no gates, no tutorials.** Map levels are never locked, and no "next level" pressure (no glow nagging you to the next node). Each hint shows once and is never blocking.
 4. **No punishment.** No game-over screen, no lives lost and no "Ouch!". Mistakes are undone with one tap. A round of Star Catcher always lasts the full 30 seconds.
 5. **You decide when you are done.** "Done" works at any time (even after 1 fill). Sharing is offered once, never pushed. Challenges are invitations, not scores to beat.
+
+6. **Make it yours (owner direction: "users can creatively use this website").** The site is a toy box, not a checklist. Visitors get open-ended tools: color with any color, drop Ekky's own doodles as stickers anywhere, draw, and build their own scene. There is no right answer and no score for creativity. The only fixed rules are the asset rule (only Ekky's own art as stickers, pages and share art) and the credit line on every share.
 
 Test for every ticket: *could a first-time visitor ignore this feature completely and still enjoy the site?* If not, the feature is too demanding for round 1.
 
@@ -58,15 +62,16 @@ The game is three simple things plus one button: **Color** (tap a shape to fill 
 | B16 | Desktop lightbox and contrast | DEV | S | 1 | R1 must-have (audit #10, #12) |
 | B17 | Final Quest quick sheet | DEV, UX | S | 1.5 | R1 must-have (audit #3) |
 | B18 | Text sizes and tap targets | DEV | S | 2 | R1 must-have (audit #11) |
+| B21 | Stickers and the Doodle Scene (creative mode) | DEV | M | 3 | R1 must-have (D17) |
 | B19 | Round-1 playtest and scorecard run | DIRECTOR | S | (DIRECTOR) | R1 must-have, last |
-| | **DEV total** | | | **21.5** | |
+| | **DEV total** | | | **24.5** | |
 
-**Budget.** 21.5 h is about 2.5 working days. The ask was about two (16 to 18 h).
-- **Option A (UX lead's list in full):** 21.5 h.
-- **Option B (Director's recommendation, about 18 h):** move the desktop strip in B08 (0.5 h), the name field in B11 (0.5 h) and B18 (2 h) to the top of round 2. B08 still fixes the cut-off classic-site link, the worst tap-target problem. This keeps the whole loop (color, share, link, hire) inside two days.
+**Budget.** 24.5 h is about 3 working days. The ask was about two (16 to 18 h).
+- **Option A (UX lead's list in full, plus creative mode):** 24.5 h.
+- **Option B (Director's recommendation, about 18 h):** move the desktop strip in B08 (0.5 h), the name field in B11 (0.5 h) and B18 (2 h) to the top of round 2. B08 still fixes the cut-off classic-site link, the worst tap-target problem. That gives about 21 h. To reach two days, also move B16 and B17 to the first days of round 2 (but B17 can't work before B15 anyway), which gives about 18.5 h. This keeps the whole loop (create, share, link, hire) inside two days.
 - **UX lead decides A or B.**
 
-**Build order:** B03 → B05 → B06 → B07 → B08 → B09 → B10 → B11 → B12 → B13 → B16 → B17 → B15 → B18. UX works B04 and B14 in parallel. B19 runs last.
+**Build order:** B03 → B05 → B06 → B07 → B08 → B09 → B10 → B11 → B12 → B21 → B13 → B16 → B17 → B15 → B18. UX works B04 and B14 in parallel. B19 runs last.
 
 ---
 
@@ -75,32 +80,39 @@ The game is three simple things plus one button: **Color** (tap a shape to fill 
 Format for each: **Proposed (audit)** is what gets built if UX approves as written. **Director alternative** is there so UX can decide fast. Where the audit takes no position, the proposal comes from the brief or the owner.
 
 ### D0. Simple games: no meta-game in round 1 (owner direction)
-- **Proposed:** remove coins, the coin counter, packs and pack opening, rarity drop rates, XP, player levels, the "Lv" badge and the floating coin stars. The Cards tab becomes **Art**: every piece is visible with its title, description and tag, tap to view, "Hire Ekky" in the viewer. Rarity frames stay purely cosmetic (no foil, no "Not in your deck"). Trophies drop from 14 to 6 (D2).
+- **Proposed:** remove coins, the coin counter, packs and pack opening, rarity drop rates, XP, player levels, the "Lv" badge and the floating coin stars. The Cards tab becomes **Art**: every piece is visible with its title, description and tag, tap to view, "Hire Ekky" in the viewer. Rarity frames stay purely cosmetic (no foil, no "Not in your deck"). No trophies (D2).
 - **Why:** the owner asked for very simple games. A visitor who has to learn coins, packs and drop rates spends time on rules instead of on Ekky's art. It also takes away the brief's balance work (pricing, pity, completion cost), and the audit's "art never behind coins" holds by design.
 - **Director note:** pack opening was the best moment in today's game (brief). If the round-1 playtest finds a dead moment, the simplest way to bring it back is one free pack after each finished coloring, still with no coins. That is a later ticket (B27), not round 1.
 
-### D0c. De-gamification (owner direction)
-- **Proposed:** apply the five principles above. Concretely, for round 1:
-  - **no trophies at all**; the Trophies tab becomes **"Mine"** (your colorings and your best Star Catcher run, i.e. things you made, not rewards), see D2;
+### D0c. De-gamification (Owner decided)
+- **Decided:** apply the five principles above. Concretely, for round 1:
+  - **no trophies at all**; the Trophies tab becomes **"Mine"** (your creations and your best Star Catcher run: things you made, not rewards), see D2;
   - **no lives** in Star Catcher, see D1;
   - **Done at any time** in coloring;
   - **no "next level" glow** on the map;
   - a "Just show me the art" path on the start screen.
 - **Why:** points and badges pull attention away from the art and toward the meta-game. A hiring client and a casual visitor both came for Ekky's drawings, and free choice keeps them there longer than a checklist does.
 
-### D0b. No login, nothing locked (owner direction)
-- **Proposed:** no login in round 1 (project rule). Every visitor can use every feature from the first second: coloring, Star Catcher, all the art, sharing, Hire. Map levels are never locked. Progress (colorings, best score, trophies) lives in `localStorage` only.
+### D17. Creative freedom (owner direction)
+- **Decided by the owner, scope proposed by the Director:**
+  - **Colors:** "Ekky's colors" stays the default row, plus an **"Any color"** swatch that opens the system color picker. The brief's "no free picker" rule is dropped: the result is the visitor's, not a copy of Ekky's.
+  - **Stickers in round 1:** Ekky's own doodles (cat, palette, book, robot, cassette, microphone, planet, the Ekky face, the NFT astronaut and radio explorer, plus every T1 cut-out). Drag, pinch to scale and rotate, drag to the bin. Up to 12 per picture. Moved up from "later" into round 1 (B21).
+  - **Blank page:** "Start from scratch" opens a plain paper background where the visitor only uses stickers and colors. This is a **Doodle Scene** made of Ekky's characters (B21).
+  - **Later:** brush with pressure, and more pages (B29, B20).
+- **Why:** creating something of your own is the strongest intrinsic reward (D0c) and the best share: every result is different, and every result is made of Ekky's art and carries his credit.
+- **Guard:** stickers and backgrounds come only from `shareable()` art (B03). No photo upload and no free text on the picture in round 1, so nobody can publish other people's characters or words under Ekky's name.
+
+### D0b. No login, nothing ever locked (Owner decided)
+- **Decided:** no login in round 1 (project rule). Every visitor can use every feature from the first second: coloring, Star Catcher, all the art, sharing, Hire. Map levels are never locked. What you made (colorings, scenes, best score) lives in `localStorage` only.
 - **Later:** if a login comes in a later round, it only syncs colorings and trophies between devices. It never gates a feature.
 
-### D1. Lives in Star Catcher
-- **Proposed (audit):** simple **hearts** in Ekky's palette, grey when lost.
-- **Director alternative:** the cat doodle (brief). The Director agrees the cat is the wrong icon.
-- **Director recommendation under D0c:** **no lives at all.** A virus hit costs a short shake and 2 points, never the round. Every round lasts 30 s, so no game-over screen. If UX keeps lives, they are hearts.
+### D1. Lives in Star Catcher (Owner decided)
+- **Decided: no lives.** A virus hit costs 2 points and a short shake, never the round. Every round lasts the full 30 s, and there is no game-over screen. The audit's hearts and the brief's cat are both dropped, so no lives icon is needed.
 
-### D2. Trophies tab icon
-- **Proposed (audit):** the **gold trophy cup** from panel 4 of `day-in-life.jpg`. Also used for "Arcade Star".
-- **Director alternative:** the cat medal (`icon-trophies.png`, today), or the cup for the tab and a star shape for "Arcade Star", so each icon has one meaning.
-- **Director recommendation under D0c:** **no trophies in round 1.** The tab becomes **"Mine"**: your colorings (re-open, re-share), your best Star Catcher run, sound and vibration toggles, and a small "Reset" link. Icon: the palette doodle (your art), with Art using the Toybox box or a simple frame shape, as UX prefers. If UX keeps trophies, use the cup and only these 6, with no coins attached: Nice to Meet You, First Colors, Show-off, Arcade Star (40 points), World Explorer, Quest Complete.
+### D2. Trophies (Owner decided)
+- **Decided: no trophies and no achievements**, in round 1 or later. No trophy toasts, badges or progress bars.
+- The former Trophies tab becomes **"Mine"**: your colorings (re-open, re-share), your best Star Catcher run, the sound and vibration toggles, and a small "Reset" link. It shows things you made, never rewards.
+- **Still for UX to decide:** the "Mine" tab icon. Director suggestion: the palette doodle. The audit's trophy cup is not needed.
 
 ### D3. Skill Tree level
 - **Proposed (audit):** **keep it**, with the drawing **pen hand** from `hero.png` as its icon and no confetti over its text (audit #15, #16).
@@ -140,8 +152,9 @@ Format for each: **Proposed (audit)** is what gets built if UX approves as writt
 - **Director alternative, simpler and play-your-way:** four equal tiles, each with an Ekky icon and a two-word label: **Color**, **Catch stars**, **Explore**, **See the art**. Plus the "Hire Ekky" HUD chip, and "Just show me the art" (the classic site) as a full-width link. *Why:* "Play" doesn't say what you play. Under D0c, no choice is pushed as the main one, but every choice is one tap. **UX decides.** B08 builds whichever UX picks.
 
 ### D12. Icon map
-- **Proposed (audit section 3, which the Developer is already following in T1):** Level 1 / avatar: one Ekky face (owner question 1). Skill Tree: pen hand. Art Collection and the Art tab: palette. Doodle to Done: yellow ghost. Final Quest: monster head. Send: line "send" icon. Star Catcher button: astronaut helmet crop from NFT #3. Star Catcher items: star shape (+1), palette (+3), glowing star shape (+5), teal virus (hazard). Lives: hearts. Trophies: cup, map pin (World Explorer), monster head (Quest Complete). General controls: one inline-SVG line set.
-- **Director alternative:** a plain star shape for the Star Catcher button until the NFT #3 rights are confirmed (owner question 3). With D0, the pack (Toybox), Legendary Pull (blue bird) and Completionist (chest) icons are not needed in round 1.
+- **Proposed (audit section 3, which the Developer is already following in T1):** Level 1 / avatar: one Ekky face (owner question 1). Skill Tree: pen hand. Art Collection and the Art tab: palette. Doodle to Done: yellow ghost. Final Quest: monster head. Send: line "send" icon. Star Catcher button: astronaut helmet crop from NFT #3. Star Catcher items: star shape (+1), palette (+3), glowing star shape (+5), teal virus (hazard). General controls: one inline-SVG line set.
+- **Settled by the owner's NFT answer:** the astronaut helmet crop is the Star Catcher button. The Director's star-shape alternative is withdrawn.
+- **Not needed any more** (owner decisions D0, D1, D2): hearts, the trophy cup, the map pin, and the pack, Legendary Pull and Completionist icons.
 
 ### D13. Floating stars on the menus
 - **Proposed (audit):** keep them only on the map and start screen, at most 2 at a time, never over a sheet or the lightbox.
@@ -167,8 +180,8 @@ Owner DEV · Size M · **Done: merged into `main`** · From: plan T0
 
 ### B02. T1: Ekky asset library and zero emoji (in progress)
 Owner DEV (UX picks crops) · Size L · **In progress on `dev/assets`**, following audit section 3 · Depends: B01 · From: plan T1, brief #2, audit #5, #7, #16
-- **Goal:** every emoji and generic glyph replaced per D12, with cut-out transparent PNGs in `assets/ui/`, one inline-SVG line-icon set, a star shape, a sparkle shape and hearts. Re-crop `cat-social.png` and `cat-web.png`.
-- **Note from this backlog:** with D0, T1 can skip the pack, coin, Legendary Pull and Completionist icons.
+- **Goal:** every emoji and generic glyph replaced per D12, with cut-out transparent PNGs in `assets/ui/`, one inline-SVG line-icon set, a star shape and a sparkle shape. **Every Ekky doodle cut-out doubles as a sticker** for B21 (D17). Re-crop `cat-social.png` and `cat-web.png`.
+- **Note from this backlog:** with D0, D1 and D2, T1 can skip hearts, the trophy cup, the map pin, and the pack, coin, Legendary Pull and Completionist icons.
 - **Acceptance:** the G2 emoji scan of `www/` returns 0. A UX contact sheet shows each icon readable at 32 px on `#2B1642` and on white. Nothing in `assets/ui/` is cut from fan or client art. One single avatar file is used for "Ekky".
 
 ### B03. Art metadata and the share guard
@@ -186,7 +199,7 @@ Owner DEV · Size S (2 h) · R1 must-have · Depends: B02 · From: owner directi
 - **Goal:**
   - Hide or remove coins, the coin pill, packs, pack opening, XP, the level badge and the "Earn coins" buttons.
   - Cards becomes **Art**: all pieces, tap to view.
-  - Trophies per D2 as approved (Director recommends removing them, so the tab becomes "Mine").
+  - Remove all trophies and achievements and their toasts. The Trophies tab becomes "Mine" (D2).
   - Remove the map's "next level" glow and any "Next level" button pressure (D0c).
   - Remove the self-rated stat bars from "Who is Ekky?" (a short intro plus 3 own pieces until owner facts arrive).
   - Apply D13 and D14 as approved.
@@ -195,7 +208,8 @@ Owner DEV · Size S (2 h) · R1 must-have · Depends: B02 · From: owner directi
   - No coin, price, XP or level appears on any screen.
   - Tapping Play shows no toast.
   - Every piece opens from Art with no cost.
-  - No badge, trophy toast or progress bar appears (if UX takes the D2 recommendation).
+  - No badge, trophy, toast for a reward or progress bar appears anywhere.
+  - No screen, level or feature is ever locked or greyed out.
   - A first visit is silent until sound is turned on.
   - "Who is Ekky?" shows no percentages.
   - A new visitor reaches each feature (coloring, Star Catcher, all art, Hire) without unlocking anything.
@@ -276,7 +290,7 @@ Owner DEV · Size S (1.5 h) · R1 must-have · Depends: B10, B11 · From: brief 
 
 ### B13. Star Catcher made simple and fair
 Owner DIRECTOR (numbers), DEV · Size S (1 h) · R1 must-have · Depends: B02 · From: brief #12 (numbers only), brief issue 11
-- **Goal:** one rule on screen: "Catch the stars, dodge the viruses." 30 s, always the full 30 s (D1 recommendation: no lives; a virus costs 2 points and a small shake). The numbers sit in one `BALANCE` object:
+- **Goal:** one rule on screen: "Catch the stars, dodge the viruses." 30 s, always the full 30 s (D1: no lives; a virus costs 2 points and a small shake). The numbers sit in one `BALANCE` object:
   - spawn interval 0.60 to 0.32 s;
   - fall speed 140 to 320 px/s (+0 to 50 random);
   - hazard share 12 to 25%;
@@ -287,7 +301,7 @@ Owner DIRECTOR (numbers), DEV · Size S (1 h) · R1 must-have · Depends: B02 ·
 
 ### B14. Round-1 copy
 Owner UX · Size S · R1 must-have · Depends: none · From: audit section 4, brief sections 2 to 5
-- **Goal:** every new string goes in the copy object in `js/data.js` (from UX-1), in English: the start buttons, the Hire chip, the coloring hint, the reveal, the share text, the arrival lines, the Star Catcher rule and result, and the 6 trophy names.
+- **Goal:** every new string goes in the copy object in `js/data.js` (from UX-1), in English: the start buttons, the Hire chip, the coloring hint, the reveal, the share text, the arrival lines, the Star Catcher rule and result, the "Mine" tab, and the sticker and scene labels.
 - **Acceptance:** every new on-screen string comes from the copy object, and UX signs off on the B19 captures.
 
 ### B15. Real contact details
@@ -308,9 +322,22 @@ Owner DEV, UX · Size S (1.5 h) · R1 must-have · Depends: B07 (the buttons app
 Owner DEV · Size S (2 h) · R1 must-have (Option B: round 2) · Depends: B02 · From: audit #11
 - **Acceptance:** a script finds no visible text under 12 px and no control under 44 x 44 px on the phone.
 
+### B21. Stickers and the Doodle Scene (creative mode)
+Owner DEV · Size M (3 h) · R1 must-have · Depends: B10, B02, B03 · From: owner direction (D17), brief #6 (stickers), #10 (`s=`)
+- **Goal:**
+  - A sticker tray in the coloring screen with Ekky's own doodles (D17). Drag to place, pinch to scale and rotate, drag onto the bin to delete, up to 12.
+  - The "Any color" swatch (system color picker).
+  - "Start from scratch" on the Color screen opens a plain paper page for a Doodle Scene.
+  - Stickers are encoded in the link (`s=v1.`, 5 bytes each) and drawn on the share card.
+- **Acceptance (phone):**
+  - From the start screen to a scene with 3 placed stickers takes under 20 s.
+  - A scene with 4 stickers (one scaled, one rotated), shared and opened in a fresh browser, looks identical.
+  - The tray contains no fan or client art (`shareable()` check).
+  - Pinch works with two fingers, and every control is at least 44 x 44 px.
+
 ### B19. Round-1 playtest and scorecard run
 Owner DIRECTOR · Size S · R1 must-have, last · Depends: B03 to B18
-- **Goal:** a timed first-60-seconds run from a fresh profile, share taps, deep-link time, Hire from each screen, any dead moment longer than 10 s, Star Catcher averages, a **"simple" test**: 3 first-time testers each start coloring and Star Catcher without any help, and a **"play your way" test**: each tester is asked to do only what they feel like. Note which paths they pick, whether any felt forced, and whether anyone hit a wall, a lock or a fail screen (target: none).
+- **Goal:** a timed first-60-seconds run from a fresh profile, share taps, deep-link time, Hire from each screen, any dead moment longer than 10 s, Star Catcher averages, a **"simple" test**: 3 first-time testers each start coloring and Star Catcher without any help, and a **"play your way" test**: each tester is asked to do only what they feel like. Note which paths they pick, whether any felt forced, and whether anyone hit a wall, a lock or a fail screen (target: none), and a **"make it yours" test**: each tester makes one coloring or scene. Count how many different-looking results come out, and how many testers wanted to share theirs.
 - **Acceptance:** `docs/playtest-r1.md` gives pass or fail with numbers for each scorecard row and for the simple test. Each fail becomes a ticket.
 
 ---
@@ -322,7 +349,6 @@ In priority order. Each acceptance test gets expanded when its ticket is pulled 
 | ID | Ticket | Owner | Size | Depends | From | Goal and acceptance test |
 |---|---|---|---|---|---|---|
 | B20 | More coloring pages and a picker | DEV, OWNER | M | B09, owner question 6 | brief #23, audit #14 | Road Trip, Little Planet, Giraffe, Plug Hero (once own), then the audit's list. Test: each page passes B09's no-leak check and is approved by Ekky. |
-| B21 | Stickers in coloring (own doodles) | DEV | M | B10 | brief #6, #10 | Test: 2 stickers survive a share link exactly. |
 | B22 | Star Catcher challenge link | DEV | M | B13, B11 | brief #12 (seed), #13 | Same seed for both friends. Test: the D10 challenge link shows "Rina scored 42. Can you beat it?", and the result reads "You N vs Rina 42". |
 | B23 | Card gift share (own art only) | DEV | S | B11 | brief #18 (F) | Test: Share shows on own pieces only. The friend's link opens that piece. |
 | B24 | "I recommend Ekky" sticker | DEV, UX | S | B11 | brief #19 | 4 preset reasons, no free text. Test: 2 taps to the preview, 1 to share. |
@@ -340,7 +366,7 @@ In priority order. Each acceptance test gets expanded when its ticket is pulled 
 | B36 | Holo cards on tilt | DEV | M | B23 | brief #24 | Test: tilting moves the foil. Denying permission falls back to a shimmer. |
 | B37 | PWA, offline, View Transitions | DEV | M | B20 | brief #25 | Test: installs from Chrome Android and opens offline. |
 
-**Cut for good under D0** (only comes back with the UX lead's approval): coins and coin sources, pack prices, drop rates and pity, XP and player levels, trophies and achievements (brief #16; D0c), lives and game-over in Star Catcher, the stat grid on the Player Card, the 4-tab "Color / Me" bar (brief #15, rest), the brief's combo and fever, and "in your deck" labels.
+**Cut for good under D0** (the owner-decided items never come back; the rest only with the UX lead's approval): coins and coin sources, pack prices, drop rates and pity, XP and player levels, trophies and achievements (brief #16; owner decided), lives and game-over in Star Catcher (owner decided), any lock or unlock, the stat grid on the Player Card, the 4-tab "Color / Me" bar (brief #15, rest), the brief's combo and fever, and "in your deck" labels.
 
 ---
 
@@ -351,8 +377,8 @@ Asked through the integrator. The safe default applies until an answer comes in.
 | # | Question | Safe default | Blocks |
 |---|---|---|---|
 | 1 | Which avatar is really you: the glasses guy in `hero.png` or the blue-haired `face.png`? | The glasses guy (the audit labels Little Planet a self-portrait). One file in `assets/ui/`, so swapping is one line. | B02 |
-| 2 | Which pieces are your own and which are client work? Unclear: Tea Break, Morumelons, Oasis, Web Illustration, My Sports Club, Save Early Buy Future, Plug Hero, Thinker & Doer, Type Is Art, Android, Kemerdekaan, RPG (the fire spirit), NFT #9, Toybox. Is Pop Mie a commission or a pitch? Are Beansproud and Puff character names? Is the D&D figure your own design? | All of these are `own: false`: shown in the portfolio, never on share cards, coloring pages or icons. `dnd` and `game-pattern` stay portfolio-only regardless (project rule). | B03, B20 |
-| 3 | Do you own the rights to NFT #3 and #9? Can you send them at 1000 px or more? | `own: false`. The helmet icon follows the UX decision on D12. | B02, B34 |
+| 2 | Which pieces are your own and which are client work? Unclear: Tea Break, Morumelons, Oasis, Web Illustration, My Sports Club, Save Early Buy Future, Plug Hero, Thinker & Doer, Type Is Art, Android, Kemerdekaan, RPG (the fire spirit), Toybox. Is Pop Mie a commission or a pitch? Are Beansproud and Puff character names? Is the D&D figure your own design? | All of these are `own: false`: shown in the portfolio, never on share cards, coloring pages or icons. `dnd` and `game-pattern` stay portfolio-only regardless (project rule). | B03, B20 |
+| 3 | NFT #3 and #9: rights, and larger files | **Rights answered:** Ekky has the rights to all NFTs, so both are `own: true`. **Still open:** can you send them at 1000 px or more? Until then they show at their current 256 px (no upscaling on share cards; the sticker crop uses the native size). | B02, B34 |
 | 4 | What domain do share links use: `ekkyarya.com` or the GitHub Pages URL for now? | `CONFIG.siteUrl` stays empty, so links use the current page URL. In the Android app, links use the Pages URL. | B11, B12 |
 | 5 | Real email, WhatsApp, Instagram, Dribbble and Behance. | Placeholders stay hidden (B15). No public launch until answered. | B15, B17 |
 | 6 | Can you send line layers (transparent PNG, 2000 px) for Road Trip, Little Planet, Giraffe and Plug Hero? Is it OK to extract your own lines from the JPG by darkness threshold? | Per D8 as UX approves: Road Trip from a layer if it arrives in time, otherwise Giraffe by threshold. | B09, B20 |
@@ -361,8 +387,8 @@ Asked through the integrator. The safe default applies until an answer comes in.
 | 9 | Location, time zone and languages. | Not shown. | B26 |
 | 10 | Sketch files of one lead piece. | Text-only process steps. | B30 |
 | 11 | An SVG logo, a Type Is Art still, and doodle cut-outs. | Today's files. Any crop that fails at 32 px becomes a simple palette shape. | B02, B34 |
-| 12 | De-gamification: is removing trophies and lives what you meant, or should light, optional trophies stay? | D0c: no trophies, no lives. | B05, B13 |
-| 13 | "Users who log in already have all their features": did you mean that nothing should ever be locked (as D0b reads it), or that you want a login later? | D0b: no login in round 1, and every feature is open to everyone. A later login would only sync between devices. | none |
+| 12 | De-gamification: no trophies and no lives? | **Answered:** no trophies, no lives. | closed |
+| 13 | Login and locked features? | **Answered:** nothing ever locked. Round 1 has no login. | closed |
 
 Integrator question: a QR code on share cards needs an encoder (a new package or about 300 lines of code). Default: no QR.
 
@@ -377,7 +403,7 @@ Integrator question: a QR code on share cards needs an encoder (a new package or
 | 3 Hire pill | B07 | | 3 Quick sheet | B17 |
 | 4 Cut the clutter | B05 | | 4 Art within 10 s | B08 |
 | 5 Page pipeline | B09 | | 5 Emoji | B02 |
-| 6 Coloring screen | B10, B21, B29 | | 6 Fan and client tags | B03 |
+| 6 Coloring screen | B10, B21 (R1), B29 | | 6 Fan and client tags | B03 |
 | 7 Share renderer | B11 | | 7 One avatar | B02, owner question 1 |
 | 8 Share service | B11 | | 8 Titles, descriptions | B04 (UX-1) |
 | 9 Deep links | B12, B25 | | 9 Order, rarity | B04 (D4, D5) |
@@ -387,7 +413,7 @@ Integrator question: a QR code on share cards needs an encoder (a new package or
 | 13 Challenge | B22 | | 13 Share card | B11 (D9) |
 | 14 Economy | cut by D0; B27 optional | | 14 Line art | B09, B20 (D8) |
 | 15 Map, tabs | B06 (D7); tabs cut by D0 | | 15 Motion | B05, B31 (D13, D14) |
-| 16 Achievements | cut by D0c (D2 keeps 6 if UX prefers) | | 16 Icon crops | B02 (D12) |
+| 16 Achievements | cut (owner decided, D2) | | 16 Icon crops | B02 (D12) |
 | 17 Player Card, name | B11 (name), B28 | | 17 Hiring facts | B26 |
 | 18 Legendary, gift share | B23 (gift); Legendary pull cut by D0 | | 18 Stat bars | B05, B26 |
 | 19 Recommend | B24 | | 19 Semantics | B32 |
