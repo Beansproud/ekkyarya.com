@@ -12,9 +12,12 @@ const FEATURES = {
   challengeLinks: true,  // Star Catcher challenge links (later ticket B22)
   holoCards: true,       // holo foil on tilt (later ticket B36)
   pwa: true,             // "Install the app" (manifest + sw.js); the full offline work is B37
-  pageRoadTrip: false,   // Road Trip coloring page: built (assets/color/road-trip/), waits for Ekky to approve the lines (D8)
-  pageMonster: false,    // experiment: the green monster from Monster in My Room as a coloring page (assets/color/monster/),
+  pageRoadTrip: true,    // Road Trip coloring page: built (assets/color/road-trip/), waits for Ekky to approve the lines (D8)
+  pageMonster: true,     // experiment: the green monster from Monster in My Room as a coloring page (assets/color/monster/),
                          // the owner's own-art alternative to a fan-art page; waits for Ekky to approve docs/color-monster-lines.png
+  pagePlugHero: true,    // Plug Hero Mascot coloring page (assets/color/plug-hero/), Ekky original
+  pageLittlePlanet: true, // Little Planet coloring page (assets/color/little-planet/), Ekky original
+  pageHands: true,       // Tangled Hands coloring page (assets/color/hands/), Ekky original
   artDownload: true,     // lightbox Download: a copy of at most 1600 px with a subtle mark, never on fan art (owner: yes)
   sound: true,           // sound effects and the sound toggle
   handLettering: false,  // S3: headings with data-hand="<word>" show Ekky's lettering (assets/hand/<word>.png, listed in
