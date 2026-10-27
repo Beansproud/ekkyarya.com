@@ -373,7 +373,7 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 /* ===== Ekky's Village (B42 V1): the map ===== */
 #g-map .g-head{margin-bottom:0}
 #g-map .g-title{font-size:1.5rem}
-.v-map{position:relative;width:100%;max-width:420px;margin:0 auto}
+.v-map{position:relative;width:100%;max-width:420px;margin:0 auto;container-type:inline-size}
 .v-ground{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;user-select:none}
 .v-frame{position:absolute;object-fit:cover;transform-origin:0 0;pointer-events:none;box-shadow:0 0 0 1px #2B1342}
 .v-place{position:absolute;background:none;border-radius:16px;min-width:44px;min-height:44px}
@@ -441,3 +441,41 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 @media (max-width:380px){#game .g-hud .g-round{display:none}}
 .g-player b,.g-player small{white-space:nowrap}
 .g-start-foot .lang-switch{border:0;box-shadow:inset 0 0 0 2px #3e2a5c}   /* the outline takes no space, so EN and ID stay 44 px tall */
+
+/* Village life (B42 V3). Budget: walkers (move + turn), 2 clouds, lantern 6 s, steam 6 s, water 10 s; nothing else
+   loops. Only transform and opacity animate. Reduced motion (css/site.css) stops all of it: walkers stand at the
+   start of their route, the steam and shimmer are not shown, the lantern glows still. */
+.v-shimmer{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:0;animation:vShimmer 10s ease-in-out infinite}
+@keyframes vShimmer{50%{opacity:.1}}
+.v-sky{position:absolute;inset:0;pointer-events:none;-webkit-mask:url(../assets/village/village.png) 0 0/100% 100% no-repeat;mask:url(../assets/village/village.png) 0 0/100% 100% no-repeat}
+.v-cloudrow{position:absolute;left:0;width:100%;height:14%;pointer-events:none}
+.v-cloud{position:absolute;left:0;top:30%;display:block;width:20%;aspect-ratio:3/1;border-radius:999px;background:#fff;opacity:.7;
+  transform:translateX(-110%);animation:vCloud 80s linear infinite}
+.v-cloud::before,.v-cloud::after{content:"";position:absolute;bottom:40%;border-radius:50%;background:inherit}
+.v-cloud::before{left:18%;width:34%;aspect-ratio:1}
+.v-cloud::after{left:44%;width:44%;aspect-ratio:1}
+.v-cloud.small{width:14%;opacity:.6}
+@keyframes vCloud{from{transform:translateX(-110%)}to{transform:translateX(560%)}}
+.v-cloud.small{animation-name:vCloudS}
+@keyframes vCloudS{from{transform:translateX(-110%)}to{transform:translateX(720%)}}
+.v-lantern{position:absolute;width:9%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,rgba(255,226,140,.85),rgba(255,200,80,0) 68%);opacity:.35;animation:vLantern 6s ease-in-out infinite}
+@keyframes vLantern{50%{opacity:.8}}
+.v-smoke{position:absolute;width:5%;aspect-ratio:1;border-radius:50%;pointer-events:none;opacity:0;
+  background:radial-gradient(circle,rgba(255,255,255,.9),rgba(255,255,255,0) 70%);transform:translate(-50%,-50%) scale(.6);animation:vSmoke 6s ease-out infinite}
+@keyframes vSmoke{8%{opacity:.85;transform:translate(-50%,-50%) scale(.7)}45%{opacity:0;transform:translate(-50%,-260%) scale(1.4)}100%{opacity:0;transform:translate(-50%,-260%) scale(1.4)}}
+.v-walk{position:absolute;inset:0;pointer-events:none}
+.v-map .v-label{z-index:3}   /* labels stay readable when a walker passes */
+.v-map .v-place{z-index:1}   /* a place always takes its tap, even with a walker passing in front */
+.v-map .v-folk{z-index:2}    /* the still villagers are small and sit on top of the place boxes */
+.v-walker{position:absolute;left:0;top:0;min-width:44px;min-height:44px;transform:translate(-50%,-100%);padding:0;background:none;border:0;
+  display:flex;align-items:flex-end;justify-content:center;pointer-events:auto;cursor:pointer}
+.v-walker img{display:block;width:auto;pointer-events:none}   /* height in cqw: the walker's own size, the button keeps 44 px to tap */
+.v-walker:focus-visible,.v-folk:focus-visible{outline:3px solid #FFB400;outline-offset:2px;border-radius:12px}
+.v-folk{position:absolute;min-width:44px;min-height:44px;background:none;border:0;padding:0;cursor:pointer}
+.v-map.night .v-ground{filter:brightness(.7) saturate(.85)}
+.v-map.night .v-walker img{filter:brightness(.8)}
+.v-map.night .v-lantern{opacity:.6}
+.g-villager-art{display:block;width:100%;padding:0;border:0;border-radius:14px;overflow:hidden;background:#241638;margin:4px 0 10px}
+.g-villager-art img{display:block;width:100%;max-height:46vh;object-fit:contain}
+@media (prefers-reduced-motion:reduce){.v-smoke,.v-shimmer,.v-cloud{display:none}}

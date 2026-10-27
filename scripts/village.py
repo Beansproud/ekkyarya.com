@@ -9,6 +9,8 @@ Coordinates are image pixels (720 x 880, shown at about half size on a phone); y
 import json
 import os
 
+import numpy as np
+
 from PIL import Image, ImageDraw, ImageFilter
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -68,7 +70,7 @@ def block(d, cx, cy, hw, hh, height):
     return left, bottom, right
 
 
-def paste(img, name, foot, h, flip=False):
+def paste(img, name, foot, h, flip=False, shadow=True):
     """Stand a cut-out with its bottom center on `foot`, scaled to height h. Returns its box."""
     sp = Image.open(os.path.join(ROOT, "assets", "sprites" if os.path.exists(os.path.join(ROOT, "assets", "sprites", name + ".png")) else "ui", name + ".png")).convert("RGBA")
     w = round(sp.width * h / sp.height)
@@ -76,11 +78,23 @@ def paste(img, name, foot, h, flip=False):
     if flip:
         sp = sp.transpose(Image.FLIP_LEFT_RIGHT)
     x, y = round(foot[0] - w / 2), round(foot[1] - h)
-    shadow = Image.new("RGBA", img.size)
-    ImageDraw.Draw(shadow).ellipse((foot[0] - w * .38, foot[1] - 7, foot[0] + w * .38, foot[1] + 7), fill=INK + (60,))
-    img.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(3)))
+    if shadow:   # a soft ground shadow (none for things in the sky or the water)
+        sh = Image.new("RGBA", img.size)
+        ImageDraw.Draw(sh).ellipse((foot[0] - w * .38, foot[1] - 7, foot[0] + w * .38, foot[1] + 7), fill=INK + (60,))
+        img.alpha_composite(sh.filter(ImageFilter.GaussianBlur(3)))
     img.alpha_composite(sp, (x, y))
     return [x, y, x + w, y + h]
+
+
+# name, height, facing, route (image pixels, on the paths and bridges drawn above)
+WALKERS = [
+    ("dog", 70, -1, [(300, 462), (226, 438)]),
+    ("pickle", 60, -1, [(318, 514), (262, 552)]),
+    ("plug-hero", 66, -1, [(432, 482), (500, 472)]),
+    ("waver", 64, 1, [(386, 640), (396, 688), (398, 712)]),
+    ("doodle-cat", 44, 1, [(360, 236), (360, 270), (360, 318)]),
+    ("crab", 30, 0, [(292, 752), (328, 734)]),
+]
 
 
 def build():
@@ -126,11 +140,16 @@ def build():
     img.alpha_composite(m)
 
     # main places: each Ekky cut-out stands on its spot (back to front, so nearer ones overlap farther ones)
+    folk = {}   # still villagers and scenery (V3): tapping one opens its artwork card
+    folk["ufo"] = paste(img, "ufo", (214, 196), 56, shadow=False)
+    folk["croc"] = paste(img, "croc", (548, 652), 48, shadow=False)
     places["observatory"] = paste(img, "astronaut", (338, 222), 96)
     paste(img, "radio-explorer", (404, 228), 70)
     places["gallery"] = [420, 300, 645, 510]
     paste(img, "palette", (532, 362), 44)
+    folk["fire-spirit"] = paste(img, "fire-spirit", (588, 468), 52)   # peeks out behind the Toybox (its cut edge is hidden)
     paste(img, "toybox", (604, 506), 62)
+    folk["noodle-bath"] = paste(img, "noodle-bath", (112, 502), 74)
     places["studio"] = paste(img, "studio", (205, 440), 168)
     places["home"] = paste(img, "home", (372, 520), 200)
     places["doodle"] = paste(img, "ghost", (222, 594), 92)
@@ -140,11 +159,34 @@ def build():
     ox, oy = max(0, bb[0] - 4), max(0, bb[1] - 4)
     img = img.crop((ox, oy, min(W, bb[2] + 4), min(H, bb[3] + 4)))
     img.save(os.path.join(OUT, "village.png"), optimize=True)
+    # water shimmer layer: white wherever the sea shows, so a 10 % opacity pulse lightens only the water
+    a = np.array(img.convert("RGB")).astype(int)
+    sea = np.zeros(a.shape[:2], bool)
+    for c in (SEA, SEA_LIGHT):
+        sea |= np.abs(a - np.array(c)).sum(-1) < 12
+    sh = Image.new("LA", img.size, (255, 0))
+    sh.putalpha(Image.fromarray((sea * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(1)))
+    sh.save(os.path.join(OUT, "shimmer.png"), optimize=True)
 
     # label anchors (bottom center of each place) and the buttons' hit boxes, in image pixels
     for f in frames:
         f["x"], f["y"] = round(f["x"] - ox, 1), round(f["y"] - oy, 1)
-    out = dict(w=img.width, h=img.height, frames=frames, places={})
+    out = dict(w=img.width, h=img.height, frames=frames, places={}, folk={}, walkers=[])
+    sprites = json.load(open(os.path.join(ROOT, "assets", "sprites", "index.json")))
+    for k, b in folk.items():
+        out["folk"][k] = dict(piece=sprites[k]["piece"], box=[b[0] - ox, b[1] - oy, b[2] - ox, b[3] - oy])
+    # the gate's lantern (in the Hidden Monster cut-out at 105, 216 of 255 x 320), for its 6 s pulse
+    g = places["hire"]
+    out["lantern"] = [round(g[0] + 105 * (g[2] - g[0]) / 255 - ox, 1), round(g[1] + 216 * (g[3] - g[1]) / 320 - oy, 1)]
+    nb = folk["noodle-bath"]
+    out["smoke"] = [[round((nb[0] + nb[2]) / 2 - ox, 1), round(nb[1] + 18 - oy, 1)]]
+    # walkers (content): each walks its route along a path, pauses at the ends, and turns to face where it goes.
+    # face = the way the drawing looks (-1 left, 1 right, 0 either); h = height in image pixels.
+    for name, h, face, route in WALKERS:
+        out["walkers"].append(dict(name=name, piece=sprites[name]["piece"], src=sprites[name]["file"], h=h, face=face,
+                                   aspect=round(sprites[name]["w"] / sprites[name]["h"], 3),
+                                   route=[[x - ox, y - oy] for x, y in route]))
+
     # one rule for every label: centred just under its own place, so labels never sit on a character
     labels = {k: ((b[0] + b[2]) / 2, b[3] + 4) for k, b in places.items()}
     labels["gallery"] = (532, 516)   # the gallery's place box includes its whole block; its label goes under the front corner
