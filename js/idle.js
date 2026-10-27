@@ -29,7 +29,7 @@ function show(){
   const img=buddy.firstChild,bub=buddy.lastChild;
   bub.animate([{opacity:0},{opacity:1}],{duration:260,delay:reduce.matches?0:700,fill:"backwards"});   // after the move has started
   if(!reduce.matches){const [frames,ms]=MOVES[Math.floor(Math.random()*MOVES.length)];img.animate(frames,{duration:ms,easing:"ease-in-out"})}
-  clearTimeout(hideT);hideT=setTimeout(hide,6500+words().length*25);
+  clearTimeout(hideT);hideT=setTimeout(hide,6000);
 }
 function hide(){
   if(!buddy)return;const b=buddy;buddy=null;clearTimeout(hideT);
@@ -42,7 +42,8 @@ function fire(){
   if(!busy())show();
   idx++;arm();
 }
-function touch(e){const now=Date.now();if(now-last<250)return;last=now;if(buddy&&now-shownAt>800)hide()}
+function touch(e){const now=Date.now();if(/^(pointerdown|touchstart|keydown)$/.test(e.type)){last=now;if(buddy)hide();return}   // a tap or key sends it off at once
+  if(now-last<250)return;last=now;if(buddy&&now-shownAt>800)hide()}
 ["pointerdown","pointermove","keydown","wheel","touchstart","scroll"].forEach(ev=>addEventListener(ev,touch,{passive:true,capture:true}));
 document.addEventListener("visibilitychange",()=>{last=Date.now()});
 addEventListener("ekky:lang",()=>{if(buddy){const b=buddy.lastChild;if(b)b.innerHTML=words()}});
