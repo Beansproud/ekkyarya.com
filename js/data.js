@@ -167,7 +167,7 @@ const COPY = {
     "town.showVillage": "Show the village",
     // Who is Ekky? and About (B26)
     "about.title": "About Ekky",
-    "about.body": "Hi, I'm Ekky. I draw characters, monsters and tiny worlds. The monsters are nicer than they look.",
+    "about.body": "Hi, I'm Ekky. I draw characters, monsters and tiny worlds. My monsters are weird on purpose, never uncanny.",
     "about.fact.from": "Character illustrator from Indonesia",
     "about.fact.lang": "Works in Indonesian and English",
     "about.fact.hours": "Night owl: evenings to night, WIB (GMT+7)",
@@ -193,7 +193,7 @@ const COPY = {
     "color.peek": "Peek at mine",
     "color.done": "Done",
     "color.reveal": "Yours vs mine",
-    "color.praise": "Nice! Better than my first try.",
+    "color.praise": "Nice! Uncanny valley: not detected.",
     "color.scratch": "Blank page",
     "scene.title": "Doodle Scene",
     "scene.hint": "Drag my doodles in. They don't mind.",
@@ -393,7 +393,7 @@ const COPY = {
     "form.email": "Your email",
     "form.other": "Something else",
     "form.note": "Opens your email app.",
-    "footer.line": "Ekky Arya. Made with too many doodles.",
+    "footer.line": "Ekky Arya. Hand-drawn, 0% uncanny valley.",
     "tag.fanNote": "Fan art. Characters belong to their owners."
   },
   id: {
@@ -428,7 +428,7 @@ const COPY = {
     "town.seeArt": "Lihat karyanya",
     "town.showVillage": "Lihat desa",
     "about.title": "Tentang Ekky",
-    "about.body": "Halo, aku Ekky. Aku gambar karakter, monster, dan dunia mini. Monsternya lebih baik dari tampangnya.",
+    "about.body": "Halo, aku Ekky. Aku gambar karakter, monster, dan dunia mini. Monsterku sengaja aneh, bukan uncanny.",
     "about.fact.from": "Ilustrator karakter asal Indonesia",
     "about.fact.lang": "Bisa berbahasa Indonesia dan Inggris",
     "about.fact.hours": "Burung hantu: sore sampai malam, WIB (GMT+7)",
@@ -452,7 +452,7 @@ const COPY = {
     "color.peek": "Intip punyaku",
     "color.done": "Selesai",
     "color.reveal": "Punyamu vs punyaku",
-    "color.praise": "Keren! Lebih bagus dari percobaan pertamaku.",
+    "color.praise": "Keren! Uncanny valley: tidak terdeteksi.",
     "color.scratch": "Kertas kosong",
     "scene.title": "Adegan Coretan",
     "scene.hint": "Seret coretanku ke sini. Mereka santai kok.",
@@ -643,7 +643,7 @@ const COPY = {
     "form.email": "Email kamu",
     "form.other": "Lainnya",
     "form.note": "Membuka aplikasi email-mu.",
-    "footer.line": "Ekky Arya. Dibuat dengan coretan kebanyakan.",
+    "footer.line": "Ekky Arya. Digambar tangan, 0% uncanny valley.",
     "tag.fanNote": "Fan art. Karakternya milik pemiliknya masing-masing."
   }
 };
