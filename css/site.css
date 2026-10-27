@@ -452,3 +452,13 @@ a,button,input,select,textarea,label,[role=switch],[role=button]{touch-action:ma
 html.pre-game body>:not(#game):not(dialog):not(.loader):not(script){display:none!important}
 /* UX nit: the filter row already names the category, so each desktop tile shows its title only */
 .tile .meta small{display:none}
+
+/* Play with Ekky's art: three taped cards, fixed tilt, no motion */
+.play-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:28px;margin-top:32px;max-width:860px}
+.play-card{position:relative;display:block;min-height:44px;padding:22px 18px 18px;background:var(--card);color:var(--ink);border-radius:3px;
+  box-shadow:var(--paper-shadow);transform:rotate(var(--tilt,-1deg));text-decoration:none}
+.play-card::before{content:"";position:absolute;top:-9px;left:50%;width:72px;height:20px;margin-left:-36px;background:var(--tape);transform:rotate(calc(var(--tilt,-1deg) * -2))}
+.play-card img{display:block;width:72px;height:72px;object-fit:contain;margin-bottom:10px}
+.play-card h3{font-size:1.2rem;color:var(--ink)}
+.play-card p{margin-top:6px;font-size:.9rem;color:var(--ink-soft)}
+.play-card:hover,.play-card:focus-visible{transform:rotate(var(--tilt,-1deg))}
