@@ -180,7 +180,7 @@ dialog[open]{animation:pop .3s cubic-bezier(.2,1.4,.4,1)}
 .lb-body{padding:24px 28px 28px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:end}
 .lb-body h3{font-size:1.6rem}
 .lb-nav{display:flex;gap:8px}
-.lb-nav button,.lb-close{width:42px;height:42px;border-radius:12px;border:1px solid var(--line);display:grid;place-items:center;font-size:1.1rem;color:var(--ink);background:var(--card)}
+.lb-nav button,.lb-close{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);display:grid;place-items:center;font-size:1.1rem;color:var(--ink);background:var(--card)}
 .lb-nav button:hover,.lb-close:hover{background:var(--accent);color:var(--accent-ink)}
 .lb-close{position:absolute;top:14px;right:14px}
 
@@ -276,6 +276,7 @@ dialog[open]{animation:pop .3s cubic-bezier(.2,1.4,.4,1)}
 .logo.has-img .logo-text{display:none}
 .sidebar .logo .logo-img{height:120px}
 .topbar .logo .logo-img{height:38px}
+.topbar .logo{min-height:44px;display:inline-flex;align-items:center}
 .loader .logo .logo-img{height:140px}
 .tile .art img,.lb-art img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s}
 .lb-art img{height:auto;max-height:70vh;object-fit:contain;background:var(--side)}
