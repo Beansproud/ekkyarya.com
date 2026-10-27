@@ -30,6 +30,9 @@ const PAGES = {
   // experiment (switch pageMonster, off): the green monster from Monster in My Room, the owner's own-art alternative
   // to a fan-art page; Ekky approves the lines first (docs/color-monster-lines.png)
   monster: { slug: "monster", lineMax: 110, inkSoft: 130, crop: [300, 0, 780, 780] },
+  "plug-hero": { slug: "plug-hero", lineMax: 110, inkSoft: 130 },
+  "little-planet": { slug: "little-planet", lineMax: 110, inkSoft: 130 },
+  "hands": { slug: "hands", lineMax: 110, inkSoft: 130 },
 };
 const MIN_AREA = 40, COLORS = 12;
 // Color split: areas above SPLIT_AREA px are divided by up to SPLIT_K of their own colors; patches under SPECK px fold
