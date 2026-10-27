@@ -157,3 +157,21 @@ The map becomes a small isometric town on a grassy diamond island in the night s
 | Ticket | Owner | Size | Acceptance test |
 |---|---|---|---|
 | Isometric village map (replaces the node list in B06) | DEV (engine), UX (place names and labels), DIRECTOR (layout and motion review) | L (6 to 8 h) | On the iPhone 13 viewport, all 6 places are visible without panning, and each is a labeled button of at least 44 px that opens its content in one tap. 3 to 5 own-art characters walk the paths at the speeds above. With reduced motion, nothing walks and every place still opens. `npm run check` passes, with no art from fan or client pieces. 60 fps in a Chrome performance trace on a 4x CPU slowdown. |
+
+---
+
+## Addendum: the interim isometric map (dev/assets 2f09d76)
+
+Tested the same way on the iPhone 13 viewport, at 0.3, 1.5 and 4 s after opening the Map tab.
+
+| Check | Result |
+|---|---|
+| All places visible without scrolling | **Pass.** The 5 islands and the Star Catcher button are all on screen. |
+| Tap targets | **Pass.** Each island is a real button, 108 to 126 x 123 to 138 px, on top (tappable) at its center. |
+| Labels | **Pass.** Each island has its name as a sign below it. |
+| Console | 0 errors. |
+| No boss theme | **Fail.** The Final Quest island still has the `boss` class and its red styling. |
+| Ekky picture | **Fix.** The "Who is Ekky?" island shows the blue-haired face, which `docs/roles.md` lists as the Secret Android character. Ekky is the glasses guy (owner, confirmed). |
+| Motion | **Stacked loops.** While the map is open, `document.getAnimations()` reports 5 `islandBob` loops (4 s each, all at once), 60 `twinkle`, and, on screens that are **not visible**, 46 `catBob`, 46 `skel` (the loading shimmer) and 8 `holo` loops, plus 3 loader `dot` loops after the loader has finished. Pause animations on hidden screens. Remove the island bob (the ground shouldn't float). |
+
+**Verdict:** a good first step and the right bones (DOM buttons, labels, bridges, everything on one screen). It still reads as five icons on five tiles rather than a place. The design that extends it is "Ekky's Village" in `docs/minigames.md` (tickets V1 to V6).

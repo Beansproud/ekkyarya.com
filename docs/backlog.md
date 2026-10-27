@@ -526,6 +526,23 @@ Approved brief: `docs/minigames.md` (from director/backlog 78699e2; read its "UX
 
 **UX acceptance for every MG ticket (hiring-client view):** within 30 s of opening a game, a client sees at least 5 of Ekky's characters at full size; every character and boss names its artwork and opens it in one tap; Hire Ekky is one tap from every pause, stage end and dialog; nothing can be lost, failed or locked; no on-screen "boss" wording; menus and reveals follow the B39 motion tokens; `npm run check` finds no fan or client art in `assets/sprites/` and no franchise name anywhere in `index.html`, `css/`, `js/` or `assets/`.
 
+### Ekky's Village (proposed by the Game Director, pending UX lead approval)
+Owner directions: "make the map isomoprihc like this" and "but with animation and re-createfd with his asset" (Director's session); "make the map like this so no bossfight" and "re-use all of asset of his as much as possible" (integrator's session). Design: `docs/minigames.md`, section "Ekky's Village".
+- The map becomes an isometric village of Ekky's pieces, extending the interim map on dev/assets (2f09d76).
+- It is the same island as Little Planet Quest: the Map tab is the zoomed-out village, and "Explore" walks you around it.
+- V1 to V4 replace the map part of B06 and replace MG6 and MG7. The village is built first.
+
+| # | Ticket | Owner | Size | Depends |
+|---|---|---|---|---|
+| V1 | Village layout: 7 main places as scenes from their cut-outs, labels, paths, bridges | DEV, UX | L (6 h) | 2f09d76, V2 batch 1 |
+| V2 | Shared cut-out batch (MG2 and B21 merged), from the `docs/roles.md` catalogue | DEV, UX | L (8 h) | MG1 animator, B21 |
+| V3 | Villagers and ambience (walkers, road loop, clouds, smoke, water, lantern, day and night) | DEV | M (4 h) | V1, V2 |
+| V6 | Director playtest of the village, and UX acceptance | DIRECTOR, UX | S | V3 |
+| V4 | Explore mode (was MG6 and MG7) | DEV, UX | L (10 to 12 h) | V1 to V3, V6 go |
+| V5 | Client scenery (UX decision: drawn elements only, never logos or lettering) | DEV | S (2 h) | V2 |
+
+Order: V1 → V2 → V3 → V6 → V4, then the Paint Patrol slice (MG1, MG3, MG4). Open for the UX lead: client scenery stays visible in Explore as scenery only (never in Quest dialog or tasks)?
+
 **Entry points (UX decision):** the start screen keeps three equal tiles (D11); "Games" becomes a fourth tile that opens a small picker with Star Catcher, Paint Patrol and Little Planet Quest, each with one line and a thumbnail (Ekky on his chair for both games). Desktop: a "Play Ekky's games" link in the hero next to "Try the game".
 
 ## Later tickets

@@ -56,6 +56,180 @@ The other owner directions still hold:
 
 ---
 
+## Ekky's Village: the map and the Quest are one island
+
+**Status: proposed by the Game Director, pending UX lead approval.** It is built first, before Paint Patrol and before the rest of the Quest, because every visitor sees the map.
+
+### Owner directions
+- Typed in the Game Director session, 2026-10-27, quoted exactly: "make the map isomoprihc like this" (with a screenshot of an isometric village from another mobile game) and "but with animation and re-createfd with his asset".
+- Typed in the integrator's session, as relayed by the integrator: "make the map like this so no bossfight" (with a screenshot of a cozy isometric town-builder) and "re-use all of asset of his as much as possible".
+
+**The screenshots are a mood reference only:** cozy, isometric, peaceful, lots of small life. Nothing is taken from those games: no building, character, texture, UI art, button style, bottom bar, layout, currency or resource counter. Everything on the island is cut from Ekky's own pieces exactly as drawn: never redrawn, traced or extended. The only things not from his drawings are plain shapes in his palette: ground tiles, paths, water, plank bridges, smoke puffs and shadows (plan asset rule 4).
+
+### One island, two ways to see it
+| View | How you get there | What it is |
+|---|---|---|
+| **Village** (zoomed out) | The Map tab (the face button) | The whole island fits on one phone screen. Every place is a labeled button: tap it to visit. Villagers stroll the paths. |
+| **Explore** (zoomed in) | The "Explore" tile on the start screen, or the signpost in the village | Same island, same places, same villagers. The camera zooms in on Ekky at his desk, and you walk with him (tap a spot to go there). This is Little Planet Quest. |
+
+Switching between the views is one camera zoom of 600 ms, ease-in-out. Nothing reloads. One isometric engine, one tile map and one sprite set serve both views, so nothing is built twice.
+
+### It extends the interim map (dev/assets 2f09d76)
+The Developer's interim map already has the right bones: five floating isometric islands, each a real `<button>` with one of Ekky's cut-outs and a label sign, joined by plank bridges, all visible on the iPhone 13 screen. The village grows from that rather than replacing it:
+1. **Keep the archipelago.** The village is a main island plus small islets on a calm sea, joined by the same plank bridges. The interim's five islands become five of its districts.
+2. **Keep places as DOM buttons** (accessible, at least 44 px, labeled). Add a canvas layer under and between them for the ground detail, walking villagers and ambient motion.
+3. **Replace each island's single icon with a small scene** built from that piece's cut-outs: a building or landmark, 2 or 3 props and a sign. See the places table.
+4. **Remove the per-island bob** (`islandBob`, 5 endless loops at once). Ground doesn't float; the life comes from villagers and clouds.
+5. **Drop the "boss" class and its red styling** on Final Quest (no boss-fight theme). It becomes the warm lantern-lit gate below.
+6. **Move the Star Catcher header button into the village** as the Observatory. There is one entry point on the map, plus the start-screen tile.
+7. **Fix the Level 1 picture.** The interim's "Who is Ekky?" island shows the blue-haired face, which `docs/roles.md` lists as the Secret Android character. Ekky is the glasses guy (owner, confirmed by the integrator), so his home shows the glasses guy at his desk from Little Planet. The middle tab and the favicon keep `face.png` as the owner asked.
+
+### Places (tap to visit)
+Seven **main places** carry an action. Each is a labeled button visible on the first screen without panning. Around them, **scenery places** open their artwork when tapped.
+
+| Main place | Built from (cut exactly as drawn) | Tap opens |
+|---|---|---|
+| **Ekky's home**, the center islet | Little Planet: Ekky at his desk on his chair, the laptop, the moon planet; around him the floating doodles (book, cassette, robot, microphone, map pin, cat, palette, planet) | Level 1 "Who is Ekky?" (the hiring facts) |
+| **Paint studio** | Giraffe Ride: the giraffe with the kid, the wooden fence and trees; the pen-hand cut-out as the sign | Color with Ekky |
+| **Gallery** | Toybox Packaging: the doodle-covered box, building-sized, with the palette cut-out as its flag | Art (every piece) |
+| **Doodle corner** | Monster World Doodles: the ghost at the door, with the alien, worm and crocodile peeking around it; the "HEY" lettering as the sign | Level 4 "Doodle to Done" |
+| **Observatory** | Astronaut (NFT #3) on the hill, with Radio Explorer (NFT #9) at his radio; the helmet cut-out as the sign | Star Catcher |
+| **Bus stop** | Coexistence: the bench, the bus-stop sign and the commuters (kid with backpack, gargoyle in a suit, orange many-eyed monster); the Broken-Down Bus parked beside it with the bear on the roof and the lion driver | Paint Patrol (once built; switch `paintPatrol`) |
+| **The gate**, the island's edge | Hidden Monster: the stone gate with its carvings and gargoyle statues, the two kids with the lantern; the monster-head cut-out as the sign | Hire Ekky (Final Quest sheet). No boss wording. |
+
+| Scenery place | Built from | Tap opens |
+|---|---|---|
+| Snack bar shop front | Monster Snack Bar: the counter, fries, the big purple monster behind it, the teal monster in sunglasses, the kid in the orange cap | Monster Snack Bar |
+| Noodle bath house | Noodle Bath: the walking ramen bowl with the kid in it, the chopsticks and egg | Noodle Bath |
+| The lake | Afloat: the boy on his swim ring, three fish, the beach ball; Big Catch: the wooden pier, the fishing kid, the shark | Afloat or Big Catch (whichever was tapped) |
+| The beach | Buried at the Beach: the buried kid, the crab, palm trees | Buried at the Beach |
+| Market lane | Morumelons: the robot, dino-hoodie kid and box-head kid at the stalls; the Character Crowd Banner kid in the red beanie and the pink-haired girl as shoppers | Morumelons or Character Crowd Banner |
+| Monster's house | Monster in My Room: the green one-eyed monster napping in the doorway, the teddy bear, the basketball | Monster in My Room |
+| Ekky's day | A Day in the Life: the four panels as four lit windows of one house (waking up, driving, eating, working) | A Day in the Life |
+| Plaza fountain | Tangled Hands: the knot of hands as the plaza statue | Tangled Hands |
+| Village sign | Type Is Art in Motion: the lettering as the village's name board | Type Is Art in Motion |
+| Robot workshop | Secret Android: the robot reveal | Secret Android |
+| Camp by the fire | RPG: the orc, the mouse knight and the armored giant resting (no fire spirit until confirmed; no fight) | RPG |
+| Cliff lookout | Viking vs Dragon Kid: the two kids on the cliff edge, watching the sea (not fighting) | Viking vs Dragon Kid |
+| Night trail | The Blue Bird: the hiker with binoculars, the tall grass; the glowing bird circles above her | The Blue Bird |
+| Tiger rock | Year of the Tiger 2022: the tiger asleep in the sun, the paper plane caught on a branch | Year of the Tiger 2022 |
+| Bonfire hill | Virus and War: the helmet kid and the running kid waving (the Paint Patrol heroes' cameo) | Virus and War |
+
+**Client pieces as scenery** (UX lead decision: drawn elements only, never logos, wordmarks, signs or lettering; never in Paint Patrol or Quest gameplay). Each opens its piece with its "Client: X" tag.
+
+| Client scenery | Elements | Tag |
+|---|---|---|
+| Market lane shoppers | Indomaret: scooter rider, 2 or 3 shoppers, the skateboarder, the cat | Client: Indomaret |
+| Observatory picnic | BCA Flazz: the two snacking astronauts, the octopus | Client: BCA |
+| Temple corner | Ancol: the barong mask on a stand, the komodo, the dancers, the temple | Competition entry: Ancol |
+| Cafe corner | MSI: the creator at the laptop with 2 of the monsters | Client: MSI |
+| The beach party | Oasis: 2 or 3 party characters, palm trees, cacti, the sun | Client: Fizzy Tube |
+| Ekky's front yard | Save Early, Buy Future: the grandparents on a bench, the graduate, the golden chicken | Client work |
+
+**Open point for the UX lead:** the Village and the Quest are now the same island, so client scenery would also be visible while exploring. Proposed: keep it as scenery in both views, tappable to open its piece, but **never part of Quest gameplay** (no dialog lines, no lost-doodle tasks, no paths that depend on it). **UX lead decides.**
+
+### Villagers
+- Characters that stand or move upright stroll the paths, cut exactly as drawn:
+  - the Coexistence kid and commuters;
+  - the Hidden Monster kids with their lantern (only after dark);
+  - the Broken-Down Bus caped hero and bear;
+  - 3 or 4 Monster Snack Bar monsters;
+  - the Monster World Doodles ghost, alien, dog and worm;
+  - the giraffe with the kid;
+  - the walking ramen bowl;
+  - the Morumelons robot, dino-hoodie kid and box-head kid;
+  - the Character Crowd Banner beanie kid and pink-haired girl;
+  - Plug Hero;
+  - the Virus and War running kid;
+  - the RPG orc and mouse knight;
+  - the Viking kid and the Dragon kid;
+  - client walkers: the Indomaret shoppers, skateboarder and cat, and the Save Early graduate.
+- Two drive or ride a loop on the island road: the Road Trip yellow car (with the cat on the roof) and the Merdeka 77 cyclist.
+- **Calm, not crowded:** at most 8 walkers on screen at once. Every 45 s one walker leaves and another arrives, so all of them appear within a few minutes.
+- **Walk cycle:** the paper-puppet bob from the motion table below: a 700 ms bob, a 4 degree lean, 1 tile every 1.6 s. A walker pauses 1 to 3 s at corners and at places.
+- **Facing:** a walker going the other way is mirrored. Mirroring only flips the cut-out, nothing is redrawn. Cut-outs with lettering are never mirrored (they only walk one way).
+- **Tap a villager:** they stop and turn to face you, and a small card opens with the piece's title, one line from its description and "See the artwork" (the lightbox, which has "Want art like this? Hire Ekky"). Hit areas are at least 44 x 44 px, even when the sprite is smaller.
+
+### Ambient motion (slow, every motion means something)
+| Motion | Timing | Meaning |
+|---|---|---|
+| Clouds drift across the sky band | 70 to 90 s per crossing | Time passes, calm. The one endless background loop besides the sky. |
+| Smoke puffs: soft translucent circles from the snack bar and the noodle bath (and from any chimney that is in the drawing itself) | 1 puff every 3 s, each rising and fading over 2.5 s | Someone is cooking. |
+| Water shimmer on the sea and the lake | A slow color shift, 8 s | Water. |
+| The gate's lantern | Soft glow pulse, 4 s | "Come here when you're ready" (Hire Ekky). |
+| Day to night | Follows the visitor's own clock: day 06:00 to 18:00, dusk, night. Night lights the windows of "Ekky's day" and brings out the lantern kids | The village lives on your time. |
+| Tap a main place | Ekky glides on his chair from his home to it (0.6 to 1.2 s by distance), the place lifts 4 px and its sign glows once (300 ms), then it opens. A second tap during the glide opens it at once | "I'm going there". |
+
+- **Reduced motion:** no walking, no glide, no smoke or shimmer. Villagers stand still at their spots, and every place and villager stays tappable.
+- **Performance:** pause every animation on screens that are not visible. Today the Art screen's 46 `catBob` and 46 `skel` loops and the loader's `dot` loops keep running behind the map.
+
+### Tab bar
+Keep the three tabs (Art, the face button, Mine). Their tiles can take warmer rounded squares in Ekky's palette: cream `#FFF3DC` with a soft `#2B1342` shadow, and the active tab filled with yellow `#FFB400`. They don't copy the reference's bar (no wood, no extra tabs, no frames).
+
+### Tickets (replaces the map part of B06; merges MG6 and MG7; for the UX lead to slot)
+| # | Ticket | Owner | Size | Depends | Acceptance test |
+|---|---|---|---|---|---|
+| V1 | **Village layout**: the archipelago from the interim map, the 7 main places as scenes from their cut-outs, labels, paths and bridges, zoom-out camera | DEV, UX (labels) | L (6 h) | 2f09d76, V2 (first batch) | On the iPhone 13 viewport, all 7 main places are visible without panning, each a labeled button of at least 44 px that opens its content in one tap. No "boss" class or wording. Level 1 shows the glasses guy. `npm run check` passes. |
+| V2 | **Shared cut-out batch** (MG2 and B21 merged): every element in the asset-yield table, from `docs/roles.md` | DEV, UX (contact sheet) | L (8 h, in 2 batches: main places first, then villagers and scenery) | MG1 (puppet animator), B21 | `scripts/sprites.py` regenerates byte-identical files. The contact sheet shows each cut on dark and on white with clean edges. Nothing is cut from fan art, and nothing from client pieces outside the allowed elements. |
+| V3 | **Villagers and ambience**: walkers, the road loop, tap-a-villager card, clouds, smoke, water, lantern, day and night, reduced motion | DEV | M (4 h) | V1, V2 | At most 8 walkers at once, at the speeds above. Tapping one opens its artwork card. With reduced motion, nothing moves and everything is tappable. 60 fps in a Chrome trace with 4x CPU slowdown. Off-screen animations paused. |
+| V4 | **Explore mode** (was MG6 and MG7): zoom in, tap-to-walk with A* on the same tile map, HTML dialog lines, the lost-doodle tasks, the guide bird, Ekky's laptop menu | DEV, UX (lines) | L (10 to 12 h) | V1 to V3 | Switching views takes 600 ms, with nothing reloading. Every area is reachable from the start. Every character names and opens its artwork. Tasks gate nothing. Hire Ekky is one tap from every dialog. |
+| V5 | **Client scenery** (UX decision) | DEV | S (2 h) | V2 | The 6 client sceneries appear as listed, each opening its piece with its tag. No logo, wordmark, sign or lettering is visible. None appears in Paint Patrol, and none in Quest dialog or tasks. |
+| V6 | **Director playtest of the village**, and UX acceptance | DIRECTOR, UX | S | V3 | Report on calm, cozy, simple, motion feel and "does a tester open at least 3 artworks within 60 s?". Go for V4. |
+
+**New order:** V1 → V2 → V3 → V6 (playtest) → V4, then the Paint Patrol slice (MG1, MG3, MG4) and the rest. MG1's puppet animator and game loop are built first as part of V2/V3 and reused by Paint Patrol. MG6 and MG7 are replaced by V1 to V4.
+
+### Asset yield: every element, and where it appears
+Built from the "Elements to cut (shared catalogue)" column of `docs/roles.md` (the single list, not a new one), with the "where it appears" mapping added. One cut per element, reused everywhere.
+
+Key:
+- **V-place** = a main place in the village; **V-scene** = village scenery; **V-walk** = a village walker.
+- **PP** = Paint Patrol; **Q** = Explore (Quest) gameplay.
+- **St** = sticker (B21); **Col** = coloring page.
+- **SC** = Star Catcher; **L** = a level sheet.
+
+| Piece | Elements and where each appears |
+|---|---|
+| `little-planet` | Ekky at his desk on his chair: V-place (home), **hero** of PP and Q, L1. Laptop: Q (Ekky's menu). Desk, moon planet: V-place (home). Cat, palette, planet, pen-hand (done): signs and flags (studio, gallery), St, SC (+3 palette). Book, cassette, robot, microphone, map pin: home props, Q lost doodles, St. Whole piece: Col |
+| `coexistence` | Kid with cap and backpack: V-walk, PP friend, St. Gargoyle commuter: V-place (bus stop), PP stage-1 cheering, St. Orange many-eyed monster: V-walk, PP enemy, St. Bench, bus-stop sign: V-place (bus stop). Brick street: PP stage-1 backdrop layers |
+| `hidden-monster` | Two kids with a lantern: V-place (gate), V-walk at night, Q Lair, St. Mimic chest: Q Lair, St. Stone gate with carvings: V-place (gate), PP stage-4 final door. Gargoyle statues: gate props. Dungeon hall: Q Lair backdrop |
+| `blue-bird` | Hiker girl: V-scene (night trail), Q. Glowing bird: Q guide, SC rare +5. Night mountain trail, tall grass: V-scene, the PP/Q night sky band |
+| `old-bus` | Yellow bus: V-place (bus stop), PP stage-2 vehicle. Bear, lion driver, caped hero, passengers: bus-stop props, V-walk (caped hero, bear), PP riders, St. Desert road and skyline: PP stage-2 backdrop |
+| `monster-crowd` | Big purple monster: V-scene (snack bar), PP stage-4 grumpy friend. Teal monster in sunglasses, pink monster: V-walk, PP enemies, St. Skull sun: snack-bar sign. Kid in the orange cap: V-scene. Fries, snack counter: V-scene, PP stage-4 backdrop |
+| `doodles` | Ghost (done): V-place (doodle corner), L4, St. Alien, crocodile, worm, dog: doodle-corner props, V-walk, PP enemies, St. Skull, UFO, viking head, pumpkin: props, St. "HEY" lettering: doodle-corner sign. "Monster World" lettering: map title band |
+| `monster` | Green one-eyed monster: V-scene (monster's house), PP stage-1 grumpy friend, St. Head (done): gate sign, Final Quest. Kid on the bed, teddy bear, basketball: house props, St. Bedroom: Q house interior |
+| `floating-boy` | Boy on a swim ring: V-scene (lake), PP stage-3 friend. Three fish: lake life, PP stage-3 enemies. Beach ball, can: props. Pool water: lake texture, PP stage-3 layer. Whole piece: Col |
+| `summertime` | Buried kid: V-scene (beach). Crab: V-walk on the beach, PP stage-3 enemy, St. Palm trees: island trees everywhere. Sea and beach: PP stage-3 backdrop, shore band |
+| `beansproud-vs-puff` | Viking kid, dragon kid: V-scene (cliff), V-walk, PP stage-4 allies, St. Cliffs and mountains: island edge, PP far layer. Whole piece: Col |
+| `virus-and-war` | Running kid: V-walk, PP. Helmet kid with the paint blaster: V-scene (bonfire hill), PP ally power-up, St. Viruses (done): SC hazard, PP enemies. Burning globe, red cloud sky: PP sky band |
+| `rpg` | Armored giant, orc, mouse knight: V-scene (camp), Q Lair camp, V-walk (orc, knight), St. Skeleton warriors: camp props. Grass field: island ground detail. Fire spirit: on hold |
+| `shark` | Shark: V-scene (lake), PP stage-3 grumpy friend, St. Fishing kid, wooden pier: V-scene (lake). Water splash: lake detail. Whole piece: Col |
+| `giraffe` | Giraffe with the kid: V-place (paint studio), V-walk, Q ride, St. Wooden fence, trees, grass patch: studio props, island hedges. Whole piece: Col (first page) |
+| `noodles` | Walking ramen bowl with the kid: V-scene (noodle bath), V-walk, St. Chopsticks, egg: props. Whole piece: Col |
+| `nft-3` | Astronaut: V-place (observatory), PP shield power-up, St. Helmet (done): observatory sign, SC button |
+| `nft-9` | Radio explorer: V-place (observatory), Q radio hints, St |
+| `morumelons` | Robot, dino-hoodie kid, box-head kid, green orc, pink-haired girl, boxer, ninja: V-scene (market lane), V-walk, PP stage-2 enemies, St. Crowd: market backdrop. Morumelons lettering: market sign |
+| `web-illustration` | Beanie kid, pink-haired girl, blue genie, mustached man: V-walk (genie floats), PP credits parade, St. Phone with a coin: market prop |
+| `plug-hero` | Plug Hero: V-walk (winds himself up at corners), PP dash power-up, St. Whole piece: Col |
+| `toybox` | Doodle box: V-place (gallery building), Q pushable crates (smaller copies), St |
+| `type-is-art` | Lettering frames: V-scene (village sign), PP credits title, L4 |
+| `android` | Blue-haired face (done): middle tab, favicon, avatar. Robot reveal frames: V-scene (robot workshop), Q |
+| `hello-2022` | Tiger: V-scene (tiger rock), PP stage-2 grumpy friend, St. Kid rider with headphones: V-walk. Paper plane: tiger-rock prop, St. "2022" numbers: not used (lettering) |
+| `road-trip` | Yellow car with friends: V-walk (road loop), PP stage-2 background car, Q fast travel, St. Cat on the roof, little bird, pinwheel: props. Signpost: V "Explore" signpost. Whole piece: Col |
+| `day-in-life` | Four panels: V-scene (Ekky's day, as four windows), L1, Q Ekky's house rooms. Blue-haired guy: inside the windows. Whole piece: Col (one panel at a time) |
+| `kemerdekaan` | Cyclist with the flag: V-walk (road loop), Q courier, St. "77" numbers: not used (lettering). Whole piece: Col |
+| `hands` | Knot of hands: V-scene (plaza fountain), Q knot puzzle. Whole piece: Col |
+| `indomaret` (client) | Scooter rider, shoppers, skateboarder, cat: V-scene (market lane), V-walk. Storefront and sign: never |
+| `bca-flazz-card` (client) | Two astronauts, octopus: V-scene (observatory picnic). Logos and the CRAZZ wordmark: never |
+| `ancol-logo` (client) | Barong mask, komodo, dancers, temple: V-scene (temple corner). Wordmark and the 77 logo: never |
+| `msi` (client) | Creator at the laptop, 2 monsters: V-scene (cafe corner). Logo: never |
+| `oasis` (client) | Party characters, palm trees, cacti, sun: V-scene (beach party). Fizzy Tube logo and the OASIS title: never |
+| `save-early-buy-future` (client) | Grandparents, graduate, golden chicken: V-scene (Ekky's front yard), V-walk (graduate). Coins, house, plane: props. Campaign lettering: never |
+| Existing cut-outs | `assets/ui` icons (face, pen-hand, palette, planet, cat, ghost, virus, monster head, helmet) and the category doodles (book, robot, cassette, microphone, planet): place signs, flags and home props. The logo: the village name board's small badge |
+
+Not in the village or the games: the 8 fan-art pieces (never), and the client pieces with nothing drawn to cut (Tea Break, My Sports Club, Thinker & Doer). They stay in the portfolio, the Art tab and the gallery building's frames.
+
+---
+
 ## Game A: "Paint Patrol" (run-and-gun side-scroller)
 
 ### One-line pitch
@@ -106,6 +280,8 @@ Ride through Ekky's illustrations as **Ekky himself** on his desk chair, paint e
 ---
 
 ## Game B: "Little Planet Quest" (isometric adventure)
+
+> **Now part of Ekky's Village** (section above): the Quest is the "Explore" view of the village island, built in ticket V4. The areas below become the village's places and scenery; the island table is kept as the content list for V4.
 
 ### One-line pitch
 Walk around a small isometric island where every house, tree and character comes from one of Ekky's drawings. Meet his characters, help them, and find the artist at his desk in the middle.
