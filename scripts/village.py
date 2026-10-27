@@ -15,12 +15,14 @@ from PIL import Image, ImageDraw, ImageFilter
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "assets", "village")
-W, H = 720, 880
+W, H = 720, 1000
 S = 4  # supersampling for the shapes
 
 INK = (43, 19, 66)
 GRASS, GRASS_L, GRASS_R = (168, 219, 160), (111, 179, 122), (78, 142, 92)
 SAND = (255, 227, 168)
+CLIFF, CLIFF_DARK = (201, 138, 74), (150, 96, 52)
+ROCK, ROCK_LIT = (122, 74, 64), (163, 104, 84)
 PATH, PATH_EDGE = (255, 243, 220), (233, 214, 178)
 SEA, SEA_LIGHT = (104, 160, 219), (128, 180, 230)
 PLANK, PLANK_EDGE = (201, 138, 74), (122, 74, 34)
@@ -36,14 +38,75 @@ def diamond(cx, cy, hw, hh):
     return [(cx, cy - hh), (cx + hw, cy), (cx, cy + hh), (cx - hw, cy)]
 
 
-def island(d, cx, cy, hw, hh, depth):
-    """An isometric island: grass top, earth sides, a sand rim."""
-    top = diamond(cx, cy, hw, hh)
-    d.polygon(P([top[3], top[2], (top[2][0], top[2][1] + depth), (top[3][0], top[3][1] + depth)]), fill=GRASS_L)
-    d.polygon(P([top[2], top[1], (top[1][0], top[1][1] + depth), (top[2][0], top[2][1] + depth)]), fill=GRASS_R)
-    d.polygon(P(diamond(cx, cy, hw + 6, hh + 3)), fill=SAND)
+def blob(cx, cy, rx, ry, seed, n=72, wobble=.05):
+    """An island outline: an iso ellipse with a gentle, fixed wobble (same shape on every build)."""
+    import math
+    ph = [seed * 1.7, seed * 2.9, seed * .7]
+    pts = []
+    for i in range(n):
+        a = 2 * math.pi * i / n
+        r = 1 + wobble * (math.sin(3 * a + ph[0]) * .6 + math.sin(5 * a + ph[1]) * .3 + math.sin(7 * a + ph[2]) * .1)
+        pts.append((cx + math.cos(a) * rx * r, cy + math.sin(a) * ry * r))
+    return pts
+
+
+def scaled(pts, cx, cy, k, dy=0):
+    return [(cx + (x - cx) * k, cy + (y - cy) * k + dy) for x, y in pts]
+
+
+def island(d, cx, cy, hw, hh, depth, seed=1, k=.97, tips=((-.45, .32), (0, .48), (.42, .3))):
+    """A floating island: a grass top over a soil band, and a rock underside that tapers into points.
+    tips: (x offset as a share of the width, depth as a share of the width) for each hanging point."""
+    import math
+    top = blob(cx, cy, hw * k, hh * .9, seed, wobble=.11)
+    rx = hw * k
+    # the front half of the outline, left to right, at the bottom of the soil band
+    left = min(range(len(top)), key=lambda i: top[i][0])
+    right = max(range(len(top)), key=lambda i: top[i][0])
+    front, i = [], left
+    while True:   # points with angles from pi down to 0 run through the front (larger y)
+        front.append((top[i][0], top[i][1] + depth))
+        if i == right:
+            break
+        i = (i - 1) % len(top)
+    if front[len(front) // 2][1] < cy:   # walked the back edge: go the other way round
+        front, i = [], left
+        while True:
+            front.append((top[i][0], top[i][1] + depth))
+            if i == right:
+                break
+            i = (i + 1) % len(top)
+    # rock underside: from the right end, down to each point and back up between them, to the left end
+    under = []
+    pts = sorted(tips, key=lambda t: -t[0])
+    base = cy + hh * .9 + depth
+    for j, (ox, dep) in enumerate(pts):
+        x = cx + ox * rx
+        if j:
+            px = cx + pts[j - 1][0] * rx
+            under.append(((x + px) / 2, base + rx * .18))           # the valley between two points
+        under.append((x + rx * .1, base + rx * dep * .55))        # shoulder
+        under.append((x, base + rx * dep))                         # the point
+        under.append((x - rx * .1, base + rx * dep * .55))
+    rock = front + under
+    d.polygon(P(rock), fill=ROCK, outline=INK, width=2 * S)
+    for ox, dep in pts:   # a lit face on the left of each point
+        x = cx + ox * rx
+        d.polygon(P([(x - rx * .1, base + rx * dep * .55), (x, base + rx * dep), (x - rx * .02, base + rx * dep * .4), (x - rx * .16, base)]), fill=ROCK_LIT)
+    for kk in range(depth, 0, -2):   # soil band under the grass
+        d.polygon(P(scaled(top, cx, cy, 1.0, kk)), fill=CLIFF)
+    d.line(P(front), fill=INK, width=2 * S)
+    d.polygon(P(scaled(top, cx, cy, 1.0, 6)), fill=GRASS_R)   # the turf's own thickness
     d.polygon(P(top), fill=GRASS)
-    d.line(P([top[3], top[2], top[1]]), fill=INK, width=3 * S, joint="curve")
+    d.line(P(top + [top[0]]), fill=GRASS_L, width=3 * S)
+
+
+def pond(d, cx, cy, rx, ry):
+    """A small pond on the main island (the water that shimmers)."""
+    pts = blob(cx, cy, rx, ry, 5, wobble=.08)
+    d.polygon(P(scaled(pts, cx, cy, 1.12)), fill=SAND)
+    d.polygon(P(pts), fill=SEA)
+    d.polygon(P(scaled(pts, cx, cy - ry * .2, .55)), fill=SEA_LIGHT)
 
 
 def path(d, pts, w=16):
@@ -107,12 +170,11 @@ def build():
     base = Image.new("RGBA", (W * S, H * S))
     d = ImageDraw.Draw(base)
     # the calm sea: one soft diamond, with a lighter band
-    d.polygon(P(diamond(360, 500, 352, 330)), fill=SEA)
-    d.polygon(P(diamond(360, 500, 300, 250)), fill=SEA_LIGHT)
     # islands: main, the observatory islet (top) and the gate islet (bottom)
-    island(d, 360, 205, 140, 70, 18)
-    island(d, 360, 480, 310, 155, 26)
-    island(d, 400, 755, 150, 75, 18)
+    island(d, 360, 205, 140, 70, 18, seed=2, tips=((-.3, .4), (.25, .5)))
+    island(d, 360, 480, 310, 155, 26, seed=1, k=.9)
+    island(d, 400, 755, 150, 75, 18, seed=3, tips=((-.35, .45), (.05, .6), (.4, .38)))
+    pond(d, 505, 578, 46, 18)
     bridge(d, (360, 268), (360, 332), 5)
     bridge(d, (384, 628), (396, 688), 5)
     # paths from Ekky's home to every place

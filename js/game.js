@@ -81,6 +81,8 @@ function renderMap(){
   const places=PLACES.filter(p=>!p.feature||feature(p.feature));
   const art=featuredSix(4);
   W.style.height="";W.className="g-map-wrap v-map";W.style.aspectRatio=`${V.w}/${V.h}`;
+  // the whole village fits between the header and the tab bar: the width follows the height left on screen
+  W.style.width=`min(100%, calc((100dvh - 300px) * ${(V.w/V.h).toFixed(4)}))`;
   W.innerHTML=`<img class="v-ground" src="assets/village/village.png" alt="" decoding="async" fetchpriority="high">`+
     V.frames.map((f,k)=>{const p=art[k];if(!p)return "";const deg=(Math.atan(f.slope)*180/Math.PI).toFixed(2);
       return `<img class="v-frame" src="${thumbOf(p)}" alt="" decoding="async" style="left:${pct(f.x,V.w)};top:${pct(f.y,V.h)};width:${pct(f.w,V.w)};height:${pct(f.h,V.h)};transform:skewY(${deg}deg)">`}).join("")+
@@ -111,7 +113,7 @@ function villageLife(V){
   const night=(h=>h<6||h>=19)(new Date().getHours());
   $("gMapWrap").classList.toggle("night",night);
   let css="",html=`<img class="v-shimmer" src="assets/village/shimmer.png" alt="" decoding="async">`+
-    // clouds drift over the drawn village only (masked by its picture), never as grey blobs on the night sky
+    // clouds drift through the sky behind the floating islands, so they never cross a face
     `<div class="v-sky"><div class="v-cloudrow" style="top:${pct(V.h*.06,V.h)}"><i class="v-cloud" style="animation-duration:84s;animation-delay:-30s"></i></div>`+
     `<div class="v-cloudrow" style="top:${pct(V.h*.62,V.h)}"><i class="v-cloud small" style="animation-duration:72s;animation-delay:-58s"></i></div></div>`;
   if(V.lantern)html+=`<i class="v-lantern" style="left:${pct(V.lantern[0],V.w)};top:${pct(V.lantern[1],V.h)}"></i>`;
