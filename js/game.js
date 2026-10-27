@@ -367,7 +367,9 @@ document.addEventListener("visibilitychange",()=>{if(!A)return;if(document.hidde
 
 // A friend's link draws their coloring first; the start thumbnails and the Art cards load after it (share playtest).
 let artDone=false;
-function renderAll(){if(deep)setTimeout(renderStart,2500);else renderStart();renderMap();renderMine();setTimeout(moveInd,60)}
+// The village (village.png and its sprites, about 1 MB) is built when the map opens (go("map")), not at load, so the
+// start screen's drawings come first on a slow phone (S5, Developer B).
+function renderAll(){if(deep)setTimeout(renderStart,2500);else renderStart();renderMine();setTimeout(moveInd,60)}
 // Shared with js/color.js, js/share.js and js/links.js.
 window.Game={go,openHire,openPatrol,openSheet,closeSheet,sfx,buzz,save,get st(){return st},esc,contactReady,screen:()=>screen};
 window.openHire=openHire;
