@@ -686,6 +686,21 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 .g-tabs button.center small{text-align:center;width:100%}
 .g-tabs button.center.active .g-face{box-shadow:0 0 0 1.5px #2B1342,0 0 0 4px #FFB400}
 
+/* Tab bar: the marker slides in 250 ms, the newly active icon pops once, the label goes bold; each icon has its own touch
+   reaction (palette spins, frame squeezes, Map face nods and its ring flashes amber). Finite, never looping. */
+.g-tabs .g-ind{transition:left .25s var(--ease-in),width .25s var(--ease-in),opacity .25s}
+@keyframes t-pop{0%{translate:0 0;scale:1}45%{translate:0 -4px;scale:1.15}100%{translate:0 0;scale:1}}
+@keyframes t-spin{0%{rotate:0deg}40%{rotate:-15deg}100%{rotate:0deg}}
+@keyframes t-squeeze{0%{scale:1}35%{scale:.8 1.1}70%{scale:1.08 .94}100%{scale:1}}
+@keyframes t-ring{0%,100%{box-shadow:0 0 0 1.5px #2B1342}35%{box-shadow:0 0 0 1.5px #2B1342,0 0 0 5px #FFB400}}
+.g-tabs button.active .g-ico{animation:t-pop .3s ease-out}
+.g-tabs button.active:not(.center) span:last-child,.g-tabs button.center.active small{font-weight:700}
+.g-tabs button[data-tab=art].t-bounce .g-ico{animation:t-spin .35s ease-out}
+.g-tabs button[data-tab=mine].t-bounce .g-ico{animation:t-squeeze .35s ease-out}
+.g-face.t-nod{animation:t-nod .35s ease-out,t-ring .35s ease-out}
+@media (prefers-reduced-motion:reduce){.g-tabs button.active .g-ico,.g-tabs button.t-bounce .g-ico,.g-face.t-nod{animation:none}
+  .g-tabs .g-ind{transition:none}.g-tabs button:hover .g-ico,.g-tabs button.center:hover .g-face{translate:none}}
+
 /* Developer 3: touch */
 /* Touch response, added by js/site.js on pointerdown (touch only, once, removed on animationend). Uses the individual
    scale and rotate properties so a tile's own tilt in transform is untouched. */
@@ -731,11 +746,13 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 .t-nod{animation:t-nod .35s ease-out}
 .t-burst{position:fixed;z-index:99999;width:28px;height:28px;object-fit:contain;pointer-events:none;animation:t-burst .5s ease-out forwards}
 @media (hover:hover) and (pointer:fine){
-  .btn,.g-tile,.play-card,.g-hire,.filters button,.socials a,.g-feat-dl,.g-link,.g-tabs button,.c-sw,.c-st,.c-tool{transition:translate .2s,scale .2s,rotate .2s}
-  .btn:hover,.g-tile:hover,.play-card:hover,.filters button:hover,.socials a:hover,.g-feat-dl:hover,.g-link:hover,.g-tabs button:hover,.c-sw:hover,.c-st:hover,.c-tool:hover{translate:0 -2px;scale:1.04}
+  .btn,.g-tile,.play-card,.g-hire,.filters button,.socials a,.g-feat-dl,.g-link,.c-sw,.c-st,.c-tool{transition:translate .2s,scale .2s,rotate .2s}
+  .btn:hover,.g-tile:hover,.play-card:hover,.filters button:hover,.socials a:hover,.g-feat-dl:hover,.g-link:hover,.c-sw:hover,.c-st:hover,.c-tool:hover{translate:0 -2px;scale:1.04}
   .tile,.feat,.g-feat{transition:translate .2s,scale .2s,rotate .2s,box-shadow .3s}
   .tile:hover,.feat:hover,.g-feat:hover{translate:0 -4px;scale:1.04;rotate:calc(var(--tilt,0deg) * -1)}
   .g-hire:hover{animation:t-wiggle .36s ease-out}
+  .g-tabs .g-ico,.g-face{transition:translate .2s,transform .35s var(--ease-in),box-shadow .3s}
+  .g-tabs button:hover .g-ico,.g-tabs button.center:hover .g-face{translate:0 -2px}
   .v-place:hover,.v-walker:hover,.v-folk:hover{animation:t-bob .3s ease-out}
 }
 @media (prefers-reduced-motion:reduce){.t-squash,.t-wiggle,.t-bounce,.t-nod,.t-burst{animation:none}.t-burst{display:none}
