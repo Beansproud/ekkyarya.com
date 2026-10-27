@@ -156,5 +156,11 @@ $("sDl").onclick=()=>{remember();download(withName())};
 $("sVideo").onclick=async()=>{const b=$("sVideo");if(b.disabled)return;remember();b.disabled=true;const label=b.querySelector("span");label.textContent=tt("share.video.making","Making your video...");
   try{const d=withName(),v=await renderVideo(d),name=fileName(d,v.ext);await send(new File([v.blob],name,{type:v.blob.type}),v.blob,d,cur.link(d.name),tt("share.video.saved","Video saved, link copied"))}
   catch{say(t("share.copied"))}finally{b.disabled=false;label.textContent=tt("share.video","Share as video")}};
+// language switched in place ("ekky:lang", js/site.js): the share overlay was built once with t()
+addEventListener("ekky:lang",()=>{const o=$("gShare"),set=(sel,w,aria)=>o.querySelectorAll(sel).forEach(el=>{if(aria)return el.setAttribute("aria-label",w);
+    const n=[...el.childNodes].reverse().find(x=>x.nodeType===3&&x.textContent.trim());if(n)n.textContent=(/^\s/.test(n.textContent)?" ":"")+w;else el.textContent=w});
+  o.setAttribute("aria-label",t("share.go"));set("#sX",tt("ui.close","Close"),1);set("[data-hire]",t("hire.chip.aria"),1);set(".s-sign",t("share.sign"));$("sName").placeholder=t("share.sign.ph");
+  set("#sGo",t("share.go"));set("#sDl",t("dl.button"));if(!$("sVideo").disabled)set("#sVideo span",tt("share.video","Share as video"));set(".g-hire span",t("hire.chip"))});
+
 return {renderCard,renderVideo,paintCard,openPreview,download,downloadArt,downloadStars,canVideo,save};
 })();
