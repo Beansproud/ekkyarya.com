@@ -10,6 +10,8 @@ Typed in the Game Director session, 2026-10-27, quoted exactly:
 > game like metal slug *re-use all of his aset
 > game like zelda but isomorphic *re-use all of his aset"
 
+Owner answers, typed in the Game Director session, 2026-10-27: "yes paint and befriend is ok, sound effects only". This closes owner questions 2 and 5.
+
 Read as two minigames that play like real games and work as a portfolio:
 - **A run-and-gun side-scroller**, the genre Metal Slug made famous.
 - **A top-down adventure in an isometric view**, the genre Zelda made famous ("isomorphic" is read as isometric).
@@ -206,7 +208,7 @@ Ekky's pieces are flat, finished illustrations, not sprite sheets. Two routes, b
   - Canvas 2D with `devicePixelRatio` scaling.
   - A fixed 60 Hz update loop with interpolated drawing.
   - Input from keyboard, pointer and touch, with the virtual thumb stick.
-  - Camera with parallax, AABB collision, the puppet animator, and sound from the existing synth (honors the sound toggle; off by default on the web).
+  - Camera with parallax, AABB collision, the puppet animator, and sound effects only, from the existing synth (owner: "sound effects only"; no music; honors the sound toggle; off by default on the web).
   - Pauses on `visibilitychange`.
   - No new npm packages. Isometric drawing uses 2:1 diamond tiles (64 x 32 px) and a depth sort by tile row plus height. Tap-to-walk uses A* on the tile grid.
 - **Loading:** both games load only when opened (a dynamic `import()`, or a script tag added on demand). The portfolio's first load does not grow. Budget per game: JS under 40 KB gzip, sprites and backgrounds under 1.5 MB, first frame under 1.5 s on a mid-range phone after tapping.
@@ -275,8 +277,8 @@ Order: MG1 → MG2 → MG3 → **MG4 (go or no-go)** → MG5 and MG6 in parallel
 | # | Question | Safe default |
 |---|---|---|
 | 1 | Can Ekky export the main characters as separate transparent PNGs (layered files)? Priority: the Virus and War helmet kid, the Blue Bird hiker and bird, the green monster, the tiger, the shark, the RPG giant. | Cut-outs from the published images (route 2). Quality may be rougher on busy pieces. |
-| 2 | Is it OK that the helmet kid's blaster fires paint, and that enemies are "colored in and befriended" rather than defeated? | Yes: paint, befriend, no defeat. |
+| 2 | Is it OK that the helmet kid's blaster fires paint, and that enemies are "colored in and befriended" rather than defeated? | **Answered:** "yes paint and befriend is ok". |
 | 3 | Heroes: the helmet kid for Paint Patrol and the Blue Bird hiker for the Quest, with Ekky as the artist you meet in the hub? Or should Ekky be the hero of one or both? | As proposed. Switchable in `CONFIG.games`. |
 | 4 | Phone orientation for Paint Patrol: landscape preferred, with portrait supported? | Both: landscape preferred, portrait supported. |
-| 5 | Should the games have their own short music loops (synthesized, like the current sounds), or stay with sound effects only? | Sound effects only. Sound is off by default on the web. |
+| 5 | Should the games have their own short music loops, or stay with sound effects only? | **Answered:** "sound effects only". No music loops. Sound is off by default on the web. |
 | 6 | "endi onok bossfight": did you mean you want a boss fight, or that the RPG piece has no boss fight in it? | The RPG giant is boss 4 in Paint Patrol either way. The piece's title is the UX lead's call. |
