@@ -106,7 +106,7 @@ lb.addEventListener("click",e=>{if(e.target===lb)lb.close()});
 lb.addEventListener("keydown",e=>{if(e.key==="ArrowRight")step(1);if(e.key==="ArrowLeft")step(-1)});
 
 /* ===== Typed words ===== */
-(function(){const words=["mascots","characters","brands","websites","stickers","smiles"],el=document.getElementById("typed");
+(function(){const words=t("hero.words").split("|"),el=document.getElementById("typed");el.textContent=words[0];
   if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;
   let w=0,c=words[0].length,del=true;
   (function tick(){const word=words[w];
