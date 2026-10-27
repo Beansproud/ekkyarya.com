@@ -524,3 +524,5 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 .pp-row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center}
 @media (prefers-reduced-motion:reduce){.pp-hint.show{animation:none;opacity:1}.pp-turn img{animation:none}}
 @media (orientation:landscape){.pp-end{justify-content:center;gap:8px}.pp-art{max-height:34vh}.pp-end h2{font-size:1.3rem}.pp-end p{font-size:.9rem}}
+[data-install-row][hidden],[data-install][hidden]{display:none!important}
+#game button,#game a,dialog button{touch-action:manipulation}
