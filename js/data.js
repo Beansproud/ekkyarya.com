@@ -324,6 +324,7 @@ const COPY = {
     "stars.end": "Time's up!",
     "stars.record": "New best!",
     "stars.result": "You caught {n} stars. Your best: {best}.",
+    "stars.resultPoints": "{n} points. Your best: {best} points.",
     // Requested by the Developer (dev/assets 10f1ecd)
     "share.video": "Share as video",
     "share.video.making": "Making your video...",
@@ -533,6 +534,7 @@ const COPY = {
     "stars.end": "Waktu habis!",
     "stars.record": "Rekor baru!",
     "stars.result": "Kamu menangkap {n} bintang. Rekormu: {best}.",
+    "stars.resultPoints": "{n} poin. Rekormu: {best} poin.",
     "share.video": "Bagikan sebagai video",
     "share.video.making": "Videomu sedang dibuat...",
     "share.video.saved": "Video tersimpan, tautan disalin",
