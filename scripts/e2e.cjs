@@ -146,6 +146,44 @@ async function runConfig(browser,url,scheme,lang){
     if(await cnt()>=n3)throw new Error('dropping a sticker on the bin did not delete it');
     await p.tap('#cUndo');await sleep(400);if(await cnt()<n3)throw new Error('undo did not bring the deleted sticker back')});
 
+  // --- language switch in place ---
+  await T('lang: switch in place, no stale text',async p=>{await boot(p);await p.evaluate(()=>{window.__m=1});
+    const from=lang,to=lang==='en'?'id':'en';
+    const stale=(old,nw)=>p.evaluate(([o,n])=>{const bad=new Set();const keys=Object.keys(COPY[o]).filter(k=>typeof COPY[o][k]==='string'&&COPY[o][k].length>=4&&COPY[n][k]!==undefined&&COPY[n][k]!==COPY[o][k]);
+      const map=new Map(keys.map(k=>[COPY[o][k].trim(),k]));
+      for(const e of document.querySelectorAll('body *')){if(!e.offsetParent&&getComputedStyle(e).position!=='fixed')continue;if(e.closest('script,style,svg'))continue;
+        const hidden=e.closest('[hidden],.g-screen:not(.active)');if(hidden)continue;
+        const txt=[...e.childNodes].filter(x=>x.nodeType===3).map(x=>x.textContent.trim()).join(' ').trim();if(map.has(txt))bad.add(txt.slice(0,28));
+        const al=(e.getAttribute('aria-label')||'').trim();if(map.has(al))bad.add('aria:'+al.slice(0,24))}
+      return [...bad].slice(0,5)},[old,nw]);
+    const check=async(phase)=>{if(!await p.evaluate(()=>window.__m===1))throw new Error('page reloaded when switching language ('+phase+')');
+      for(const scr of ['start','art','map','mine']){if(scr!=='start')await tab(p,scr);await sleep(500);const bad=await stale(phase==='to'?from:to,phase==='to'?to:from);if(bad.length)throw new Error(`${phase==='to'?from:to} text left on ${scr} after switching to ${phase==='to'?to:from}: ${bad.join(' | ')}`)}};
+    await tab(p,'mine');await p.tap(`#g-mine [data-lang="${to}"]`);await sleep(900);
+    if(await p.evaluate(()=>document.documentElement.lang)!==to)throw new Error('html lang not updated');await check('to');
+    // overlays redraw too: open the Color picker and the Hire sheet in the new language
+    await p.tap('[data-go=color]').catch(()=>{});await tab(p,'start').catch(()=>{});
+    await tab(p,'mine');await p.tap(`#g-mine [data-lang="${from}"]`);await sleep(900);await check('back')});
+
+  // --- Map tab face button ---
+  await T('map face button renders, label not clipped',async p=>{await boot(p);
+    for(const st of ['start','map']){if(st==='map')await tab(p,'map');await sleep(500);
+      const r=await p.evaluate(()=>{const b=document.querySelector('.g-tabs button.center'),i=b&&b.querySelector('img.g-face-img'),l=b&&b.querySelector('small');if(!i)return {err:'no img.g-face-img'};
+        const ir=i.getBoundingClientRect();const out={ok:i.complete&&i.naturalWidth>0,w:Math.round(ir.width),h:Math.round(ir.height),vis:ir.width>0&&getComputedStyle(i).visibility!=='hidden'&&+getComputedStyle(i).opacity>0};
+        let cl={l:0,t:0,r:innerWidth,b:innerHeight};for(let n=i.parentElement;n&&n!==document.body;n=n.parentElement){const s=getComputedStyle(n);if(/hidden|clip|auto|scroll/.test(s.overflow+s.overflowX+s.overflowY)){const q=n.getBoundingClientRect();cl={l:Math.max(cl.l,q.left),t:Math.max(cl.t,q.top),r:Math.min(cl.r,q.right),b:Math.min(cl.b,q.bottom)}}}
+        const ix=Math.max(0,Math.min(ir.right,cl.r)-Math.max(ir.left,cl.l))*Math.max(0,Math.min(ir.bottom,cl.b)-Math.max(ir.top,cl.t));out.shown=Math.round(100*ix/Math.max(1,ir.width*ir.height));
+        if(l){const q=l.getBoundingClientRect();out.label=l.textContent.trim();out.lclip=l.scrollWidth>l.clientWidth+1||q.right>innerWidth+.5||q.left<-.5||q.bottom>innerHeight+.5;
+          const t=document.elementFromPoint(q.left+q.width/2,q.top+q.height/2);out.covered=!(t&&(t===l||l.contains(t)||t===b));out.lw=Math.round(q.width)}return out});
+      if(r.err)throw new Error(r.err);if(!r.ok)throw new Error('face image did not load');if(!r.vis||r.w<20)throw new Error(`face image not visible (${r.w}x${r.h})`);if(r.shown<95)throw new Error(`face image clipped, ${r.shown}% visible (${st})`);
+      if(!r.label)throw new Error('Map label empty');if(r.lclip)throw new Error(`Map label "${r.label}" clipped/off-screen (${st})`);if(r.covered)throw new Error(`Map label "${r.label}" covered by the face (${st})`)}});
+
+  // --- Noodle Bath page ---
+  await T('color: Noodle Bath page opens + fills',async p=>{await boot(p);await p.tap('[data-go=color]');await must(p,'#cPages .c-page','no pages');
+    if(!await p.$('#cPages .c-page[data-page="noodles"]'))throw new Error('no Noodle Bath entry in the picker');
+    await p.evaluate(()=>document.querySelector('#cPages .c-page[data-page="noodles"]').scrollIntoView());await p.tap('#cPages .c-page[data-page="noodles"]');
+    await must(p,'#cEdit #cCanvas','Noodle Bath editor did not open',8000);await sleep(900);
+    if(!await p.$eval('#cCanvas',c=>c.width>100&&c.height>100))throw new Error('Noodle Bath canvas is empty');
+    await fill(p,1);await audit(p,'noodle bath editor')});
+
   // --- Catch stars ---
   await T('stars: play, result, Share, Download',async p=>{await boot(p);await p.tap('#g-start [data-arcade]');await must(p,'#gArcade.open','arcade did not open',5000);await sleep(5000);
     await audit(p,'arcade');
