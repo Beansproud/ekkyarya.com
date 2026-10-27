@@ -70,6 +70,12 @@ role and cut method. Every piece must be shareable and carry the `village` role 
 Batch 1 (the main places): `home` (Little Planet, Ekky at his desk), `studio` (Giraffe Ride with fence and trees),
 `toybox` (the gallery's sign), `gate` (Hidden Monster's stone gate with the two kids and their lantern), plus
 `ghost`, `astronaut`, `radio-explorer`, `palette`, `pen-hand` and `helmet` reused from `assets/ui/`.
+Batch 2 (villagers and scenery, V2, originals only): from Monster World Doodles `croc`, `dog`, `ufo`,
+`orange-monster`, `pickle`, `blob`, `skull`, `doodle-cat`, `waver`; `plug-hero`; Noodle Bath `noodle-bath` (scenery,
+the bath that steams in V3); Road Trip `car` and `signpost`; Buried at the Beach `crab`; RPG `fire-spirit` (cut at
+the mouse knight's head, which stands in front of it). Tried and dropped because the cut was not clean: the Big Catch
+shark (the kid and the splash overlap it) and the Monster Snack Bar monsters and fries (too tangled to cut as drawn).
+Contact sheet: `docs/village-sprites.png` (`python3 scripts/sprites.py --sheet`).
 
 `python3 scripts/village.py` composes the first frame `assets/village/village.png` from those cut-outs on plain ground
 shapes in Ekky's palette (sea, islands, paths, plank bridges, the gallery block), and writes the place and frame

@@ -7,6 +7,62 @@
   "role": "place:observatory",
   "w": 96
  },
+ "blob": {
+  "cut": "color",
+  "file": "assets/sprites/blob.png",
+  "h": 180,
+  "piece": "doodles",
+  "role": "villager",
+  "w": 215
+ },
+ "car": {
+  "cut": "color",
+  "file": "assets/sprites/car.png",
+  "h": 240,
+  "piece": "road-trip",
+  "role": "villager",
+  "w": 331
+ },
+ "crab": {
+  "cut": "outline",
+  "file": "assets/sprites/crab.png",
+  "h": 120,
+  "piece": "summertime",
+  "role": "villager",
+  "w": 173
+ },
+ "croc": {
+  "cut": "color",
+  "file": "assets/sprites/croc.png",
+  "h": 200,
+  "piece": "doodles",
+  "role": "villager",
+  "w": 363
+ },
+ "dog": {
+  "cut": "color",
+  "file": "assets/sprites/dog.png",
+  "h": 240,
+  "piece": "doodles",
+  "role": "villager",
+  "w": 171
+ },
+ "doodle-cat": {
+  "cut": "color",
+  "file": "assets/sprites/doodle-cat.png",
+  "h": 160,
+  "piece": "doodles",
+  "role": "villager",
+  "w": 134
+ },
+ "fire-spirit": {
+  "cut": "bright",
+  "file": "assets/sprites/fire-spirit.png",
+  "h": 145,
+  "piece": "rpg",
+  "role": "villager",
+  "w": 92
+ },
  "gate": {
   "cut": "mask",
   "file": "assets/sprites/gate.png",
@@ -39,6 +95,22 @@
   "role": "place:home",
   "w": 240
  },
+ "noodle-bath": {
+  "cut": "color",
+  "file": "assets/sprites/noodle-bath.png",
+  "h": 260,
+  "piece": "noodles",
+  "role": "scenery",
+  "w": 215
+ },
+ "orange-monster": {
+  "cut": "color",
+  "file": "assets/sprites/orange-monster.png",
+  "h": 180,
+  "piece": "doodles",
+  "role": "villager",
+  "w": 194
+ },
  "palette": {
   "cut": "assets/ui",
   "file": "assets/ui/palette.png",
@@ -55,6 +127,22 @@
   "role": "sign:studio",
   "w": 96
  },
+ "pickle": {
+  "cut": "color",
+  "file": "assets/sprites/pickle.png",
+  "h": 220,
+  "piece": "doodles",
+  "role": "villager",
+  "w": 207
+ },
+ "plug-hero": {
+  "cut": "color",
+  "file": "assets/sprites/plug-hero.png",
+  "h": 240,
+  "piece": "plug-hero",
+  "role": "villager",
+  "w": 197
+ },
  "radio-explorer": {
   "cut": "assets/ui",
   "file": "assets/ui/radio-explorer.png",
@@ -62,6 +150,22 @@
   "piece": "nft-9",
   "role": "place:observatory",
   "w": 96
+ },
+ "signpost": {
+  "cut": "color",
+  "file": "assets/sprites/signpost.png",
+  "h": 120,
+  "piece": "road-trip",
+  "role": "scenery",
+  "w": 96
+ },
+ "skull": {
+  "cut": "color",
+  "file": "assets/sprites/skull.png",
+  "h": 120,
+  "piece": "doodles",
+  "role": "villager",
+  "w": 114
  },
  "studio": {
   "cut": "color",
@@ -78,5 +182,21 @@
   "piece": "toybox",
   "role": "place:gallery",
   "w": 152
+ },
+ "ufo": {
+  "cut": "color",
+  "file": "assets/sprites/ufo.png",
+  "h": 200,
+  "piece": "doodles",
+  "role": "villager",
+  "w": 221
+ },
+ "waver": {
+  "cut": "color",
+  "file": "assets/sprites/waver.png",
+  "h": 200,
+  "piece": "doodles",
+  "role": "villager",
+  "w": 105
  }
 }
