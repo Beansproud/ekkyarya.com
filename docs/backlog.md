@@ -12,6 +12,26 @@ Author: Game Director. Gate G1. This file merges `docs/game-brief.md` ("brief #n
 4. **Owner answer (2026-10-27): "no trophies, no lives, nothing ever locked."** This settles D0b, D0c, D1 and D2, and closes owner questions 12 and 13.
 5. **Owner answer (2026-10-27): "Ekky has the rights to all NFT".** NFT #3 (Astronaut) and NFT #9 (Radio Explorer) are his own work, `own: true`. They can be icons, stickers and share-card art. This closes the rights half of owner question 3; larger files are still wanted.
 6. **Owner direction (2026-10-27): "everything is owned by Ekky. Do whatever you can at its finest, we will limit later. Or make a config for it."** Applied as: full scope in round 1 (Option A), and a reuse config in `js/data.js` (see "Ownership and the reuse config" below).
+7. **Owner answers (2026-10-27, 08:14 UTC, typed in the Director's session, verified by the integrator).** They answer the numbered owner list in `docs/copy.md`. Mapping by the UX lead:
+
+| Owner's words | Question it answers (`docs/copy.md` list) | Reading |
+|---|---|---|
+| "he is he" | 1. Pronouns | **He/him.** The copy may say "he". |
+| "he is indonesian speak bahasa and english" | (backlog question 9) | **Indonesian; works in Indonesian (Bahasa) and English.** |
+| "2. Evening to night, starting price $25." | 2. Reply time, availability, price | **Available evenings to night (Indonesia time, GMT+7). Projects start at $25.** Reply time itself is not promised. |
+| "3. Sequis, Intiland, Viar, pbTaxand, Honshu, Suapi, Bima (endi onok popmie wkk)" | 3. Clients to name, and the clients behind "Client work" | **May be named in "Worked with": Sequis, Intiland, Viar, pbTaxand, Honshu, Suapi, Bima.** "endi onok popmie wkk" (Javanese, about "Pop Mie isn't one, lol"): **Pop Mie was not a client.** Which client goes with which piece is still open. |
+| "4. NFT own project." | 4. Is Morumelons a client or Ekky's own project? | **Morumelons is Ekky's own NFT project**, not a client. |
+| "5. endi onok bossfight." | 5. Boss Fight: is the fire spirit Ekky's design? | About "there's no Boss Fight": **the title is wrong; the piece goes back to "RPG".** The fire-spirit question stays open. |
+| "6. self project." | 6. Plug Hero and Toybox: commissions? | **Self projects**, Ekky's own. |
+| "7. yes to all Morumelon pieces." | 7. Rights to the NFT pieces (Astronaut, Radio Explorer) | **Yes**: the NFT pieces are Morumelons, and Ekky holds the rights to all of them. |
+
+**Data updates from these answers (B04b, UX; applied together with B14 once `js/data.js` is free):**
+- `rpg`: title back to "RPG"; description unchanged.
+- `morumelons`: remove the "Client: Morumelons" tag; description "Landing page art for Ekky's own NFT character collection." It stays `original` and Legendary.
+- `nft-3`, `nft-9`: descriptions name Morumelons ("A character from Morumelons, Ekky's NFT collection.").
+- `pop-mie`: not a client piece. Its kaiju looks like Godzilla, so it becomes `kind: "fan"` with the "Fan art" tag; not reusable either way.
+- `plug-hero`, `toybox`: confirmed `original` (no change).
+- The copy (B14) uses "he", "Projects from $25", "Available evenings to night (GMT+7)" and "Works in Indonesian and English".
 
 ## UX lead decisions (summary)
 
@@ -19,7 +39,7 @@ Judged from the point of view of the person deciding whether to hire Ekky: the a
 
 | Item | Decision |
 |---|---|
-| Budget | **Option A, full scope, about 26 h** (24.5 h + 0.5 h for the D3 alternative + 1 h for B38), on the owner's direction "do whatever you can at its finest, we will limit later". Nothing moves to round 2. B17 is built now with its contact buttons hidden until B15. |
+| Budget | **Option A, full scope, about 27 h** (24.5 h + 0.5 h for the D3 alternative + 1 h for B38 + 1 h for B26), on the owner's direction "do whatever you can at its finest, we will limit later". Nothing moves to round 2. B17 is built now with its contact buttons hidden until B15. |
 | D0, D0b, D0c, D1, D2, D17 | Owner decided; recorded. D17 approved as scoped, with the `shareable()` guard. |
 | "Mine" tab icon | A **simple frame line icon** (your gallery). The palette doodle stays with Art (D12), so each icon has one meaning. |
 | D3 Skill Tree | **Director alternative:** removed; level 2 is "Color with Ekky" (pen-hand icon). |
@@ -101,15 +121,16 @@ The game is three simple things plus one button: **Color** (tap a shape to fill 
 | B18 | Text sizes and tap targets | DEV | S | 2 | R1 must-have (audit #11) |
 | B21 | Stickers and the Doodle Scene (creative mode) | DEV | M | 3 | R1 must-have (D17) |
 | B38 | Feature switches (`FEATURES` config) | DEV | S | 1 | **R1 must-have, P1** (owner: "or make config for it") |
+| B26 | Hiring facts and "Worked with" row | UX, DEV | S | 1 | **R1 must-have, P1** (owner answered, 2026-10-27) |
 | B19 | Round-1 playtest and scorecard run | DIRECTOR | S | (DIRECTOR) | R1 must-have, last |
-| | **DEV total, Option A** | | | **26** | |
+| | **DEV total, Option A** | | | **27** | |
 
 **Budget.** 24.5 h is about 3 working days. The ask was about two (16 to 18 h).
 - **Option A (UX lead's list in full, plus creative mode):** 24.5 h.
 - **Option B (Director's recommendation, about 18 h):** move the desktop strip in B08 (0.5 h), the name field in B11 (0.5 h) and B18 (2 h) to the top of round 2. B08 still fixes the cut-off classic-site link, the worst tap-target problem. That gives about 21 h. To reach two days, also move B16 and B17 to the first days of round 2 (but B17 can't work before B15 anyway), which gives about 18.5 h. This keeps the whole loop (create, share, link, hire) inside two days.
-- **UX decision: Option A, full scope (about 26 h, with B38),** on the owner's direction "do whatever you can at its finest, we will limit later". Every ticket stays in round 1, plus the D3 alternative (+0.5 h). B17 is built now; its contact buttons stay hidden until B15 lands.
+- **UX decision: Option A, full scope (about 27 h, with B38 and B26),** on the owner's direction "do whatever you can at its finest, we will limit later". Every ticket stays in round 1, plus the D3 alternative (+0.5 h). B17 is built now; its contact buttons stay hidden until B15 lands.
 
-**Build order (approved):** B03 → B38 → B05 → B06 → B07 → B08 → B09 → B10 → B11 → B12 → B21 → B13 → B16 → B17 → B15 → B18. UX works B04 and B14 in parallel. B19 runs last.
+**Build order (approved):** B03 → B38 → B26 (once B14 lands) → B05 → B06 → B07 → B08 → B09 → B10 → B11 → B12 → B21 → B13 → B16 → B17 → B15 → B18. UX works B04 and B14 in parallel. B19 runs last.
 
 ---
 
@@ -232,7 +253,7 @@ Format for each: **Proposed (audit)** is what gets built if UX approves as writt
 
 ## Round 1 tickets
 
-**Final round-1 list (UX lead, Option A, full scope):** B01 (done), B02 to B21 and B38, all of them. B38 is P1: build it right after B03. B15 waits on the owner's contacts and is the launch blocker; B17 is built now with its contact buttons hidden until then. B19 runs last.
+**Final round-1 list (UX lead, Option A, full scope):** B01 (done), B02 to B21, B26 and B38. B38 and B26 are P1: B38 right after B03, B26 right after B14. B15 waits on the owner's contacts and is the launch blocker; B17 is built now with its contact buttons hidden until then. B19 runs last.
 
 ### B01. T0: split `index.html` (done)
 Owner DEV · Size M · **Done: merged into `main`** · From: plan T0
@@ -400,11 +421,24 @@ Owner DEV · Size M (3 h) · R1 must-have · Depends: B10, B02, B03 · From: own
 Owner DEV · Size S (1 h) · **R1 must-have, P1** · Depends: B03 · From: owner direction ("or make config for it")
 - **Goal:** a `FEATURES` object in `js/data.js`, next to `CONFIG.reuse`, with one on/off switch per optional feature, so the owner can limit scope later without code changes:
   ```js
-  const FEATURES = { starCatcher: true, stickers: true, doodleScene: true, shareCards: true,
-                     challengeLinks: true, holoCards: true, pwa: true };
+  const FEATURES = {
+    gameMode: true, starCatcher: true, coloring: true, stickers: true, doodleScene: true, anyColor: true,
+    shareCards: true, coloringLinks: true, challengeLinks: true, cardGift: true, recommend: true,
+    myGallery: true, brush: true, holoCards: true, pwa: true, linkPreviews: true
+  };
   ```
-  Every optional feature checks its switch before it renders its button, tile, tab, route or service worker. A switch that is off hides the feature completely: no greyed-out button, no lock (owner: "nothing ever locked"). A feature not built yet keeps its switch, ready for its ticket. Core paths (the art, the coloring page, Hire Ekky) have no switch.
-- **Acceptance (phone and desktop):** with every switch on, nothing changes. Turning each switch off in turn removes that feature's entry points everywhere (start tiles, map, HUD, result screens; its deep links fall back to the start screen), leaves no empty gap or dead link, and gives 0 console errors. With all switches off, the art, coloring and Hire Ekky still work.
+  Every optional feature checks its switch before it renders its button, tile, tab, route or service worker. A switch that is off hides the feature completely: no greyed-out button, no lock (owner: "nothing ever locked"). A feature not built yet keeps its switch, ready for its ticket. Not switchable: Hire Ekky, the art (portfolio and lightbox) and the contact details. With `gameMode: false` the site is the classic portfolio only. (Switch list from the Director, approved.)
+- **Acceptance (phone and desktop):** with every switch on, nothing changes. Turning each switch off in turn removes that feature's entry points everywhere (start tiles, map, HUD, result screens; its deep links fall back to the start screen), leaves no empty gap or dead link, and gives 0 console errors. With all switches off, the classic portfolio, the lightbox and Hire Ekky still work.
+
+### B26. Hiring facts and "Worked with" row (P1)
+Owner UX (copy), DEV · Size S (1 h) · **R1 must-have, P1** · Depends: B14 · From: audit #17, #18, owner answers 2026-10-27
+- **Goal:** the facts a client needs, shown on desktop About, the classic phone About, Level 1 "Who is Ekky?" and the Final Quest sheet:
+  - "Illustrator from Indonesia. Works in Indonesian and English."
+  - "Available evenings to night, Indonesia time (GMT+7)."
+  - "Projects from $25." (Final Quest sheet and Contact, next to Hire Ekky.)
+  - A text row, no logos: "Worked with Sequis, Intiland, Viar, pbTaxand, Honshu, Suapi and Bima."
+  - These replace the self-rated stat bars on Level 1 (B05). Strings come from the `COPY` object (B14).
+- **Acceptance:** at 1440 x 900 and on the phone, the four facts show in About, in Level 1 and (price and hours) in the Final Quest sheet. No client logo is used as an image. No stat percentages remain.
 
 ### B19. Round-1 playtest and scorecard run
 Owner DIRECTOR · Size S · R1 must-have, last · Depends: B03 to B18
@@ -424,7 +458,7 @@ In priority order. Each acceptance test gets expanded when its ticket is pulled 
 | B23 | Card gift share (own art only) | DEV | S | B11 | brief #18 (F) | Test: Share shows on own pieces only. The friend's link opens that piece. |
 | B24 | "I recommend Ekky" sticker | DEV, UX | S | B11 | brief #19 | 4 preset reasons, no free text. Test: 2 taps to the preview, 1 to share. |
 | B25 | Other deep links and the desktop phone frame | DEV | S | B12 | brief #9 (rest), brief issue 16 | Test: each sample link opens its screen in under 2 s. Desktop shows a centered 430 px frame. |
-| B26 | Hiring facts, "Worked with", client-work row | UX, OWNER | S | owner questions 7 to 9 | audit #17, #18, audit section 2 | Test: the six facts show in desktop About and in level 1. |
+| B26 | (moved into round 1 as P1; see the B26 ticket above) | | | | | |
 | B27 | Optional reward: one free pack per finished coloring (no coins) | DIRECTOR, DEV | S | B19 shows a dead moment | brief #14 (simplified), D0, D6 | Test: finishing a coloring offers one pack. Every card stays free to view. |
 | B28 | "My gallery" share card (replaces the brief's Player Card) | DEV | M | B11 | brief #17, D0c | Shows the player's colorings next to Ekky's originals: what they made, with no stats or levels. Test: "Share my gallery" makes one card with up to 4 colorings and the credit line. |
 | B29 | Coloring v2: reveal slider, zoom, eraser, brush with pressure | DEV | M | B10 | brief #6, #22 | Test: two-finger zoom works. A stylus changes the brush width. |
@@ -448,14 +482,14 @@ Asked through the integrator. The safe default applies until an answer comes in.
 | # | Question | Safe default | Blocks |
 |---|---|---|---|
 | 1 | Which avatar is really you: the glasses guy in `hero.png` or the blue-haired `face.png`? | **Neutral until the owner answers:** keep `face.png` where it is used today (middle tab, favicon, Level 1) and `hero.png` where it is used today (HUD avatar, map token). Nothing is swapped before the answer; afterwards, one file in `assets/ui/` makes it a one-line change. | B02 |
-| 2 | Which pieces are your own and which are client work? Unclear: Tea Break, Morumelons, Oasis, Web Illustration, My Sports Club, Save Early Buy Future, Plug Hero, Thinker & Doer, Type Is Art, Android, Kemerdekaan, RPG (the fire spirit), Toybox. Is Pop Mie a commission or a pitch? Are Beansproud and Puff character names? Is the D&D figure your own design? | **Answered by the owner: everything is Ekky's.** All are `kind: "original"` in `js/data.js`, so reusable; any can be limited later with `CONFIG.reuseBlock`. Fan art (including `dnd` and `game-pattern`) and the six hard-rule client pieces stay out of reuse. Still open: is Pop Mie a commission or a pitch, and may clients be named? | B03, B20 |
-| 3 | NFT #3 and #9: rights, and larger files | **Rights answered:** Ekky has the rights to all NFTs, so both are `own: true`. **Still open:** can you send them at 1000 px or more? Until then they show at their current 256 px (no upscaling on share cards; the sticker crop uses the native size). | B02, B34 |
+| 2 | Which pieces are your own and which are client work? | **Answered (2026-10-27):** everything is Ekky's; Morumelons and the NFT pieces are his own project; Plug Hero and Toybox are self projects; Pop Mie was not a client (it becomes fan art, see B04b). **Still open:** which of Sequis, Intiland, Viar, pbTaxand, Honshu, Suapi and Bima goes with Character Crowd Banner, My Sports Club, Save Early Buy Future and Thinker & Doer; is the fire spirit in RPG Ekky's design; are Beansproud and Puff character names? | B04b |
+| 3 | NFT #3 and #9: rights, and larger files | **Answered:** "yes to all Morumelon pieces"; both are Ekky's. **Still open:** files at 1000 px or more. Until then they show at 256 px (no upscaling on share cards). | B34 |
 | 4 | What domain do share links use: `ekkyarya.com` or the GitHub Pages URL for now? | `CONFIG.siteUrl` stays empty, so links use the current page URL. In the Android app, links use the Pages URL. | B11, B12 |
 | 5 | Real email, WhatsApp, Instagram, Dribbble and Behance. | Placeholders stay hidden (B15). No public launch until answered. | B15, B17 |
 | 6 | Can you send line layers (transparent PNG, 2000 px) for Road Trip, Little Planet, Giraffe and Plug Hero? Is it OK to extract your own lines from the JPG by darkness threshold? | Per D8 as UX approves: Road Trip from a layer if it arrives in time, otherwise Giraffe by threshold. | B09, B20 |
-| 7 | Reply time, availability and a starting price (or "quote only"). | No promised reply time; "Ask for a quote". | B17, B26 |
-| 8 | May we name your clients in a "Worked with" row? | No row. The tags only use names already in today's titles. | B26 |
-| 9 | Location, time zone and languages. | Not shown. | B26 |
+| 7 | Reply time, availability and a starting price. | **Answered:** "Evening to night, starting price $25." No reply time is promised. | B17, B26 |
+| 8 | May we name your clients in a "Worked with" row? | **Answered:** Sequis, Intiland, Viar, pbTaxand, Honshu, Suapi, Bima. **Open:** may Indomaret, BCA, MSI, Tea Break and Fizzy Tube be named in that row too? Default: the row lists only the owner's seven; those names stay in the piece tags. | B26 |
+| 9 | Location, time zone and languages. | **Answered:** Indonesian; speaks Indonesian (Bahasa) and English. Time zone GMT+7 assumed from Indonesia (Ekky may be in WITA or WIT; default GMT+7). | B26 |
 | 10 | Sketch files of one lead piece. | Text-only process steps. | B30 |
 | 11 | An SVG logo, a Type Is Art still, and doodle cut-outs. | Today's files. Any crop that fails at 32 px becomes a simple palette shape. | B02, B34 |
 | 12 | De-gamification: no trophies and no lives? | **Answered:** no trophies, no lives. | closed |
