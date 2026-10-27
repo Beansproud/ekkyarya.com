@@ -184,7 +184,7 @@ The glowing bird from "The Blue Bird" follows Ekky. After he stands still for 6 
 | `virus-and-war` | Ally power-up (the helmet kid), virus enemies | Cameo (links to Game A) |
 | `web-illustration` | Credits parade | |
 
-Never used: the 8 fan-art pieces and the 9 client pieces. `client` is `true` since the owner's "yes to all", so client pieces are reusable elsewhere, but they stay out of the games: brand logos don't belong in a game world. `js/data.js` enforces this with the `game` role (originals only).
+Never used in gameplay: the 8 fan-art pieces and the 9 client pieces. (Exception, owner "re-use all of asset of his as much as possible": drawn elements of 6 client pieces may be ambient villagers and props in Ekky's Village, never logos, and never heroes, enemies, allies or power-ups; see `docs/roles.md`.) `client` is `true` since the owner's "yes to all", so client pieces are reusable elsewhere, but they stay out of the games: brand logos don't belong in a game world. `js/data.js` enforces this with the `game` role (originals only).
 
 ---
 
