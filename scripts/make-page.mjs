@@ -31,8 +31,11 @@ const PAGES = {
   // to a fan-art page; Ekky approves the lines first (docs/color-monster-lines.png)
   monster: { slug: "monster", lineMax: 110, inkSoft: 130, crop: [300, 0, 780, 780] },
   "plug-hero": { slug: "plug-hero", lineMax: 110, inkSoft: 130 },
-  "little-planet": { slug: "little-planet", lineMax: 110, inkSoft: 130 },
-  "hands": { slug: "hands", lineMax: 110, inkSoft: 130 },
+    "hands": { slug: "hands", lineMax: 110, inkSoft: 130 },
+  // candidates for "more pictures": kept only if --verify passes and the lines read clean (see docs for what was dropped)
+  "little-planet": { slug: "little-planet", lineMax: 95, inkSoft: 115 },
+  doodles: { slug: "doodles", lineMax: 128, inkSoft: 140 },
+  "day-in-life": { slug: "day-in-life", lineMax: 128, inkSoft: 140 },
 };
 const MIN_AREA = 40, COLORS = 12;
 // Color split: areas above SPLIT_AREA px are divided by up to SPLIT_K of their own colors; patches under SPECK px fold
