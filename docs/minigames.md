@@ -58,7 +58,7 @@ The other owner directions still hold:
 
 ## Ekky's Village: the map and the Quest are one island
 
-**Status: proposed by the Game Director, pending UX lead approval.** It is built first, before Paint Patrol and before the rest of the Quest, because every visitor sees the map.
+**Status: approved by UX lead (2026-10-27) as B42, with the twelve UX decisions in `docs/backlog.md` (B42), which win where they differ from this section:** the Hire place is labeled "Work with Ekky"; the gallery hangs 4 real framed pieces (`featuredPick(4)`) with the Toybox box as its sign; client scenery is scenery only in both views; the bus stop is a main place only once Paint Patrol exists; the lantern and smoke run every 6 s, water shimmer 10 s, and day or night is set on load only; a pre-composited first frame under 1 s; a list fallback. It is built first, before Paint Patrol and before the rest of the Quest, because every visitor sees the map.
 
 ### Owner directions
 - Typed in the Game Director session, 2026-10-27, quoted exactly: "make the map isomoprihc like this" (with a screenshot of an isometric village from another mobile game) and "but with animation and re-createfd with his asset".
@@ -91,11 +91,11 @@ Seven **main places** carry an action. Each is a labeled button visible on the f
 |---|---|---|
 | **Ekky's home**, the center islet | Little Planet: Ekky at his desk on his chair, the laptop, the moon planet; around him the floating doodles (book, cassette, robot, microphone, map pin, cat, palette, planet) | Level 1 "Who is Ekky?" (the hiring facts) |
 | **Paint studio** | Giraffe Ride: the giraffe with the kid, the wooden fence and trees; the pen-hand cut-out as the sign | Color with Ekky |
-| **Gallery** | Toybox Packaging: the doodle-covered box, building-sized, with the palette cut-out as its flag | Art (every piece) |
+| **Gallery** | A plain block building whose two visible walls hang 4 framed real pieces (`featuredPick(4)`, UX); the Toybox doodle box and the palette flag beside it as its sign | Art (every piece) |
 | **Doodle corner** | Monster World Doodles: the ghost at the door, with the alien, worm and crocodile peeking around it; the "HEY" lettering as the sign | Level 4 "Doodle to Done" |
 | **Observatory** | Astronaut (NFT #3) on the hill, with Radio Explorer (NFT #9) at his radio; the helmet cut-out as the sign | Star Catcher |
 | **Bus stop** | Coexistence: the bench, the bus-stop sign and the commuters (kid with backpack, gargoyle in a suit, orange many-eyed monster); the Broken-Down Bus parked beside it with the bear on the roof and the lion driver | Paint Patrol (once built; switch `paintPatrol`) |
-| **The gate**, the island's edge | Hidden Monster: the stone gate with its carvings and gargoyle statues, the two kids with the lantern; the monster-head cut-out as the sign | Hire Ekky (Final Quest sheet). No boss wording. |
+| **Work with Ekky** (the gate), the island's edge | Hidden Monster: the stone gate with its carvings and gargoyle statues, the two kids with the lantern; the monster-head cut-out as the sign | Hire Ekky (Final Quest sheet). No boss wording. |
 
 | Scenery place | Built from | Tap opens |
 |---|---|---|
@@ -154,9 +154,9 @@ Seven **main places** carry an action. Each is a labeled button visible on the f
 | Motion | Timing | Meaning |
 |---|---|---|
 | Clouds drift across the sky band | 70 to 90 s per crossing | Time passes, calm. The one endless background loop besides the sky. |
-| Smoke puffs: soft translucent circles from the snack bar and the noodle bath (and from any chimney that is in the drawing itself) | 1 puff every 3 s, each rising and fading over 2.5 s | Someone is cooking. |
-| Water shimmer on the sea and the lake | A slow color shift, 8 s | Water. |
-| The gate's lantern | Soft glow pulse, 4 s | "Come here when you're ready" (Hire Ekky). |
+| Smoke puffs: soft translucent circles from the snack bar and the noodle bath only | 1 puff every 6 s (UX), each rising and fading over 2.5 s | Someone is cooking. |
+| Water shimmer on the sea and the lake | A slow color shift, 10 s, at most 10 % (UX) | Water. |
+| The gate's lantern | Soft glow pulse, 6 s (UX) | "Come here when you're ready" (Hire Ekky). |
 | Day to night | Follows the visitor's own clock: day 06:00 to 18:00, dusk, night. Night lights the windows of "Ekky's day" and brings out the lantern kids | The village lives on your time. |
 | Tap a main place | Ekky glides on his chair from his home to it (0.6 to 1.2 s by distance), the place lifts 4 px and its sign glows once (300 ms), then it opens. A second tap during the glide opens it at once | "I'm going there". |
 
