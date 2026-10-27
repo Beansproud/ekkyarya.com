@@ -201,9 +201,12 @@ def galaxy(base):
     col = Image.new("RGB", (W, H), (98, 58, 170))   # color and alpha are blurred apart, so the edges never go dark
     al = Image.new("L", (W, H), 0)
     cd, ad = ImageDraw.Draw(col), ImageDraw.Draw(al)
-    for (x, y, rx, ry, c) in [(360, 480, 215, 300, (120, 72, 200, 235)), (285, 350, 120, 110, (214, 96, 190, 190)),
-                              (450, 600, 130, 120, (132, 84, 222, 210)), (410, 280, 100, 80, (255, 143, 177, 150)),
-                              (290, 620, 100, 90, (86, 136, 220, 150)), (480, 430, 90, 90, (240, 130, 210, 150))]:
+    # the glow follows the diamond of the square slabs, not a round disc: a diamond haze plus patches at its corners
+    ad.polygon([(360, 170), (590, 480), (360, 840), (130, 480)], fill=120)
+    cd.polygon([(360, 170), (590, 480), (360, 840), (130, 480)], fill=(110, 66, 190))
+    for (x, y, rx, ry, c) in [(360, 210, 90, 60, (255, 143, 177, 170)), (560, 470, 70, 90, (214, 96, 190, 190)),
+                              (160, 470, 70, 90, (132, 84, 222, 200)), (380, 790, 90, 60, (86, 136, 220, 170)),
+                              (250, 320, 90, 70, (240, 130, 210, 140)), (480, 650, 100, 80, (150, 90, 230, 170))]:
         box = (x - rx, y - ry, x + rx, y + ry)
         cd.ellipse(box, fill=c[:3])
         ad.ellipse(box, fill=c[3])
