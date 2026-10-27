@@ -69,6 +69,19 @@ REUSE = {
 }
 
 
+# Paint Patrol (MG2): the hero is Ekky at his rolling desk, cut from Little Planet above the moon (the chair can't be
+# cut on its own: the desk stands in front of his legs). docs/paint-patrol-plan.md section 2.
+PATROL = {
+    "hero-desk": dict(piece="little-planet", src="assets/hero.png", mode="standing", seed=(290, 200), floor=362, bottom=440,
+                      keep=[(166, 300, 224, 432), (226, 362, 272, 432), (282, 360, 344, 432), (268, 300, 280, 440), (338, 300, 350, 440), (160, 300, 173, 440)],
+                      bgcolors=[(197, 191, 216), (176, 166, 199), (222, 217, 232), (186, 185, 204)], tol=12, h=330, role="patrol:hero"),
+    # the big grumpy friend of stage 1: the green monster with his hammer (Monster in My Room); he leans in from the
+    # right edge, where the picture cuts him off
+    "friend-monster": dict(piece="monster", src="assets/work/monster.jpg", mode="family", box=(300, 0, 1080, 780), seed=(800, 450),
+                           held=[dict(box=(260, 70, 480, 440), seed=(300, 150), bg=(247, 199, 179), tol=40)], h=480, role="patrol:friend"),
+}
+
+
 # Batch 2 (V2): villagers and scenery from the "Elements to cut" catalogue (docs/roles.md), originals only.
 # Source pixels. "within" limits a cut to a selection polygon; "bright" keeps the light shapes under the seed inside
 # that selection and then takes back Ekky's outline around them (for figures standing on a dark, busy background).
@@ -111,6 +124,69 @@ def bright(spec):
     return out.crop(Image.fromarray((m * 255).astype(np.uint8)).getbbox())
 
 
+def standing(spec):
+    """A figure standing in front of a background drawn in the same file (Ekky's desk on the moon): above `floor`
+    keep the shapes joined to the seed; below it keep only the selection boxes (shoes, chair base, desk legs) minus
+    the background's own colors, and stop at `bottom`. Nothing is drawn; parts are only selected or left out."""
+    im = Image.open(os.path.join(ROOT, spec["src"])).convert("RGBA")
+    a = np.array(im).astype(np.int32)
+    h, w = a.shape[:2]
+    yy = np.mgrid[0:h, 0:w][0]
+    solid = a[..., 3] > 8
+    sel = Image.new("L", (w, h), 0)
+    for box in spec["keep"]:
+        ImageDraw.Draw(sel).rectangle(box, fill=255)
+    lower = (yy >= spec["floor"]) & (yy < spec["bottom"])
+    bg = np.zeros((h, w), bool)
+    for c in spec["bgcolors"]:
+        bg |= np.sqrt(((a[..., :3] - np.array(c)) ** 2).sum(-1)) < spec.get("tol", 14)
+    m = solid & ((yy < spec["floor"]) | (lower & (np.array(sel) > 0) & ~bg))
+    m = ui.flood(m, ui.point((h, w), spec["seed"]))
+    if spec.get("open"):
+        n = spec["open"]
+        m = ui.grow(ui.flood(ui.shrink(m, n), ui.point((h, w), spec["seed"])), n) & m
+    a[..., 3] = np.where(m, a[..., 3], 0)
+    out = Image.fromarray(a.astype(np.uint8), "RGBA")
+    return out.crop(Image.fromarray((m * 255).astype(np.uint8)).getbbox())
+
+
+def family(spec):
+    """A character in one color family on a busy picture (the green monster): its color regions joined through the
+    outline that touches them (`line` px), holes filled (eye, teeth, mouth), plus color cuts of the things it holds
+    ("held": the hammer, cut from the plain wall around it). Selection only, nothing drawn."""
+    im = Image.open(os.path.join(ROOT, spec["src"])).convert("RGBA")
+    a = np.array(im).astype(np.int32)
+    h, w = a.shape[:2]
+    r, g, b = a[..., 0], a[..., 1], a[..., 2]
+    hue = spec.get("hue", "green")
+    fam = {"green": (g > r + 40) & (g > b + 20),
+           "blue": (b > r + 25) & (b > g + 5),
+           "orange": (r > g + 50) & (r > b + 80)}[hue]
+    x0, y0, x1, y1 = spec["box"]
+    inbox = np.zeros((h, w), bool)
+    inbox[y0:y1, x0:x1] = True
+    fam &= inbox
+    line = spec.get("line", 3)
+    dark = ui.lum(a) < spec.get("dark", 90)
+    m = ui.flood((fam | (dark & ui.grow(fam, line))) & inbox, ui.point((h, w), spec["seed"]))
+    m = ui.fill_holes(m)
+    for held in spec.get("held", []):
+        c = ui.cut(dict(held, src=spec["src"], mode="color"))
+        hb = held["box"]
+        hm = np.zeros((h, w), bool)
+        hm[hb[1]:hb[3], hb[0]:hb[2]] = np.array(c.getchannel("A"))[:hb[3] - hb[1], :hb[2] - hb[0]] > 128
+        m |= hm
+    if spec.get("erase"):
+        e = Image.new("L", (w, h), 0)
+        ImageDraw.Draw(e).polygon(spec["erase"], fill=255)
+        m &= np.array(e) == 0
+        m = ui.flood(m, ui.point((h, w), spec["seed"]))
+    a[..., 3] = np.where(m, 255, 0)
+    out = Image.fromarray(a.astype(np.uint8), "RGBA")
+    out.putalpha(out.getchannel("A").filter(ImageFilter.GaussianBlur(.6)))
+    return out.crop(Image.fromarray((m * 255).astype(np.uint8)).getbbox())
+
+
 def make(s):
     if s.get("use") == "file":
         im = Image.open(os.path.join(ROOT, s["src"])).convert("RGBA")
@@ -118,6 +194,10 @@ def make(s):
         im = masked(s)
     elif s.get("mode") == "bright":
         im = bright(s)
+    elif s.get("mode") == "standing":
+        im = standing(s)
+    elif s.get("mode") == "family":
+        im = family(s)
     else:
         im = ui.cut(s)
     return fit_h(im, s["h"])
@@ -126,7 +206,7 @@ def make(s):
 def build():
     os.makedirs(OUT, exist_ok=True)
     index = {}
-    for name, s in list(SPRITES.items()) + list(BATCH2.items()):
+    for name, s in list(SPRITES.items()) + list(BATCH2.items()) + list(PATROL.items()):
         im = make(s)
         im.save(os.path.join(OUT, name + ".png"), optimize=True)
         index[name] = dict(piece=s["piece"], file=f"assets/sprites/{name}.png", w=im.width, h=im.height, role=s["role"],

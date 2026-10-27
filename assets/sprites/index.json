@@ -63,6 +63,14 @@
   "role": "villager",
   "w": 92
  },
+ "friend-monster": {
+  "cut": "family",
+  "file": "assets/sprites/friend-monster.png",
+  "h": 480,
+  "piece": "monster",
+  "role": "patrol:friend",
+  "w": 496
+ },
  "gate": {
   "cut": "mask",
   "file": "assets/sprites/gate.png",
@@ -86,6 +94,14 @@
   "piece": "nft-3",
   "role": "sign:observatory",
   "w": 96
+ },
+ "hero-desk": {
+  "cut": "standing",
+  "file": "assets/sprites/hero-desk.png",
+  "h": 330,
+  "piece": "little-planet",
+  "role": "patrol:hero",
+  "w": 230
  },
  "home": {
   "cut": "file",
