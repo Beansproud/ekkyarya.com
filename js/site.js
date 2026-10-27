@@ -1,4 +1,4 @@
-// Desktop portfolio: gallery, lightbox, menus, theme, contact form and motion. Its globals (catImg, artOf, show, say, confetti, reduce) are used by js/game.js.
+// Desktop portfolio: gallery, lightbox, menus, theme, contact form and motion. Its globals (catImg, ico, uiImg, artOf, show, say, confetti, reduce) are used by js/game.js.
 /* ===== Procedural placeholder art ===== */
 function rng(seed){return()=>((seed=Math.imul(seed^seed>>>15,seed|1)+0x6D2B79F5|0,(seed^seed>>>13)>>>0)%1e4)/1e4}
 function makeArt(p){
@@ -19,6 +19,9 @@ function makeArt(p){
 // A project with `img` shows that file; if it fails to load, the drawn placeholder takes its place.
 function artOf(p,big){return p.img?`<img src="${big&&p.full||p.img}" alt="${p.title}" loading="lazy" decoding="async" onload="this.classList.add('ok')" onerror="this.outerHTML=makeArt(PROJECTS[${PROJECTS.indexOf(p)}])">`:makeArt(p)}
 const catImg=(c,cls="cat-ico")=>`<img class="${cls}" src="${CAT_ICON[c]}" alt="">`;
+// Icons: ico() uses the inline SVG set in index.html (i-* line icons, s-* palette shapes); uiImg() uses a cut-out from assets/ui/.
+const ico=(id,cls="ico")=>`<svg class="${cls}" aria-hidden="true"><use href="#${id}"/></svg>`;
+const uiImg=(name,cls="b-ico")=>`<img class="${cls}" src="assets/ui/${name}.png" alt="">`;
 
 /* ===== Gallery ===== */
 const grid=document.getElementById("grid");
@@ -68,7 +71,7 @@ lb.addEventListener("keydown",e=>{if(e.key==="ArrowRight")step(1);if(e.key==="Ar
   (function tick(){const word=words[w];
     if(del){c--;if(c===0){del=false;w=(w+1)%words.length}}
     else{c++;if(c===words[w].length){del=true;el.textContent=words[w];return setTimeout(tick,1800)}}
-    el.textContent=words[w].slice(0,c)||"​";setTimeout(tick,del?55:95)})();
+    el.textContent=words[w].slice(0,c)||"\u200b";setTimeout(tick,del?55:95)})();
 })();
 
 /* ===== Parallax floats ===== */
@@ -105,10 +108,10 @@ document.getElementById("themeToggle").onclick=()=>{const t=isDark()?"light":"da
 
 /* ===== Contact ===== */
 const toast=document.getElementById("toast");
-function say(m){toast.textContent=m;toast.classList.add("show");clearTimeout(say.t);say.t=setTimeout(()=>toast.classList.remove("show"),2400)}
+function say(m,icon){toast.textContent=m;if(icon)toast.insertAdjacentHTML("afterbegin",ico(icon));toast.classList.add("show");clearTimeout(say.t);say.t=setTimeout(()=>toast.classList.remove("show"),2400)}
 const mail=document.getElementById("mailLink");mail.textContent=CONFIG.email;mail.href="mailto:"+CONFIG.email;
 document.querySelectorAll("[data-link]").forEach(a=>a.href=CONFIG.links[a.dataset.link]);
-document.getElementById("copyMail").onclick=async()=>{try{await navigator.clipboard.writeText(CONFIG.email);say("Email copied ✓")}catch{say(CONFIG.email)}};
+document.getElementById("copyMail").onclick=async()=>{try{await navigator.clipboard.writeText(CONFIG.email);say("Email copied","i-check")}catch{say(CONFIG.email)}};
 document.getElementById("form").addEventListener("submit",e=>{e.preventDefault();const f=e.target;let ok=true;
   f.querySelectorAll("[required]").forEach(i=>{const err=i.parentElement.querySelector(".err");
     const msg=i.validity.valueMissing?"This one's needed":i.validity.typeMismatch?"Hmm, that email looks off":i.validity.tooShort?"A few more words, please":"";
@@ -136,7 +139,7 @@ stars.innerHTML=Array.from({length:40},()=>{const sz=2+Math.random()*4;
   +[0,1,2].map(i=>`<b class="shoot" style="left:${60+i*14}%;top:${5+i*12}%;animation-delay:${i*2.3}s"></b>`).join("");
 // marquee
 const words=["Illustration","Character Design","Mascots","Branding","Web & UI","Social Media","Stickers","Picture Books"];
-document.getElementById("marq").innerHTML=[...words,...words].map(w=>`<span>${w}</span>`).join("");
+document.getElementById("marq").innerHTML=[...words,...words].map(w=>`<span>${w}${ico("s-sparkle","ico sep")}</span>`).join("");
 // custom cursor
 if(fine&&!reduce){const c=document.getElementById("cursor"),d=document.getElementById("cursorDot");let x=0,y=0,cx=0,cy=0;
   addEventListener("mousemove",e=>{x=e.clientX;y=e.clientY;d.style.transform=`translate(${x}px,${y}px)`});
@@ -158,7 +161,7 @@ if(fine&&!reduce)document.querySelectorAll(".card,.tile").forEach(t=>{
 });
 // sparkle burst on click
 if(!reduce)addEventListener("click",e=>{const cols=["#FFB400","#FF6B6B","#7ED9B0","#B8D5FF","#9C91BD"];
-  for(let i=0;i<8;i++){const s=document.createElement("span");s.className="spark";s.textContent=i%2?"✦":"●";
+  for(let i=0;i<8;i++){const s=document.createElement("span");s.className=i%2?"spark":"spark dot";if(i%2)s.innerHTML=ico("s-sparkle");
     const a=Math.PI*2*i/8,dist=30+Math.random()*30;
     s.style.cssText=`left:${e.clientX-6}px;top:${e.clientY-8}px;color:${cols[i%5]};--dx:${Math.cos(a)*dist}px;--dy:${Math.sin(a)*dist}px`;
     document.body.appendChild(s);setTimeout(()=>s.remove(),800)}});

@@ -71,7 +71,8 @@ html{overflow-x:clip}
 /* hero */
 .hero{min-height:100vh;display:grid;grid-template-columns:1fr 1.1fr;align-items:center;gap:40px;padding-top:60px;padding-bottom:60px}
 .hero h1{white-space:nowrap;font-size:clamp(2.8rem,5.4vw,5.6rem);margin:10px 0 26px;font-weight:700}
-.hero h1 .wave{display:inline-block;transform-origin:70% 70%;animation:wave 2.4s 1s infinite}
+.hero h1 .wave{display:inline-block;transform-origin:50% 90%;animation:wave 2.4s 1s infinite}
+.hero h1 .wave img{height:.9em;width:auto;vertical-align:-.08em}
 @keyframes wave{0%,60%,100%{transform:rotate(0)}10%,30%{transform:rotate(14deg)}20%{transform:rotate(-8deg)}40%{transform:rotate(-4deg)}50%{transform:rotate(10deg)}}
 .roles{font-size:clamp(1.1rem,1.6vw,1.5rem);color:var(--muted);line-height:1.6}
 .typed{margin-top:14px;font-size:clamp(1rem,1.3vw,1.2rem);color:var(--text)}
@@ -121,8 +122,8 @@ html{overflow-x:clip}
 .card h3{font-size:1.3rem;margin-bottom:8px}
 .card p{font-size:.92rem;color:var(--muted)}
 .card .more{margin-top:18px;font-size:.85rem;color:var(--ink);font-weight:500;display:inline-flex;gap:6px;align-items:center}
-.card .more::after{content:"→";transition:transform .2s}
-.card:hover .more::after{transform:translateX(4px)}
+.card .more .ico{transition:transform .2s}
+.card:hover .more .ico{transform:translateX(4px)}
 
 /* work */
 .work-head{display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap}
@@ -242,7 +243,7 @@ dialog[open]{animation:pop .3s cubic-bezier(.2,1.4,.4,1)}
 @media (pointer:coarse){.cursor,.cursor-dot{display:none}}
 .marquee{overflow:hidden;background:var(--ink);color:var(--bg);padding:18px 0;transform:rotate(-2deg);margin:20px -20px}
 .marquee .track{display:flex;gap:40px;width:max-content;animation:marq 26s linear infinite;font-family:Fredoka;font-weight:600;font-size:clamp(1.3rem,2.5vw,2rem);white-space:nowrap}
-.marquee .track span::after{content:"✦";color:var(--accent);margin-left:40px}
+.marquee .track .sep{color:var(--accent);margin-left:40px;width:.7em;height:.7em;vertical-align:.05em}
 .marquee:hover .track{animation-play-state:paused}
 @keyframes marq{to{transform:translateX(-50%)}}
 .blob{position:absolute;right:4%;top:10%;width:min(320px,40vw);aspect-ratio:1;background:linear-gradient(135deg,var(--sky),var(--lav));opacity:.45;z-index:-1;animation:morph 12s ease-in-out infinite,spinSlow 30s linear infinite;filter:blur(2px)}
@@ -252,7 +253,8 @@ dialog[open]{animation:pop .3s cubic-bezier(.2,1.4,.4,1)}
 .tilt .shine{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.35),transparent 50%);opacity:0;transition:opacity .3s;z-index:2}
 .tilt:hover .shine{opacity:1}
 .card:hover .ico{transform:rotate(-10deg) scale(1.15)}
-.spark{position:fixed;pointer-events:none;z-index:160;font-size:14px;animation:sparkFly .8s ease-out forwards}
+.spark{position:fixed;pointer-events:none;z-index:160;font-size:14px;line-height:0;animation:sparkFly .8s ease-out forwards}
+.spark.dot{width:8px;height:8px;margin:3px;border-radius:50%;background:currentColor}
 @keyframes sparkFly{to{transform:translate(var(--dx),var(--dy)) rotate(180deg) scale(.2);opacity:0}}
 .confetti{position:fixed;top:-10px;width:9px;height:14px;z-index:170;pointer-events:none;animation:fall linear forwards}
 @keyframes fall{to{transform:translate(var(--dx),110vh) rotate(var(--r));}}
@@ -309,3 +311,10 @@ button:hover>.cat-ico,button.active>.cat-ico{transform:rotate(-12deg) scale(1.2)
   .cursor,.cursor-dot{display:none}
   .art img:not(.ok),.lb-art img:not(.ok){opacity:1;transform:none;filter:none}
 }
+
+/* icon set (inline SVG in index.html, cut-outs in assets/ui/) */
+.ico{width:1em;height:1em;display:inline-block;vertical-align:-.14em;flex:none;overflow:visible}
+.b-ico{width:1.35em;height:1.35em;object-fit:contain;flex:none;vertical-align:middle}
+.lb-nav .ico,.lb-close .ico,.to-top .ico{width:20px;height:20px}
+footer a .ico{vertical-align:-.12em}
+.toast .ico{margin-right:6px;color:var(--accent)}
