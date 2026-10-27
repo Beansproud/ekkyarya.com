@@ -563,10 +563,10 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 /* ===== S1, the sketchbook look: start screen and HUD (Developer B) =====
    The start screen is a page of Ekky's sketchbook: off-white paper with a faint grain (tokens from css/site.css),
    the six drawings taped on at a fixed 1 to 2 degree tilt, flat paper tiles, ink text. Nothing moves.
-   Art and Mine are paper too (UX: the night sky stays only in the games and the village). */
-body.game-mode #game:not(:has(#g-map.active)){background:var(--paper,#FBF8F1) var(--grain);color:#2B1342}
+   The other screens keep the night sky for now; the HUD follows whichever page it sits on. */
+body.game-mode #game.at-start{background:var(--paper,#FBF7EE) var(--grain);color:#2B1342}
 #game.at-start .g-player b{color:#2B1342}
-#game:not(:has(#g-map.active)) .g-sky,#game:not(:has(#g-map.active)) .g-planet-bg{display:none}
+#game.at-start .g-sky,#game.at-start .g-planet-bg{display:none}
 #game.at-start .g-hud{background:none}
 #game.at-start .g-player small{color:#645F70}
 #game.at-start .g-avatar{background:#FFFDF8;border:1.5px solid #2B1342;border-radius:50%}
@@ -620,34 +620,6 @@ body.game-mode #game:not(:has(#g-map.active)){background:var(--paper,#FBF8F1) va
 #game.playing .g-hire-pin{visibility:hidden}
 .g-sheet,#game:has(.c-over.open) .g-sheet{top:0}
 .g-sheet-in{padding-bottom:calc(env(safe-area-inset-bottom) + 104px);max-height:calc(100% - env(safe-area-inset-top) - 68px)}
-
-/* S1 on Art and Mine (Developer B): paper, ink text, the cards taped on at their piece's tilt (js/site.js), no foil */
-#g-art .g-title,#g-mine .g-title{color:#2B1342;text-shadow:none}
-#g-art .g-sub{color:#645F70}
-#g-art .g-filters button{background:#FFFDF8;border:1.5px solid #E4DCCB;border-radius:4px;color:#2B1342}
-#g-art .g-filters button.active{background:#FFB400;border-color:#FFB400;color:#2B1342}
-#g-art .g-cards{gap:22px 16px;padding-top:8px}
-#g-art .g-card{--tilt:-1.5deg;transform:rotate(var(--tilt));position:relative;perspective:none}
-#g-art .g-card::before{content:"";position:absolute;top:-8px;left:50%;width:48px;height:15px;margin-left:-24px;background:var(--tape,rgba(255,180,0,.35));transform:rotate(calc(var(--tilt) * -2));z-index:2;pointer-events:none}
-#g-art .g-card .inner{border:0;border-radius:2px;background:#FFFDF8;padding:6px 6px 0;box-shadow:var(--paper-shadow,0 2px 6px rgba(0,0,0,.12));transform:none}
-#g-art .g-card .art,#g-art .g-card .art:has(> img.ok){background:#F6F1E6;border-radius:1px}
-#g-art .g-card .info{padding:6px 2px 8px}
-#g-art .g-card .info b{color:#2B1342}
-#g-art .g-card .gcat{display:none}
-#g-art .g-card.legendary .inner::after{display:none}
-#g-mine .g-panel{background:#FFFDF8;border:1.5px solid #E4DCCB;border-radius:4px;box-shadow:none}
-#g-mine .g-panel h3,#g-mine .g-best,#g-mine .g-small{color:#2B1342}
-#g-mine .g-row{color:#2B1342;border-top-color:#E4DCCB}
-#g-mine .g-switch::before{background:#E4DCCB}
-#g-mine .g-switch.on::before{background:#7ED9B0}
-#g-mine .g-switch::after{box-shadow:0 0 0 1.5px #2B1342}
-#g-mine .g-link{color:#2B1342}
-#g-mine .lang-switch{border:0;box-shadow:inset 0 0 0 1.5px #2B1342;border-radius:6px}
-#g-mine .lang-switch button{background:#FFFDF8;color:#2B1342}
-#g-mine .lang-switch button[aria-pressed="true"]{background:#FFB400}
-#g-mine .g-btn.sm.alt{box-shadow:0 3px 0 #2B1342;border:1.5px solid #2B1342;border-radius:6px}
-#g-mine .g-mine-item{background:#FFFDF8;border-radius:2px;box-shadow:var(--paper-shadow,0 2px 6px rgba(0,0,0,.12))}
-#g-mine .g-mine-item b{color:#2B1342}
 /* start: the art stays the hero (UX: drawings at least 100 px at 360 x 640) with the tab bar showing; tighter gaps */
 #game .g-start{gap:10px}
 #g-start .g-featured{gap:12px 10px;padding-top:4px}

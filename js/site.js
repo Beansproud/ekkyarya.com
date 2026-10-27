@@ -125,10 +125,10 @@ document.querySelectorAll("#sideCats button,[data-jump]").forEach(b=>b.addEventL
 document.getElementById("featStrip").innerHTML=featuredSix().map(p=>({p,i:PROJECTS.indexOf(p)}))
   .map(({p,i})=>`<button class="feat" data-i="${i}"${tiltAttr(p)}><img src="${thumbOf(p)}" alt="" loading="lazy" decoding="async"><span>${ptitle(p)}</span></button>`).join("");
 document.getElementById("featStrip").addEventListener("click",e=>{const b=e.target.closest(".feat");if(b)show(+b.dataset.i)});
-// the phone start screen's six and the Art cards (both rendered by js/game.js): the same per-piece tilt
-[["gFeatured",".g-feat-cell"],["gCards",".g-card"]].forEach(([id,sel])=>{const box=document.getElementById(id);if(!box)return;
-  const tape=()=>box.querySelectorAll(sel).forEach(c=>{const b=c.matches("[data-i]")?c:c.querySelector("[data-i]");if(b)c.style.setProperty("--tilt",tiltOf(PROJECTS[+b.dataset.i]))});
-  new MutationObserver(tape).observe(box,{childList:true});tape()});
+// the phone start screen's six (rendered by js/game.js): the same per-piece tilt on each taped cell
+const gFeat=document.getElementById("gFeatured");
+if(gFeat){const tape=()=>gFeat.querySelectorAll(".g-feat-cell").forEach(c=>{const b=c.querySelector("[data-i]");if(b)c.style.setProperty("--tilt",tiltOf(PROJECTS[+b.dataset.i]))});
+  new MutationObserver(tape).observe(gFeat,{childList:true});tape()}
 
 /* ===== Lightbox ===== */
 const lb=document.getElementById("lightbox");let cur=0;
