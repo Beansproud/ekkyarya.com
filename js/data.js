@@ -359,6 +359,7 @@ const COPY = {
     "stars.record": "New best! Show off a little.",
     "stars.result": "You caught {n} stars. Your best: {best}.",
     "stars.resultPoints": "{n} points. Your best: {best} points.",
+    "stars.shareText": "I caught {n} points in Ekky's Star Catcher. Your move!",
     // Requested by the Developer (dev/assets 10f1ecd)
     "share.video": "Share as video",
     "share.video.making": "Making your video...",
@@ -613,6 +614,7 @@ const COPY = {
     "stars.record": "Rekor baru! Boleh pamer dikit.",
     "stars.result": "Kamu menangkap {n} bintang. Rekormu: {best}.",
     "stars.resultPoints": "{n} poin. Rekormu: {best} poin.",
+    "stars.shareText": "Aku dapat {n} poin di Star Catcher Ekky. Giliranmu!",
     "share.video": "Bagikan sebagai video",
     "share.video.making": "Videomu sedang dibuat...",
     "share.video.saved": "Video tersimpan, tautan disalin",
