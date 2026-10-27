@@ -462,3 +462,10 @@ html.pre-game body>:not(#game):not(dialog):not(.loader):not(script){display:none
 .play-card h3{font-size:1.2rem;color:var(--ink)}
 .play-card p{margin-top:6px;font-size:.9rem;color:var(--ink-soft)}
 .play-card:hover,.play-card:focus-visible{transform:rotate(var(--tilt,-1deg))}
+
+/* Idle surprise (js/idle.js): a doodle and a fun fact, bottom-right on the desktop page and bottom-left in game mode; never takes a tap */
+.idle-buddy{position:fixed;z-index:60;right:24px;bottom:24px;display:flex;flex-direction:row-reverse;align-items:flex-end;gap:8px;max-width:min(340px,calc(100vw - 32px));pointer-events:none}
+body.game-mode .idle-buddy{left:16px;right:auto;flex-direction:row;bottom:calc(env(safe-area-inset-bottom) + 96px)}
+.idle-buddy img{width:64px;height:64px;object-fit:contain;flex:none;filter:drop-shadow(0 3px 0 rgba(43,19,66,.3))}
+.idle-bubble{margin:0 0 6px;padding:8px 12px;background:#FFFDF8;color:#2B1342;border:1.5px solid #2B1342;border-radius:12px 12px 12px 3px;box-shadow:0 3px 0 #2B1342;font:500 .85rem/1.35 Poppins,system-ui,sans-serif}
+.idle-bubble b{font-family:Fredoka,sans-serif;font-weight:700}

@@ -1,7 +1,7 @@
 /* Game mode (phones, ?game, Capacitor app): everything inside #game and its overlays. Loaded after site.css. */
 #game{display:none}
 body.game-mode{overflow:hidden;background:#120a1f}
-body.game-mode>:not(#game):not(dialog):not(.toast):not(.loader):not(.spark):not(.confetti):not(script){display:none!important}
+body.game-mode>:not(#game):not(dialog):not(.toast):not(.loader):not(.spark):not(.confetti):not(.idle-buddy):not(script){display:none!important}
 body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family:Fredoka,Poppins,sans-serif;overflow:hidden;overflow:clip;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;
   background:radial-gradient(120% 70% at 50% 0%,#40236a 0,#1f1135 55%,#120a1f 100%)}
 .g-sky{position:absolute;inset:0;pointer-events:none}
