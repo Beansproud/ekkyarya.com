@@ -27,7 +27,7 @@ G.querySelectorAll("[data-t-aria]").forEach(el=>el.setAttribute("aria-label",t(e
 
 /* ---- mode switching ---- */
 // a phone held sideways is wider than 760 px: keep it in game mode (touch screen, short viewport), or turning the
-// phone for Paint Patrol would drop the visitor onto the classic site
+// phone for a game would drop the visitor onto the classic site
 const phone=matchMedia("(max-width:760px), (pointer:coarse) and (max-height:520px)");
 const pref=()=>{try{return localStorage.getItem("ekkyMode")}catch{return null}};
 const q=new URLSearchParams(location.search);
@@ -79,7 +79,6 @@ const PLACES=[
   {id:"gallery",     key:"town.gallery", icon:"assets/sprites/toybox.png",    from:"toybox", open:p=>openLevel(2,p)},
   {id:"doodle",      key:"town.workshop",icon:"assets/ui/ghost.png",          from:"doodles", open:p=>openLevel(3,p)},
   {id:"observatory", key:"town.launch",  icon:"assets/ui/astronaut.png",      from:"nft-3", open:()=>startArcade(), feature:"starCatcher"},
-  {id:"patrol",      key:"town.patrol", icon:"assets/sprites/hero-desk-s.png", box:[395,415,465,485], label:[430,489], open:()=>openPatrol(), feature:"paintPatrol"},
   {id:"hire",        key:"town.hire",    icon:"assets/sprites/gate.png",      open:p=>openHire("",p), hire:true},
 ];
 const pct=(v,of)=>(v/of*100).toFixed(3)+"%";
@@ -93,7 +92,7 @@ function renderMap(){
   W.innerHTML=`<div class="v-zoom" id="gMapZoom"><img class="v-ground" src="assets/village/village.png" alt="" decoding="async" fetchpriority="high">`+
     V.frames.map((f,k)=>{const p=art[k];if(!p)return "";const deg=(Math.atan(f.slope)*180/Math.PI).toFixed(2);
       return `<img class="v-frame" src="${thumbOf(p)}" alt="" decoding="async" style="left:${pct(f.x,V.w)};top:${pct(f.y,V.h)};width:${pct(f.w,V.w)};height:${pct(f.h,V.h)};transform:skewY(${deg}deg)">`}).join("")+
-    places.map(p=>{const b=(V.places[p.id]||p).box,l=(V.places[p.id]||p).label;
+    places.map(p=>{const b=V.places[p.id].box,l=V.places[p.id].label;
       return `<button class="v-place${p.hire?" hire":""}" data-place="${p.id}" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}" aria-label="${esc(t(p.key))}"></button>
       <span class="v-label${p.hire?" hire":""}" data-place="${p.id}" aria-hidden="true" style="left:${pct(l[0],V.w)};top:${pct(l[1],V.h)}">${esc(t(p.key))}</span>`}).join("");
   $("gMapZoom").insertAdjacentHTML("beforeend",villageLife(V)+"</div>");
@@ -353,16 +352,9 @@ async function shareStars(){if(typeof Share==="undefined")return;
 if(cv&&feature("shareCards")&&!$("gResShare")){$("gAgain").insertAdjacentHTML("afterend",`<button class="g-btn alt sm" id="gResShare">${ico("i-share")} <span>${esc(t("reveal.share"))}</span></button>`);
   $("gResShare").onclick=()=>{buzz(10);shareStars()}}
 if(cv){$("gResDl").onclick=()=>typeof Share!=="undefined"&&Share.downloadStars(lastScore);$("gArcadeX").onclick=quitArcade;$("gResBack").onclick=()=>{quitArcade();go("start")};$("gAgain").onclick=startArcade}
-G.addEventListener("click",e=>{if(e.target.closest("[data-arcade]")){sfx("tap");startArcade()}
-  if(e.target.closest("[data-patrol]")){sfx("tap");openPatrol()}});
-// Paint Patrol (MG3) loads on first open, so the portfolio's first load does not change (MG9).
-let patrolJs=null;
-function openPatrol(){if(!feature("paintPatrol"))return;
-  patrolJs=patrolJs||new Promise((ok,no)=>{const s=document.createElement("script");s.src="js/patrol.js";s.onload=ok;s.onerror=no;document.head.appendChild(s)});
-  patrolJs.then(()=>window.Patrol.open()).catch(()=>{patrolJs=null})}
-{const play=q.get("play");   // desktop "Play with Ekky's art" cards: ?game&play=color|stars|patrol
-  if(play==="patrol"&&feature("paintPatrol"))setTimeout(openPatrol,600);
-  else if(play==="color")setTimeout(()=>go("color"),600);
+G.addEventListener("click",e=>{if(e.target.closest("[data-arcade]")){sfx("tap");startArcade()}});
+{const play=q.get("play");   // desktop "Play with Ekky's art" cards: ?game&play=color|stars
+  if(play==="color")setTimeout(()=>go("color"),600);
   else if(play==="stars"&&feature("starCatcher"))setTimeout(startArcade,600)}
 // A hidden tab pauses the round; it resumes only once the tab is visible again (r1a bug: it used to resume while hidden).
 let pausedByHide=false;
@@ -375,7 +367,7 @@ let artDone=false;
 // start screen's drawings come first on a slow phone (S5, Developer B).
 function renderAll(){if(deep)setTimeout(renderStart,2500);else renderStart();renderMine();setTimeout(moveInd,60)}
 // Shared with js/color.js, js/share.js and js/links.js.
-window.Game={go,openHire,openPatrol,openSheet,closeSheet,sfx,buzz,save,get st(){return st},esc,contactReady,screen:()=>screen};
+window.Game={go,openHire,openSheet,closeSheet,sfx,buzz,save,get st(){return st},esc,contactReady,screen:()=>screen};
 window.openHire=openHire;
 setMode();
 })();
