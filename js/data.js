@@ -10,7 +10,7 @@ const CONFIG = {
   contactPage: "https://ekkyarya.com/contact/",
   links: {
     instagram: "https://www.instagram.com/ekkyarya/",
-    behance: "https://www.behance.net/ekkyarya",          // owner wrote "ekkyarya Portfolio"; URL to confirm
+    behance: "https://www.behance.net/ekkyarya",          // confirmed by the owner
     linkedin: "https://id.linkedin.com/in/ekkyarya",
     dribbble: "https://dribbble.com/shots/6634499-Flat-Guy-Illustration" // a single shot for now; profile URL to come
   },
