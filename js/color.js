@@ -4,7 +4,8 @@
 // Pages come from scripts/make-page.mjs (assets/color/<page>/page.js); only shareable() pieces are offered.
 const Color=(()=>{
 const G=document.getElementById("game");
-const PAGES=[{id:"giraffe",slug:"giraffe"}];
+// A page with a switch stays hidden until FEATURES turns it on (Road Trip waits for Ekky's OK on the lines).
+const PAGES=[{id:"giraffe",slug:"giraffe"},{id:"road-trip",slug:"road-trip",flag:"pageRoadTrip"}];
 // The Doodle Scene: a plain paper page with one region (the background) and Ekky's palette.
 const SCRATCH={id:"scratch",slug:null,title:"Doodle Scene",w:800,h:1000,regions:1,
   colors:["#FFFFFF","#FFF4D6","#FFE08A","#FFB400","#FF6B6B","#F4C2D7","#C9A7FF","#9C91BD","#B8D5FF","#7ED9B0","#3E7C6A","#2B1342"]};
@@ -28,7 +29,7 @@ const STICKERS=[
 const MAX_STICKERS=12, MAX_CUSTOM=3;
 const bySlug=s=>PROJECTS.find(p=>p.slug===s);
 const okSlug=s=>s==null||creative(bySlug(s));
-const pages=()=>PAGES.filter(p=>okSlug(p.slug));
+const pages=()=>PAGES.filter(p=>okSlug(p.slug)&&(!p.flag||feature(p.flag)));
 const stickers=()=>feature("stickers")?STICKERS.filter(s=>okSlug(s.from)):[];
 const stickerImg={};
 const imgOf=n=>{if(!stickerImg[n]){const s=STICKERS.find(x=>x.n===n);if(!s)return null;stickerImg[n]=new Image();stickerImg[n].src=s.src}return stickerImg[n]};
@@ -95,7 +96,7 @@ async function pageData(id){
   if(cache[id])return cache[id];
   let meta,ids;
   if(id==="scratch"){meta=SCRATCH;ids=new Uint16Array(meta.w*meta.h).fill(1)}
-  else{const p=PAGES.find(x=>x.id===id);if(!p||!okSlug(p.slug))throw new Error("no page "+id);
+  else{const p=pages().find(x=>x.id===id);if(!p)throw new Error("no page "+id);
     if(!(window.COLOR_PAGE_DATA||{})[id])await loadScript(`assets/color/${id}/page.js`);
     meta=COLOR_PAGE_DATA[id];const map=await loadImg(meta.mapData);
     const c=document.createElement("canvas");c.width=meta.w;c.height=meta.h;const x=c.getContext("2d",{willReadFrequently:true});x.drawImage(map,0,0);

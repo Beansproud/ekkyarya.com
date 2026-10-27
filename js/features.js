@@ -12,6 +12,7 @@ const FEATURES = {
   challengeLinks: true,  // Star Catcher challenge links (later ticket B22)
   holoCards: true,       // holo foil on tilt (later ticket B36)
   pwa: true,             // "Install the app" (manifest + sw.js); the full offline work is B37
+  pageRoadTrip: false,   // Road Trip coloring page: built (assets/color/road-trip/), waits for Ekky to approve the lines (D8)
   artDownload: true,     // lightbox Download: a copy of at most 1600 px with a subtle mark, never on fan art (owner: yes)
   sound: true,           // sound effects and the sound toggle
 };

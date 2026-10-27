@@ -24,6 +24,7 @@ const require = createRequire(import.meta.url);
 const PAGES = {
   // crop: the drawing itself, without the empty paper around it (a crop changes no line)
   giraffe: { slug: "giraffe", lineMax: 128, inkSoft: 140, crop: [33, 107, 733, 714] },
+  "road-trip": { slug: "road-trip", lineMax: 110, inkSoft: 130, crop: [190, 376, 748, 560] },
 };
 const MIN_AREA = 40, COLORS = 12;
 
