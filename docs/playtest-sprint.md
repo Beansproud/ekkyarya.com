@@ -6,7 +6,7 @@ One section per snapshot branch (`sprint/hN`), measured with `scripts/playtest/`
 
 | Check | Result |
 |---|---|
-| First coloring shared | 12.7 s to the share sheet, 3 taps after Done |
+| First coloring shared | 12.7 to 13.9 s to the share sheet (4 runs), 3 taps after Done |
 | Friend's link | Same picture: 0 % of 8x8 blocks differ. Arrival at 0.9 to 1.8 s on a fast connection |
 | Friend's link on slow 4G | Arrival drawn at 3.14 to 3.18 s; the loader is under 50 % at **3.25 to 3.35 s** (target < 3 s) |
 | Hire Ekky one tap away | Every screen, at 390x664 and 360x640 (the Hire sheet itself excepted) |
