@@ -695,14 +695,16 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 .t-wiggle{animation:t-wiggle .18s ease-out}
 @media (prefers-reduced-motion:reduce){.t-squash,.t-wiggle{animation:none}}
 
-/* Home (owner bug: no way back to start): the logo, 44 px, top-left on every game screen; the start screen already shows it */
-#game .g-home{position:absolute;z-index:15;top:calc(env(safe-area-inset-top) + 12px);left:calc(env(safe-area-inset-left) + var(--gut,16px));width:44px;height:44px;padding:0;border-radius:6px;display:grid;place-items:center;overflow:hidden;background:#FFFDF8;border:1.5px solid #2B1342;box-shadow:0 2px 0 #2B1342;transition:none}
-#game .g-home img{width:36px;height:36px;object-fit:contain}
+/* Home (owner bug: no way back to start, and iPhones have no Back button): a back chevron plus the small logo, 44 px
+   tall, top-left on every game screen; the start screen already shows the logo */
+#game .g-home{position:absolute;z-index:15;top:calc(env(safe-area-inset-top) + 12px);left:calc(env(safe-area-inset-left) + var(--gut,16px));min-width:44px;height:44px;padding:0 8px 0 4px;border-radius:6px;display:flex;align-items:center;gap:2px;background:#FFFDF8;color:#2B1342;border:1.5px solid #2B1342;box-shadow:0 2px 0 #2B1342;transition:none}
+#game .g-home .ico{width:20px;height:20px;flex:none}
+#game .g-home img{height:30px;width:auto;max-width:44px;object-fit:contain}
 #game .g-home img+span{display:none}
-#game .g-home span{font-size:.55rem;line-height:.9;font-weight:700;color:#2B1342;text-align:center}
+#game .g-home span{font-size:.55rem;line-height:.9;font-weight:700;text-align:center}
 #game .g-home:active{transform:translateY(1px);box-shadow:0 1px 0 #2B1342}
 #game.at-start .g-home,#game.playing .g-home{display:none}
-#game:has(.c-over.open) .c-top{padding-left:52px}
+#game:has(.c-over.open) .c-top{padding-left:88px}
 .c-wheel{position:absolute;left:0;right:0;bottom:0;z-index:5;background:#2a1a40;color:#FFF;border-radius:18px 18px 0 0;padding:14px 16px calc(14px + env(safe-area-inset-bottom));box-shadow:0 -6px 24px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:10px}
 .c-wheel[hidden]{display:none}
 .c-wheel-top{display:flex;align-items:center;gap:12px;min-height:44px}
