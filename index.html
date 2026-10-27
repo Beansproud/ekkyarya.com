@@ -549,6 +549,13 @@ body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family
 .g-flash{position:absolute;inset:0;background:#FF6B6B;opacity:0;pointer-events:none;z-index:2}
 .g-flash.on{animation:flash .35s}
 @keyframes flash{30%{opacity:.35}}
+
+.g-tabs button.center{overflow:visible;background:#D3FFD8}
+.g-tabs button.center.active{background:#D3FFD8}
+.g-face{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;animation:faceIdle 3s ease-in-out infinite}
+.g-tabs button.center.pressed .g-face{animation:faceBoing .6s cubic-bezier(.2,1.6,.4,1)}
+@keyframes faceIdle{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg) translateY(-2px)}}
+@keyframes faceBoing{0%{transform:scale(1)}25%{transform:scale(1.25,.75)}50%{transform:scale(.85,1.2) rotate(-10deg)}75%{transform:scale(1.08,.95) rotate(6deg)}100%{transform:scale(1)}}
 </style>
 </head>
 <body>
@@ -849,7 +856,7 @@ body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family
 
   <nav class="g-tabs" aria-label="Game menu">
     <button data-tab="collection"><span>🃏</span>Cards</button>
-    <button data-tab="map" class="center active" aria-label="Map"><span>🗺️</span><small>Map</small></button>
+    <button data-tab="map" class="center active" aria-label="Map"><img class="g-face" src="assets/face.png" alt=""><small>Map</small></button>
     <button data-tab="profile"><span>🏆</span>Trophies<i class="g-badge" id="gAchBadge"></i></button>
   </nav>
 
