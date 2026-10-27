@@ -45,9 +45,10 @@ $("gSky").innerHTML=Array.from({length:60},()=>{const s=1+Math.random()*3;
 
 /* ---- screens and tabs ---- */
 let screen="start";
-function go(to){
+function go(to,fromPop){
   if(to==="color")return typeof Color!=="undefined"?Color.openPicker():null;
   if(to==="hire")return openHire();
+  if(!fromPop&&to!==screen){try{history.pushState({s:to},"")}catch(e){}}   // Back returns to the previous screen
   screen=to;G.classList.toggle("at-start",to==="start");G.classList.toggle("at-paper",to==="art"||to==="mine");   // S1: Art and Mine on paper
   G.querySelectorAll(".g-screen").forEach(s=>s.classList.toggle("active",s.id==="g-"+to));
   G.querySelectorAll(".g-tabs button").forEach(b=>b.classList.toggle("active",b.dataset.tab===to));
@@ -56,6 +57,8 @@ function go(to){
   if(to==="map")renderMap();
   requestAnimationFrame(moveInd);
 }
+try{history.replaceState({s:"start"},"")}catch(e){}
+addEventListener("popstate",e=>{const to=e.state&&e.state.s;if(to&&to!==screen&&document.body.classList.contains("game-mode"))go(to,true)});
 G.querySelector(".g-tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(b){buzz(10);go(b.dataset.tab)}});
 G.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(g){buzz(10);sfx("tap");go(g.dataset.go)}
   if(e.target.closest("[data-hire]")){buzz(10);openHire()}});
@@ -365,6 +368,19 @@ document.addEventListener("visibilitychange",()=>{if(!A)return;if(document.hidde
 let artDone=false;
 // The village (village.png and its sprites, about 1 MB) is built when the map opens (go("map")), not at load, so the
 // start screen's drawings come first on a slow phone (S5, Developer B).
+/* ---- Language switched in place (js/site.js dispatches "ekky:lang" at the dim point): redraw what was built with t() ---- */
+let sheetRe=null;
+const remember=f=>(...a)=>{sheetRe=()=>f(...a);return f(...a)};   // the sheet's opener, so a language switch can draw it again
+openVillager=remember(openVillager);openLevel=remember(openLevel);openHire=remember(openHire);
+addEventListener("ekky:lang",()=>{
+  renderStart();renderMine();if(artDone)renderArt();
+  const rs=$("gResShare");if(rs)rs.querySelector("span").textContent=t("reveal.share");
+  const sv={s:Z.s,x:Z.x,y:Z.y};renderMap();if(sv.s>1){widen(true);zoomTo(sv.s,sv.x,sv.y)}
+  const l=$("gMapList"),b=$("gMapListBtn");if(!l.hidden)b.textContent=tt("town.showVillage","Show the village");
+  if(sheet.classList.contains("open")&&sheetRe){
+    const body=sheet.firstElementChild,top=body.scrollTop,from=sheetFrom,f=$("gForm"),v=f&&[f.name.value,f.type.selectedIndex,f.message.value];
+    sheetRe();body.scrollTop=top;sheetFrom=from;
+    const g=$("gForm");if(g&&v){g.name.value=v[0];g.type.selectedIndex=v[1];g.message.value=v[2]}}});
 function renderAll(){if(deep)setTimeout(renderStart,2500);else renderStart();renderMine();setTimeout(moveInd,60)}
 // Shared with js/color.js, js/share.js and js/links.js.
 window.Game={go,openHire,openSheet,closeSheet,sfx,buzz,save,get st(){return st},esc,contactReady,screen:()=>screen};

@@ -5,7 +5,7 @@
 const Color=(()=>{
 const G=document.getElementById("game");
 // A page with a switch stays hidden until FEATURES turns it on (Road Trip waits for Ekky's OK on the lines).
-const PAGES=[{id:"giraffe",slug:"giraffe"},{id:"road-trip",slug:"road-trip",flag:"pageRoadTrip"},{id:"monster",slug:"monster",flag:"pageMonster"},{id:"plug-hero",slug:"plug-hero",flag:"pagePlugHero"},{id:"little-planet",slug:"little-planet",flag:"pageLittlePlanet"},{id:"hands",slug:"hands",flag:"pageHands"}];
+const PAGES=[{id:"giraffe",slug:"giraffe"},{id:"road-trip",slug:"road-trip",flag:"pageRoadTrip"},{id:"monster",slug:"monster",flag:"pageMonster"},{id:"little-planet",slug:"little-planet",flag:"pageLittlePlanet"},{id:"hands",slug:"hands",flag:"pageHands"},{id:"day-in-life",slug:"day-in-life"},{id:"doodles",slug:"doodles"},{id:"plug-hero",slug:"plug-hero",flag:"pagePlugHero"}];
 // The Doodle Scene: a plain paper page with one region (the background) and Ekky's palette.
 const SCRATCH={id:"scratch",slug:null,title:"Doodle Scene",w:800,h:1000,regions:1,
   colors:["#FFFFFF","#FFF4D6","#FFE08A","#FFB400","#FF6B6B","#F4C2D7","#C9A7FF","#9C91BD","#B8D5FF","#7ED9B0","#3E7C6A","#2B1342"]};
@@ -33,6 +33,7 @@ const pages=()=>PAGES.filter(p=>okSlug(p.slug)&&(!p.flag||feature(p.flag)));
 const stickers=()=>feature("stickers")?STICKERS.filter(s=>okSlug(s.from)):[];
 const stickerImg={};
 const imgOf=n=>{if(!stickerImg[n]){const s=STICKERS.find(x=>x.n===n);if(!s)return null;stickerImg[n]=new Image();stickerImg[n].src=s.src}return stickerImg[n]};
+const nm=(k,en,n)=>tt(k,en).replace("{n}",n);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const $=id=>document.getElementById(id);
 
@@ -50,12 +51,16 @@ G.insertAdjacentHTML("beforeend",`<div class="c-over" id="gColor" role="dialog" 
       <button class="g-btn sm" id="cDone">${esc(t("color.done"))}</button></div>
     <div class="c-stage-wrap"><div class="c-stage" id="cStage"><canvas id="cCanvas"></canvas><img class="c-peek" id="cPeek" alt=""><div class="c-stickers" id="cStickers"></div>
       <div class="c-bin" id="cBin">${ico("i-trash")}<span>${esc(t("color.bin"))}</span></div><p class="c-hint" id="cHint"></p></div></div>
-    <div class="c-colors" id="cColors" role="radiogroup" aria-label="Colors"></div>
+    <div class="c-colors" id="cColors" role="radiogroup" aria-label="${esc(tt("color.colors","Colors"))}"></div>
     <div class="c-tools"><button class="c-tool" id="cUndo">${ico("i-undo")}<span>${esc(t("color.undo"))}</span></button>
       <button class="c-tool" id="cPeekBtn">${ico("i-eye")}<span>${esc(t("color.peek"))}</span></button>
       ${feature("stickers")?`<button class="c-tool" id="cStickBtn" aria-expanded="false">${ico("i-plus")}<span>${esc(t("color.stickers"))}</span></button>`:""}</div>
     <div class="c-tray" id="cTray" hidden></div>
-    <input type="color" id="cAny" class="c-any-input" tabindex="-1" aria-hidden="true">
+    <div class="c-wheel" id="cWheel" role="dialog" aria-label="${esc(t("color.any"))}" hidden>
+      <div class="c-wheel-top"><i class="c-wheel-pre" id="cWPre"></i><b>${esc(t("color.any"))}</b></div>
+      ${[["h",tt("wheel.hue","Hue")],["s",tt("wheel.sat","Strength")],["l",tt("wheel.light","Light")]].map(([k,n])=>`<div class="c-strip" data-k="${k}" role="slider" tabindex="0" aria-label="${esc(n)}" aria-valuemin="0" aria-valuemax="100"><canvas></canvas><i class="c-knob"></i></div>`).join("")}
+      <div class="c-wheel-row"><button class="g-btn alt sm" id="cWNo">${esc(tt("wheel.cancel","Cancel"))}</button><button class="g-btn sm" id="cWYes">${esc(tt("wheel.add","Use this color"))}</button></div>
+    </div>
   </section>
   <section class="c-view c-reveal" id="cReveal">
     <button class="g-x" id="cClose" aria-label="${tt("ui.close","Close")}">${ico("i-close")}</button>
@@ -76,7 +81,7 @@ G.insertAdjacentHTML("beforeend",`<div class="c-over" id="gColor" role="dialog" 
   </section>
 </div>`);
 const over=$("gColor");
-function view(name){over.classList.add("open");over.querySelectorAll(".c-view").forEach(v=>v.classList.toggle("active",v.id===name))}
+function view(name){if(typeof wheel!=="undefined")wheel.hidden=true;over.classList.add("open");over.querySelectorAll(".c-view").forEach(v=>v.classList.toggle("active",v.id===name))}
 function close(){over.classList.remove("open");cur=null}
 
 /* ---- picker ---- */
@@ -167,19 +172,48 @@ function sizeStage(){if(!cur)return;const wrap=stage.parentElement,{w,h}=cur.pd.
   const sc=Math.min(aw/w,ah/h);stage.style.width=w*sc+"px";stage.style.height=h*sc+"px"}
 addEventListener("resize",sizeStage);
 function renderColors(){const cols=cur.pd.meta.colors;
-  $("cColors").innerHTML=cols.map((c,i)=>`<button class="c-sw${color===i+1?" on":""}" data-v="${i+1}" style="--c:${c}" role="radio" aria-checked="${color===i+1}" aria-label="Color ${i+1}"></button>`).join("")+
-    cur.custom.map((c,i)=>`<button class="c-sw${color===13+i?" on":""}" data-v="${13+i}" style="--c:${c}" role="radio" aria-checked="${color===13+i}" aria-label="Your color ${i+1}"></button>`).join("")+
+  $("cColors").innerHTML=cols.map((c,i)=>`<button class="c-sw${color===i+1?" on":""}" data-v="${i+1}" style="--c:${c}" role="radio" aria-checked="${color===i+1}" aria-label="${esc(nm("color.swatch","Color {n}",i+1))}"></button>`).join("")+
+    cur.custom.map((c,i)=>`<button class="c-sw${color===13+i?" on":""}" data-v="${13+i}" style="--c:${c}" role="radio" aria-checked="${color===13+i}" aria-label="${esc(nm("color.mine","Your color {n}",i+1))}"></button>`).join("")+
     (feature("anyColor")?`<button class="c-sw c-any" data-any aria-label="${esc(t("color.any"))}">${ico("i-plus")}</button>`:"")}
 $("cColors").addEventListener("click",e=>{const b=e.target.closest(".c-sw");if(!b)return;Game.buzz(6);
-  if(b.dataset.any!==undefined){$("cAny").value=colorOf(cur,color);$("cAny").click();return}
+  if(b.dataset.any!==undefined){openWheel();return}
   color=+b.dataset.v;renderColors()});
-$("cAny").addEventListener("change",e=>{const c=e.target.value.toUpperCase();let i=cur.custom.indexOf(c);
+function addCustom(c){let i=cur.custom.indexOf(c);
   if(i<0){if(cur.custom.length<MAX_CUSTOM){cur.custom.push(c);i=cur.custom.length-1}else{i=MAX_CUSTOM-1;cur.custom[i]=c;paint(cur,cv)}}
-  color=13+i;renderColors();save()});
+  color=13+i;renderColors();save()}
+/* ---- our own color sheet: hue, strength and light strips drawn on canvases (a hidden <input type=color> cannot be opened by script on iOS Safari or in-app browsers) ---- */
+const hsl={h:0,s:100,l:50},wheel=$("cWheel");
+function hex2hsl(x){const n=parseInt(x.slice(1),16),r=(n>>16&255)/255,g=(n>>8&255)/255,b=(n&255)/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn,l=(mx+mn)/2;
+  let h=0;if(d){h=mx===r?((g-b)/d+6)%6:mx===g?(b-r)/d+2:(r-g)/d+4;h*=60}
+  return {h:Math.round(h),s:Math.round(d?d/(1-Math.abs(2*l-1))*100:0),l:Math.round(l*100)}}
+function hsl2hex({h,s,l}){s/=100;l/=100;const a=s*Math.min(l,1-l),f=n=>{const k=(n+h/30)%12;return Math.round(255*(l-a*Math.max(-1,Math.min(k-3,9-k,1))))};
+  return "#"+[f(0),f(8),f(4)].map(v=>v.toString(16).padStart(2,"0")).join("").toUpperCase()}
+function drawStrips(){wheel.querySelectorAll(".c-strip").forEach(el=>{const k=el.dataset.k,c=el.firstChild,w=el.clientWidth||300,h=el.clientHeight||44;if(c.width!==w)c.width=w;if(c.height!==h)c.height=h;
+  const x=c.getContext("2d"),g=x.createLinearGradient(0,0,w,0),q=(hh,ss,ll)=>`hsl(${hh},${ss}%,${ll}%)`;
+  if(k==="h")for(let i=0;i<=6;i++)g.addColorStop(i/6,q(i*60,100,50));
+  else if(k==="s"){g.addColorStop(0,q(hsl.h,0,hsl.l));g.addColorStop(1,q(hsl.h,100,hsl.l))}
+  else{g.addColorStop(0,q(hsl.h,hsl.s,0));g.addColorStop(.5,q(hsl.h,hsl.s,50));g.addColorStop(1,q(hsl.h,hsl.s,100))}
+  x.fillStyle=g;x.fillRect(0,0,w,h);
+  const v=k==="h"?hsl.h/360*100:hsl[k];el.querySelector(".c-knob").style.left=v+"%";el.setAttribute("aria-valuenow",Math.round(v));el.setAttribute("aria-valuetext",hsl2hex(hsl))});
+  $("cWPre").style.background=hsl2hex(hsl)}
+function setStrip(k,p){p=Math.max(0,Math.min(1,p));if(k==="h")hsl.h=Math.round(p*360);else hsl[k]=Math.round(p*100);drawStrips()}
+wheel.querySelectorAll(".c-strip").forEach(el=>{const k=el.dataset.k,at=e=>{const r=el.getBoundingClientRect();setStrip(k,(e.clientX-r.left)/r.width)};
+  el.addEventListener("pointerdown",e=>{el.setPointerCapture(e.pointerId);at(e);e.preventDefault()});
+  el.addEventListener("pointermove",e=>{if(el.hasPointerCapture(e.pointerId))at(e)});
+  el.addEventListener("keydown",e=>{const d={ArrowLeft:-1,ArrowDown:-1,ArrowRight:1,ArrowUp:1}[e.key];if(!d)return;e.preventDefault();const m=k==="h"?360:100;setStrip(k,((k==="h"?hsl.h:hsl[k])+d*(m/50))/m)})});
+function openWheel(){Object.assign(hsl,hex2hsl(colorOf(cur,color)));if(hsl.s<20||hsl.l<15||hsl.l>85)Object.assign(hsl,{s:Math.max(hsl.s,60),l:50});wheel.hidden=false;drawStrips();wheel.querySelector(".c-strip").focus({preventScroll:true})}
+function closeWheel(){wheel.hidden=true;const b=$("cColors").querySelector(".c-any");if(b)b.focus({preventScroll:true})}
+$("cWNo").addEventListener("click",closeWheel);
+$("cWYes").addEventListener("click",()=>{addCustom(hsl2hex(hsl));closeWheel()});
+wheel.addEventListener("keydown",e=>{if(e.key==="Escape"){e.stopPropagation();closeWheel()}});
+/* a touch fill feels alive: a quick ripple from the tap point and a tiny pop of the swatch (about 300 ms; the CSS turns both off under reduced motion) */
+function fillPop(e){const r=stage.getBoundingClientRect(),d=document.createElement("i");d.className="c-ripple";d.style.cssText=`left:${e.clientX-r.left}px;top:${e.clientY-r.top}px;--c:${colorOf(cur,color)}`;
+  stage.appendChild(d);setTimeout(()=>d.remove(),400);
+  const sw=$("cColors").querySelector(".c-sw.on");if(sw){sw.classList.remove("pop");void sw.offsetWidth;sw.classList.add("pop")}}
 function pagePoint(e){const r=cv.getBoundingClientRect();return [Math.floor((e.clientX-r.left)/r.width*cur.pd.meta.w),Math.floor((e.clientY-r.top)/r.height*cur.pd.meta.h)]}
 stage.addEventListener("pointerdown",e=>{if(!cur||e.target.closest(".c-st"))return;
   const [x,y]=pagePoint(e);if(x<0||y<0||x>=cur.pd.meta.w||y>=cur.pd.meta.h)return;const r=cur.pd.ids[y*cur.pd.meta.w+x];if(!r||cur.fills[r]===color)return;
-  cur.undo.push([r,cur.fills[r]]);cur.fills[r]=color;paintRegion(cur,cv,r,true);Game.sfx("fill");Game.buzz(8);save()});
+  cur.undo.push([r,cur.fills[r]]);cur.fills[r]=color;paintRegion(cur,cv,r,true);Game.sfx("fill");Game.buzz(8);save();if(e.pointerType!=="mouse")fillPop(e)});
 // Undo history survives leaving and reopening a page (the owner: "undo button is not working in mewarnai": the colors came
 // back but the history did not, so Undo looked active and did nothing). The button is disabled when there is nothing to undo.
 function updUndo(){const b=$("cUndo");if(b)b.disabled=!(cur&&cur.undo.length)}
@@ -195,7 +229,7 @@ $("cDone").onclick=()=>{save(true);reveal()};
 /* ---- stickers: tap one in the tray to add it; drag to move, pinch to scale and rotate, drag onto the bin to remove ---- */
 if($("cStickBtn")){
   $("cStickBtn").onclick=()=>{const tr=$("cTray"),open=tr.hidden;tr.hidden=!open;$("cStickBtn").setAttribute("aria-expanded",open);
-    if(open)tr.innerHTML=stickers().map(s=>`<button class="c-tray-st" data-n="${s.n}" aria-label="Sticker ${s.n}"><img src="${s.src}" alt=""></button>`).join("")};
+    if(open)tr.innerHTML=stickers().map(s=>`<button class="c-tray-st" data-n="${s.n}" aria-label="${esc(nm("color.sticker","Sticker {n}",s.n))}"><img src="${s.src}" alt=""></button>`).join("")};
   $("cTray").addEventListener("click",e=>{const b=e.target.closest("[data-n]");if(!b||!cur)return;
     if(cur.stickers.length>=MAX_STICKERS)return say(t("color.full"));
     cur.undo.push(["st",cur.stickers.map(x=>({...x}))]);
@@ -248,9 +282,33 @@ async function showArrival(id,fills,custom,stks,from){let pd;try{pd=await pageDa
   const c=$("cArriveCanvas");c.width=560;c.height=Math.round(560*pd.meta.h/pd.meta.w);
   await Promise.all(s.stickers.map(x=>{const im=imgOf(x.n);return im.complete?0:new Promise(r=>{im.onload=im.onerror=r})}));
   compose(s,c.getContext("2d"),0,0,560);
-  $("cArriveTitle").textContent=id==="scratch"?(from?t("arrive.scene",{name:from}):t("arrive.sceneAnon")):from?t("arrive.color",{name:from,title}):t("arrive.color.anon",{title});
+  arriveRe=()=>{const title=id==="scratch"?t("color.scratch"):ptitle(pr);
+    $("cArriveTitle").textContent=id==="scratch"?(from?t("arrive.scene",{name:from}):t("arrive.sceneAnon")):from?t("arrive.color",{name:from,title}):t("arrive.color.anon",{title})};arriveRe();
   $("cArriveColor").onclick=()=>open(id);view("cArrive");return true}
 $("cArriveX").onclick=close;$("cArriveExplore").onclick=()=>{close();Game.go("map")};
+
+/* ---- language switched in place ("ekky:lang", js/site.js): the overlay markup above was built once with t(), so its words are set again here ---- */
+let arriveRe=null;
+const LBL=[["#cPick .g-title","color.title"],["#cPick .g-sub","color.intro"],["#gColor [data-hire]","hire.chip.aria","aria"],
+  ["#cPick .g-hire span","sheet.hire"],["#cEdit .g-hire span","hire.chip"],["#cReveal .g-hire span","hire.chip"],["#cArrive .g-hire span","hire.chip"],
+  ["#cPickX","ui.close","aria","Close"],["#cClose","ui.close","aria","Close"],["#cArriveX","ui.close","aria","Close"],["#cBack","ui.back","aria","Back"],
+  ["#cDone","color.done"],["#cBin span","color.bin"],["#cColors","color.colors","aria","Colors"],["#cUndo span","color.undo"],["#cPeekBtn span","color.peek"],["#cStickBtn span","color.stickers"],
+  ["#cWheel","color.any","aria"],["#cWheel .c-wheel-top b","color.any"],['#cWheel [data-k="h"]',"wheel.hue","aria","Hue"],['#cWheel [data-k="s"]',"wheel.sat","aria","Strength"],
+  ['#cWheel [data-k="l"]',"wheel.light","aria","Light"],["#cWNo","wheel.cancel","text","Cancel"],["#cWYes","wheel.add","text","Use this color"],
+  ["#cReveal figure:first-child figcaption","reveal.yours"],["#cEkkyFig figcaption","reveal.ekky"],["#cShare","reveal.share"],["#cDl","dl.button"],["#cAgain","reveal.again"],
+  ["#cAnother","reveal.another"],["#cArriveColor","arrive.mine"],["#cArriveExplore","arrive.explore"]];
+function relang(){
+  LBL.forEach(([sel,k,kind,en])=>{const w=en?tt(k,en):t(k);over.querySelectorAll(sel).forEach(el=>{
+    if(kind==="aria")return el.setAttribute("aria-label",w);
+    const n=[...el.childNodes].reverse().find(x=>x.nodeType===3&&x.textContent.trim());
+    if(n)n.textContent=(/^\s/.test(n.textContent)?" ":"")+w;else if(!el.children.length)el.textContent=w})});
+  over.setAttribute("aria-label",t("color.title"));
+  if($("cPick").classList.contains("active"))openPicker();
+  if(cur){const pr=bySlug(cur.pd.meta.slug);cur.title=cur.pd.id==="scratch"?t("color.scratch"):pr?ptitle(pr):cur.pd.meta.title;$("cTitle").textContent=cur.title;
+    $("cRevTitle").textContent=cur.pd.id==="scratch"?t("color.scratch"):t("reveal.title");renderColors();
+    if(!$("cTray").hidden)$("cTray").innerHTML=stickers().map(s=>`<button class="c-tray-st" data-n="${s.n}" aria-label="${esc(nm("color.sticker","Sticker {n}",s.n))}"><img src="${s.src}" alt=""></button>`).join("")}
+  if(arriveRe&&$("cArrive").classList.contains("active"))arriveRe()}
+addEventListener("ekky:lang",relang);
 
 return {openPicker,open,close,showArrival,pages,stickers,PAGES,STICKERS,SCRATCH,get state(){return cur},compose,pageData,makeState};
 })();
