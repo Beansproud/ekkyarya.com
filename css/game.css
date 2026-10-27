@@ -724,6 +724,10 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 }
 @media (prefers-reduced-motion:reduce){.c-icon:hover,.g-x:hover,.c-page:hover{translate:none;scale:none;rotate:none}}
 
+/* Hire sheet: labels and placeholders at 4.5:1 or better on white, in dark mode too */
+.g-sheet label,.g-sheet label span{color:#5E5870}
+.g-sheet input::placeholder,.g-sheet textarea::placeholder{color:#5E5870;opacity:1}
+
 /* Developer 3: touch */
 /* Touch response, added by js/site.js on pointerdown (touch only, once, removed on animationend). Uses the individual
    scale and rotate properties so a tile's own tilt in transform is untouched. */
