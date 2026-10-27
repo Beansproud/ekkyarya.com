@@ -12,7 +12,7 @@ Every icon in the game and site is cut from Ekky's own artwork (`assets/ui/`) or
 | File | Size | Source piece | Crop area (x0, y0, x1, y1) | Type | Sticker | Used for |
 |---|---|---|---|---|---|---|
 | `face.png` | 128 | `assets/face.png` | 0, 0, 256, 256 | Cut-out (mint background removed) | yes | Level 1 "Who is Ekky?", game-mode button, desktop hero wave, Press Start and Nice to Meet You trophies |
-| `pen-hand.png` | 96 | `assets/hero.png` | 170, 100, 262, 220 (cut at the wrist) | Cut-out | yes | Level 2 "Skill Tree" |
+| `pen-hand.png` | 96 | `assets/hero.png` | 170, 100, 262, 220 (cut at the wrist) | Cut-out with a light sticker outline | yes | Level 2 "Skill Tree" |
 | `palette.png` | 96 | `assets/hero.png` | 388, 58, 486, 156 | Cut-out | yes | Level 3 "Art Collection", Cards tab, Art Collector trophy, Star Catcher +3 |
 | `planet.png` | 96 | `assets/hero.png` | 428, 186, 526, 252 | Cut-out | yes | Sticker only for now |
 | `cat.png` | 96 | `assets/hero.png` | 232, 8, 324, 100 | Cut-out | yes | Trophies tab (until it becomes "Mine") |
@@ -43,6 +43,7 @@ Defined once as `<symbol>`s; use `<svg class="ico"><use href="#id"/></svg>`, or 
 | `i-replay` | Line icon | Play again |
 | `i-send` | Line icon | Send message |
 | `i-share` | Line icon | Reserved for share cards |
+| `i-frame` | Line icon | Reserved for the "Mine" tab |
 | `i-up` | Line icon | Back to top |
 | `i-play` | Line icon | PLAY |
 | `s-star` | Shape (#FFB400, #2B1342) | Score and coin count, level star rating, owned card mark, falling star +1, Star Catcher +1, placeholder for dropped trophies |
