@@ -1,7 +1,7 @@
 /* Game mode (phones, ?game, Capacitor app): everything inside #game and its overlays. Loaded after site.css. */
 #game{display:none}
 body.game-mode{overflow:hidden;background:#120a1f}
-body.game-mode>:not(#game):not(dialog):not(.toast):not(.loader):not(.spark):not(.confetti):not(script){display:none!important}
+body.game-mode>:not(#game):not(dialog):not(.toast):not(.loader):not(.spark):not(.confetti):not(.idle-buddy):not(script){display:none!important}
 body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family:Fredoka,Poppins,sans-serif;overflow:hidden;overflow:clip;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;
   background:radial-gradient(120% 70% at 50% 0%,#40236a 0,#1f1135 55%,#120a1f 100%)}
 .g-sky{position:absolute;inset:0;pointer-events:none}
@@ -732,6 +732,10 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
   .c-page:hover{translate:0 -4px;scale:1.04;rotate:-1deg}
 }
 @media (prefers-reduced-motion:reduce){.c-icon:hover,.g-x:hover,.c-page:hover{translate:none;scale:none;rotate:none}}
+
+/* Hire sheet: labels and placeholders at 4.5:1 or better on white, in dark mode too */
+.g-sheet label,.g-sheet label span{color:#5E5870}
+.g-sheet input::placeholder,.g-sheet textarea::placeholder{color:#5E5870;opacity:1}
 
 /* Developer 3: touch */
 /* Touch response, added by js/site.js on pointerdown (touch only, once, removed on animationend). Uses the individual
