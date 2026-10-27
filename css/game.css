@@ -378,7 +378,7 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 .v-place{position:absolute;background:none;border-radius:16px;min-width:44px;min-height:44px}
 .v-place:focus-visible{outline:3px solid #FFB400;outline-offset:2px}
 .v-label{position:absolute;transform:translate(-50%,0);padding:3px 9px;border-radius:10px;background:#241638;border:2px solid #3e2a5c;color:#fff;
-  font-weight:700;font-size:.78rem;white-space:nowrap;pointer-events:none;transition:transform var(--dur-fast) var(--ease-move),box-shadow var(--dur-fast)}
+  font-weight:700;font-size:.78rem;white-space:nowrap;pointer-events:none;transition:transform var(--dur-fast) var(--ease-move)}
 .v-label.hire{background:#FFB400;border-color:#b77e00;color:#2B1342}
 .v-label.go{transform:translate(-50%,-4px);box-shadow:0 0 0 3px #FFB400}
 .v-listbtn{display:block;margin:4px auto 0;min-height:44px;padding:0 12px}
@@ -524,6 +524,8 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 .v-map{overflow:hidden;touch-action:pan-y;border-radius:18px}
 .v-map.zoomed{touch-action:none}
 .v-zoom{position:absolute;inset:0;transform-origin:0 0;container-type:inline-size}
+.zoomed .v-zoom{will-change:transform}   /* the zoomed island is one compositor layer: pan and pinch only move it */
+#gMapWrap.zoomed{touch-action:none}   /* zoomed, the finger pans the map (in JS); at 1x a vertical drag still scrolls the page */
 .v-walk{transition:none}
 /* Director (sprint h0): the two smallest places get 8 px more to tap, without moving anything */
 .v-place::after{content:"";position:absolute;inset:-8px}

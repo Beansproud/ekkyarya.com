@@ -139,7 +139,7 @@ function villageLife(V){
 
 /* ---- Zoom (G1): pinch or drag with a finger, or the +/- buttons; 1x to 2x. A place is still one tap: a touch
    that moved more than 8 px is a pan, not a tap. Nothing animates; the view follows the finger. ---- */
-const Z={s:1,x:0,y:0,pts:new Map(),moved:false,start:null};
+const Z={s:1,x:0,y:0,pts:new Map(),moved:false,start:null,raf:0,zs:null,r:{l:0,t:0},cw:0};
 // At 1x the map is its framed size. Zoomed, the frame widens to the full screen width at the same height, and the
 // village layer keeps its 1x size in px, so more of the island shows side to side; labels keep their 1x size (UX nit).
 function widen(on){const W=$("gMapWrap"),L=$("gMapZoom");
@@ -148,17 +148,23 @@ function widen(on){const W=$("gMapWrap"),L=$("gMapZoom");
     Object.assign(W.style,{width:"100%",height:Z.base.h+"px",aspectRatio:"auto"});Z.x=(W.clientWidth-Z.base.w)/2;Z.y=0}
   if(!on&&Z.base){Object.assign(L.style,{width:"",height:"",inset:""});
     Object.assign(W.style,{width:Z.base.css,height:"",aspectRatio:`${window.VILLAGE.w}/${window.VILLAGE.h}`});Z.base=null}}
+// Pan and zoom: gesture math runs on cached numbers (Z.r = the frame's rect, Z.cw = its width, both read once per gesture
+// by geom(), not per move); the transform is written at most once per frame, and --zs only when the scale changed.
+function geom(){const W=$("gMapWrap"),r=W.getBoundingClientRect();Z.r={l:r.left,t:r.top};Z.cw=W.clientWidth}
+function paintZoom(){Z.raf=0;const L=$("gMapZoom");if(!L||!Z.base)return;
+  L.style.transform=`translate3d(${Z.x}px,${Z.y}px,0) scale(${Z.s})`;
+  if(Z.zs!==Z.s){Z.zs=Z.s;L.style.setProperty("--zs",(1/Z.s).toFixed(3))}}
 function zoomTo(s,x,y){const W=$("gMapWrap"),L=$("gMapZoom");if(!L)return;
   Z.s=Math.max(1,Math.min(2,s));if(Z.s===1)widen(false);
-  if(!Z.base){L.style.transform="";L.style.removeProperty("--zs");W.classList.remove("zoomed");Z.x=Z.y=0;return}
-  const cw=W.clientWidth,w=Z.base.w*Z.s,h=Z.base.h;
+  if(!Z.base){cancelAnimationFrame(Z.raf);Z.raf=0;Z.zs=null;L.style.transform="";L.style.removeProperty("--zs");W.classList.remove("zoomed");Z.x=Z.y=0;return}
+  const cw=Z.cw,w=Z.base.w*Z.s,h=Z.base.h;
   Z.x=w<=cw?(cw-w)/2:Math.min(0,Math.max(cw-w,x));Z.y=Math.min(0,Math.max(h-h*Z.s,y));
-  L.style.transform=`translate(${Z.x}px,${Z.y}px) scale(${Z.s})`;L.style.setProperty("--zs",(1/Z.s).toFixed(3));W.classList.add("zoomed")}
-function zoomAt(k,cx,cy){const ns=Math.max(1,Math.min(2,Z.s*k));if(ns>1)widen(true);
-  const r=$("gMapWrap").getBoundingClientRect(),px=cx-r.left,py=cy-r.top,f=ns/Z.s;
+  W.classList.add("zoomed");if(!Z.raf)Z.raf=requestAnimationFrame(paintZoom)}
+function zoomAt(k,cx,cy){const ns=Math.max(1,Math.min(2,Z.s*k));if(ns>1&&!Z.base){widen(true);geom()}
+  const px=cx-Z.r.l,py=cy-Z.r.t,f=ns/Z.s;
   zoomTo(ns,px-(px-Z.x)*f,py-(py-Z.y)*f)}
 (()=>{const W=$("gMapWrap");
-  W.addEventListener("pointerdown",e=>{if(e.target.closest(".v-zoomctl"))return;if(e.isPrimary){Z.pts.clear();Z.pinch=null}Z.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  W.addEventListener("pointerdown",e=>{if(e.target.closest(".v-zoomctl"))return;if(e.isPrimary){Z.pts.clear();Z.pinch=null;geom()}Z.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
     if(Z.pts.size===1){Z.moved=false;Z.start={x:e.clientX,y:e.clientY,zx:Z.x,zy:Z.y}}
     else if(Z.pts.size===2){const [a,b]=[...Z.pts.values()];Z.pinch={d:Math.hypot(a.x-b.x,a.y-b.y),s:Z.s};Z.moved=true}});
   W.addEventListener("pointermove",e=>{if(!Z.pts.has(e.pointerId))return;Z.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
@@ -170,9 +176,9 @@ function zoomAt(k,cx,cy){const ns=Math.max(1,Math.min(2,Z.s*k));if(ns>1)widen(tr
   // a pan or pinch is not a tap on whatever was under the finger
   W.addEventListener("click",e=>{if(Z.moved&&!e.target.closest(".v-zoomctl")){e.stopPropagation();e.preventDefault();Z.moved=false}},true);
   W.addEventListener("click",e=>{const b=e.target.closest("[data-zoom]");if(!b)return;e.stopPropagation();buzz(8);
-    const r=W.getBoundingClientRect();zoomAt(+b.dataset.zoom>0?2:.5,r.left+r.width/2,r.top+r.height/2)},true);
-  W.addEventListener("wheel",e=>{if(!e.ctrlKey)return;e.preventDefault();zoomAt(e.deltaY<0?1.1:1/1.1,e.clientX,e.clientY)},{passive:false});
-  addEventListener("resize",()=>{if(Z.base)zoomTo(1,0,0)})})();
+    const r=W.getBoundingClientRect();geom();zoomAt(+b.dataset.zoom>0?2:.5,r.left+r.width/2,r.top+r.height/2)},true);
+  W.addEventListener("wheel",e=>{if(!e.ctrlKey)return;e.preventDefault();if(!Z.base)geom();zoomAt(e.deltaY<0?1.1:1/1.1,e.clientX,e.clientY)},{passive:false});
+  addEventListener("resize",()=>{if(Z.base){geom();zoomTo(1,0,0)}})})();
 
 function openVillager(b){const k=+b.dataset.piece,p=PROJECTS[k];if(!p)return;
   openSheet(`<h2 id="gSheetTitle"><img class="h-ico" src="${esc(b.dataset.sprite)}" alt="">${esc(ptitle(p))}</h2>
