@@ -245,7 +245,7 @@
   <div class="doodle-rule" aria-hidden="true"><img src="assets/ui/palette.png" alt="" width="44" height="44" loading="lazy" decoding="async"></div>
   <section class="section" id="work">
     <div class="work-head">
-      <div><p class="eyebrow reveal" data-t="hero.selected">Selected work</p><h2 class="h2 reveal" data-t="nav.portfolio" data-hand="work">Portfolio</h2></div>
+      <div><p class="eyebrow reveal" data-t="hero.selected">Selected work</p><h2 class="h2 reveal" data-t="nav.portfolio" data-hand="portfolio">Portfolio</h2></div>
       <div class="filters reveal" id="filters" role="tablist" aria-label="Filter projects">
         <button class="active" data-filter="all" data-t="filter.all">All</button>
         <button data-filter="illustration" data-t="filter.illustration">Illustration</button>
@@ -274,7 +274,7 @@
   <div class="doodle-rule" aria-hidden="true"><img src="assets/ui/planet.png" alt="" width="44" height="44" loading="lazy" decoding="async"></div>
   <section class="section contact" id="contact">
     <div class="reveal">
-      <h2 class="h2" data-t="contact.title" data-hand="hire-me">Got an idea? Let's bring it to life.</h2>
+      <h2 class="h2" data-t="contact.title" data-hand="lets-make">Got an idea? Let's bring it to life.</h2>
       <p class="lead" data-t="contact.body">Tell me a little about your project and I'll get back to you soon.</p>
       <div class="mail"><a id="mailLink" href="#"></a><button class="copy" id="copyMail" data-t="hire.copy">Copy</button></div>
     </div>
@@ -314,14 +314,12 @@
   <section class="g-screen g-start active" id="g-start">
     <div class="g-start-head"><img class="g-logo" src="assets/logo.png" alt="Ekky Arya" fetchpriority="low" onerror="this.outerHTML='<div class=&quot;g-logo-text&quot;>EKKY<br>ARYA</div>'">
       <div><h1 class="g-start-title" data-t="map.title"></h1><p class="g-tagline" data-t="start.tagline"></p></div></div>
-    <div class="g-row-head"><h2 class="g-row-title" data-t="start.featured" data-hand="selected-work"></h2><p class="g-hint"><span><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span data-tt="start.hint.view|View"></span></span><span data-feature="artDownload"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg><span data-tt="start.hint.save|Save"></span></span></p></div>
+    <div class="g-row-head"><h2 class="g-row-title" data-t="start.featured" data-hand="sketchbook"></h2><p class="g-hint"><span><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span data-tt="start.hint.view|View"></span></span><span data-feature="artDownload"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg><span data-tt="start.hint.save|Save"></span></span></p></div>
     <div class="g-featured" id="gFeatured"></div>
     <div class="g-tiles">
       <button class="g-tile" data-go="color"><img src="assets/ui/pen-hand.png" alt="" fetchpriority="low"><span data-t="start.color" data-hand="color"></span></button>
-      <button class="g-tile catch" data-arcade data-feature="starCatcher"><img src="assets/ui/helmet.png" alt="" fetchpriority="low"><span data-t="start.catch" data-hand="catch-stars"></span></button>
-      <button class="g-tile patrol" data-patrol data-feature="paintPatrol"><img src="assets/sprites/hero-desk.png" alt="" loading="lazy"><span data-tt="start.patrol|Paint Patrol"></span></button>
+      <button class="g-tile patrol" data-patrol data-feature="paintPatrol"><img src="assets/sprites/hero-desk-s.png" alt="" fetchpriority="low"><span data-tt="start.patrol|Paint Patrol"></span></button>
     </div>
-    <div class="g-start-foot"><button class="g-classic" data-classic data-t="start.classic"></button><div class="lang-switch" role="group" data-t-aria="lang.label"><button data-lang="en">EN</button><button data-lang="id">ID</button></div></div>
   </section>
 
   <section class="g-screen" id="g-map">
@@ -340,7 +338,7 @@
   <section class="g-screen" id="g-mine">
     <div class="g-head"><h2 class="g-title" data-t="mine.title"></h2></div>
     <div class="g-panel"><div class="g-mine-list" id="gMineList"></div></div>
-    <div class="g-panel" data-feature="starCatcher"><h3 data-t="stars.title"></h3><p class="g-best" id="gBest"></p></div>
+    <div class="g-panel g-stars-panel" data-feature="starCatcher"><div class="g-stars-head"><h3 data-t="stars.title"></h3><button class="g-btn sm" data-arcade><img src="assets/ui/helmet.png" alt="" loading="lazy"><span data-t="start.catch"></span></button></div><p class="g-best" id="gBest"></p></div>
     <div class="g-panel">
       <div class="g-row" data-feature="sound"><span data-t="mine.sound"></span><button class="g-switch" id="gSndSwitch" role="switch" aria-checked="false" data-t-aria="mine.sound"></button></div>
       <div class="g-row"><span data-t="mine.vibration"></span><button class="g-switch on" id="gVib" role="switch" aria-checked="true" data-t-aria="mine.vibration"></button></div>

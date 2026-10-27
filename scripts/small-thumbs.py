@@ -8,3 +8,7 @@ for f in sorted(glob.glob("assets/work/thumb/*.jpg")):
     im = Image.open(f).convert("RGB")
     im.thumbnail((400, 400), Image.LANCZOS)
     im.save(os.path.join("assets/work/s", os.path.basename(f)), "JPEG", quality=72, optimize=True, progressive=True)
+# the Paint Patrol tile on the start screen shows Ekky on his chair at 32 px: a 96 px tall copy instead of the 330 px sprite
+im = Image.open("assets/sprites/hero-desk.png")
+im.thumbnail((96, 96), Image.LANCZOS)
+im.save("assets/sprites/hero-desk-s.png", optimize=True)

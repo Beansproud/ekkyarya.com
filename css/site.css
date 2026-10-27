@@ -450,3 +450,5 @@ a,button,input,select,textarea,label,[role=switch],[role=button]{touch-action:ma
 
 /* S5: before js/game.js sets the mode on a phone, the desktop page stays out of the first paint (index.html, pre-game) */
 html.pre-game body>:not(#game):not(dialog):not(.loader):not(script){display:none!important}
+/* UX nit: the filter row already names the category, so each desktop tile shows its title only */
+.tile .meta small{display:none}
