@@ -12,11 +12,11 @@ await p.goto(url);await p.waitForTimeout(2800);const shot=async n=>{await p.wait
 const c=async s=>{const el=await p.$(s);if(!el||!(await el.isVisible())){skipped.push(s);return false}await el.click({force:true});return true};
 let link=null;await shot('01-start');
 await c('#g-start [data-go="map"]');await shot('02-map');
-for(const [l,n] of [[0,'03-level-about'],[3,'04-level-process'],[4,'05-hire']]){await c(`.g-node[data-l="${l}"]`);await p.waitForTimeout(700);await shot(n);await c('#gSheetX');await p.waitForTimeout(400)}
+for(const [l,n] of [['home','03-level-about'],['doodle','04-level-process'],['hire','05-hire']]){await c(`.v-place[data-place="${l}"]`);await p.waitForTimeout(700);await shot(n);await c('#gSheetX');await p.waitForTimeout(400)}
 await c('[data-tab="art"]');await shot('06-art');
 if(await c('.g-card[data-i="0"]')){await shot('07-lightbox');await c('#lbClose');await p.waitForTimeout(300)}
 await c('[data-tab="map"]');await p.waitForTimeout(400);
-if(await c('.g-node[data-l="1"]')){await shot('08-color-picker');
+if(await c('.v-place[data-place="studio"]')){await shot('08-color-picker');
   if(await c('[data-page]:not([data-page="scratch"])')){await p.waitForTimeout(1200);
     for(const [x,y] of [[.35,.45],[.5,.55],[.62,.4]]){const box=await p.$('#cStage');if(box){const r=await box.boundingBox();await p.mouse.click(r.x+r.width*x,r.y+r.height*y);await p.waitForTimeout(150)}}
     await shot('09-coloring');

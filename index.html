@@ -22,6 +22,7 @@
 <script defer src="js/data.js"></script>
 <script defer src="js/features.js"></script>
 <script defer src="js/site.js"></script>
+<script defer src="assets/village/village.js"></script>
 <script defer src="js/game.js"></script>
 <script defer src="js/color.js"></script>
 <script defer src="js/share.js"></script>
@@ -316,8 +317,8 @@
   </header>
 
   <section class="g-screen g-start active" id="g-start">
-    <img class="g-logo" src="assets/logo.png" alt="Ekky Arya" onerror="this.outerHTML='<div class=&quot;g-logo-text&quot;>EKKY<br>ARYA</div>'">
-    <p class="g-tagline" data-t="start.tagline"></p>
+    <div class="g-start-head"><img class="g-logo" src="assets/logo.png" alt="Ekky Arya" onerror="this.outerHTML='<div class=&quot;g-logo-text&quot;>EKKY<br>ARYA</div>'">
+      <p class="g-tagline" data-t="start.tagline"></p></div>
     <h2 class="g-row-title" data-t="start.featured"></h2>
     <div class="g-featured" id="gFeatured"></div>
     <div class="g-tiles">
@@ -329,8 +330,10 @@
   </section>
 
   <section class="g-screen" id="g-map">
-    <div class="g-head"><h2 class="g-title" data-t="map.title"></h2></div>
+    <div class="g-head v-head"><h2 class="g-title" data-t="town.title"></h2>
+      <button class="g-link v-listbtn" id="gMapListBtn" aria-expanded="false" aria-controls="gMapList" data-t="town.list"></button></div>
     <div class="g-map-wrap" id="gMapWrap"></div>
+    <ul class="v-list" id="gMapList" hidden></ul>
   </section>
 
   <section class="g-screen" id="g-art">

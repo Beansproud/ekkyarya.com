@@ -1,0 +1,82 @@
+{
+ "astronaut": {
+  "cut": "assets/ui",
+  "file": "assets/ui/astronaut.png",
+  "h": 96,
+  "piece": "nft-3",
+  "role": "place:observatory",
+  "w": 96
+ },
+ "gate": {
+  "cut": "mask",
+  "file": "assets/sprites/gate.png",
+  "h": 320,
+  "piece": "hidden-monster",
+  "role": "place:hire",
+  "w": 255
+ },
+ "ghost": {
+  "cut": "assets/ui",
+  "file": "assets/ui/ghost.png",
+  "h": 96,
+  "piece": "doodles",
+  "role": "place:doodle",
+  "w": 96
+ },
+ "helmet": {
+  "cut": "assets/ui",
+  "file": "assets/ui/helmet.png",
+  "h": 96,
+  "piece": "nft-3",
+  "role": "sign:observatory",
+  "w": 96
+ },
+ "home": {
+  "cut": "file",
+  "file": "assets/sprites/home.png",
+  "h": 360,
+  "piece": "little-planet",
+  "role": "place:home",
+  "w": 240
+ },
+ "palette": {
+  "cut": "assets/ui",
+  "file": "assets/ui/palette.png",
+  "h": 96,
+  "piece": "little-planet",
+  "role": "sign:gallery",
+  "w": 96
+ },
+ "pen-hand": {
+  "cut": "assets/ui",
+  "file": "assets/ui/pen-hand.png",
+  "h": 96,
+  "piece": "little-planet",
+  "role": "sign:studio",
+  "w": 96
+ },
+ "radio-explorer": {
+  "cut": "assets/ui",
+  "file": "assets/ui/radio-explorer.png",
+  "h": 96,
+  "piece": "nft-9",
+  "role": "place:observatory",
+  "w": 96
+ },
+ "studio": {
+  "cut": "color",
+  "file": "assets/sprites/studio.png",
+  "h": 300,
+  "piece": "giraffe",
+  "role": "place:studio",
+  "w": 309
+ },
+ "toybox": {
+  "cut": "color",
+  "file": "assets/sprites/toybox.png",
+  "h": 140,
+  "piece": "toybox",
+  "role": "place:gallery",
+  "w": 152
+ }
+}

@@ -26,7 +26,7 @@ function files(dir, ext) {
 }
 const ui = [join(ROOT, "index.html"), ...files(join(ROOT, "css"), [".css"]), ...files(join(ROOT, "js"), [".js"])];
 // The icon generator must not cut from those pieces either.
-const iconSources = [join(ROOT, "scripts", "ui-assets.py")];
+const iconSources = [join(ROOT, "scripts", "ui-assets.py"), join(ROOT, "scripts", "sprites.py")];
 
 // slug -> shareable(p), computed by js/data.js itself (CONFIG.reuse and CONFIG.reuseBlock decide)
 const data = vm.runInNewContext(readFileSync(join(ROOT, "js", "data.js"), "utf8") + ";({PROJECTS, shareable})", {});
@@ -71,6 +71,13 @@ if (process.argv.includes("--roles")) {
   for (const p of data.PROJECTS) console.log(`| ${p.title} (\`${p.slug}\`) | ${p.kind} | ${SHAREABLE.get(p.slug) ? "yes" : "no"} | ${[...roles.get(p.slug)].join(", ")} |`);
   process.exit(0);
 }
+
+// Village sprites (B42): every piece named in scripts/sprites.py must be shareable and carry the `village` role.
+const VILLAGE = new Map(data.PROJECTS.map(p => [p.slug, data.shareable(p) === true && (p.roles || []).includes("village")]));
+readFileSync(join(ROOT, "scripts", "sprites.py"), "utf8").split("\n").forEach((line, i) => {
+  for (const m of line.matchAll(/piece="([a-z0-9-]+)"/g))
+    if (VILLAGE.get(m[1]) !== true) problems.push(`scripts/sprites.py:${i + 1}  "${m[1]}" has no village role (or is not shareable), so it can't be a village sprite`);
+});
 
 if (problems.length) {
   console.error(`check failed (${problems.length}):\n` + problems.map(p => "  " + p).join("\n"));

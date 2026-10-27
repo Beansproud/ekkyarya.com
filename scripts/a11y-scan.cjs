@@ -19,11 +19,11 @@ const scan=()=>{const out=[],vis=el=>{const r=el.getBoundingClientRect(),s=getCo
   const click=s=>p.evaluate(s=>document.querySelector(s)&&document.querySelector(s).click(),s);
   await step('start');
   await step('map',()=>click('[data-tab="map"]'));
-  await step('level 1',()=>click('.g-node[data-l="0"]'));await click('#gSheetX');
+  await step('level 1',()=>click('.v-place[data-place="home"]'));await click('#gSheetX');
   await step('hire sheet',()=>click('.g-hud [data-hire]'));await click('#gSheetX');
   await step('art',()=>click('[data-tab="art"]'));
   await step('mine',()=>click('[data-tab="mine"]'));
-  await step('color picker',()=>click('.g-node[data-l="1"]'));
+  await step('color picker',()=>click('.v-place[data-place="studio"]'));
   await step('color editor',()=>click('[data-page="giraffe"]'));
   await step('reveal',()=>click('#cDone'));
   await step('share preview',()=>click('#cShare'));await click('#sX');

@@ -332,3 +332,4 @@ footer a .ico{vertical-align:-.12em}
 .typed .caret{animation:none}
 .marquee .track{animation-play-state:paused}
 .marquee.in-view .track{animation-play-state:running}
+.loader.done.quick{transition:opacity .3s,visibility .3s}   /* a friend's link: no delay, so the coloring shows as soon as it is drawn */
