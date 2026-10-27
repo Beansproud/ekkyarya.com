@@ -102,7 +102,7 @@ CONFIG.reuseBlock = [];   // slugs to keep out later, e.g. ["morumelons"]
 Every ticket below is checked against these five rules. They come from the owner's direction and outrank the brief wherever they clash.
 
 1. **Intrinsic, not extrinsic.** The reward is the activity itself and the thing you made: your coloring, your best run, Ekky's art. Round 1 has no points-for-points, no badges and no progress bars to grind.
-2. **Every path is optional, and none is "correct".** Color, Catch, Look and Hire are equal choices from the start screen, in any order. You can skip the game entirely: "Just show me the art" opens the classic portfolio in one tap, and nothing is lost.
+2. **Every path is optional, and none is "correct".** Color, Catch, Look and Hire are equal choices from the start screen, in any order. You can skip the game entirely: "Just show me the art" opens the classic portfolio in one tap, and nothing is lost. On the phone the Art tab is that one tap (it is on every screen), so the button itself lives in Mine (S2, 21:45).
 3. **No forced order, no gates, no tutorials.** Map levels are never locked, and no "next level" pressure (no glow nagging you to the next node). Each hint shows once and is never blocking.
 4. **No punishment.** No game-over screen, no lives lost and no "Ouch!". Mistakes are undone with one tap. A round of Star Catcher always lasts the full 30 seconds.
 5. **You decide when you are done.** "Done" works at any time (even after 1 fill). Sharing is offered once, never pushed. Challenges are invitations, not scores to beat.
@@ -636,7 +636,7 @@ Plan: `docs/sprint-6h.md`. Every merge is checked on a phone probe at 360x640 an
 - [ ] The Hire Ekky chip is fixed at the top right on every screen (start, map, Art, Mine, sheets, the coloring screen, Star Catcher results), topmost at its center, at least 44 x 44 px, and opens the Hire sheet in one tap; it never covers a heading, a close button or the art.
 - [ ] Sheets only for Hire, the level sheets and the villager card; nothing else stacks a second overlay.
 - [ ] Desktop: one accent color (yellow #FFB400) for actions; no game-style badges, glows or extra frames; the sidebar keeps the nav, portfolio filters, socials and the EN/ID switch.
-- [ ] The phone start screen goes from 20 to at most 17 visible buttons (-15 %, revised 21:10 with Dev B): the "Try Ekky" title, the 6 drawings with their 6 Save badges (owner), one full-width "Color with Ekky" tile (the share loop stays visible), and the tab bar (Art, Map, Mine) plus the Hire chip. Catch stars moves to the Map and Mine; "Just the art, please" and EN/ID move to Mine (the Art tab covers "just the art" on the phone).
+- [ ] The phone start screen has at most 18 visible buttons (revised 21:45 by UX after Paint Patrol went on; measured 22 on 25d1213): the "Try Ekky" title, the 6 drawings with their 6 Save badges (owner), two tiles, "Color with Ekky" and "Paint Patrol" (the share loop stays visible), and the tab bar (Art, Map, Mine) plus the Hire chip. Catch stars moves to the Map and Mine; "Just the art, please" and EN/ID move to Mine (the Art tab covers "just the art" on the phone).
 
 ### S3. Handwriting and photo slots (Developer B)
 - [ ] `FEATURES.handLettering` (off): when on, each heading with a `data-hand="<word>"` shows `assets/hand/<word>.png` if it exists, and the heading text stays the accessible name; when off or the file is missing, nothing changes.
