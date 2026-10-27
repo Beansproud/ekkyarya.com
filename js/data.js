@@ -384,7 +384,7 @@ const COPY = {
     "town.busStop": "Paint Patrol",
     "town.hire": "Kerja bareng Ekky",
     "town.explore": "Jelajahi pulau",
-    "town.list": "Tampilkan sebagai daftar",
+    "town.list": "Daftar tempat",
     "town.seeArt": "Lihat karyanya",
     "about.title": "Tentang Ekky",
     "about.body": "Ekky adalah ilustrator karakter asal Indonesia. Dunianya penuh karakter: anak-anak yang berpetualang, monster yang sedang istirahat makan siang, planet kecil dengan seseorang yang lembur. Karyanya cerah, berani, dan sedikit konyol, dan ia paling senang kalau satu gambar bisa bercerita utuh.",

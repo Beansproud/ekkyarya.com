@@ -587,6 +587,26 @@ Owner DEV (engine), UX (names, labels and lines: `COPY` `town.*`), DIRECTOR (lay
 
 **Order (approved):** r1a fixes → V1 → V2 → V3 → V5 → V6 → V4, then the Paint Patrol slice (MG1, MG3, MG4). MG1's animator is built inside V2 and V3 and reused by Paint Patrol.
 
+### UX review of the village, V2 batch 2 and V3 (main 6576ff0), 2026-10-27
+Probed at 390 x 664 in EN and ID: screenshots at 0.3, 1.5 and 4 s, hit-testing every button, `document.getAnimations()`, reduced motion, the villager card and the list view. 0 page errors, 0 failed requests.
+
+**Passes (hiring-client view):**
+- The village shows at 0.3 s: Ekky at his desk, the giraffe and kid, the ghost, the astronaut and radio explorer, the gate kids, the crocodile and the crab, so well over 5 of Ekky's characters before anything walks.
+- All 6 main places are labeled buttons, on screen with no panning, and topmost at their centers; "Work with Ekky" / "Kerja bareng Ekky" sits above the tab bar, and the HUD Hire chip stays.
+- The gallery hangs real framed pieces.
+- Labels stay readable while walkers move: dark pills with white text, always above the walkers.
+- The motion budget holds: the sky, water shimmer at 10 s, 2 clouds at 80 s, the lantern at 6 s, steam at 6 s, and 6 walkers. Reduced motion: 0 running animations.
+- The villager card is clear: title, the artwork, one line, a yellow "See the artwork" button, then "Like what you see? Hire Ekky".
+- The sprite sheet: clean cut-outs of Ekky's own drawings, nothing redrawn, the fire spirit included.
+
+**Fix before V6 (small):**
+1. **List view** ("Show places as a list"): it opens on top of the island and partly behind the tab bar, and every place is listed twice. It should replace the island view (same screen, map hidden), list each place once as a 48 px row with its icon, scroll above the tab bar, and offer "Show the village" to switch back.
+2. **Walker variety:** 5 of the 10 villager hit areas belong to Monster World Doodles. Rule: at most 2 walkers from the same piece on screen at once. Rotate in the other cut villagers (Plug Hero, the crab, the fire spirit, the orange monster, the car on the road loop), so a client meets several pieces in 30 s.
+3. **Villager card at 664 px:** "See the artwork" is the last thing on screen; the Hire line sits below the fold. Cap the artwork preview at about 40 % of the viewport height, so both actions show without scrolling (the HUD chip stays as the one-tap Hire either way).
+4. **ID header:** "Tampilkan sebagai daftar" wrapped to two lines next to "Desa Ekky". Fixed in `COPY.id`: now "Daftar tempat".
+
+**Not checked here (V6):** day and night by the visitor's clock, the first frame at 4x CPU slowdown, and client scenery (V5 not in this build).
+
 ## Mini-games (after the round-1 P1 tickets)
 
 Approved brief: `docs/minigames.md` (from director/backlog 78699e2; read its "UX lead review" first). Owner direction 14. The vertical slice (MG1 to MG4, about 16 h) runs right after the P1 tickets (B38, B41, B26, B39, B40). MG5 to MG10 (about 30 to 40 h) start only on a "go" from the MG4 playtest **and** the UX lead's acceptance of the slice.
