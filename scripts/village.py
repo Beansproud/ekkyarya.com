@@ -223,6 +223,26 @@ def galaxy(base):
         if 0 < x < W and 0 < y < H and g.getpixel((int(x), int(y)))[3] > 60:
             gd.line((x - 4, y, x + 4, y), fill=(255, 240, 255, 220), width=1)
             gd.line((x, y - 4, x, y + 4), fill=(255, 240, 255, 220), width=1)
+    # constellation pattern: small groups of gold stars joined by thin lines, plus four-point sparkles
+    gold, line = (255, 214, 120), (255, 226, 160)
+    for _ in range(60):
+        x, y = rnd.uniform(60, 660), rnd.uniform(120, 900)
+        if g.getpixel((int(x), int(y)))[3] < 25:
+            continue
+        pts = [(x, y)]
+        for _ in range(rnd.randint(3, 5)):
+            px, py = pts[-1]
+            pts.append((px + rnd.uniform(-38, 38), py + rnd.uniform(-30, 30)))
+        gd.line(pts, fill=line + (190,), width=1)
+        for i, (px, py) in enumerate(pts):
+            r = 2.8 if i == 0 else rnd.choice([1.6, 2, 2.4])
+            gd.ellipse((px - r, py - r, px + r, py + r), fill=gold + (235,))
+    for _ in range(40):   # four-point sparkles
+        x, y = rnd.uniform(60, 660), rnd.uniform(120, 900)
+        if g.getpixel((int(x), int(y)))[3] < 25:
+            continue
+        r = rnd.uniform(5, 10)
+        gd.polygon([(x, y - r), (x + r * .22, y - r * .22), (x + r, y), (x + r * .22, y + r * .22), (x, y + r), (x - r * .22, y + r * .22), (x - r, y), (x - r * .22, y - r * .22)], fill=gold + (230,))
     base.alpha_composite(g.resize(base.size, Image.LANCZOS))
     return g
 
