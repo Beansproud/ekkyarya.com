@@ -713,6 +713,13 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 #g-start .g-start-head .g-tagline{grid-column:1/-1;margin:6px 0 0;max-width:none}
 #c-edit .c-tool:disabled,.c-tool:disabled{opacity:.4;cursor:default}
 
+/* Map face in the tab bar: whole face, centered, 6px inset; a 4px paper ring separates the circle from the bar line; the circle
+   outline and the bar border are both 1.5px ink; the label sits on the same baseline as its neighbours. */
+.g-face{box-sizing:border-box;padding:6px;object-fit:contain;object-position:center;border:4px solid #FFFDF8;box-shadow:0 0 0 1.5px #2B1342;background-clip:padding-box;background-color:#D3FFD8}
+.g-tabs button.center{justify-content:flex-end;padding-bottom:11px}
+.g-tabs button.center small{text-align:center;width:100%}
+.g-tabs button.center.active .g-face{box-shadow:0 0 0 1.5px #2B1342,0 0 0 4px #FFB400}
+
 /* Developer 3: touch */
 /* Touch reactions, added by js/site.js on pointerdown (touch only, once, removed on animationend) and hover reactions on
    mouse devices. Everything uses the individual scale, rotate and translate properties, so a tile's own tilt and a
