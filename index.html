@@ -12,6 +12,10 @@
 <script>/* a friend's coloring link: start its page files before anything else */
 (function(){var m=/[?&]color=([a-z0-9-]+)/.exec(location.search);if(!m||m[1]==="scratch")return;
   [["assets/color/"+m[1]+"/page.js","script"],["assets/color/"+m[1]+"/line.png","image"]].forEach(function(f){var l=document.createElement("link");l.rel="preload";l.href=f[0];l.as=f[1];document.head.appendChild(l)})})();</script>
+<script>/* S5: on phones (the same rule as setMode in js/game.js) hide the desktop page from the first paint, so none of
+   its images load behind the game; js/site.js drops the class once js/game.js has set the real mode */
+(function(){try{var q=location.search,n=window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform(),p=null;try{p=localStorage.getItem("ekkyMode")}catch(e){}
+  if(n||/[?&](color|challenge|card|game)\b/.test(q)||(matchMedia("(max-width:760px)").matches&&p!=="classic"))document.documentElement.classList.add("pre-game")}catch(e){}})();</script>
 <meta name="theme-color" content="#2B1342">
 <meta name="description" content="Ekky Arya: illustrator and graphic designer making lively, playful illustrations, characters and brands.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -306,15 +310,15 @@
   <div class="g-planet-bg"></div>
 
 
-  <button class="g-hire g-hire-pin" data-hire data-t-aria="hire.chip.aria"><img src="assets/ui/monster-head.png" alt=""><span data-t="hire.chip"></span></button>
+  <button class="g-hire g-hire-pin" data-hire data-t-aria="hire.chip.aria"><img src="assets/ui/monster-head.png" alt="" fetchpriority="low"><span data-t="hire.chip"></span></button>
   <section class="g-screen g-start active" id="g-start">
-    <div class="g-start-head"><img class="g-logo" src="assets/logo.png" alt="Ekky Arya" onerror="this.outerHTML='<div class=&quot;g-logo-text&quot;>EKKY<br>ARYA</div>'">
+    <div class="g-start-head"><img class="g-logo" src="assets/logo.png" alt="Ekky Arya" fetchpriority="low" onerror="this.outerHTML='<div class=&quot;g-logo-text&quot;>EKKY<br>ARYA</div>'">
       <div><h1 class="g-start-title" data-t="map.title"></h1><p class="g-tagline" data-t="start.tagline"></p></div></div>
     <div class="g-row-head"><h2 class="g-row-title" data-t="start.featured" data-hand="selected-work"></h2><p class="g-hint"><span><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span data-tt="start.hint.view|View"></span></span><span data-feature="artDownload"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg><span data-tt="start.hint.save|Save"></span></span></p></div>
     <div class="g-featured" id="gFeatured"></div>
     <div class="g-tiles">
-      <button class="g-tile" data-go="color"><img src="assets/ui/pen-hand.png" alt=""><span data-t="start.color" data-hand="color"></span></button>
-      <button class="g-tile catch" data-arcade data-feature="starCatcher"><img src="assets/ui/helmet.png" alt=""><span data-t="start.catch" data-hand="catch-stars"></span></button>
+      <button class="g-tile" data-go="color"><img src="assets/ui/pen-hand.png" alt="" fetchpriority="low"><span data-t="start.color" data-hand="color"></span></button>
+      <button class="g-tile catch" data-arcade data-feature="starCatcher"><img src="assets/ui/helmet.png" alt="" fetchpriority="low"><span data-t="start.catch" data-hand="catch-stars"></span></button>
       <button class="g-tile patrol" data-patrol data-feature="paintPatrol"><img src="assets/sprites/hero-desk.png" alt="" loading="lazy"><span data-tt="start.patrol|Paint Patrol"></span></button>
     </div>
     <div class="g-start-foot"><button class="g-classic" data-classic data-t="start.classic"></button><div class="lang-switch" role="group" data-t-aria="lang.label"><button data-lang="en">EN</button><button data-lang="id">ID</button></div></div>
@@ -348,8 +352,8 @@
   </section>
 
   <nav class="g-tabs" aria-label="Game menu">
-    <button data-tab="art"><span class="g-ico"><img src="assets/ui/palette.png" alt=""></span><span data-t="tab.art"></span></button>
-    <button data-tab="map" class="center"><img class="g-face" src="assets/face.png" alt=""><small data-tt="tab.map|Map"></small></button>
+    <button data-tab="art"><span class="g-ico"><img src="assets/ui/palette.png" alt="" fetchpriority="low"></span><span data-t="tab.art"></span></button>
+    <button data-tab="map" class="center"><img class="g-face" src="assets/face.png" alt="" fetchpriority="low"><small data-tt="tab.map|Map"></small></button>
     <button data-tab="mine"><span class="g-ico g-ico-line"><svg class="ico" aria-hidden="true"><use href="#i-frame"/></svg></span><span data-t="tab.mine"></span></button>
   </nav>
 

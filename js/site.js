@@ -45,7 +45,8 @@ document.addEventListener("click",async e=>{if(!e.target.closest("[data-install]
   if(out==="accepted")showInstall(false)});
 /* ===== The classic hero image (300 KB) loads only when the classic site is showing, never under game mode ===== */
 function heroArt(){if(document.body.classList.contains("game-mode"))return;const i=document.querySelector(".hero-art[data-src]");if(i){i.src=i.dataset.src;i.removeAttribute("data-src")}}
-setTimeout(heroArt,0);document.addEventListener("click",e=>{if(e.target.closest("[data-classic]"))setTimeout(heroArt,0)});
+// after every deferred script (js/game.js decides game mode), so the 300 KB desktop hero never loads behind the phone game
+addEventListener("DOMContentLoaded",()=>{document.documentElement.classList.remove("pre-game");heroArt()});document.addEventListener("click",e=>{if(e.target.closest("[data-classic]"))setTimeout(heroArt,0)});
 /* ===== Feature switches: entry points of a switched-off feature disappear (js/features.js) ===== */
 document.querySelectorAll("[data-feature]").forEach(el=>{if(!feature(el.dataset.feature))el.remove()});
 // S3: Ekky's hand lettering and his photo, each behind a switch that stays off until the files arrive. Only files listed
@@ -78,7 +79,7 @@ function makeArt(p){
 }
 // A project with `img` shows that file; if it fails to load, the drawn placeholder takes its place.
 // Animated pieces (GIF) show a still poster frame (assets/work/thumb/<slug>.jpg) in grids; the lightbox plays the animation.
-// S5: phones get the 480 px copies in assets/work/s/ (scripts/small-thumbs.py), about half the bytes of the 720 px set
+// S5: phones get the 400 px copies in assets/work/s/ (scripts/small-thumbs.py), about half the bytes of the 720 px set
 const smallThumbs=matchMedia("(max-width:760px)").matches;
 const thumbOf=p=>{const t=/\.gif$/i.test(p.img)?`assets/work/thumb/${p.slug}.jpg`:p.img;return smallThumbs?t.replace("assets/work/thumb/","assets/work/s/"):t};
 function artOf(p,big){return p.img?`<img src="${big&&p.full||thumbOf(p)}" alt="${ptitle(p)}" loading="lazy" decoding="async" onload="this.classList.add('ok')" onerror="this.outerHTML=makeArt(PROJECTS[${PROJECTS.indexOf(p)}])">`:makeArt(p)}
