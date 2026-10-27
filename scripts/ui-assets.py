@@ -131,6 +131,8 @@ def cut(spec):
     im.putalpha(al)
     if spec.get("stroke"):
         im = add_stroke(im, *spec["stroke"])
+    if spec.get("stroke2"):  # light sticker edge so dark lines still read on #2B1342
+        im = add_stroke(im, *spec["stroke2"])
     if spec.get("glow"):
         im = add_glow(im, spec["glow"])
     return im
@@ -215,7 +217,7 @@ def check_badge(base, size):
 # name: spec. size = 2x the largest display size.
 ICONS = {
     "face":         dict(src="assets/face.png", box=(0, 0, 256, 256), seed=(128, 140), mode="color", bg=(212, 255, 215), tol=60, size=128),
-    "pen-hand":     dict(src="assets/hero.png", box=(170, 100, 262, 220), seed=(200, 140), mode="alpha", cut=((236, 182), (1, 1.6)), stroke=(INK, 2), size=96),
+    "pen-hand":     dict(src="assets/hero.png", box=(170, 100, 262, 220), seed=(200, 140), mode="alpha", cut=((236, 182), (1, 1.6)), stroke=(INK, 2), stroke2=((255, 255, 255), 4), size=96),
     "palette":      dict(src="assets/hero.png", box=(388, 58, 486, 156), seed=(430, 100), mode="alpha", size=96),
     "planet":       dict(src="assets/hero.png", box=(428, 186, 526, 252), seed=(475, 220), mode="alpha", size=96),
     "cat":          dict(src="assets/hero.png", box=(232, 8, 324, 100), seed=(278, 60), mode="alpha", size=96),
