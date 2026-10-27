@@ -369,3 +369,25 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 .s-video{margin:0 auto}
 /* skeleton shimmer runs a few times while an image loads, never endlessly */
 .g-card .art,.art{animation-iteration-count:3!important}
+
+/* ===== Ekky's Village (B42 V1): the map ===== */
+#g-map .g-head{margin-bottom:0}
+#g-map .g-title{font-size:1.5rem}
+.v-map{position:relative;width:100%;max-width:420px;margin:0 auto}
+.v-ground{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;user-select:none}
+.v-frame{position:absolute;object-fit:cover;transform-origin:0 0;pointer-events:none;box-shadow:0 0 0 1px #2B1342}
+.v-place{position:absolute;background:none;border-radius:16px;min-width:44px;min-height:44px}
+.v-place:focus-visible{outline:3px solid #FFB400;outline-offset:2px}
+.v-label{position:absolute;transform:translate(-50%,0);padding:3px 9px;border-radius:10px;background:#241638;border:2px solid #3e2a5c;color:#fff;
+  font-weight:700;font-size:.78rem;white-space:nowrap;pointer-events:none;transition:transform var(--dur-fast) var(--ease-move),box-shadow var(--dur-fast)}
+.v-label.hire{background:#FFB400;border-color:#b77e00;color:#2B1342}
+.v-label.go{transform:translate(-50%,-4px);box-shadow:0 0 0 3px #FFB400}
+.v-listbtn{display:block;margin:4px auto 0;min-height:44px;padding:0 12px}
+.v-list{list-style:none;display:grid;gap:8px;padding:0;margin:4px auto 0;max-width:320px}
+.v-list .g-btn{width:100%;min-height:48px}
+.v-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.v-head .g-title{text-align:left}
+.v-head .v-listbtn{margin:0;font-size:.8rem;text-align:right;max-width:52%}
+.v-label{font-size:.75rem}
+.v-list{margin-top:8px}
+.v-list[hidden]{display:none}

@@ -60,7 +60,7 @@ step "jelly", mouse parallax, magnetic buttons, 3D tilt, and the click sparkle b
 | Star Catcher hit | small shake and a soft tint, 500 ms | you touched a virus (minus 2) |
 | Star Catcher catch | a few particles and "+n" rise | what you caught was worth n |
 | Result | title fades up, 1 s | the round is over, here is your score |
-| Map islands | still | the places don't need to move to be found |
+| Village places | still; a tapped place's label lifts 4 px and glows once (300 ms), then the place opens | "I'm going there" (the walkers, clouds, smoke, lantern and water of the village come in V3, within the B42 budget) |
 
 Removed: the PLAY pulse, ring pings around map nodes, path dash crawl, tab icon wiggle, tab bounce, face idle sway
 and "boing", category icon bob, logo float, island bob, card shimmer after load, endless holo, overshooting pops on

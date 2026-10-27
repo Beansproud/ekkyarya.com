@@ -63,30 +63,38 @@ function renderStart(){const six=featuredSix().map(p=>({p,i:PROJECTS.indexOf(p)}
   $("gFeatured").innerHTML=six.map(({p,i})=>`<button class="g-feat" data-i="${i}" aria-label="${esc(ptitle(p))}"><img src="${p.img}" alt="" decoding="async"><b>${esc(ptitle(p))}</b></button>`).join("")}
 $("gFeatured").addEventListener("click",e=>{const b=e.target.closest(".g-feat");if(b){buzz(10);show(+b.dataset.i)}});
 
-/* ---- map: an isometric world of 5 floating islands, never locked, no "next level" pressure (B06) ---- */
-// Each place is a small isometric island (grass top, earth sides) with Ekky's cut-out standing on it; plank bridges join them.
-const ISLAND={about:["#7ED9B0","#3f9f74","#2f7d59"],color:["#FFD45C","#c99a1e","#a87d12"],art:["#C9A7FF","#8f6fd1","#7558b5"],
-  process:["#B8D5FF","#7a9fd6","#5f84bd"],hire:["#FF9A8A","#d45a45","#a8402f"]};
-function isoIsland(n,tw,d,[top,left,right]){const th=tw/2,W=n*tw,H=n*th;let grid="";
-  for(let k=1;k<n;k++)grid+=`M${W/2-k*tw/2} ${k*th/2}L${W-k*tw/2} ${H/2+k*th/2}M${W/2+k*tw/2} ${k*th/2}L${k*tw/2} ${H/2+k*th/2}`;
-  return `<svg class="g-iso" width="${W}" height="${H+d}" viewBox="0 0 ${W} ${H+d}" aria-hidden="true">
-    <path d="M0 ${H/2}L${W/2} ${H}V${H+d}L0 ${H/2+d}z" fill="${left}"/><path d="M${W/2} ${H}L${W} ${H/2}V${H/2+d}L${W/2} ${H+d}z" fill="${right}"/>
-    <path d="M${W/2} 0L${W} ${H/2}L${W/2} ${H}L0 ${H/2}z" fill="${top}"/><path d="${grid}" stroke="#fff" stroke-opacity=".35" stroke-width="1"/>
-    <path d="M0 ${H/2}L${W/2} 0L${W} ${H/2}" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="2" stroke-linejoin="round"/>
-    <ellipse cx="${W/2}" cy="${H/2+2}" rx="${tw*.55}" ry="${th*.45}" fill="#2B1342" opacity=".22"/></svg>`}
+/* ---- map: Ekky's Village (B42 V1). One pre-composited picture (scripts/village.py: plain ground shapes plus Ekky's
+   cut-outs, placed as drawn) under real buttons for the places, and four frames on the gallery walls that hang
+   featuredPick(4) real pieces on every visit. Never locked, no "next" glow, no boss. ---- */
+// place id -> what it opens (index in LEVELS, or Star Catcher), its label key, and a feature switch if it has one
+const PLACES=[
+  {id:"home",        key:"town.home",    open:()=>openLevel(0)},
+  {id:"studio",      key:"town.studio",  open:()=>openLevel(1)},
+  {id:"gallery",     key:"town.gallery", open:()=>openLevel(2)},
+  {id:"doodle",      key:"town.workshop",open:()=>openLevel(3)},
+  {id:"observatory", key:"town.launch",  open:()=>startArcade(), feature:"starCatcher"},
+  {id:"hire",        key:"town.hire",    open:()=>openHire(), hire:true},
+];
+const pct=(v,of)=>(v/of*100).toFixed(3)+"%";
 function renderMap(){
-  const W=$("gMapWrap"),cw=Math.min(420,W.clientWidth||innerWidth-32),TOP=52,STEP=62,D=12;
-  const P=LEVELS.map((l,i)=>{const last=i===LEVELS.length-1,n=3,tw=last?42:36,s=last?60:52;
-    return {l,i,n,tw,s,H:n*tw/2,x:cw*(last?.38:i%2?.72:.28),y:TOP+i*STEP+(last?18:0)}});
-  const last=P[P.length-1],h=last.y+last.H/2+D+30;
-  let planks="";for(let i=1;i<P.length;i++){const a=P[i-1],b=P[i],steps=Math.floor(Math.hypot(b.x-a.x,b.y-a.y)/13);
-    for(let k=1;k<steps;k++){const x=a.x+(b.x-a.x)*k/steps,y=a.y+(b.y-a.y)*k/steps;planks+=`<path d="M${x.toFixed(1)} ${(y-3).toFixed(1)}l7 3-7 3-7-3z"/>`}}
-  W.style.height=h+"px";
-  W.innerHTML=`<svg class="g-bridges" width="${cw}" height="${h}" viewBox="0 0 ${cw} ${h}" aria-hidden="true"><g fill="#c98a4a" stroke="#7a4a22" stroke-width="1.2" stroke-linejoin="round">${planks}</g></svg>`+
-    P.map(({l,i,n,tw,s,H,x,y})=>`<button class="g-node g-place" style="left:${x}px;top:${y-s+4}px;--s:${s}px;--h:${H}px" data-l="${i}" aria-label="${esc(t(l.key))}">
-      ${uiImg(l.icon,"g-place-ic")}${isoIsland(n,tw,D,ISLAND[l.id])}<span class="g-place-label">${esc(t(l.key))}</span></button>`).join("");
+  const V=window.VILLAGE,W=$("gMapWrap");if(!V)return;
+  const places=PLACES.filter(p=>!p.feature||feature(p.feature));
+  const art=featuredSix(4);
+  W.style.height="";W.className="g-map-wrap v-map";W.style.aspectRatio=`${V.w}/${V.h}`;
+  W.innerHTML=`<img class="v-ground" src="assets/village/village.png" alt="" decoding="async" fetchpriority="high">`+
+    V.frames.map((f,k)=>{const p=art[k];if(!p)return "";const deg=(Math.atan(f.slope)*180/Math.PI).toFixed(2);
+      return `<img class="v-frame" src="${p.img}" alt="" decoding="async" style="left:${pct(f.x,V.w)};top:${pct(f.y,V.h)};width:${pct(f.w,V.w)};height:${pct(f.h,V.h)};transform:skewY(${deg}deg)">`}).join("")+
+    places.map(p=>{const b=V.places[p.id].box,l=V.places[p.id].label;
+      return `<button class="v-place${p.hire?" hire":""}" data-place="${p.id}" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}" aria-label="${esc(t(p.key))}"></button>
+      <span class="v-label${p.hire?" hire":""}" aria-hidden="true" style="left:${pct(l[0],V.w)};top:${pct(l[1],V.h)}">${esc(t(p.key))}</span>`}).join("");
+  $("gMapList").innerHTML=places.map(p=>`<li><button class="g-btn sm${p.hire?" pink":" alt"}" data-place="${p.id}">${esc(t(p.key))}</button></li>`).join("");
 }
-$("gMapWrap").addEventListener("click",e=>{const n=e.target.closest(".g-node");if(!n)return;buzz(15);sfx("tap");openLevel(+n.dataset.l)});
+$("gMapWrap").addEventListener("click",e=>{const b=e.target.closest(".v-place");if(!b)return;buzz(15);sfx("tap");
+  // the place lifts and its label glows once (300 ms), then it opens (B42: "I'm going there")
+  const l=b.nextElementSibling;if(!reduce&&l){l.classList.remove("go");void l.offsetWidth;l.classList.add("go")}
+  setTimeout(()=>PLACES.find(p=>p.id===b.dataset.place).open(),reduce?0:300)});
+$("gMapList").addEventListener("click",e=>{const b=e.target.closest("[data-place]");if(b){buzz(10);sfx("tap");PLACES.find(p=>p.id===b.dataset.place).open()}});
+$("gMapListBtn").onclick=()=>{const l=$("gMapList"),open=l.hidden;l.hidden=!open;$("gMapListBtn").setAttribute("aria-expanded",open)};
 
 /* ---- sheets ---- */
 const sheet=$("gSheet");let sheetFrom=null;
