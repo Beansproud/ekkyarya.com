@@ -534,19 +534,42 @@ Source: `docs/playtest-r1a.md` (Director, build `abedf97`): "Simple: yes. Fun: n
 - "Clear what I made" is tappable without scrolling under the tab bar; a hidden tab never resumes play by itself.
 - `npm run check` passes.
 
-### B42. Little Planet Town: the isometric village map (approved by UX, with changes)
-Owner DEV (engine), UX (names and labels, done in `COPY`: `town.*`), DIRECTOR (layout and motion review) · Size L (6 to 8 h) · Next map work, after the r1a fixes · Replaces the node list in B06 · From: owner directions "make the map like this so no bossfight", "make the map isomoprihc like this" and "but with animation and re-createfd with his asset" (reference screenshot: mood only), "re-use all of asset of his as much as possible"
-- **Spec:** the Director's "Little Planet Town" in `docs/playtest-r1a.md`, with these UX changes:
-  1. **Nothing copied from the reference game:** no building designs, textures, characters, resource bars, build menus, layout or color scheme. Buildings are plain isometric blocks in Ekky's palette, marked by his cut-outs. The reference screenshot is never committed to the repo or shipped.
-  2. **Only `village`-role art** (35 pieces): the 29 originals, plus drawn elements of the 6 client pieces listed in `docs/roles.md` (never a logo, wordmark, sign or campaign lettering). Fan art never.
-  3. **The gallery** hangs 4 real pieces on its walls from `featuredPick(4)` (client pieces allowed; their tag shows when opened). Tapping a frame opens that piece.
-  4. **The Hire place is named "Work with Ekky"** (`town.hire`), not "the gate", so a client reads it as the hire action. It sits at the island's edge but on the first screen; the HUD Hire chip stays too.
-  5. **5 of Ekky's characters in the first static frame,** before anything walks: Ekky at his desk, the ghost at the workshop door, the giraffe at the studio fence, the lantern gate's monster head, and at least one walker placed on a path at load. Walkers then move (3 to 5, at most one per path; one may be a client-piece character such as the Indomaret scooter rider).
-  6. **Fast static first frame:** the ground image and the place buttons render first (under 1 s after the map opens, on a 4x CPU slowdown); the walker canvas and the isometric engine load after that, lazily.
-  7. **Fallback:** a "Show places as a list" link (`town.list`) on the map, plus "Just show me the art" on the start screen. Both work with JavaScript animation off.
-  8. **Motion within B39:** walkers 1 tile per 1.6 s; Ekky's chair glide 0.6 to 1.2 s, ease-in-out, and a second tap opens at once; the lantern pulse every 6 s (not 4 s, B39 ambient range); clouds drift 60 s per crossing; that is the one decorative loop besides the sky. Reduced motion: nothing walks or glides, every place opens instantly.
-  9. **No "boss", coins, score, locks or "next" glow.**
-- **Acceptance (UX, hiring-client view):** on the iPhone 13 viewport, all 6 places are visible without panning, each a labeled `<button>` of at least 44 px that opens its content in one tap; at least 5 of Ekky's characters are visible in the first frame, within 30 s of opening; "Work with Ekky" and the HUD chip are both visible without scrolling; the first frame appears in under 1 s at 4x CPU slowdown and runs at 60 fps; place names show in EN and ID; the list fallback works; `npm run check` passes with no fan art and no client logo in `assets/`; a side-by-side review against the reference screenshot finds no copied building, texture, character or layout.
+### B42. Ekky's Village: the isometric map (approved by UX; tickets V1 to V6)
+Owner DEV (engine), UX (names, labels and lines: `COPY` `town.*`), DIRECTOR (layout and motion review) · Size about 30 to 32 h over V1 to V6 · **Next map work, after the r1a fixes** · Replaces the node list in B06, and replaces MG6 and MG7 · From: owner directions "make the map like this so no bossfight", "make the map isomoprihc like this" and "but with animation and re-createfd with his asset" (reference screenshots: mood only), "re-use all of asset of his as much as possible"
+
+**The one approved spec** is "Ekky's Village" in `docs/minigames.md` (Director, director/backlog 43c006e), with the UX decisions below. It supersedes the earlier "Little Planet Town" note in `docs/playtest-r1a.md`. One island, two views: the Map tab is the zoomed-out village; "Explore" walks the same island (the former Little Planet Quest).
+
+**UX decisions (binding for V1 to V6):**
+1. **Nothing copied from the reference games:** no building designs, textures, characters, UI art, button style, bottom bar, resource counter, build menu or layout. The screenshots are never committed or shipped. V6 includes a side-by-side check.
+2. **Only `village`-role art** (35 pieces): the 29 originals, plus the allowed drawn elements of 6 client pieces (`docs/roles.md`; never a logo, wordmark, storefront sign or campaign lettering). Fan art never.
+3. **The Hire place is labeled "Work with Ekky"** (`town.hire`). It is built from the Hidden Monster gate with its lantern, as the Director proposes, but the label is the action, not "the gate". It is on the first screen with the other main places, and the HUD Hire chip stays.
+4. **The gallery shows real art.** The building is a plain block whose two visible walls hang 4 framed real pieces from `featuredPick(4)` (client pieces allowed; their tag shows when opened). The Toybox doodle box and the palette flag stand beside it as its sign. A client must see actual portfolio pieces on the map, not only a decorated box.
+5. **Client scenery in Explore: approved as the Director proposes.** Visible and tappable as scenery in both views, opening its piece with its tag; never in Quest dialog, lost-doodle tasks, paths that depend on it, or Paint Patrol.
+6. **Main places (7):** Ekky's home (`town.home`), Paint studio, Gallery, Doodle corner, Star Catcher (the observatory), Paint Patrol (the bus stop), Work with Ekky. While `FEATURES.paintPatrol` is off or the game isn't built, the bus stop is scenery that opens Coexistence, not a main place. Labels name the action a visitor gets, in EN and ID.
+7. **5 of Ekky's characters in the first static frame,** before anything moves: the main places already show Ekky at his desk, the giraffe and kid, the ghost, the astronaut and the gate's lantern kids.
+8. **Fast first frame:** the first paint is one pre-composited village image (generated at build time from the cut-outs) plus the DOM place buttons, under 1 s after the Map opens at 4x CPU slowdown. Walkers, ambience and the engine load after it, lazily.
+9. **Fallback:** "Show places as a list" (`town.list`) on the map, working with animation and canvas off; "Just show me the art" stays on the start screen.
+10. **Ambience budget.** The B39 rule "one decorative loop per screen besides the sky" applies to UI screens (start, Art, Mine, sheets). The village is a place, so it gets its own budget, all slow:
+    - clouds 70 to 90 s per crossing (the background loop);
+    - walkers (content, not decoration): at most 8 on screen, 1 tile per 1.6 s, pauses at corners;
+    - the gate's lantern: a soft pulse every **6 s** (not 4 s; it points to Hire, so it may stay);
+    - smoke: only from the snack bar and the noodle bath, one puff every **6 s** (not 3 s);
+    - water shimmer: 10 s, at most 10 % brightness change;
+    - day and night follow the visitor's clock but **change only on load** (no live fade). At night, labels keep 4.5:1 contrast, framed art stays at full brightness, and "Work with Ekky" stays lit.
+    - Nothing else loops; every animation off-screen is paused; reduced motion stops all of it (villagers stand, places open instantly).
+11. **No "boss", coins, score, locks or "next" glow;** the interim map's `boss` class and red styling go (V1). Level 1 shows the glasses guy (Ekky); the middle tab and favicon keep `face.png`.
+12. **Tab bar restyle** (cream tiles, yellow active): approved, as long as it copies nothing from the reference bar.
+
+| # | Ticket | Owner | Size | Depends | UX acceptance (hiring-client view) |
+|---|---|---|---|---|---|
+| V1 | Village layout: 7 main places as scenes from their cut-outs, labels, paths, bridges, zoom-out camera, the gallery walls (decision 4), the list fallback | DEV, UX (labels) | L (6 h) | r1a fixes, 2f09d76, V2 batch 1 | iPhone 13: all main places visible without panning, each a labeled button ≥ 44 px that opens in one tap; "Work with Ekky" and the HUD chip visible; ≥ 5 of Ekky's characters and 4 real framed pieces in the first frame; first frame < 1 s at 4x CPU; list fallback works; no boss styling. |
+| V2 | Shared cut-out batch (MG2 and B21 merged), from the `docs/roles.md` catalogue, in 2 batches | DEV, UX (contact sheet) | L (8 h) | MG1 animator, B21 | UX approves the contact sheet: clean edges on dark and white, nothing redrawn, no fan art, no client logo or lettering. |
+| V3 | Villagers and ambience within the budget (decision 10), tap-a-villager card (`town.seeArt`) | DEV | M (4 h) | V1, V2 | `document.getAnimations()` on the map lists nothing beyond the budget; ≤ 8 walkers; tapping a villager opens its artwork card; reduced motion stops everything; 60 fps at 4x CPU. |
+| V5 | Client scenery (decision 5) | DEV | S (2 h) | V2 | The 6 sceneries open their pieces with tags; no logo, wordmark, sign or lettering visible; none in Paint Patrol or Quest dialog and tasks. |
+| V6 | Director playtest of the village, and UX acceptance | DIRECTOR, UX | S | V3, V5 | A tester opens at least 3 artworks within 60 s and finds Hire without help; side-by-side check against the reference finds nothing copied. **Go for V4.** |
+| V4 | Explore mode (was MG6 and MG7): zoom in, tap-to-walk, HTML dialog, lost-doodle tasks, the silent guide bird, Ekky's laptop menu | DEV, UX (lines) | L (10 to 12 h) | V1 to V3, V6 go | View switch 600 ms with nothing reloading; every area open from the start; every character opens its artwork; Hire Ekky one tap from every dialog. |
+
+**Order (approved):** r1a fixes → V1 → V2 → V3 → V5 → V6 → V4, then the Paint Patrol slice (MG1, MG3, MG4). MG1's animator is built inside V2 and V3 and reused by Paint Patrol.
 
 ## Mini-games (after the round-1 P1 tickets)
 
@@ -559,30 +582,13 @@ Approved brief: `docs/minigames.md` (from director/backlog 78699e2; read its "UX
 | MG3 | Paint Patrol vertical slice: stage 1 "Rush Hour" | DEV | L (6 h) | MG1, MG2 | slice |
 | MG4 | Director playtest of the slice, and UX acceptance | DIRECTOR, UX | S | MG3 | **go / no-go** |
 | MG5 | Paint Patrol stages 2 to 4, the bus, the big grumpy characters of stages 2 to 4, credits | DEV | L (8 to 10 h) | MG4 go | |
-| MG6 | Isometric engine: tiles, depth sort, tap-to-walk, HTML dialog | DEV | L (6 to 8 h) | MG1 | |
-| MG7 | Little Planet Quest island content (12 areas) | DEV, UX lines | L (8 to 10 h) | MG2, MG6, MG4 go | |
+| MG6 | ~~Isometric engine~~: replaced by B42 (V1 to V4) | | | | |
+| MG7 | ~~Little Planet Quest island content~~: replaced by B42 V4 (Explore) | | | | |
 | MG8 | Character lines and stage and area names, EN and ID | UX | M | MG3, MG7 | no franchise names |
 | MG9 | Entry tiles, `paintPatrol` / `planetQuest` switches, deep links, lazy loading | DEV | S (2 h) | MG3 | |
 | MG10 | Director playtest of both games, and UX acceptance | DIRECTOR, UX | S | MG5, MG7 | |
 
 **UX acceptance for every MG ticket (hiring-client view):** within 30 s of opening a game, a client sees at least 5 of Ekky's characters at full size; every character and boss names its artwork and opens it in one tap; Hire Ekky is one tap from every pause, stage end and dialog; nothing can be lost, failed or locked; no on-screen "boss" wording; menus and reveals follow the B39 motion tokens; `npm run check` finds no fan or client art in `assets/sprites/` and no franchise name anywhere in `index.html`, `css/`, `js/` or `assets/`.
-
-### Ekky's Village (proposed by the Game Director, pending UX lead approval)
-Owner directions: "make the map isomoprihc like this" and "but with animation and re-createfd with his asset" (Director's session); "make the map like this so no bossfight" and "re-use all of asset of his as much as possible" (integrator's session). Design: `docs/minigames.md`, section "Ekky's Village".
-- The map becomes an isometric village of Ekky's pieces, extending the interim map on dev/assets (2f09d76).
-- It is the same island as Little Planet Quest: the Map tab is the zoomed-out village, and "Explore" walks you around it.
-- V1 to V4 replace the map part of B06 and replace MG6 and MG7. The village is built first.
-
-| # | Ticket | Owner | Size | Depends |
-|---|---|---|---|---|
-| V1 | Village layout: 7 main places as scenes from their cut-outs, labels, paths, bridges | DEV, UX | L (6 h) | 2f09d76, V2 batch 1 |
-| V2 | Shared cut-out batch (MG2 and B21 merged), from the `docs/roles.md` catalogue | DEV, UX | L (8 h) | MG1 animator, B21 |
-| V3 | Villagers and ambience (walkers, road loop, clouds, smoke, water, lantern, day and night) | DEV | M (4 h) | V1, V2 |
-| V6 | Director playtest of the village, and UX acceptance | DIRECTOR, UX | S | V3 |
-| V4 | Explore mode (was MG6 and MG7) | DEV, UX | L (10 to 12 h) | V1 to V3, V6 go |
-| V5 | Client scenery (UX decision: drawn elements only, never logos or lettering) | DEV | S (2 h) | V2 |
-
-Order: V1 → V2 → V3 → V6 → V4, then the Paint Patrol slice (MG1, MG3, MG4). Open for the UX lead: client scenery stays visible in Explore as scenery only (never in Quest dialog or tasks)?
 
 **Entry points (UX decision):** the start screen keeps three equal tiles (D11); "Games" becomes a fourth tile that opens a small picker with Star Catcher, Paint Patrol and Little Planet Quest, each with one line and a thumbnail (Ekky on his chair for both games). Desktop: a "Play Ekky's games" link in the hero next to "Try the game".
 
