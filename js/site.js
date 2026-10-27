@@ -77,9 +77,14 @@ const tagOf=p=>p.label?`<span class="tag">${plabel(p)}</span>`:"";
 const ico=(id,cls="ico")=>`<svg class="${cls}" aria-hidden="true"><use href="#${id}"/></svg>`;
 const uiImg=(name,cls="b-ico")=>`<img class="${cls}" src="assets/ui/${name}.png" alt="">`;
 
+// S1 sketchbook look: each piece is taped on at its own fixed tilt, 1 to 2 degrees either way, seeded by its slug
+// (the same angle on every visit and in every list; never random per load, never animated)
+const tiltOf=p=>{let h=0;for(const c of p.slug||p.title||"")h=(h*31+c.charCodeAt(0))|0;h=Math.abs(h);return((h%2?1:-1)*(1+(h>>1)%11/10)).toFixed(1)+"deg"};
+const tiltAttr=p=>` style="--tilt:${tiltOf(p)}"`;
+
 /* ===== Gallery ===== */
 const grid=document.getElementById("grid");
-grid.innerHTML=PROJECTS.map((p,i)=>`<button class="tile reveal" data-cat="${p.cat}" data-i="${i}">
+grid.innerHTML=PROJECTS.map((p,i)=>`<button class="tile reveal" data-cat="${p.cat}" data-i="${i}"${tiltAttr(p)}>
   <span class="tile-cat">${catImg(p.cat,"")}</span><div class="art">${artOf(p)}</div><span class="view">View</span>
   <div class="meta"><small>${catName(p.cat)}</small><h3>${ptitle(p)}</h3>${tagOf(p)}</div></button>`).join("");
 
@@ -105,8 +110,12 @@ document.querySelectorAll("#sideCats button,[data-jump]").forEach(b=>b.addEventL
 
 /* ===== Selected work: the featured six under the hero (B08) ===== */
 document.getElementById("featStrip").innerHTML=featuredSix().map(p=>({p,i:PROJECTS.indexOf(p)}))
-  .map(({p,i})=>`<button class="feat" data-i="${i}"><img src="${thumbOf(p)}" alt="" loading="lazy" decoding="async"><span>${ptitle(p)}</span></button>`).join("");
+  .map(({p,i})=>`<button class="feat" data-i="${i}"${tiltAttr(p)}><img src="${thumbOf(p)}" alt="" loading="lazy" decoding="async"><span>${ptitle(p)}</span></button>`).join("");
 document.getElementById("featStrip").addEventListener("click",e=>{const b=e.target.closest(".feat");if(b)show(+b.dataset.i)});
+// the phone start screen's six (rendered by js/game.js): the same per-piece tilt on each taped cell
+const gFeat=document.getElementById("gFeatured");
+if(gFeat){const tape=()=>gFeat.querySelectorAll(".g-feat-cell").forEach(c=>{const b=c.querySelector("[data-i]");if(b)c.style.setProperty("--tilt",tiltOf(PROJECTS[+b.dataset.i]))});
+  new MutationObserver(tape).observe(gFeat,{childList:true});tape()}
 
 /* ===== Lightbox ===== */
 const lb=document.getElementById("lightbox");let cur=0;
@@ -143,14 +152,14 @@ lb.addEventListener("keydown",e=>{if(e.key==="ArrowRight")step(1);if(e.key==="Ar
     el.textContent=words[w].slice(0,c)||"\u200b";setTimeout(tick,del?55:95)})();
 })();
 
-/* ===== Reveal, active nav, progress, to-top ===== */
+/* ===== Reveal, active nav, to-top ===== */
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.12});
 document.querySelectorAll(".reveal").forEach((el,i)=>{el.style.transitionDelay=(i%4)*70+"ms";io.observe(el)});
 const navLinks=[...document.querySelectorAll(".nav a")];
 const spy=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)navLinks.forEach(a=>a.classList.toggle("active",a.hash==="#"+e.target.id))}),{rootMargin:"-45% 0px -50% 0px"});
 ["about","services","work","contact"].forEach(id=>spy.observe(document.getElementById(id)));
-const prog=document.getElementById("progress"),toTop=document.getElementById("toTop");
-addEventListener("scroll",()=>{const h=document.documentElement;prog.style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100+"%";toTop.classList.toggle("show",h.scrollTop>600)},{passive:true});
+const toTop=document.getElementById("toTop");
+addEventListener("scroll",()=>toTop.classList.toggle("show",document.documentElement.scrollTop>600),{passive:true});
 toTop.onclick=()=>scrollTo({top:0,behavior:"smooth"});
 
 /* ===== Mobile menu ===== */
@@ -206,14 +215,6 @@ stars.innerHTML=Array.from({length:40},()=>{const sz=2+Math.random()*4;
 // marquee
 const words=["Illustration","Character Design","Mascots","Branding","Web & UI","Social Media","Stickers","Picture Books"];
 // the services ticker only moves while it is on screen (the hero keeps a single loop)
-{const m=document.querySelector(".marquee");if(m)new IntersectionObserver(es=>es.forEach(e=>m.classList.toggle("in-view",e.isIntersecting))).observe(m)}
-document.getElementById("marq").innerHTML=[...words,...words].map(w=>`<span>${w}${ico("s-sparkle","ico sep")}</span>`).join("");
-// custom cursor
-if(fine&&!reduce){const c=document.getElementById("cursor"),d=document.getElementById("cursorDot");let x=0,y=0,cx=0,cy=0;
-  addEventListener("mousemove",e=>{x=e.clientX;y=e.clientY;d.style.transform=`translate(${x}px,${y}px)`});
-  (function loop(){cx+=(x-cx)*.18;cy+=(y-cy)*.18;c.style.transform=`translate(${cx}px,${cy}px)`;requestAnimationFrame(loop)})();
-  document.addEventListener("mouseover",e=>c.classList.toggle("big",!!e.target.closest("a,button,.tile,input,select,textarea")));
-}else{document.getElementById("cursor").remove();document.getElementById("cursorDot").remove()}
 // B39: decorative motion removed (parallax, magnetic buttons, 3D tilt, click sparkles); hover keeps calm CSS transitions
 // stagger chips
 document.querySelectorAll(".chip").forEach((c,i)=>c.style.animationDelay=i*60+"ms");
