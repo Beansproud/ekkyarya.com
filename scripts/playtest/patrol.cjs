@@ -14,9 +14,10 @@ async function page(b, base, dev, opts = {}) {
   p.on("pageerror", e => errs.push(e.message)); p.on("console", m => m.type() === "error" && errs.push(m.text()));
   await p.route("**/js/features.js", async r => { const res = await r.fetch(); r.fulfill({ response: res, body: (await res.text()).replace(/paintPatrol:\s*false/, "paintPatrol: true") }) });
   if (opts.cpu) await cpu(ctx, p, opts.cpu);
-  await p.goto(base); await p.waitForTimeout(1800);
-  const entry = await p.evaluate(() => { const e = document.querySelector('[data-go="patrol"],[data-patrol],[data-place="busstop"],[data-place="patrol"]'); if (e) { e.click(); return e.outerHTML.slice(0, 80) } return null });
-  if (!entry) await p.evaluate(() => window.Patrol ? window.Patrol.open() : (typeof openPatrol === "function" && openPatrol()));
+  // ?ff=paintPatrol turns the switch on for this visit only; &play=patrol opens the game (js/features.js, js/game.js)
+  await p.goto(base + "?ff=paintPatrol&play=patrol"); await p.waitForTimeout(2500);
+  const entry = await p.evaluate(() => document.querySelector('[data-go="patrol"]') ? "start tile present" : "no start tile");
+  if (opts.anyway) await p.evaluate(() => { const b = document.querySelector('[data-pp="anyway"]'); b && !b.closest("[hidden]") && b.click() });
   await p.waitForFunction(() => window.Patrol && window.Patrol.state && window.Patrol.state.started, { timeout: 15000 }).catch(() => {});
   return { ctx, p, errs, entry };
 }
