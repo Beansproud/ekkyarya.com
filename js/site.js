@@ -152,14 +152,14 @@ lb.addEventListener("keydown",e=>{if(e.key==="ArrowRight")step(1);if(e.key==="Ar
     el.textContent=words[w].slice(0,c)||"\u200b";setTimeout(tick,del?55:95)})();
 })();
 
-/* ===== Reveal, active nav, progress, to-top ===== */
+/* ===== Reveal, active nav, to-top ===== */
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.12});
 document.querySelectorAll(".reveal").forEach((el,i)=>{el.style.transitionDelay=(i%4)*70+"ms";io.observe(el)});
 const navLinks=[...document.querySelectorAll(".nav a")];
 const spy=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)navLinks.forEach(a=>a.classList.toggle("active",a.hash==="#"+e.target.id))}),{rootMargin:"-45% 0px -50% 0px"});
 ["about","services","work","contact"].forEach(id=>spy.observe(document.getElementById(id)));
-const prog=document.getElementById("progress"),toTop=document.getElementById("toTop");
-addEventListener("scroll",()=>{const h=document.documentElement;prog.style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100+"%";toTop.classList.toggle("show",h.scrollTop>600)},{passive:true});
+const toTop=document.getElementById("toTop");
+addEventListener("scroll",()=>toTop.classList.toggle("show",document.documentElement.scrollTop>600),{passive:true});
 toTop.onclick=()=>scrollTo({top:0,behavior:"smooth"});
 
 /* ===== Mobile menu ===== */
@@ -215,14 +215,6 @@ stars.innerHTML=Array.from({length:40},()=>{const sz=2+Math.random()*4;
 // marquee
 const words=["Illustration","Character Design","Mascots","Branding","Web & UI","Social Media","Stickers","Picture Books"];
 // the services ticker only moves while it is on screen (the hero keeps a single loop)
-{const m=document.querySelector(".marquee");if(m)new IntersectionObserver(es=>es.forEach(e=>m.classList.toggle("in-view",e.isIntersecting))).observe(m)}
-document.getElementById("marq").innerHTML=[...words,...words].map(w=>`<span>${w}${ico("s-sparkle","ico sep")}</span>`).join("");
-// custom cursor
-if(fine&&!reduce){const c=document.getElementById("cursor"),d=document.getElementById("cursorDot");let x=0,y=0,cx=0,cy=0;
-  addEventListener("mousemove",e=>{x=e.clientX;y=e.clientY;d.style.transform=`translate(${x}px,${y}px)`});
-  (function loop(){cx+=(x-cx)*.18;cy+=(y-cy)*.18;c.style.transform=`translate(${cx}px,${cy}px)`;requestAnimationFrame(loop)})();
-  document.addEventListener("mouseover",e=>c.classList.toggle("big",!!e.target.closest("a,button,.tile,input,select,textarea")));
-}else{document.getElementById("cursor").remove();document.getElementById("cursorDot").remove()}
 // B39: decorative motion removed (parallax, magnetic buttons, 3D tilt, click sparkles); hover keeps calm CSS transitions
 // stagger chips
 document.querySelectorAll(".chip").forEach((c,i)=>c.style.animationDelay=i*60+"ms");

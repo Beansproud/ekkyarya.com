@@ -420,3 +420,16 @@ dialog{border-radius:6px}
 .doodle-rule:nth-of-type(even) img{transform:rotate(5deg)}
 @media (max-width:980px){.doodle-rule{padding:0 16px}}
 .tile.reveal{transform:rotate(var(--tilt))!important}   /* the quiet pass flattens .reveal; the taped tilt is fixed, not a reveal */
+
+/* ===== S2 desktop, fewer layers: no game-style chrome, one accent (yellow #FFB400) for actions =====
+   Gone: the custom cursor, the scroll progress bar, the category badge and the "View" pill on each tile, the colored
+   icon blobs on the service cards, the heavy sticker outline on the logo, the green status dot. */
+.tile-cat,.tile .view{display:none}
+.card>.ico{background:none!important;width:auto;height:auto;margin-bottom:12px;place-items:start}
+.logo{text-shadow:none}
+.status i{background:var(--ink-soft)}
+.filters button.active{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.lb-nav button:hover,.lb-close:hover{background:var(--side);color:var(--ink)}
+input:focus,select:focus,textarea:focus{box-shadow:none;border-color:var(--ink)}
+.nav a::after,.cats button::after{height:1.5px}
+.card .more .ico{width:1.1em;height:1.1em}
