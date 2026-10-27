@@ -16,6 +16,9 @@ const FEATURES = {
   artDownload: true,     // lightbox Download: a copy of at most 1600 px with a subtle mark, never on fan art (owner: yes)
   sound: true,           // sound effects and the sound toggle
   paintPatrol: false,    // Paint Patrol stage 1 (MG3 slice, js/patrol.js, loaded on first open): on for the MG4 playtest
+  handLettering: false,  // S3: headings with data-hand="<word>" show Ekky's lettering (assets/hand/<word>.png, listed in
+                         // assets/hand/index.json); the heading text stays the accessible name. Off until Ekky's sheet arrives.
+  aboutPhoto: false,     // S3: a photo or self-portrait in About (assets/hand/ekky.jpg, listed in assets/hand/index.json). Off until it arrives.
   clientScenery: false,  // V5: drawn elements of client pieces as village scenery, each opening its piece with its tag.
                          // Off until the owner confirms the client-piece change to the Developer directly; no client
                          // cut-out is made or committed before that (scripts/village.py CLIENT_SCENERY stays empty).
