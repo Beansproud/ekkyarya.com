@@ -82,7 +82,7 @@ Ride through Ekky's illustrations as **Ekky himself** on his desk chair, paint e
 | Credits | **Parade** | The Character Crowd Banner scrolls past as a crowd of every friend you made, with the "Type Is Art in Motion" lettering as the title | Everyone you painted dances | none |
 
 ### Hero
-**Ekky** (owner: "use ekky as the hero"). The game uses the image the owner confirms as Ekky (owner question 1 of `docs/backlog.md`; the glasses guy from Little Planet, per the owner's message in the Game Director session).
+**Ekky** (owner: "use ekky as the hero"). Ekky is the glasses guy from Little Planet (owner, Game Director session: "the glasses guy is ekky"; confirmed in the integrator session: "yes to all").
 - **No redrawing:** the only full-body drawing of him is Little Planet, where he sits at his desk on a chair holding a stylus. So by default, **Ekky rides his desk chair**, cut out exactly as drawn. The chair glides along the ground (run), hops (jump), and the paint comes from his stylus.
 - If Ekky sends a standing or running pose of himself (owner question 1 below), that drawing replaces the chair, with no other change.
 - `CONFIG.games.hero` points to the sprite file, so it can be swapped later without code changes.
