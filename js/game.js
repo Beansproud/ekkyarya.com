@@ -295,9 +295,13 @@ function sfx(type){if(!st.snd||!feature("sound"))return;try{actx=actx||new(windo
 
 /* ---- animated tab bar ---- */
 const tabs=G.querySelector(".g-tabs"),ind=document.createElement("span");ind.className="g-ind";tabs.prepend(ind);
-function moveInd(){const a=tabs.querySelector("button.active");ind.style.opacity=a?1:0;if(a)ind.style.left=a.offsetLeft+a.offsetWidth/2+"px"}
-tabs.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;sfx("tap");b.classList.remove("pressed");void b.offsetWidth;b.classList.add("pressed")});
-addEventListener("resize",moveInd);
+// the three tab centres are measured once (and again on resize), so a tab switch never forces a layout to place the marker
+const tabBtns=[...tabs.querySelectorAll("button")];let tabX=null;
+const measureTabs=()=>{tabX=tabBtns.map(b=>b.offsetLeft+b.offsetWidth/2)};
+function moveInd(){const k=tabBtns.findIndex(b=>b.classList.contains("active"));ind.style.opacity=k<0?0:1;
+  if(k>=0){if(!tabX||tabX.some(v=>!v))measureTabs();ind.style.setProperty("--ix",tabX[k]+"px")}}
+tabs.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;sfx("tap");b.classList.remove("pressed");requestAnimationFrame(()=>b.classList.add("pressed"))});
+addEventListener("resize",()=>{tabX=null;moveInd()});
 
 /* ---- Star Catcher (B13): one rule, always the full 30 s, no lives, no game over ---- */
 // Balance numbers (Game Director): each range goes from the start of the round to the end.
