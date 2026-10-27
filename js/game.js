@@ -58,7 +58,18 @@ function go(to,fromPop){
   requestAnimationFrame(moveInd);
 }
 try{history.replaceState({s:"start"},"")}catch(e){}
-addEventListener("popstate",e=>{const to=e.state&&e.state.s;if(to&&to!==screen&&document.body.classList.contains("game-mode"))go(to,true)});
+/* Back closes what is on top (the lightbox, Color, a sheet, the share overlay): each open layer has its own history entry */
+const LAYERS=[["lb",()=>$("lightbox"),e=>e.open,e=>e.close()],["color",()=>$("gColor"),e=>e.classList.contains("open"),()=>Color.close()],
+  ["sheet",()=>$("gSheet"),e=>e.classList.contains("open"),()=>closeSheet()],["share",()=>$("gShare"),e=>e.classList.contains("open"),()=>{const x=$("sX");if(x)x.click()}]];
+const lstack=[];let skipPop=0;
+function syncLayers(){LAYERS.forEach(([id,get,isOpen])=>{const el=get();if(!el)return;const on=!!isOpen(el),at=lstack.indexOf(id);
+  if(on&&at<0){lstack.push(id);try{history.pushState({s:screen,l:id},"")}catch(e){}}
+  else if(!on&&at>=0){lstack.splice(at,1);if(history.state&&history.state.l===id){skipPop++;history.back()}}})}   // closed with its own button: drop its entry
+addEventListener("load",()=>{const mo=new MutationObserver(syncLayers);
+  LAYERS.forEach(([,get])=>{const el=get();if(el)mo.observe(el,{attributes:true,attributeFilter:["class","open"]})});syncLayers()});
+addEventListener("popstate",e=>{if(skipPop){skipPop--;return}
+  const id=lstack.pop();if(id){const L=LAYERS.find(x=>x[0]===id);L[3](L[1]());return}
+  const to=e.state&&e.state.s;if(to&&to!==screen&&document.body.classList.contains("game-mode"))go(to,true)});
 G.querySelector(".g-tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(b){buzz(10);go(b.dataset.tab)}});
 G.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(g){buzz(10);sfx("tap");go(g.dataset.go)}
   if(e.target.closest("[data-hire]")){buzz(10);openHire()}});

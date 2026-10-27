@@ -273,7 +273,7 @@ function reveal(){const scratch=cur.pd.id==="scratch",c=$("cYours"),{w,h}=cur.pd
 $("cClose").onclick=close;$("cAgain").onclick=()=>{view("cEdit");sizeStage()};$("cAnother").onclick=openPicker;
 if($("cShare"))$("cShare").onclick=()=>typeof Share!=="undefined"&&Share.openPreview(shareData());
 if($("cDl"))$("cDl").onclick=()=>typeof Share!=="undefined"&&Share.download({...shareData(),name:Game.st.name||""});
-function shareData(){const s=cur;return {art:s.pd.meta.slug||null,page:s.pd.id,title:s.title,stickers:s.stickers.map(x=>x.n),
+function shareData(){const s=cur;return {art:s.pd.meta.slug||null,page:s.pd.id,get title(){return s.title},stickers:s.stickers.map(x=>x.n),
   draw:(ctx,X,Y,W,t)=>compose(s,ctx,X,Y,W,t),aspect:s.pd.meta.h/s.pd.meta.w,link:name=>Links.colorUrl(s,name)}}
 
 /* ---- arrival: a friend's coloring link (js/links.js) ---- */
