@@ -77,9 +77,14 @@ const tagOf=p=>p.label?`<span class="tag">${plabel(p)}</span>`:"";
 const ico=(id,cls="ico")=>`<svg class="${cls}" aria-hidden="true"><use href="#${id}"/></svg>`;
 const uiImg=(name,cls="b-ico")=>`<img class="${cls}" src="assets/ui/${name}.png" alt="">`;
 
+// S1 sketchbook look: each piece is taped on at its own fixed tilt, 1 to 2 degrees either way, seeded by its slug
+// (the same angle on every visit and in every list; never random per load, never animated)
+const tiltOf=p=>{let h=0;for(const c of p.slug||p.title||"")h=(h*31+c.charCodeAt(0))|0;h=Math.abs(h);return((h%2?1:-1)*(1+(h>>1)%11/10)).toFixed(1)+"deg"};
+const tiltAttr=p=>` style="--tilt:${tiltOf(p)}"`;
+
 /* ===== Gallery ===== */
 const grid=document.getElementById("grid");
-grid.innerHTML=PROJECTS.map((p,i)=>`<button class="tile reveal" data-cat="${p.cat}" data-i="${i}">
+grid.innerHTML=PROJECTS.map((p,i)=>`<button class="tile reveal" data-cat="${p.cat}" data-i="${i}"${tiltAttr(p)}>
   <span class="tile-cat">${catImg(p.cat,"")}</span><div class="art">${artOf(p)}</div><span class="view">View</span>
   <div class="meta"><small>${catName(p.cat)}</small><h3>${ptitle(p)}</h3>${tagOf(p)}</div></button>`).join("");
 
@@ -105,8 +110,12 @@ document.querySelectorAll("#sideCats button,[data-jump]").forEach(b=>b.addEventL
 
 /* ===== Selected work: the featured six under the hero (B08) ===== */
 document.getElementById("featStrip").innerHTML=featuredSix().map(p=>({p,i:PROJECTS.indexOf(p)}))
-  .map(({p,i})=>`<button class="feat" data-i="${i}"><img src="${thumbOf(p)}" alt="" loading="lazy" decoding="async"><span>${ptitle(p)}</span></button>`).join("");
+  .map(({p,i})=>`<button class="feat" data-i="${i}"${tiltAttr(p)}><img src="${thumbOf(p)}" alt="" loading="lazy" decoding="async"><span>${ptitle(p)}</span></button>`).join("");
 document.getElementById("featStrip").addEventListener("click",e=>{const b=e.target.closest(".feat");if(b)show(+b.dataset.i)});
+// the phone start screen's six (rendered by js/game.js): the same per-piece tilt on each taped cell
+const gFeat=document.getElementById("gFeatured");
+if(gFeat){const tape=()=>gFeat.querySelectorAll(".g-feat-cell").forEach(c=>{const b=c.querySelector("[data-i]");if(b)c.style.setProperty("--tilt",tiltOf(PROJECTS[+b.dataset.i]))});
+  new MutationObserver(tape).observe(gFeat,{childList:true});tape()}
 
 /* ===== Lightbox ===== */
 const lb=document.getElementById("lightbox");let cur=0;

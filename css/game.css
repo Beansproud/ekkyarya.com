@@ -566,15 +566,10 @@ body.game-mode #game.at-start{background:var(--paper,#FBF7EE) var(--grain);color
 #g-start .g-hint{color:#645F70}
 #g-start .g-hint .ico{color:#2B1342}
 #g-start .g-featured{gap:16px 14px;padding-top:6px}
-#g-start .g-feat-cell{--tilt:-1.5deg;transform:rotate(var(--tilt))}
-#g-start .g-feat-cell:nth-child(2){--tilt:1.2deg}
-#g-start .g-feat-cell:nth-child(3){--tilt:-1deg}
-#g-start .g-feat-cell:nth-child(4){--tilt:1.8deg}
-#g-start .g-feat-cell:nth-child(5){--tilt:-1.2deg}
-#g-start .g-feat-cell:nth-child(6){--tilt:1.5deg}
-#g-start .g-feat-cell::before{content:"";position:absolute;top:-7px;left:50%;width:40px;height:13px;margin-left:-20px;background:rgba(236,224,196,.9);
-  transform:rotate(calc(var(--tilt) * -2));box-shadow:0 1px 1px rgba(60,40,20,.12);z-index:2;pointer-events:none}
-#g-start .g-featured .g-feat{background:#FFFDF8;border-radius:2px;padding:4px 4px 0;box-shadow:0 1px 0 #E4DCCB,0 2px 5px -2px rgba(60,40,20,.3)}
+#g-start .g-feat-cell{--tilt:-1.5deg;transform:rotate(var(--tilt))}   /* the per-piece angle is set by js/site.js (tiltOf) */
+#g-start .g-feat-cell::before{content:"";position:absolute;top:-7px;left:50%;width:40px;height:13px;margin-left:-20px;background:var(--tape,rgba(255,180,0,.35));
+  transform:rotate(calc(var(--tilt) * -2));z-index:2;pointer-events:none}
+#g-start .g-featured .g-feat{background:#FFFDF8;border-radius:2px;padding:6px 6px 0;box-shadow:var(--paper-shadow,0 2px 6px rgba(0,0,0,.12))}
 #g-start .g-featured .g-feat img{border-radius:1px}
 #g-start .g-featured .g-feat b{color:#2B1342;padding:4px 2px 5px}
 #g-start .g-feat-dl i{border-radius:50%;background:#FFFDF8;border:1.5px solid #2B1342;color:#2B1342;box-shadow:none}
