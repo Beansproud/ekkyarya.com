@@ -60,8 +60,12 @@ G.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(g){buzz(
 
 /* ---- start screen: the featured six open the lightbox ---- */
 function renderStart(){const six=featuredSix().map(p=>({p,i:PROJECTS.indexOf(p)}));
-  $("gFeatured").innerHTML=six.map(({p,i})=>`<button class="g-feat" data-i="${i}" aria-label="${esc(ptitle(p))}"><img src="${thumbOf(p)}" alt="" decoding="async"><b>${esc(ptitle(p))}</b></button>`).join("")}
-$("gFeatured").addEventListener("click",e=>{const b=e.target.closest(".g-feat");if(b){buzz(10);show(+b.dataset.i)}});
+  // each drawing opens big on tap; originals and client pieces also get a Download badge (never fan art, B40)
+  const dl=p=>feature("artDownload")&&p.kind!=="fan";
+  $("gFeatured").innerHTML=six.map(({p,i})=>`<div class="g-feat-cell"><button class="g-feat" data-i="${i}" aria-label="${esc(ptitle(p))}"><img src="${thumbOf(p)}" alt="" decoding="async"><b>${esc(ptitle(p))}</b></button>`+
+    (dl(p)?`<button class="g-feat-dl" data-dl="${i}" aria-label="${esc(tt("lb.download","Download")+": "+ptitle(p))}"><i><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg></i></button>`:"")+`</div>`).join("")}
+$("gFeatured").addEventListener("click",e=>{const d=e.target.closest(".g-feat-dl");if(d){buzz(10);if(typeof Share!=="undefined")Share.downloadArt(PROJECTS[+d.dataset.dl]);return}
+  const b=e.target.closest(".g-feat");if(b){buzz(10);show(+b.dataset.i)}});
 
 /* ---- map: Ekky's Village (B42 V1). One pre-composited picture (scripts/village.py: plain ground shapes plus Ekky's
    cut-outs, placed as drawn) under real buttons for the places, and four frames on the gallery walls that hang
