@@ -3,7 +3,12 @@
 Build: `dev/assets` 713c99b merged with `ux/r1` 6f65f9b (clean). Date: 2026-10-27.
 Method: `scripts/capture.cjs` (phone and desktop screens), plus two probes over HTTP on a 390 x 664 phone viewport and 1440 x 900 desktop: visibility and hit-testing at element centers, `document.getAnimations()`, text scans in EN (`en-US`) and ID (`id-ID`), failed requests, and real taps.
 
-**Verdict: not accepted yet. Two small blocking items (below); everything else passes.** Once both are fixed and re-captured, round 1 is accepted without another full review.
+**Verdict: ROUND 1 ACCEPTED** on `dev/assets` ecdd32f (re-check, 2026-10-27). The first pass on 713c99b found two small blocking items (below); both are fixed and verified:
+- **B26:** "Who is Ekky?" now lists all four facts plus "Worked with Sequis, Intiland, Viar, pbTaxand, Honshu, Suapi and Bima.", in EN and in ID ("Proyek mulai $25", "Pernah bekerja sama dengan ..."); desktop About shows the same four facts and the row.
+- **Mine:** scrolled to the end, "Clear what I made" / "Hapus buatanku" sits at 388 to 432 px, clear of the tab bar at 580 px, and is the topmost element at its center.
+- Non-blocking items done too: the loader no longer catches taps, nothing animates on hidden screens, and the desktop hero keeps one loop (`bob`) plus the marquee. 0 page errors and 0 failed requests in both languages; `npm run check` passes.
+
+The first-pass report follows for the record.
 
 ## r1b acceptance list
 
