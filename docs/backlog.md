@@ -541,7 +541,7 @@ Owner directions: "make the map isomoprihc like this" and "but with animation an
 | V4 | Explore mode (was MG6 and MG7) | DEV, UX | L (10 to 12 h) | V1 to V3, V6 go |
 | V5 | Client scenery (UX decision: drawn elements only, never logos or lettering) | DEV | S (2 h) | V2 |
 
-Order: V1 → V2 → V3 → V6 → V4, then the Paint Patrol slice (MG1, MG3, MG4). Open for the UX lead: client scenery stays visible in Explore as scenery only (never in Quest dialog or tasks)?
+Order: V1 → V2 → V3 → V6 → V4, then the Paint Patrol slice (MG1, MG3, MG4). Owner answer (Director's session): "client scenery ok in explore too". Client scenery shows in Village and Explore, as scenery only (never in Quest dialog or tasks, never in Paint Patrol).
 
 **Entry points (UX decision):** the start screen keeps three equal tiles (D11); "Games" becomes a fourth tile that opens a small picker with Star Catcher, Paint Patrol and Little Planet Quest, each with one line and a thumbnail (Ekky on his chair for both games). Desktop: a "Play Ekky's games" link in the hero next to "Try the game".
 
