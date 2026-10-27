@@ -1,5 +1,13 @@
 // Desktop portfolio: gallery, lightbox, menus, theme, contact form and motion. Its globals (catImg, ico, uiImg, artOf, show, say, confetti, reduce) are used by js/game.js.
 document.documentElement.lang=LANG;   // B41: the page language follows the visitor (js/data.js picks it)
+// Text in the markup: data-t="key" sets the text, data-t-aria="key" the accessible name, data-tt="key|English" uses tt().
+document.querySelectorAll("[data-t]").forEach(el=>el.textContent=t(el.dataset.t));
+document.querySelectorAll("[data-t-aria]").forEach(el=>el.setAttribute("aria-label",t(el.dataset.tAria)));
+document.querySelectorAll("[data-tt]").forEach(el=>{const [k,en]=el.dataset.tt.split("|");el.textContent=tt(k,en)});
+document.querySelectorAll("[data-tta]").forEach(el=>{const [k,en]=el.dataset.tta.split("|");el.setAttribute("aria-label",tt(k,en))});
+// EN / ID switch (B41): remembers the choice (setLang in js/data.js) and redraws the page in that language.
+document.querySelectorAll("[data-lang]").forEach(b=>{b.setAttribute("aria-pressed",b.dataset.lang===LANG);
+  b.addEventListener("click",()=>{if(b.dataset.lang===LANG)return;setLang(b.dataset.lang);location.reload()})});
 /* ===== Feature switches: entry points of a switched-off feature disappear (js/features.js) ===== */
 document.querySelectorAll("[data-feature]").forEach(el=>{if(!feature(el.dataset.feature))el.remove()});
 
@@ -21,10 +29,10 @@ function makeArt(p){
   return `<svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" role="img" aria-label="${p.title} artwork"><rect width="400" height="300" fill="${bg}"/>${s}</svg>`;
 }
 // A project with `img` shows that file; if it fails to load, the drawn placeholder takes its place.
-function artOf(p,big){return p.img?`<img src="${big&&p.full||p.img}" alt="${p.title}" loading="lazy" decoding="async" onload="this.classList.add('ok')" onerror="this.outerHTML=makeArt(PROJECTS[${PROJECTS.indexOf(p)}])">`:makeArt(p)}
+function artOf(p,big){return p.img?`<img src="${big&&p.full||p.img}" alt="${ptitle(p)}" loading="lazy" decoding="async" onload="this.classList.add('ok')" onerror="this.outerHTML=makeArt(PROJECTS[${PROJECTS.indexOf(p)}])">`:makeArt(p)}
 const catImg=(c,cls="cat-ico")=>`<img class="${cls}" src="${CAT_ICON[c]}" alt="">`;
 // "Fan art", "Client: X" ... from PROJECTS; Ekky's own pieces have no tag.
-const tagOf=p=>p.label?`<span class="tag">${p.label}</span>`:"";
+const tagOf=p=>p.label?`<span class="tag">${plabel(p)}</span>`:"";
 // Icons: ico() uses the inline SVG set in index.html (i-* line icons, s-* palette shapes); uiImg() uses a cut-out from assets/ui/.
 const ico=(id,cls="ico")=>`<svg class="${cls}" aria-hidden="true"><use href="#${id}"/></svg>`;
 const uiImg=(name,cls="b-ico")=>`<img class="${cls}" src="assets/ui/${name}.png" alt="">`;
@@ -33,7 +41,7 @@ const uiImg=(name,cls="b-ico")=>`<img class="${cls}" src="assets/ui/${name}.png"
 const grid=document.getElementById("grid");
 grid.innerHTML=PROJECTS.map((p,i)=>`<button class="tile reveal" data-cat="${p.cat}" data-i="${i}">
   <span class="tile-cat">${catImg(p.cat,"")}</span><div class="art">${artOf(p)}</div><span class="view">View</span>
-  <div class="meta"><small>${CAT_NAME[p.cat]}</small><h3>${p.title}</h3>${tagOf(p)}</div></button>`).join("");
+  <div class="meta"><small>${catName(p.cat)}</small><h3>${ptitle(p)}</h3>${tagOf(p)}</div></button>`).join("");
 
 document.querySelectorAll("#filters [data-filter],#sideCats [data-filter]").forEach(b=>b.insertAdjacentHTML("afterbegin",catImg(b.dataset.filter)));
 document.querySelectorAll(".card[data-jump] > .ico").forEach(i=>i.innerHTML=catImg(i.parentElement.dataset.jump,""));
@@ -55,7 +63,7 @@ document.querySelectorAll("#sideCats button,[data-jump]").forEach(b=>b.addEventL
 
 /* ===== Selected work: the featured six under the hero (B08) ===== */
 document.getElementById("featStrip").innerHTML=featuredSix().map(p=>({p,i:PROJECTS.indexOf(p)}))
-  .map(({p,i})=>`<button class="feat" data-i="${i}"><img src="${p.img}" alt="" loading="lazy" decoding="async"><span>${p.title}</span></button>`).join("");
+  .map(({p,i})=>`<button class="feat" data-i="${i}"><img src="${p.img}" alt="" loading="lazy" decoding="async"><span>${ptitle(p)}</span></button>`).join("");
 document.getElementById("featStrip").addEventListener("click",e=>{const b=e.target.closest(".feat");if(b)show(+b.dataset.i)});
 
 /* ===== Lightbox ===== */
@@ -63,10 +71,10 @@ const lb=document.getElementById("lightbox");let cur=0;
 function visible(){return [...grid.querySelectorAll(".tile:not(.hide)")].map(t=>+t.dataset.i)}
 function show(i){cur=i;const p=PROJECTS[i];
   document.getElementById("lbArt").innerHTML=artOf(p,true);
-  document.getElementById("lbCat").innerHTML=catImg(p.cat,"")+CAT_NAME[p.cat];
-  document.getElementById("lbTitle").textContent=p.title;
-  document.getElementById("lbDesc").textContent=p.desc||"";
-  const tag=document.getElementById("lbTag");tag.textContent=p.label||"";tag.hidden=!p.label;
+  document.getElementById("lbCat").innerHTML=catImg(p.cat,"")+catName(p.cat);
+  document.getElementById("lbTitle").textContent=ptitle(p);
+  document.getElementById("lbDesc").textContent=pdesc(p)||"";
+  const tag=document.getElementById("lbTag");tag.textContent=plabel(p);tag.hidden=!p.label;
   document.getElementById("lbHire").textContent=t("lb.hire");
   if(!lb.open)lb.showModal();}
 function step(d){const v=visible(),k=v.indexOf(cur);show(v[(k+d+v.length)%v.length])}
@@ -75,7 +83,7 @@ document.getElementById("lbPrev").onclick=()=>step(-1);
 document.getElementById("lbNext").onclick=()=>step(1);
 document.getElementById("lbClose").onclick=()=>lb.close();
 // Hire from the lightbox: prefill "I saw <title>". Game mode opens its Final Quest sheet over the lightbox's screen.
-document.getElementById("lbHire").onclick=()=>{const note=t("lb.hire.prefill",{title:PROJECTS[cur].title});lb.close();
+document.getElementById("lbHire").onclick=()=>{const note=t("lb.prefill",{title:ptitle(PROJECTS[cur])});lb.close();
   if(document.body.classList.contains("game-mode")&&window.openHire)return openHire(note);
   const m=document.querySelector("#form [name=message]");m.value=note;document.getElementById("contact").scrollIntoView({behavior:"smooth"});setTimeout(()=>m.focus({preventScroll:true}),600)};
 lb.addEventListener("click",e=>{if(e.target===lb)lb.close()});

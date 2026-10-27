@@ -351,3 +351,9 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 .g-row .g-btn.sm.alt{min-width:48px;min-height:44px;padding:8px 14px}
 /* colors in 2 rows of 7, so all of Ekky's colors and Any color show at once (share playtest) */
 .c-colors{display:grid;grid-template-columns:repeat(7,44px);justify-content:center;gap:2px 4px;overflow:visible}
+#game .lang-switch{border-color:#3e2a5c;flex:none}
+#game .lang-switch button{background:#241638;color:#cbbfe3}
+#game .lang-switch button[aria-pressed="true"]{background:#FFB400;color:#2B1342}
+.g-start-foot{display:flex;gap:8px;width:100%}
+.g-start-foot .g-classic{flex:1}
+.g-mine-list .g-small{grid-column:1/-1}

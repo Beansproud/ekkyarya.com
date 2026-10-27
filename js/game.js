@@ -207,7 +207,7 @@ function startArcade(){if(!feature("starCatcher")||!cv)return;
   const W=cv.clientWidth,H=cv.clientHeight;
   A={W,H,score:0,t:BALANCE.seconds,items:[],parts:[],texts:[],px:W/2,tx:W/2,spawn:0,shake:0,run:false,stars:Array.from({length:50},()=>({x:Math.random()*W,y:Math.random()*H,s:Math.random()*2+.5,v:20+Math.random()*60}))};
   hudA();cancelAnimationFrame(raf);let last=performance.now();const loop=now=>{const dt=Math.min(.05,(now-last)/1000);last=now;step(dt);draw();raf=requestAnimationFrame(loop)};raf=requestAnimationFrame(loop);
-  let n=3;const cd=$("gCount");const tick=()=>{if(!A)return;if(n>0){cd.innerHTML=`<span>${n}</span><p>${esc(t("stars.rule"))}</p>`;sfx("count");n--;setTimeout(tick,800)}else{cd.innerHTML=`<span>GO!</span>`;sfx("go");A.run=true;setTimeout(()=>cd.innerHTML="",800)}};tick()}
+  let n=3;const cd=$("gCount");const tick=()=>{if(!A)return;if(n>0){cd.innerHTML=`<span>${n}</span><p>${esc(t("stars.rule"))}</p>`;sfx("count");n--;setTimeout(tick,800)}else{cd.innerHTML=`<span>${esc(tt("stars.go","GO!"))}</span>`;sfx("go");A.run=true;setTimeout(()=>cd.innerHTML="",800)}};tick()}
 function hudA(){$("gScore").innerHTML=ico("s-star")+A.score;$("gTime").style.width=Math.max(0,A.t/BALANCE.seconds*100)+"%"}
 function step(dt){const a=A;if(!a)return;
   a.stars.forEach(s=>{s.y+=s.v*dt;if(s.y>a.H)s.y=0});

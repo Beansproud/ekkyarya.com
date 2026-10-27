@@ -71,7 +71,7 @@ async function send(file,blob,data,url,savedMsg){const text=t(data.page==="scrat
 
 /* ---- preview: the card, an optional "Sign it" first name, Share, Download, and Share as video ---- */
 document.getElementById("game").insertAdjacentHTML("beforeend",`<div class="c-over s-over" id="gShare" role="dialog" aria-modal="true" aria-label="${t("share.go")}">
-  <section class="c-view active"><button class="g-x" id="sX" aria-label="Close"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button>
+  <section class="c-view active"><button class="g-x" id="sX" aria-label="${tt("ui.close","Close")}"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button>
     <div class="s-preview"><canvas id="sCard"></canvas></div>
     <label class="s-sign">${t("share.sign")}<input id="sName" maxlength="16" autocomplete="given-name" placeholder="${t("share.sign.ph")}"></label>
     <div class="s-row"><button class="g-btn" id="sGo"><svg class="ico" aria-hidden="true"><use href="#i-share"/></svg> ${t("share.go")}</button>

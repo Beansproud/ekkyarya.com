@@ -316,3 +316,8 @@ footer a .ico{vertical-align:-.12em}
 .feat img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
 .feat span{display:block;padding:8px 10px;font-family:Fredoka;font-weight:600;font-size:.9rem;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media (max-width:1000px){.feat-row{grid-template-columns:repeat(3,1fr)}}
+
+/* EN / ID switch (B41) */
+.lang-switch{display:inline-flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;width:max-content}
+.lang-switch button{min-width:44px;min-height:44px;font-family:Fredoka;font-weight:600;font-size:.9rem;color:var(--muted);background:var(--card)}
+.lang-switch button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}

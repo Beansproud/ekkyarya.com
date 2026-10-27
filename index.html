@@ -97,6 +97,7 @@
       </a>
     </div>
     <div class="status"><i></i> Open for new projects</div>
+    <div class="lang-switch" role="group" data-t-aria="lang.label"><button data-lang="en">EN</button><button data-lang="id">ID</button></div>
     <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode"><span class="track"><span class="knob"></span></span> <span id="themeLabel">Dark mode</span></button>
   </div>
 </aside>
@@ -111,8 +112,8 @@
       <p class="roles">Illustrator<br>Graphic Designer</p>
       <p class="typed" aria-live="polite">I draw <b id="typed">mascots</b><span class="caret" aria-hidden="true"></span></p>
       <div class="hero-ctas">
-        <a href="#contact" class="btn" aria-label="Hire Ekky, send a message">Hire Ekky</a>
-        <a href="#work" class="btn ghost">See my work</a>
+        <a href="#contact" class="btn" data-t="hero.hire" data-t-aria="hire.chip.aria">Hire Ekky</a>
+        <a href="#work" class="btn ghost" data-t="hero.work">See my work</a>
       </div>
     </div>
 
@@ -199,10 +200,9 @@
   <div class="marquee" aria-hidden="true"><div class="track" id="marq"></div></div>
   <section class="section about" id="about">
     <div class="blob" aria-hidden="true"></div>
-    <div class="about-title reveal"><h2 class="h2">About Me</h2></div>
+    <div class="about-title reveal"><h2 class="h2" data-t="about.title">About Me</h2></div>
     <div class="reveal">
-      <p>Welcome to my little corner of creativity! I'm Ekky Arya, an illustrator and graphic designer who loves lively, playful work. I give characters a personality you can feel, and I build visuals that make people of every age smile.</p>
-      <p>From mascots and picture-book scenes to brand identities and social campaigns, I keep the same goal: turn your idea into something warm, memorable and uniquely yours.</p>
+      <p data-t="about.body">Ekky is a character illustrator from Indonesia.</p>
       <div class="chips">
         <span class="chip">Character design</span><span class="chip">Mascots</span><span class="chip">Editorial illustration</span>
         <span class="chip">Brand identity</span><span class="chip">Packaging</span><span class="chip">UI illustration</span>
@@ -267,8 +267,8 @@
   <section class="section contact" id="contact">
     <div class="reveal">
       <p class="eyebrow">Let's work together</p>
-      <h2 class="h2">Got an idea? Let's bring it to life.</h2>
-      <p class="lead">Tell me a little about your project and I'll get back to you soon. Or say hi directly:</p>
+      <h2 class="h2" data-t="contact.title">Got an idea? Let's bring it to life.</h2>
+      <p class="lead" data-t="contact.body">Tell me a little about your project and I'll get back to you soon.</p>
       <div class="mail"><a id="mailLink" href="#"></a><button class="copy" id="copyMail">Copy</button></div>
     </div>
     <form class="reveal" id="form" novalidate>
@@ -304,7 +304,7 @@
   <header class="g-hud">
     <div class="g-avatar"><img src="assets/ui/ekky.png" alt=""></div>
     <div class="g-player"><b data-t="map.title"></b><small data-t="hud.role"></small></div>
-    <button class="g-round" id="gSnd" data-feature="sound" aria-label="Sound" aria-pressed="false"><svg class="ico on" aria-hidden="true"><use href="#i-sound"/></svg><svg class="ico off" aria-hidden="true"><use href="#i-mute"/></svg></button>
+    <button class="g-round" id="gSnd" data-feature="sound" data-t-aria="mine.sound" aria-pressed="false"><svg class="ico on" aria-hidden="true"><use href="#i-sound"/></svg><svg class="ico off" aria-hidden="true"><use href="#i-mute"/></svg></button>
     <button class="g-hire" data-hire data-t-aria="hire.chip.aria"><img src="assets/ui/monster-head.png" alt=""><span data-t="hire.chip"></span></button>
   </header>
 
@@ -318,7 +318,7 @@
       <button class="g-tile catch" data-arcade data-feature="starCatcher"><img src="assets/ui/helmet.png" alt=""><span data-t="start.catch"></span></button>
       <button class="g-tile explore" data-go="map"><img src="assets/ui/planet.png" alt=""><span data-t="start.explore"></span></button>
     </div>
-    <button class="g-classic" data-classic data-t="start.classic"></button>
+    <div class="g-start-foot"><button class="g-classic" data-classic data-t="start.classic"></button><div class="lang-switch" role="group" data-t-aria="lang.label"><button data-lang="en">EN</button><button data-lang="id">ID</button></div></div>
   </section>
 
   <section class="g-screen" id="g-map">
@@ -339,6 +339,7 @@
     <div class="g-panel">
       <div class="g-row" data-feature="sound"><span data-t="mine.sound"></span><button class="g-switch" id="gSndSwitch" role="switch" aria-checked="false" data-t-aria="mine.sound"></button></div>
       <div class="g-row"><span data-t="mine.vibration"></span><button class="g-switch on" id="gVib" role="switch" aria-checked="true" data-t-aria="mine.vibration"></button></div>
+      <div class="g-row"><span data-t="lang.label"></span><div class="lang-switch" role="group" data-t-aria="lang.label"><button data-lang="en">EN</button><button data-lang="id">ID</button></div></div>
       <div class="g-row"><span data-t="start.classic"></span><button class="g-btn sm alt" data-classic aria-label="Open"><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></button></div>
       <div class="g-row"><button class="g-link g-reset" id="gReset" data-t="mine.reset"></button></div>
     </div>
@@ -346,17 +347,17 @@
 
   <nav class="g-tabs" aria-label="Game menu">
     <button data-tab="art"><span class="g-ico"><img src="assets/ui/palette.png" alt=""></span><span data-t="tab.art"></span></button>
-    <button data-tab="map" class="center" aria-label="Map"><img class="g-face" src="assets/face.png" alt=""><small>Map</small></button>
+    <button data-tab="map" class="center"><img class="g-face" src="assets/face.png" alt=""><small data-tt="tab.map|Map"></small></button>
     <button data-tab="mine"><span class="g-ico g-ico-line"><svg class="ico" aria-hidden="true"><use href="#i-frame"/></svg></span><span data-t="tab.mine"></span></button>
   </nav>
 
-  <div class="g-sheet" id="gSheet"><div class="g-sheet-in" role="dialog" aria-modal="true" aria-labelledby="gSheetTitle"><div class="g-grab"></div><button class="g-x" id="gSheetX" aria-label="Close"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button><div id="gSheetBody"></div></div></div>
+  <div class="g-sheet" id="gSheet"><div class="g-sheet-in" role="dialog" aria-modal="true" aria-labelledby="gSheetTitle"><div class="g-grab"></div><button class="g-x" id="gSheetX" data-tta="ui.close|Close"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button><div id="gSheetBody"></div></div></div>
 
   <div class="g-over" id="gArcade" aria-modal="true" role="dialog" aria-label="Star Catcher" data-feature="starCatcher">
     <canvas id="gCanvas"></canvas>
     <div class="g-flash" id="gFlash"></div>
     <div class="g-ahud"><span class="pill" id="gScore"><svg class="ico" aria-hidden="true"><use href="#s-star"/></svg>0</span><div class="g-time"><i id="gTime"></i></div></div>
-    <button class="g-x" id="gArcadeX" aria-label="Quit"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button>
+    <button class="g-x" id="gArcadeX" data-tta="ui.close|Close"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button>
     <div class="g-count" id="gCount"></div>
     <div class="g-result" id="gResult">
       <h2 id="gResTitle"></h2>
@@ -370,16 +371,16 @@
 </div>
 
 <dialog id="lightbox" aria-labelledby="lbTitle">
-  <button class="lb-close" id="lbClose" aria-label="Close"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button>
+  <button class="lb-close" id="lbClose" data-tta="ui.close|Close"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button>
   <div class="lb-art" id="lbArt"></div>
   <div class="lb-body">
     <div><small id="lbCat" class="lb-cat"></small><h3 id="lbTitle"></h3><span class="tag" id="lbTag" hidden></span><p id="lbDesc" class="lb-desc"></p>
       <button class="btn lb-hire" id="lbHire" aria-label="Hire Ekky, send a message"></button></div>
-    <div class="lb-nav"><button id="lbPrev" aria-label="Previous project"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg></button><button id="lbNext" aria-label="Next project"><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></button></div>
+    <div class="lb-nav"><button id="lbPrev" data-tta="lb.prev|Previous piece"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg></button><button id="lbNext" data-tta="lb.next|Next piece"><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></button></div>
   </div>
 </dialog>
 
-<button class="to-top" id="toTop" aria-label="Back to top">
+<button class="to-top" id="toTop" data-tta="ui.top|Back to top">
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
 </button>
 <div class="toast" id="toast" role="status"></div>

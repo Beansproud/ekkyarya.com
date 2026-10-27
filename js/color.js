@@ -38,13 +38,13 @@ const $=id=>document.getElementById(id);
 /* ---- overlay markup ---- */
 G.insertAdjacentHTML("beforeend",`<div class="c-over" id="gColor" role="dialog" aria-modal="true" aria-label="${esc(t("color.title"))}">
   <section class="c-view c-pick" id="cPick">
-    <button class="g-x" id="cPickX" aria-label="Close">${ico("i-close")}</button>
+    <button class="g-x" id="cPickX" aria-label="${tt("ui.close","Close")}">${ico("i-close")}</button>
     <h2 class="g-title">${esc(t("color.title"))}</h2><p class="g-sub">${esc(t("color.intro"))}</p>
     <div class="c-pages" id="cPages"></div>
     <div class="c-actions"><button class="g-hire" data-hire aria-label="${esc(t("hire.chip.aria"))}"><img src="assets/ui/monster-head.png" alt=""><span>${esc(t("sheet.hire"))}</span></button></div>
   </section>
   <section class="c-view c-edit" id="cEdit">
-    <div class="c-top"><button class="c-icon" id="cBack" aria-label="Back">${ico("i-back")}</button><b id="cTitle"></b>
+    <div class="c-top"><button class="c-icon" id="cBack" aria-label="${tt("ui.back","Back")}">${ico("i-back")}</button><b id="cTitle"></b>
       <button class="g-hire sm" data-hire aria-label="${esc(t("hire.chip.aria"))}"><img src="assets/ui/monster-head.png" alt=""><span>${esc(t("hire.chip"))}</span></button>
       <button class="g-btn sm" id="cDone">${esc(t("color.done"))}</button></div>
     <div class="c-stage-wrap"><div class="c-stage" id="cStage"><canvas id="cCanvas"></canvas><img class="c-peek" id="cPeek" alt=""><div class="c-stickers" id="cStickers"></div>
@@ -57,7 +57,7 @@ G.insertAdjacentHTML("beforeend",`<div class="c-over" id="gColor" role="dialog" 
     <input type="color" id="cAny" class="c-any-input" tabindex="-1" aria-hidden="true">
   </section>
   <section class="c-view c-reveal" id="cReveal">
-    <button class="g-x" id="cClose" aria-label="Close">${ico("i-close")}</button>
+    <button class="g-x" id="cClose" aria-label="${tt("ui.close","Close")}">${ico("i-close")}</button>
     <h2 class="g-title" id="cRevTitle"></h2>
     <div class="c-pair"><figure><canvas id="cYours"></canvas><figcaption>${esc(t("reveal.yours"))}</figcaption></figure>
       <figure id="cEkkyFig"><img id="cEkky" alt=""><figcaption>${esc(t("reveal.ekky"))}</figcaption></figure></div>
@@ -66,7 +66,7 @@ G.insertAdjacentHTML("beforeend",`<div class="c-over" id="gColor" role="dialog" 
       <button class="g-hire" data-hire aria-label="${esc(t("hire.chip.aria"))}"><img src="assets/ui/monster-head.png" alt=""><span>${esc(t("hire.chip"))}</span></button></div>
   </section>
   <section class="c-view c-arrive" id="cArrive">
-    <button class="g-x" id="cArriveX" aria-label="Close">${ico("i-close")}</button>
+    <button class="g-x" id="cArriveX" aria-label="${tt("ui.close","Close")}">${ico("i-close")}</button>
     <h2 class="g-title" id="cArriveTitle"></h2>
     <div class="c-arrive-art"><canvas id="cArriveCanvas"></canvas></div>
     <div class="c-actions"><button class="g-btn" id="cArriveColor">${esc(t("arrive.mine"))}</button>
