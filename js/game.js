@@ -112,7 +112,7 @@ function villageLife(V){
   $("gMapWrap").classList.toggle("night",night);
   let css="",html=`<img class="v-shimmer" src="assets/village/shimmer.png" alt="" decoding="async">`+
     // clouds drift over the drawn village only (masked by its picture), never as grey blobs on the night sky
-    `<div class="v-sky"><div class="v-cloudrow" style="top:${pct(V.h*.18,V.h)}"><i class="v-cloud" style="animation-duration:84s;animation-delay:-30s"></i></div>`+
+    `<div class="v-sky"><div class="v-cloudrow" style="top:${pct(V.h*.06,V.h)}"><i class="v-cloud" style="animation-duration:84s;animation-delay:-30s"></i></div>`+
     `<div class="v-cloudrow" style="top:${pct(V.h*.62,V.h)}"><i class="v-cloud small" style="animation-duration:72s;animation-delay:-58s"></i></div></div>`;
   if(V.lantern)html+=`<i class="v-lantern" style="left:${pct(V.lantern[0],V.w)};top:${pct(V.lantern[1],V.h)}"></i>`;
   (V.smoke||[]).forEach(s=>html+=`<i class="v-smoke" style="left:${pct(s[0],V.w)};top:${pct(s[1],V.h)}"></i>`);
