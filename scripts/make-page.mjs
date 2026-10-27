@@ -3,6 +3,8 @@
 //   line.png     Ekky's lines: the dark pixels of his original, kept in his own ink, on transparency (D8: threshold lines
 //                until he sends a line layer; a page with `line` in PAGES uses that layer instead)
 //   regions.png  the fill map: R + 256 * G = region id (1..n) for every pixel. B = 0 inside a region, B = 1 on a line
+//                Big areas are also split where Ekky's own colors change (shapes he painted without an outline, like the
+//                giraffe's spots or the trees behind the fence), so one tap never floods half the picture.
 //                pixel that belongs to the nearest region (so a fill reaches under the anti-aliased line edge).
 //                Areas under MIN_AREA px merge into the line.
 //   page.json    size, region count, 12 "Ekky's colors" sampled from the original, and the original's path
@@ -27,6 +29,9 @@ const PAGES = {
   "road-trip": { slug: "road-trip", lineMax: 110, inkSoft: 130, crop: [190, 376, 748, 560] },
 };
 const MIN_AREA = 40, COLORS = 12;
+// Color split: areas above SPLIT_AREA px are divided by up to SPLIT_K of their own colors; patches under SPECK px fold
+// into the neighbor they touch, and colors closer than SPLIT_MERGE (RGB distance) count as one.
+const SPLIT_AREA = 12000, SPLIT_K = 5, SPLIT_MERGE = 34, SPECK = 600;
 
 const [, , name, flag] = process.argv;
 const page = PAGES[name];
@@ -100,6 +105,7 @@ function build({ w, h, px }) {
   const map = new Int32Array(sizes.length); let k = 0;
   for (let r = 1; r < sizes.length; r++) map[r] = sizes[r] >= MIN_AREA ? ++k : 0;
   for (let i = 0; i < n; i++) id[i] = map[id[i]] || 0;
+  k = splitByColor(px, w, h, id, k);
   // every line pixel belongs to its nearest region (breadth-first growth), so fills reach under anti-aliased edges
   const own = Int32Array.from(id), onLine = new Uint8Array(n);
   let front = []; for (let i = 0; i < n; i++) if (id[i]) front.push(i); else onLine[i] = 1;
@@ -134,6 +140,58 @@ function build({ w, h, px }) {
   return { line: pngLines(w, h, line), regions: png(w, h, regions), own, k,
     json: JSON.stringify({ page: name, slug: page.slug, title: piece.title, w, h, regions: k, colors,
       ekky: regionColor.map(hex), original: `assets/color/${name}/original.jpg`, crop: page.crop || null, line: "line.png", map: "regions.png" }, null, 1) + "\n" };
+}
+// Split the big areas along Ekky's color shapes. Inside one area: k-means over its pixel colors (fixed start: the most
+// common colors), a 5 x 5 majority filter against JPEG noise, then each connected patch of one color is a new region.
+// Specks under SPECK px take the color of the patch next to them. Regions are renumbered in scan order at the end.
+function splitByColor(px, w, h, id, k) {
+  const n = w * h, area = new Int32Array(k + 1);
+  for (let i = 0; i < n; i++) area[id[i]]++;
+  let next = k;
+  const lab = new Int32Array(n).fill(-1), comp = new Int32Array(n).fill(-1), stack = new Int32Array(n);
+  const nb = (i, f) => { const x = i % w; if (x > 0) f(i - 1); if (x < w - 1) f(i + 1); if (i >= w) f(i - w); if (i < n - w) f(i + w) };
+  for (let r = 1; r <= k; r++) {
+    if (area[r] < SPLIT_AREA) continue;
+    const idx = []; for (let i = 0; i < n; i++) if (id[i] === r) idx.push(i);
+    // fixed start: the most common colors (quantized to 16 levels), at least SPLIT_MERGE apart
+    const hist = new Map();
+    for (const i of idx) { const q = (px[i * 4] >> 4) << 8 | (px[i * 4 + 1] >> 4) << 4 | px[i * 4 + 2] >> 4; hist.set(q, (hist.get(q) || 0) + 1) }
+    const common = [...hist].sort((a, b) => b[1] - a[1] || a[0] - b[0]).map(([q]) => [((q >> 8) & 15) * 16 + 8, ((q >> 4) & 15) * 16 + 8, (q & 15) * 16 + 8]);
+    let cent = []; for (const c of common) { if (cent.length === SPLIT_K) break; if (cent.every(d => dist(c, d) > SPLIT_MERGE)) cent.push(c) }
+    for (let it = 0; it < 8; it++) {
+      const acc = cent.map(() => [0, 0, 0, 0]);
+      for (const i of idx) { const p = [px[i * 4], px[i * 4 + 1], px[i * 4 + 2]], c = nearest(cent, p); acc[c][0] += p[0]; acc[c][1] += p[1]; acc[c][2] += p[2]; acc[c][3]++ }
+      cent = cent.map((c, j) => acc[j][3] ? [acc[j][0] / acc[j][3], acc[j][1] / acc[j][3], acc[j][2] / acc[j][3]] : c);
+    }
+    const merged = []; for (const c of cent) if (merged.every(d => dist(c, d) > SPLIT_MERGE)) merged.push(c);
+    if (merged.length < 2) continue;
+    for (const i of idx) lab[i] = nearest(merged, [px[i * 4], px[i * 4 + 1], px[i * 4 + 2]]);
+    // 5 x 5 majority filter inside the area (JPEG edges and noise)
+    const sm = new Int32Array(idx.length), cnt = new Int32Array(merged.length);
+    idx.forEach((i, j) => { cnt.fill(0); const x = i % w, y = (i - x) / w;
+      for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) { const xx = x + dx, yy = y + dy;
+        if (xx >= 0 && xx < w && yy >= 0 && yy < h) { const q = yy * w + xx; if (id[q] === r) cnt[lab[q]]++ } }
+      let best = lab[i]; for (let c = 0; c < cnt.length; c++) if (cnt[c] > cnt[best]) best = c; sm[j] = best });
+    idx.forEach((i, j) => lab[i] = sm[j]);
+    // connected patches of one color; specks are cleared and refilled from their neighbors
+    const sizes = [];
+    for (const s of idx) { if (comp[s] !== -1) continue; const c = sizes.length; let top = 0, a = 0; stack[top++] = s; comp[s] = c;
+      while (top) { const i = stack[--top]; a++; nb(i, j => { if (comp[j] === -1 && id[j] === r && lab[j] === lab[i]) { comp[j] = c; stack[top++] = j } }) }
+      sizes.push(a) }
+    const big = sizes.map(a => a >= SPECK);
+    if (big.filter(Boolean).length < 2) { for (const i of idx) comp[i] = -1; continue }
+    let front = []; for (const i of idx) if (!big[comp[i]]) comp[i] = -2; else front.push(i);
+    while (front.length) { const nx = []; for (const i of front) nb(i, j => { if (comp[j] === -2) { comp[j] = comp[i]; nx.push(j) } }); front = nx }
+    // the patch holding the area's first pixel keeps the area's id; the others get new ids
+    const newId = new Map([[comp[idx[0]], r]]);
+    for (const i of idx) { if (!newId.has(comp[i])) newId.set(comp[i], ++next); id[i] = newId.get(comp[i]) }
+    for (const i of idx) comp[i] = -1;
+  }
+  // renumber 1..k in scan order so ids stay stable and deterministic
+  const order = new Int32Array(next + 1); let m = 0;
+  for (let i = 0; i < n; i++) if (id[i] && !order[id[i]]) order[id[i]] = ++m;
+  for (let i = 0; i < n; i++) id[i] = id[i] ? order[id[i]] : 0;
+  return m;
 }
 function dist(a, b) { return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]) }
 function nearest(cs, p) { let best = 0, bd = Infinity; cs.forEach((c, j) => { const d = dist(c, p); if (d < bd) { bd = d; best = j } }); return best }

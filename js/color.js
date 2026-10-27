@@ -116,7 +116,8 @@ async function pageData(id){
 const hexRgb=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
 function colorOf(s,v){return v===0?"#FFFFFF":v<=12?s.pd.meta.colors[v-1]:s.custom[v-13]||"#FFFFFF"}
 function makeState(pd,saved){const k=pd.meta.regions;const s={pd,fills:new Uint8Array(k+1),custom:[],stickers:[],undo:[]};
-  if(saved){(saved.fills||[]).forEach((v,r)=>{if(r<=k)s.fills[r]=v});s.custom=(saved.custom||[]).slice(0,MAX_CUSTOM);s.stickers=(saved.stickers||[]).filter(x=>stickers().some(t=>t.n===x.n)).slice(0,MAX_STICKERS)}
+  // fills saved for a different region map (the page was rebuilt) are dropped rather than painted onto the wrong shapes
+  if(saved){if((saved.fills||[]).length===k+1)saved.fills.forEach((v,r)=>{s.fills[r]=v});s.custom=(saved.custom||[]).slice(0,MAX_CUSTOM);s.stickers=(saved.stickers||[]).filter(x=>stickers().some(t=>t.n===x.n)).slice(0,MAX_STICKERS)}
   if(pd.id==="scratch"&&!saved)s.fills[1]=1;
   return s}
 // Paint the fill layer of a state onto a canvas at the page's own size.
