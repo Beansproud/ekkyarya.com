@@ -1,7 +1,7 @@
 /* Game mode (phones, ?game, Capacitor app): everything inside #game and its overlays. Loaded after site.css. */
 #game{display:none}
 body.game-mode{overflow:hidden;background:#120a1f}
-body.game-mode>:not(#game):not(dialog):not(.toast):not(.loader):not(.spark):not(.confetti):not(script){display:none!important}
+body.game-mode>:not(#game):not(dialog):not(.toast):not(.loader):not(.spark):not(.confetti):not(.idle-buddy):not(script){display:none!important}
 body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family:Fredoka,Poppins,sans-serif;overflow:hidden;overflow:clip;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;
   background:radial-gradient(120% 70% at 50% 0%,#40236a 0,#1f1135 55%,#120a1f 100%)}
 .g-sky{position:absolute;inset:0;pointer-events:none}
@@ -733,6 +733,10 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 }
 @media (prefers-reduced-motion:reduce){.c-icon:hover,.g-x:hover,.c-page:hover{translate:none;scale:none;rotate:none}}
 
+/* Hire sheet: labels and placeholders at 4.5:1 or better on white, in dark mode too */
+.g-sheet label,.g-sheet label span{color:#5E5870}
+.g-sheet input::placeholder,.g-sheet textarea::placeholder{color:#5E5870;opacity:1}
+
 /* Developer 3: touch */
 /* Touch response, added by js/site.js on pointerdown (touch only, once, removed on animationend). Uses the individual
    scale and rotate properties so a tile's own tilt in transform is untouched. */
@@ -799,3 +803,14 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 .c-st.pop{animation:cStPop .3s ease-out}
 @keyframes cStPop{0%{scale:.7}60%{scale:1.14}100%{scale:1}}
 @media (prefers-reduced-motion:reduce){.c-st.pop{animation:none}}
+/* Doodle Scene: the bin opens its lid while a sticker is over it; stickers wobble a hair under a mouse (touch never hovers) */
+.c-lid{transform-box:fill-box;transform-origin:0 100%}
+.c-bin.hot .c-lid{transform:translate(1px,-2px) rotate(-28deg)}
+@media (prefers-reduced-motion:no-preference){
+  .c-lid{transition:transform .15s ease-out}
+  @media (hover:hover) and (pointer:fine){
+    .c-st:not(.drag):hover{animation:cStWob .35s ease-in-out}
+  }
+}
+@keyframes cStWob{25%{rotate:-4deg}75%{rotate:4deg}}
+.c-page{display:flex;flex-direction:column;justify-content:flex-start}   /* a button centers its content: a one-line title beside a two-line one left a gap above the picture */
