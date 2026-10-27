@@ -613,3 +613,6 @@ body.game-mode #game.at-start{background:var(--paper,#FBF7EE) var(--grain);color
 .g-tabs .g-tab-hire .g-ico img{border-radius:8px}
 .g-sheet,#game:has(.c-over.open) .g-sheet{top:0}
 .g-sheet-in{padding-bottom:calc(env(safe-area-inset-bottom) + 104px)}
+.pp-cast{font-size:.85rem}
+.pp-cast .g-link{min-height:44px;padding:0 4px;color:#FFB400;text-decoration:underline}
+@media (orientation:landscape){.pp-end>p:not(.pp-cast){display:none}.pp-end .pp-art{max-height:22vh}.pp-end{gap:4px}.pp-cast{margin:0;line-height:1.1}}
