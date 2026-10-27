@@ -69,19 +69,6 @@ REUSE = {
 }
 
 
-# Paint Patrol (MG2): the hero is Ekky at his rolling desk, cut from Little Planet above the moon (the chair can't be
-# cut on its own: the desk stands in front of his legs). docs/paint-patrol-plan.md section 2.
-PATROL = {
-    "hero-desk": dict(piece="little-planet", src="assets/hero.png", mode="standing", seed=(290, 200), floor=362, bottom=440,
-                      keep=[(166, 300, 224, 432), (226, 362, 272, 432), (282, 360, 344, 432), (268, 300, 280, 440), (338, 300, 350, 440), (160, 300, 173, 440)],
-                      bgcolors=[(197, 191, 216), (176, 166, 199), (222, 217, 232), (186, 185, 204)], tol=12, h=330, role="patrol:hero"),
-    # the big grumpy friend of stage 1: the green monster with his hammer (Monster in My Room); he leans in from the
-    # right edge, where the picture cuts him off
-    "friend-monster": dict(piece="monster", src="assets/work/monster.jpg", mode="family", box=(300, 0, 1080, 780), seed=(800, 450),
-                           held=[dict(box=(260, 70, 480, 440), seed=(300, 150), bg=(247, 199, 179), tol=40)], h=480, role="patrol:friend"),
-}
-
-
 # Batch 2 (V2): villagers and scenery from the "Elements to cut" catalogue (docs/roles.md), originals only.
 # Source pixels. "within" limits a cut to a selection polygon; "bright" keeps the light shapes under the seed inside
 # that selection and then takes back Ekky's outline around them (for figures standing on a dark, busy background).
@@ -206,7 +193,7 @@ def make(s):
 def build():
     os.makedirs(OUT, exist_ok=True)
     index = {}
-    for name, s in list(SPRITES.items()) + list(BATCH2.items()) + list(PATROL.items()):
+    for name, s in list(SPRITES.items()) + list(BATCH2.items()):
         im = make(s)
         im.save(os.path.join(OUT, name + ".png"), optimize=True)
         index[name] = dict(piece=s["piece"], file=f"assets/sprites/{name}.png", w=im.width, h=im.height, role=s["role"],
