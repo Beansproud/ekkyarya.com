@@ -143,9 +143,9 @@ function renderCards(fresh){
   $("gFilters").innerHTML=[["all","All"],["illustration","Illustration"],["web","Web & UI"],["branding","Branding"],["social","Social"]]
     .map(([f,n])=>`<button class="${f===gFilter?"active":""}" data-f="${f}">${catImg(f)}${n}</button>`).join("");
   const list=PROJECTS.map((p,i)=>({p,i})).filter(x=>gFilter==="all"||x.p.cat===gFilter);
-  $("gCards").innerHTML=list.map(({p,i},k)=>{const [rn,rc]=RARITY[p.rar||0],own=st.got.includes(i);
-    return `<button class="g-card${rn==="Legendary"?" legendary":""}${own?" owned":""}${fresh&&fresh.includes(i)?" fresh":""}" data-i="${i}" style="--rc:${rc};animation-delay:${k*.06}s"><div class="inner">
-      <span class="rar">${rn}</span><span class="gcat">${catImg(p.cat,"")}</span>${own?`<span class="seen">${ico("s-star")}</span>`:st.seen.includes(i)?`<span class="seen">${ico("i-check")}</span>`:""}<div class="art">${artOf(p)}</div><div class="info"><b>${p.title}</b></div></div></button>`}).join("");
+  $("gCards").innerHTML=list.map(({p,i},k)=>{const [rn,rc]=RARITY[p.rar||0],got=st.got.includes(i);
+    return `<button class="g-card${rn==="Legendary"?" legendary":""}${got?" owned":""}${fresh&&fresh.includes(i)?" fresh":""}" data-i="${i}" style="--rc:${rc};animation-delay:${k*.06}s"><div class="inner">
+      <span class="rar">${rn}</span><span class="gcat">${catImg(p.cat,"")}</span>${got?`<span class="seen">${ico("s-star")}</span>`:st.seen.includes(i)?`<span class="seen">${ico("i-check")}</span>`:""}<div class="art">${artOf(p)}</div><div class="info"><b>${p.title}</b></div></div></button>`}).join("");
   $("gColCount").textContent=`${st.got.length} of ${PROJECTS.length} cards collected`;$("gColBar").style.width=st.got.length/PROJECTS.length*100+"%";packLabel();
 }
 $("gFilters").addEventListener("click",e=>{const b=e.target.closest("button");if(b){gFilter=b.dataset.f;buzz(8);renderCards()}});

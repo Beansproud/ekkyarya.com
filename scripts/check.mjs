@@ -1,10 +1,12 @@
 // Usage: npm run check. Fails (exit 1) with a list of file:line locations when
 //  1. an emoji or symbol glyph is left in index.html, css/ or js/ (icons come from assets/ui/ or the inline SVG set), or
 //  2. a fan-art or client piece is referenced from UI code. Those pieces may appear only in the PROJECTS list in js/data.js.
+//  3. UI code or the icon generator uses a piece from assets/work/ whose PROJECTS entry is not own: true.
 // No packages: Node built-ins only.
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import vm from "node:vm";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const FORBIDDEN = [
@@ -26,6 +28,11 @@ const ui = [join(ROOT, "index.html"), ...files(join(ROOT, "css"), [".css"]), ...
 // The icon generator must not cut from those pieces either.
 const iconSources = [join(ROOT, "scripts", "ui-assets.py")];
 
+// slug -> own, read from the PROJECTS list itself
+const data = vm.runInNewContext(readFileSync(join(ROOT, "js", "data.js"), "utf8") + ";({PROJECTS})", {});
+const OWN = new Map(data.PROJECTS.map(p => [p.full.replace(/^.*\/|\.\w+$/g, ""), p.own === true]));
+const WORK = /assets\/work\/(?:thumb\/)?([a-z0-9-]+)\.\w+/gi;
+
 const problems = [];
 for (const f of [...ui, ...iconSources]) {
   const rel = relative(ROOT, f), lines = readFileSync(f, "utf8").split("\n");
@@ -38,6 +45,8 @@ for (const f of [...ui, ...iconSources]) {
       if (/^\s*const PROJECTS\s*=\s*\[/.test(line)) inProjects = true;
       if (inProjects) { if (/^\s*\];/.test(line)) inProjects = false; return; }
     }
+    for (const m of line.matchAll(WORK))
+      if (OWN.get(m[1]) !== true) problems.push(`${at}  "${m[1]}" is not marked own: true in PROJECTS, so it can't be an icon or UI art`);
     for (const m of line.matchAll(SLUG))
       problems.push(`${at}  "${m[1]}" is a fan-art or client piece: it may appear only in the PROJECTS list`);
   });
@@ -47,4 +56,4 @@ if (problems.length) {
   console.error(`check failed (${problems.length}):\n` + problems.map(p => "  " + p).join("\n"));
   process.exit(1);
 }
-console.log(`check passed: ${ui.length} UI files, no emoji or symbol glyphs, no fan-art or client pieces outside PROJECTS`);
+console.log(`check passed: ${ui.length} UI files, no emoji or symbol glyphs, no fan-art or client pieces outside PROJECTS, UI art only from own pieces`);
