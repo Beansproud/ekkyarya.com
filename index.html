@@ -17,7 +17,6 @@
 <link rel="stylesheet" href="css/game.css">
 <script defer src="js/data.js"></script>
 <script defer src="js/features.js"></script>
-<script defer src="js/copy.js"></script>
 <script defer src="js/site.js"></script>
 <script defer src="js/game.js"></script>
 <script defer src="js/color.js"></script>
@@ -108,7 +107,7 @@
     <div class="stars" id="stars"></div>
     <div class="reveal">
       <p class="eyebrow">Hi!</p>
-      <h1><span class="split">I'm Ekky</span> <span class="wave" aria-hidden="true"><img src="assets/ui/face.png" alt=""></span></h1>
+      <h1><span class="split">I'm Ekky</span> <span class="wave" aria-hidden="true"><img src="assets/ui/ekky.png" alt=""></span></h1>
       <p class="roles">Illustrator<br>Graphic Designer</p>
       <p class="typed" aria-live="polite">I draw <b id="typed">mascots</b><span class="caret" aria-hidden="true"></span></p>
       <div class="hero-ctas">
@@ -303,8 +302,8 @@
   <div class="g-planet-bg"></div>
 
   <header class="g-hud">
-    <div class="g-avatar"><img src="assets/hero.png" alt=""></div>
-    <div class="g-player"><b data-t="map.title"></b><small data-t="start.role"></small></div>
+    <div class="g-avatar"><img src="assets/ui/ekky.png" alt=""></div>
+    <div class="g-player"><b data-t="map.title"></b><small data-t="hud.role"></small></div>
     <button class="g-round" id="gSnd" data-feature="sound" aria-label="Sound" aria-pressed="false"><svg class="ico on" aria-hidden="true"><use href="#i-sound"/></svg><svg class="ico off" aria-hidden="true"><use href="#i-mute"/></svg></button>
     <button class="g-hire" data-hire data-t-aria="hire.chip.aria"><img src="assets/ui/monster-head.png" alt=""><span data-t="hire.chip"></span></button>
   </header>
@@ -323,33 +322,32 @@
   </section>
 
   <section class="g-screen" id="g-map">
-    <div class="g-head g-head-row"><div><h2 class="g-title" data-t="map.title"></h2><p class="g-sub" data-t="map.sub"></p></div>
-      <button class="g-btn sm pink" data-arcade data-feature="starCatcher"><img class="b-ico" src="assets/ui/helmet.png" alt=""> <span data-t="stars.title"></span></button></div>
+    <div class="g-head"><h2 class="g-title" data-t="map.title"></h2></div>
     <div class="g-map-wrap" id="gMapWrap"></div>
   </section>
 
   <section class="g-screen" id="g-art">
-    <div class="g-head"><h2 class="g-title" data-t="art.title"></h2><p class="g-sub" id="gArtCount"></p></div>
+    <div class="g-head"><h2 class="g-title" data-t="tab.art"></h2><p class="g-sub" id="gArtCount"></p></div>
     <div class="g-filters" id="gFilters"></div>
     <div class="g-cards" id="gCards"></div>
   </section>
 
   <section class="g-screen" id="g-mine">
-    <div class="g-head"><h2 class="g-title" data-t="mine.title"></h2><p class="g-sub" data-t="mine.sub"></p></div>
-    <div class="g-panel"><h3 data-t="mine.colorings"></h3><div class="g-mine-list" id="gMineList"></div></div>
-    <div class="g-panel" data-feature="starCatcher"><h3 data-t="mine.best"></h3><p class="g-best" id="gBest"></p></div>
+    <div class="g-head"><h2 class="g-title" data-t="mine.title"></h2></div>
+    <div class="g-panel"><div class="g-mine-list" id="gMineList"></div></div>
+    <div class="g-panel" data-feature="starCatcher"><h3 data-t="stars.title"></h3><p class="g-best" id="gBest"></p></div>
     <div class="g-panel">
       <div class="g-row" data-feature="sound"><span data-t="mine.sound"></span><button class="g-switch" id="gSndSwitch" role="switch" aria-checked="false" data-t-aria="mine.sound"></button></div>
       <div class="g-row"><span data-t="mine.vibration"></span><button class="g-switch on" id="gVib" role="switch" aria-checked="true" data-t-aria="mine.vibration"></button></div>
-      <div class="g-row"><span data-t="mine.classic"></span><button class="g-btn sm alt" data-classic>Open</button></div>
+      <div class="g-row"><span data-t="start.classic"></span><button class="g-btn sm alt" data-classic aria-label="Open"><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></button></div>
+      <div class="g-row"><button class="g-link g-reset" id="gReset" data-t="mine.reset"></button></div>
     </div>
-    <button class="g-link g-reset" id="gReset" data-t="mine.reset"></button>
   </section>
 
   <nav class="g-tabs" aria-label="Game menu">
-    <button data-tab="art"><span class="g-ico"><img src="assets/ui/palette.png" alt=""></span><span data-t="art.title"></span></button>
+    <button data-tab="art"><span class="g-ico"><img src="assets/ui/palette.png" alt=""></span><span data-t="tab.art"></span></button>
     <button data-tab="map" class="center" aria-label="Map"><img class="g-face" src="assets/face.png" alt=""><small>Map</small></button>
-    <button data-tab="mine"><span class="g-ico g-ico-line"><svg class="ico" aria-hidden="true"><use href="#i-frame"/></svg></span><span data-t="mine.title"></span></button>
+    <button data-tab="mine"><span class="g-ico g-ico-line"><svg class="ico" aria-hidden="true"><use href="#i-frame"/></svg></span><span data-t="tab.mine"></span></button>
   </nav>
 
   <div class="g-sheet" id="gSheet"><div class="g-sheet-in" role="dialog" aria-modal="true" aria-labelledby="gSheetTitle"><div class="g-grab"></div><button class="g-x" id="gSheetX" aria-label="Close"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button><div id="gSheetBody"></div></div></div>

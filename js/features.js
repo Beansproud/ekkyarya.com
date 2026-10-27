@@ -21,3 +21,6 @@ const feature = name => FEATURES[name] === true;
 const creative = p => !!p && shareable(p) && p.kind === "original";
 // The featured row and the desktop strip: a fresh pick on every visit (featuredPick in js/data.js), original pieces only.
 const featuredSix = (n = 6) => featuredPick(PROJECTS.length).filter(creative).slice(0, n);
+// tt(key, english): t() for the few keys COPY in js/data.js doesn't have yet (asked of the UX lead); until then it shows
+// the English given at the call site instead of the bare key.
+const tt = (key, en, vars) => { const s = t(key, vars); return s === key ? en : s; };

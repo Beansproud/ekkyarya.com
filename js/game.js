@@ -5,11 +5,11 @@
 const G=document.getElementById("game"), $=id=>document.getElementById(id);
 const native=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
 const LEVELS=[
-  {id:"about",   icon:"face",         key:"level.1"},
+  {id:"about",   icon:"ekky",         key:"level.1"},
   {id:"color",   icon:"pen-hand",     key:"level.2"},
   {id:"art",     icon:"palette",      key:"level.3"},
   {id:"process", icon:"ghost",        key:"level.4"},
-  {id:"hire",    icon:"monster-head", key:"level.5", boss:true},
+  {id:"hire",    icon:"monster-head", key:"town.hire"},
 ];
 const RARITY=["#B8D5FF","#7ED9B0","#C9A7FF","#FFB400"];   // cosmetic frame colors only
 // Things you made, kept on this device: colorings (js/color.js), best Star Catcher run, settings. Sound is off by default on the web.
@@ -18,10 +18,10 @@ let st;try{st=Object.assign({},blank,JSON.parse(localStorage.getItem("ekkyGame")
 ["xp","coins","visited","seen","got","ach","freePack","newAch"].forEach(k=>delete st[k]);   // round-0 meta-game, gone
 const save=()=>{try{localStorage.setItem("ekkyGame",JSON.stringify(st))}catch{}};
 const buzz=ms=>{if(st.vib&&navigator.vibrate)try{navigator.vibrate(ms)}catch{}};
-const contactReady=!!CONFIG.email&&!/example\.com$/i.test(CONFIG.email);
+const contactReady=!!CONFIG.email;
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
-/* ---- text from js/copy.js ---- */
+/* ---- text: t() and COPY (English and Indonesian) live in js/data.js ---- */
 G.querySelectorAll("[data-t]").forEach(el=>el.textContent=t(el.dataset.t));
 G.querySelectorAll("[data-t-aria]").forEach(el=>el.setAttribute("aria-label",t(el.dataset.tAria)));
 
@@ -59,7 +59,7 @@ G.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(g){buzz(
 
 /* ---- start screen: the featured six open the lightbox ---- */
 function renderStart(){const six=featuredSix().map(p=>({p,i:PROJECTS.indexOf(p)}));
-  $("gFeatured").innerHTML=six.map(({p,i})=>`<button class="g-feat" data-i="${i}" aria-label="${esc(p.title)}"><img src="${p.img}" alt="" loading="lazy"><b>${esc(p.title)}</b></button>`).join("")}
+  $("gFeatured").innerHTML=six.map(({p,i})=>`<button class="g-feat" data-i="${i}" aria-label="${esc(ptitle(p))}"><img src="${p.img}" alt="" decoding="async"><b>${esc(ptitle(p))}</b></button>`).join("")}
 $("gFeatured").addEventListener("click",e=>{const b=e.target.closest(".g-feat");if(b){buzz(10);show(+b.dataset.i)}});
 
 /* ---- map: an isometric world of 5 floating islands, never locked, no "next level" pressure (B06) ---- */
@@ -75,14 +75,14 @@ function isoIsland(n,tw,d,[top,left,right]){const th=tw/2,W=n*tw,H=n*th;let grid
     <ellipse cx="${W/2}" cy="${H/2+2}" rx="${tw*.55}" ry="${th*.45}" fill="#2B1342" opacity=".22"/></svg>`}
 function renderMap(){
   const W=$("gMapWrap"),cw=Math.min(420,W.clientWidth||innerWidth-32),TOP=52,STEP=62,D=12;
-  const P=LEVELS.map((l,i)=>{const n=3,tw=l.boss?42:36,s=l.boss?62:52;
-    return {l,i,n,tw,s,H:n*tw/2,x:cw*(l.boss?.38:i%2?.72:.28),y:TOP+i*STEP+(l.boss?18:0)}});
+  const P=LEVELS.map((l,i)=>{const last=i===LEVELS.length-1,n=3,tw=last?42:36,s=last?60:52;
+    return {l,i,n,tw,s,H:n*tw/2,x:cw*(last?.38:i%2?.72:.28),y:TOP+i*STEP+(last?18:0)}});
   const last=P[P.length-1],h=last.y+last.H/2+D+30;
   let planks="";for(let i=1;i<P.length;i++){const a=P[i-1],b=P[i],steps=Math.floor(Math.hypot(b.x-a.x,b.y-a.y)/13);
     for(let k=1;k<steps;k++){const x=a.x+(b.x-a.x)*k/steps,y=a.y+(b.y-a.y)*k/steps;planks+=`<path d="M${x.toFixed(1)} ${(y-3).toFixed(1)}l7 3-7 3-7-3z"/>`}}
   W.style.height=h+"px";
   W.innerHTML=`<svg class="g-bridges" width="${cw}" height="${h}" viewBox="0 0 ${cw} ${h}" aria-hidden="true"><g fill="#c98a4a" stroke="#7a4a22" stroke-width="1.2" stroke-linejoin="round">${planks}</g></svg>`+
-    P.map(({l,i,n,tw,s,H,x,y})=>`<button class="g-node g-place${l.boss?" boss":""}" style="left:${x}px;top:${y-s+4}px;--s:${s}px;--h:${H}px;animation-delay:${-i*.7}s" data-l="${i}" aria-label="${esc(t(l.key))}">
+    P.map(({l,i,n,tw,s,H,x,y})=>`<button class="g-node g-place" style="left:${x}px;top:${y-s+4}px;--s:${s}px;--h:${H}px" data-l="${i}" aria-label="${esc(t(l.key))}">
       ${uiImg(l.icon,"g-place-ic")}${isoIsland(n,tw,D,ISLAND[l.id])}<span class="g-place-label">${esc(t(l.key))}</span></button>`).join("");
 }
 $("gMapWrap").addEventListener("click",e=>{const n=e.target.closest(".g-node");if(!n)return;buzz(15);sfx("tap");openLevel(+n.dataset.l)});
@@ -96,30 +96,36 @@ $("gSheetX").onclick=closeSheet;sheet.addEventListener("click",e=>{if(e.target==
 addEventListener("keydown",e=>{if(e.key==="Escape"&&sheet.classList.contains("open"))closeSheet()});
 let sy=null;sheet.firstElementChild.addEventListener("touchstart",e=>{sy=sheet.firstElementChild.scrollTop>0?null:e.touches[0].clientY},{passive:true});
 sheet.firstElementChild.addEventListener("touchend",e=>{if(sy!==null&&e.changedTouches[0].clientY-sy>90)closeSheet();sy=null});
-const hireChip=()=>`<p class="g-sheet-hire"><button class="g-hire" data-hire aria-label="${esc(t("hire.chip.aria"))}"><img src="assets/ui/monster-head.png" alt=""><span>${esc(t("hire.chip"))}</span></button></p>`;
-const head=(l,i)=>`<span class="g-ribbon">${l.boss?"BOSS LEVEL":"LEVEL "+(i+1)}</span><h2 id="gSheetTitle">${uiImg(l.icon,"h-ico")}${esc(t(l.key))}</h2>`;
+// Every sheet ends with a Hire button (B07); the HUD chip above the sheet's backdrop stays tappable too.
+const hireChip=()=>`<p class="g-sheet-hire"><button class="g-hire" data-hire aria-label="${esc(t("hire.chip.aria"))}"><img src="assets/ui/monster-head.png" alt=""><span>${esc(t("sheet.hire"))}</span></button></p>`;
+const head=l=>`<h2 id="gSheetTitle">${uiImg(l.icon,"h-ico")}${esc(t(l.key))}</h2>`;
 function openLevel(i){const l=LEVELS[i];
   if(l.id==="color")return go("color");
   if(l.id==="art")return go("art");
   if(l.id==="hire")return openHire();
   if(l.id==="about"){const three=featuredSix(3).map(p=>({p,k:PROJECTS.indexOf(p)}));
-    openSheet(head(l,i)+`<p>${esc(t("about.body"))}</p><h3 class="g-sheet-h3">${esc(t("about.pieces"))}</h3>
-      <div class="g-three">${three.map(({p,k})=>`<button class="g-feat" data-i="${k}" aria-label="${esc(p.title)}"><img src="${p.img}" alt="" loading="lazy"><b>${esc(p.title)}</b></button>`).join("")}</div>`+hireChip())}
-  if(l.id==="process"){openSheet(head(l,i)+`<p>${esc(t("process.intro"))}</p>`+
+    const facts=["about.fact.from","about.fact.lang","about.fact.hours"].map(k=>t(k)).filter(v=>v&&!v.startsWith("about."));
+    openSheet(head(l)+`<p>${esc(t("about.body"))}</p>${facts.length?`<ul class="g-facts">${facts.map(f=>`<li>${esc(f)}</li>`).join("")}</ul>`:""}<h3 class="g-sheet-h3">${esc(t("about.pieces"))}</h3>
+      <div class="g-three">${three.map(({p,k})=>`<button class="g-feat" data-i="${k}" aria-label="${esc(ptitle(p))}"><img src="${p.img}" alt="" loading="lazy"><b>${esc(ptitle(p))}</b></button>`).join("")}</div>`+hireChip())}
+  if(l.id==="process"){openSheet(head(l)+`<p>${esc(t("process.intro"))}</p>`+
     [["Brief & chat","We talk about your idea, audience and the feeling it should give."],["Sketches","Rough concepts so we pick a direction early."],["Color & polish","Line, color and texture, with room for revisions."],["Delivery","Final files for print, web and social."]]
-     .map(([h,d],k)=>`<div class="g-quest" data-k="${k}"><span class="chk">${ico("i-check")}</span><div><b>${esc(h)}</b><p>${esc(d)}</p></div></div>`).join("")+hireChip());
-    setTimeout(()=>$("gSheetBody").querySelectorAll(".g-quest").forEach(q=>setTimeout(()=>q.classList.add("ok"),reduce?0:300+q.dataset.k*350)),300)}
+     .map(([h,d],k)=>`<div class="g-quest" data-k="${k}"><span class="chk">${ico("i-check")}</span><div><b>${esc(tt(`process.step${k+1}`,h))}</b><p>${esc(tt(`process.step${k+1}.body`,d))}</p></div></div>`).join("")+hireChip());
+    // the steps tick one after another, slowly, so the order of the process reads (B39)
+    setTimeout(()=>$("gSheetBody").querySelectorAll(".g-quest").forEach(q=>setTimeout(()=>q.classList.add("ok"),reduce?0:500+q.dataset.k*600)),300)}
 }
 $("gSheetBody").addEventListener("click",e=>{const f=e.target.closest(".g-feat");if(f){show(+f.dataset.i)}});
 
 /* ---- Final Quest: the Hire sheet (B07, B17). Opens over the current screen; closing returns there. ---- */
 function openHire(prefill){const l=LEVELS[4];
-  const quick=contactReady?`<div class="g-quick">
-      <a class="g-btn" href="mailto:${esc(CONFIG.email)}">${ico("i-mail")} ${esc(t("hire.email"))}</a>
+  // Quick actions lead with the business email; every other channel shows only when CONFIG has it (B15).
+  const links=[["instagram","hire.instagram"],["linkedin","hire.linkedin"],["behance","hire.behance"]].filter(([k])=>CONFIG.links[k]);
+  const quick=`<div class="g-quick">
+      ${CONFIG.email?`<a class="g-btn" href="mailto:${esc(CONFIG.email)}">${ico("i-mail")} ${esc(t("hire.email"))}</a>`:`<a class="g-btn" href="${esc(hireTarget().href)}" target="_blank" rel="noopener">${ico("i-send")} ${esc(t("hire.chip"))}</a>`}
       ${CONFIG.whatsapp?`<a class="g-btn alt" href="https://wa.me/${esc(String(CONFIG.whatsapp).replace(/\D/g,""))}" target="_blank" rel="noopener">${ico("i-chat")} ${esc(t("hire.whatsapp"))}</a>`:""}
-      <button class="g-btn alt" type="button" id="gCopyMail">${ico("i-copy")} ${esc(t("hire.copy"))}</button></div>`:"";
+      ${CONFIG.email?`<button class="g-btn alt" type="button" id="gCopyMail">${ico("i-copy")} ${esc(t("hire.copy"))}</button>`:""}</div>
+    ${links.length||CONFIG.website?`<p class="g-links">${links.map(([k,c])=>`<a href="${esc(CONFIG.links[k])}" target="_blank" rel="noopener">${esc(t(c))}</a>`).join("")}${CONFIG.website?`<a href="${esc(CONFIG.website)}" target="_blank" rel="noopener">${esc(t("hire.website"))}</a>`:""}</p>`:""}`;
   const types=t("hire.form.types").split("|");
-  openSheet(`<span class="g-ribbon">BOSS LEVEL</span><h2 id="gSheetTitle">${uiImg(l.icon,"h-ico")}${esc(t("hire.title"))}</h2>
+  openSheet(`<h2 id="gSheetTitle">${uiImg(l.icon,"h-ico")}${esc(t("hire.title"))}</h2>
     <p>${esc(t("hire.body"))}</p>${quick}<p class="g-small">${esc(t("hire.price"))}</p>
     <h3 class="g-sheet-h3">${esc(t("hire.form.title"))}</h3>
     <form id="gForm" novalidate>
@@ -134,18 +140,18 @@ $("gSheetBody").addEventListener("submit",e=>{e.preventDefault();const f=e.targe
   f.querySelectorAll("[required]").forEach(i=>{const m=i.validity.valueMissing?"This one's needed":i.validity.tooShort?"A few more words, please":"";
     i.parentElement.querySelector(".err").textContent=m;if(m)ok=false});
   if(!ok){buzz([20,40,20]);if(!reduce)f.animate([{transform:"translateX(0)"},{transform:"translateX(-8px)"},{transform:"translateX(8px)"},{transform:"translateX(0)"}],{duration:300});return}
-  if(!contactReady)return say(t("hire.pending"));
   const d=Object.fromEntries(new FormData(f));sfx("level");if(typeof confetti==="function")confetti();closeSheet();say(t("hire.sent"),"i-check");
-  setTimeout(()=>location.href=`mailto:${CONFIG.email}?subject=${encodeURIComponent(d.type+" project from "+d.name)}&body=${encodeURIComponent(d.message+"\n\n"+d.name)}`,900)});
+  const go=CONFIG.email?`mailto:${CONFIG.email}?subject=${encodeURIComponent(d.type+" project from "+d.name)}&body=${encodeURIComponent(d.message+"\n\n"+d.name)}`:hireTarget().href;
+  setTimeout(()=>{if(go.startsWith("mailto:"))location.href=go;else open(go,"_blank","noopener")},900)});
 
 /* ---- Art: every piece, free to view; rarity is only a frame color ---- */
 let gFilter="all";
 function renderArt(){
   $("gFilters").innerHTML=[["all","All"],["illustration","Illustration"],["web","Web & UI"],["branding","Branding"],["social","Social"]]
-    .map(([f,n])=>`<button class="${f===gFilter?"active":""}" data-f="${f}" aria-pressed="${f===gFilter}">${catImg(f)}${n}</button>`).join("");
+    .map(([f,n])=>`<button class="${f===gFilter?"active":""}" data-f="${f}" aria-pressed="${f===gFilter}">${catImg(f)}${esc(tt("filter."+f,n))}</button>`).join("");
   const list=PROJECTS.map((p,i)=>({p,i})).filter(x=>gFilter==="all"||x.p.cat===gFilter);
   $("gCards").innerHTML=list.map(({p,i},k)=>`<button class="g-card${p.rar===3?" legendary":""}" data-i="${i}" style="--rc:${RARITY[p.rar||0]};animation-delay:${Math.min(k,12)*.04}s"><div class="inner">
-      <span class="gcat">${catImg(p.cat,"")}</span><div class="art">${artOf(p)}</div><div class="info"><b>${esc(p.title)}</b>${p.label?`<span class="g-tag">${esc(p.label)}</span>`:""}</div></div></button>`).join("");
+      <span class="gcat">${catImg(p.cat,"")}</span><div class="art">${artOf(p)}</div><div class="info"><b>${esc(ptitle(p))}</b>${p.label?`<span class="g-tag">${esc(plabel(p))}</span>`:""}</div></div></button>`).join("");
   $("gArtCount").textContent=t("art.count",{n:list.length});
 }
 $("gFilters").addEventListener("click",e=>{const b=e.target.closest("button");if(b){gFilter=b.dataset.f;buzz(8);renderArt()}});
@@ -155,7 +161,7 @@ $("gCards").addEventListener("click",e=>{const c=e.target.closest(".g-card");if(
 function renderMine(){
   const list=Object.entries(st.colorings||{}).sort((a,b)=>(b[1].at||0)-(a[1].at||0));
   $("gMineList").innerHTML=list.length?list.map(([id,c])=>`<button class="g-mine-item" data-page="${esc(id)}" aria-label="${esc(c.title||id)}">${c.thumb?`<img src="${c.thumb}" alt="">`:""}<b>${esc(c.title||id)}</b></button>`).join(""):`<p class="g-small">${esc(t("mine.empty"))}</p>`;
-  if($("gBest"))$("gBest").innerHTML=st.best?`${ico("s-star")} ${st.best}`:esc(t("mine.best.none"));
+  if($("gBest"))$("gBest").innerHTML=st.best?`${ico("s-star")} ${esc(t("mine.best",{n:st.best}))}`:esc(t("mine.best.none"));
   syncToggles();
 }
 $("gMineList").addEventListener("click",e=>{const b=e.target.closest("[data-page]");if(b&&typeof Color!=="undefined")Color.open(b.dataset.page)});
@@ -183,8 +189,9 @@ addEventListener("resize",moveInd);
 
 /* ---- Star Catcher (B13): one rule, always the full 30 s, no lives, no game over ---- */
 // Balance numbers (Game Director): each range goes from the start of the round to the end.
-const BALANCE={seconds:30,spawn:[.60,.32],speed:[140,320],speedRandom:50,hazardShare:[.12,.25],catchStar:46,catchHazard:30,hazardCost:2,
-  mix:{glow:.07,palette:.18}};   // of the non-hazard items: 7% glowing star (+5), 18% palette (+3), the rest star (+1)
+// Retuned after the r1a playtest (docs/playtest-r1a.md): slower and calmer; scripts/sim-stars.mjs checks idle and casual scores.
+const BALANCE={seconds:30,spawn:[.75,.45],speed:[110,240],speedRandom:40,hazardShare:[.12,.25],catchStar:30,catchHazard:26,hazardCost:2,
+  mix:{glow:.08,palette:.20}};   // of the non-hazard items: 8% glowing star (+5), 20% palette (+3), the rest star (+1)
 const KINDS={star:["star",1,36],palette:["palette",3,40],glow:["glow",5,48],virus:["virus",-BALANCE.hazardCost,40]};
 function svgSprite(id){const sym=document.getElementById(id),i=new Image();
   i.src="data:image/svg+xml,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${sym.getAttribute("viewBox")}" width="96" height="96">${sym.innerHTML}</svg>`);return i}
@@ -240,10 +247,13 @@ function endArcade(){const a=A;a.run=false;const rec=a.score>(st.best||0);st.bes
   $("gResTitle").textContent=rec?t("stars.record"):t("stars.end");$("gResScore").innerHTML=ico("s-star")+a.score;
   $("gResText").textContent=t("stars.result",{n:a.score,best:st.best});$("gResult").classList.add("show");G.classList.remove("playing");
   sfx(rec?"legend":"level");if(rec&&typeof confetti==="function")confetti()}
-function quitArcade(){cancelAnimationFrame(raf);A=null;$("gArcade").classList.remove("open");G.classList.remove("playing");$("gCount").innerHTML=""}
+function quitArcade(){cancelAnimationFrame(raf);A=null;pausedByHide=false;$("gArcade").classList.remove("open");G.classList.remove("playing");$("gCount").innerHTML=""}
 if(cv){$("gArcadeX").onclick=quitArcade;$("gResBack").onclick=()=>{quitArcade();go("start")};$("gAgain").onclick=startArcade}
 G.addEventListener("click",e=>{if(e.target.closest("[data-arcade]")){sfx("tap");startArcade()}});
-document.addEventListener("visibilitychange",()=>{if(document.hidden&&A&&A.run){A.run=false;setTimeout(()=>{if(A)A.run=true},300)}});
+// A hidden tab pauses the round; it resumes only once the tab is visible again (r1a bug: it used to resume while hidden).
+let pausedByHide=false;
+document.addEventListener("visibilitychange",()=>{if(!A)return;if(document.hidden){if(A.run){A.run=false;pausedByHide=true}}
+  else if(pausedByHide){pausedByHide=false;setTimeout(()=>{if(A&&!document.hidden&&A.t>0)A.run=true},600)}});
 
 function renderAll(){renderStart();renderMap();renderArt();renderMine();setTimeout(moveInd,60)}
 // Shared with js/color.js, js/share.js and js/links.js.

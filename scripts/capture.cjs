@@ -3,7 +3,7 @@
 // The site is served over a tiny built-in HTTP server (as on GitHub Pages or in the app), so canvas export works.
 const {chromium,devices}=require('playwright');const [,,SITE,OUT]=process.argv;const http=require('http'),fsx=require('fs'),px=require('path');
 const TYPES={'.html':'text/html','.css':'text/css','.js':'text/javascript','.json':'application/json','.png':'image/png','.jpg':'image/jpeg','.gif':'image/gif','.ico':'image/x-icon','.svg':'image/svg+xml'};
-const server=http.createServer((q,r)=>{const f=px.join(SITE,decodeURIComponent(q.url.split('?')[0]));if(!f.startsWith(SITE)||!fsx.existsSync(f)||fsx.statSync(f).isDirectory()){r.writeHead(404);return r.end()}
+const server=http.createServer((q,r)=>{let f=px.join(SITE,decodeURIComponent(q.url.split('?')[0]));if(fsx.existsSync(f)&&fsx.statSync(f).isDirectory())f=px.join(f,'index.html');if(!f.startsWith(SITE)||!fsx.existsSync(f)){r.writeHead(404);return r.end()}
   r.writeHead(200,{'content-type':TYPES[px.extname(f)]||'application/octet-stream'});fsx.createReadStream(f).pipe(r)});
 (async()=>{await new Promise(ok=>server.listen(0,'127.0.0.1',ok));const url=`http://127.0.0.1:${server.address().port}/index.html`;
 const b=await chromium.launch();const errs=[],skipped=[];
@@ -11,7 +11,7 @@ const p=await (await b.newContext({...devices['iPhone 13']})).newPage();p.on('pa
 await p.goto(url);await p.waitForTimeout(2800);const shot=async n=>{await p.waitForTimeout(900);await p.screenshot({path:`${OUT}/phone-${n}.png`})};
 const c=async s=>{const el=await p.$(s);if(!el||!(await el.isVisible())){skipped.push(s);return false}await el.click({force:true});return true};
 let link=null;await shot('01-start');
-await c('[data-tab="map"]');await shot('02-map');
+await c('#g-start [data-go="map"]');await shot('02-map');
 for(const [l,n] of [[0,'03-level-about'],[3,'04-level-process'],[4,'05-hire']]){await c(`.g-node[data-l="${l}"]`);await p.waitForTimeout(700);await shot(n);await c('#gSheetX');await p.waitForTimeout(400)}
 await c('[data-tab="art"]');await shot('06-art');
 if(await c('.g-card[data-i="0"]')){await shot('07-lightbox');await c('#lbClose');await p.waitForTimeout(300)}
@@ -26,7 +26,7 @@ if(await c('.g-node[data-l="1"]')){await shot('08-color-picker');
       link=await p.evaluate(()=>Links.colorUrl(Color.state,'Rina'));await c('#cClose')}}
   await c('#cPickX')}
 await c('[data-tab="mine"]');await shot('11-mine');
-await c('[data-tab="map"]');await p.waitForTimeout(500);if(await c('#g-map [data-arcade]')){await p.waitForTimeout(4200);await shot('12-arcade')}
+await p.evaluate(()=>Game.go('start'));await p.waitForTimeout(500);if(await c('#g-start [data-arcade]')){await p.waitForTimeout(4200);await shot('12-arcade')}
 if(link){const p2=await (await b.newContext({...devices['iPhone 13']})).newPage();p2.on('pageerror',e=>errs.push('arrival: '+e.message));
   await p2.goto(link);await p2.waitForTimeout(3000);await p2.screenshot({path:`${OUT}/phone-13-arrival.png`});
   if(/[?&](color|f|s|from)=/.test(p2.url()))errs.push('arrival: address bar not cleaned: '+p2.url());

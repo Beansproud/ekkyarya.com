@@ -5,9 +5,9 @@ body.game-mode>:not(#game):not(dialog):not(.toast):not(.loader):not(.spark):not(
 body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family:Fredoka,Poppins,sans-serif;overflow:hidden;overflow:clip;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;
   background:radial-gradient(120% 70% at 50% 0%,#40236a 0,#1f1135 55%,#120a1f 100%)}
 .g-sky{position:absolute;inset:0;pointer-events:none}
-.g-sky i{position:absolute;border-radius:50%;background:#fff;animation:twinkle 3s ease-in-out infinite}
+.g-sky i{position:absolute;border-radius:50%;background:#fff;animation:twinkle 9s ease-in-out infinite}
 .g-planet-bg{position:absolute;width:420px;height:420px;border-radius:50%;left:50%;bottom:-300px;translate:-50% 0;background:radial-gradient(circle at 40% 30%,#4b3470,#2a1845 70%);box-shadow:0 0 80px rgba(156,145,189,.35);pointer-events:none}
-.g-screen{position:absolute;inset:0;padding:calc(env(safe-area-inset-top) + 92px) 16px calc(env(safe-area-inset-bottom) + 104px);overflow-y:auto;overflow-x:hidden;opacity:0;pointer-events:none;transform:translateY(24px) scale(.97);transition:opacity .35s,transform .45s cubic-bezier(.2,1.3,.4,1);scrollbar-width:none}
+.g-screen{position:absolute;inset:0;padding:calc(env(safe-area-inset-top) + 92px) 16px calc(env(safe-area-inset-bottom) + 104px);overflow-y:auto;overflow-x:hidden;opacity:0;pointer-events:none;transform:translateY(24px) scale(.97);transition:opacity var(--dur) var(--ease-in),transform var(--dur) var(--ease-in);scrollbar-width:none}
 .g-screen::-webkit-scrollbar{display:none}
 .g-screen.active{opacity:1;pointer-events:auto;transform:none}
 .g-title{color:#fff;font-size:1.9rem;font-weight:700;text-align:center;text-shadow:0 4px 0 #2B1342}
@@ -22,39 +22,35 @@ body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family
 
 /* start screen */
 .g-start{display:flex;flex-direction:column;align-items:center;gap:10px;padding-top:calc(env(safe-area-inset-top) + 84px);padding-bottom:calc(env(safe-area-inset-bottom) + 100px);text-align:center}
-.g-logo{width:118px;animation:gDrop 1s cubic-bezier(.2,1.6,.4,1) both,gFloat 4s 1s ease-in-out infinite;filter:drop-shadow(0 8px 16px rgba(0,0,0,.4))}
+.g-logo{width:84px;animation:gDrop var(--dur-slow) var(--ease-in) both;filter:drop-shadow(0 8px 16px rgba(0,0,0,.4))}
 .g-logo-text{font-size:3rem;font-weight:700;line-height:.9;color:#fff}
-@keyframes gDrop{from{transform:translateY(-200px) rotate(-20deg)}}
-@keyframes gFloat{50%{transform:translateY(-8px) rotate(-2deg)}}
+@keyframes gDrop{from{transform:translateY(-16px);opacity:0}}
 
 /* HUD */
-.g-hud{position:absolute;top:0;left:0;right:0;z-index:5;display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top) + 12px) 14px 12px;background:linear-gradient(#120a1fdd,#120a1f00);transition:transform .5s cubic-bezier(.2,1.3,.4,1)}
+.g-hud{position:absolute;top:0;left:0;right:0;z-index:5;display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top) + 12px) 14px 12px;background:linear-gradient(#120a1fdd,#120a1f00);transition:transform .5s var(--ease-in)}
 .g-avatar{width:52px;height:52px;border-radius:16px;overflow:hidden;background:#B8D5FF;border:3px solid #FFB400;flex:none;position:relative}
 .g-avatar img{width:300%;max-width:none;position:absolute;left:-108%;top:-54%}
 .g-player{flex:1;min-width:0}
 .g-player b{font-size:1rem;display:block;line-height:1.1}
 
 /* tabs */
-.g-tabs{position:absolute;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 12px);z-index:5;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:stretch;gap:6px;height:72px;padding:0 8px;overflow:visible;background:#241638;border:2px solid #3e2a5c;border-radius:26px;box-shadow:0 10px 30px rgba(0,0,0,.45);transition:transform .5s cubic-bezier(.2,1.3,.4,1)}
+.g-tabs{position:absolute;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 12px);z-index:5;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:stretch;gap:6px;height:72px;padding:0 8px;overflow:visible;background:#241638;border:2px solid #3e2a5c;border-radius:26px;box-shadow:0 10px 30px rgba(0,0,0,.45);transition:transform .5s var(--ease-in)}
 .g-tabs button{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;padding:0 0 11px;border-radius:0;background:none;color:#a99bc4;font-family:Fredoka;font-size:.78rem;font-weight:600;letter-spacing:.01em;transition:background .2s,color .2s,transform .15s}
 .g-tabs button.active{color:#FFB400}
-.g-tabs .g-ind{position:absolute;z-index:0;bottom:4px;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:#FFB400;transition:left .45s cubic-bezier(.3,1.5,.5,1),width .45s cubic-bezier(.3,1.5,.5,1),opacity .25s}
-.g-ico{width:30px;height:30px;display:grid;place-items:center;font-size:0;transition:transform .35s cubic-bezier(.2,1.6,.4,1)}
-.g-ico img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 2px 0 rgba(0,0,0,.35));transition:transform .3s cubic-bezier(.2,1.6,.4,1)}
+.g-tabs .g-ind{position:absolute;z-index:0;bottom:4px;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:#FFB400;transition:left .45s var(--ease-in),width .45s var(--ease-in),opacity .25s}
+.g-ico{width:30px;height:30px;display:grid;place-items:center;font-size:0;transition:transform .35s var(--ease-in)}
+.g-ico img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 2px 0 rgba(0,0,0,.35));transition:transform .3s var(--ease-in)}
 .g-tabs button:not(.active) .g-ico{opacity:.75}
 .g-tabs button:not(.active) .g-ico img{filter:drop-shadow(0 2px 0 rgba(0,0,0,.35)) saturate(.6) brightness(.85)}
 .g-tabs button.active .g-ico{transform:translateY(-2px) scale(1.1)}
-.g-tabs button.active .g-ico img{animation:icoWiggle 2.4s ease-in-out infinite}
-.g-tabs button.pressed .g-ico{animation:tabBounce .55s cubic-bezier(.2,1.6,.4,1)}
-@keyframes tabBounce{0%{transform:scale(1)}20%{transform:scale(1.35,.7)}45%{transform:translateY(-12px) scale(.9,1.15)}70%{transform:translateY(0) scale(1.08,.94)}100%{transform:translateY(-3px) scale(1.15)}}
+.g-tabs button.pressed .g-ico{animation:press var(--dur-fast) var(--ease-move)}
+@keyframes press{50%{transform:scale(.92)}}
 /* middle button: Ekky's face sits above the bar */
 .g-tabs button.center{width:auto;margin:0;overflow:visible;transition:background .3s,box-shadow .3s,transform .1s}
 .g-tabs button.center small{font-size:.78rem;font-weight:600}
-.g-face{position:absolute;top:-30px;left:calc(50% - 32px);width:64px;height:64px;border-radius:50%;object-fit:cover;display:block;background:#D3FFD8;border:4px solid #241638;box-shadow:0 0 0 2px #3e2a5c,0 8px 16px rgba(0,0,0,.4);transition:box-shadow .3s;animation:faceIdle 3s ease-in-out infinite}
+.g-face{position:absolute;top:-30px;left:calc(50% - 32px);width:64px;height:64px;border-radius:50%;object-fit:cover;display:block;background:#D3FFD8;border:4px solid #241638;box-shadow:0 0 0 2px #3e2a5c,0 8px 16px rgba(0,0,0,.4);transition:box-shadow .3s}
 .g-tabs button.center.active .g-face{box-shadow:0 0 0 3px #FFB400,0 8px 18px rgba(0,0,0,.45)}
-.g-tabs button.center.pressed .g-face{animation:faceBoing .6s cubic-bezier(.2,1.6,.4,1)}
-@keyframes faceIdle{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg) translateY(-2px)}}
-@keyframes faceBoing{0%{transform:scale(1)}25%{transform:scale(1.25,.75)}50%{transform:scale(.85,1.2) rotate(-10deg)}75%{transform:scale(1.08,.95) rotate(6deg)}100%{transform:scale(1)}}
+.g-tabs button.center.pressed .g-face{animation:press var(--dur-fast) var(--ease-move)}
 
 /* map */
 .g-map-wrap{position:relative;margin:10px auto 0;max-width:420px}
@@ -68,16 +64,17 @@ body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family
 .g-filters .cat-ico{width:20px;height:20px;margin-right:6px}
 .g-filters button.active{background:#FFB400;color:#2B1342;border-color:#FFB400}
 .g-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.g-card{perspective:800px;text-align:left;animation:cardIn .5s cubic-bezier(.2,1.4,.4,1) both}
-@keyframes cardIn{from{transform:translateY(30px) scale(.9);opacity:0}}
+.g-card{perspective:800px;text-align:left;animation:cardIn var(--dur) var(--ease-in) both}
+@keyframes cardIn{from{transform:translateY(12px);opacity:0}}
 .g-card .inner{border-radius:18px;overflow:hidden;background:#2a1a40;border:3px solid var(--rc);box-shadow:0 6px 0 rgba(0,0,0,.35);transition:transform .45s;transform-style:preserve-3d;position:relative}
 .g-card .art{aspect-ratio:1;overflow:hidden;background:linear-gradient(90deg,#2a1a40 25%,#3a2858 50%,#2a1a40 75%);background-size:200% 100%;animation:skel 1.2s linear infinite}
+.g-card .art:has(> img.ok){animation:none;background:#2a1a40}
 .g-card .art svg,.g-card .art img{width:100%;height:100%;object-fit:cover}
 .g-card .info{padding:8px 10px 10px}
 .g-card .info b{font-size:.85rem;display:block;line-height:1.15}
-.g-card.legendary .inner::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.45) 45%,transparent 60%);background-size:250% 100%;animation:holo 2.6s linear infinite;pointer-events:none}
+.g-card.legendary .inner::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.45) 45%,transparent 60%);background-size:250% 100%;animation:holo 2.4s var(--ease-move) 1s 1 both;pointer-events:none}
 @keyframes holo{from{background-position:150% 0}to{background-position:-100% 0}}
-.g-card .gcat{position:absolute;bottom:42px;right:6px;width:32px;height:32px;border-radius:10px;background:#241638;display:grid;place-items:center;z-index:1;border:2px solid var(--rc);animation:catBob 3s ease-in-out infinite}
+.g-card .gcat{position:absolute;bottom:42px;right:6px;width:32px;height:32px;border-radius:10px;background:#241638;display:grid;place-items:center;z-index:1;border:2px solid var(--rc)}
 
 /* profile */
 .g-panel{background:#241638;border:2px solid #3e2a5c;border-radius:22px;padding:16px;margin-top:14px}
@@ -87,13 +84,13 @@ body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family
 /* switch: a 56 x 44 tap area around a 50 x 28 track */
 .g-switch{width:56px;height:44px;position:relative;background:none}
 .g-switch::before{content:"";position:absolute;left:3px;top:8px;width:50px;height:28px;border-radius:20px;background:#3e2a5c;transition:background .2s}
-.g-switch::after{content:"";position:absolute;top:11px;left:6px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .25s cubic-bezier(.2,1.6,.4,1)}
+.g-switch::after{content:"";position:absolute;top:11px;left:6px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .25s var(--ease-in)}
 .g-switch.on::before{background:#7ED9B0}.g-switch.on::after{transform:translateX(22px)}
 
 /* bottom sheet (levels) */
 .g-sheet{position:absolute;inset:0;z-index:10;background:rgba(10,5,20,.6);opacity:0;pointer-events:none;transition:opacity .3s}
 .g-sheet.open{opacity:1;pointer-events:auto}
-.g-sheet-in{position:absolute;left:0;right:0;bottom:0;max-height:88%;overflow-y:auto;background:#fff;color:#4b4655;border-radius:30px 30px 0 0;padding:14px 20px calc(env(safe-area-inset-bottom) + 28px);transform:translateY(105%);transition:transform .5s cubic-bezier(.2,1.25,.4,1);font-family:Poppins;user-select:text;-webkit-user-select:text}
+.g-sheet-in{position:absolute;left:0;right:0;bottom:0;max-height:88%;overflow-y:auto;background:#fff;color:#4b4655;border-radius:30px 30px 0 0;padding:14px 20px calc(env(safe-area-inset-bottom) + 28px);transform:translateY(105%);transition:transform .5s var(--ease-in);font-family:Poppins;user-select:text;-webkit-user-select:text}
 .g-sheet.open .g-sheet-in{transform:none}
 .g-grab{width:48px;height:5px;border-radius:4px;background:#ddd;margin:0 auto 12px}
 .g-ribbon{display:inline-block;background:#FF6B6B;color:#fff;font-family:Fredoka;font-weight:700;font-size:.75rem;letter-spacing:.08em;padding:4px 12px;border-radius:10px;transform:rotate(-3deg)}
@@ -124,18 +121,14 @@ body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family
 .g-btn .ico{width:1.05em;height:1.05em;vertical-align:0}
 .g-btn.pink{background:#FF6B6B;color:#2B1342;box-shadow:0 6px 0 #9d2c2c,0 12px 22px rgba(0,0,0,.35)}
 .g-btn.pink:active{box-shadow:0 1px 0 #9d2c2c}
-.g-btn.shake{animation:shakeX .4s}
-@keyframes shakeX{25%{transform:translateX(-8px)}50%{transform:translateX(8px)}75%{transform:translateX(-4px)}}
 
 /* overlays shared */
 .g-over{position:absolute;inset:0;z-index:12;display:none;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%,#3a1f5c,#120a1fee 70%);padding:24px}
-.g-over.open{display:flex;animation:overIn .35s ease}
+.g-over.open{display:flex;animation:overIn var(--dur) var(--ease-in)}
 @keyframes overIn{from{opacity:0}}
 .g-over .g-x{background:#2f1f47;color:#fff;top:calc(env(safe-area-inset-top) + 14px)}
 
-/* pack opening */
   background:linear-gradient(145deg,#FF6B6B,#9C91BD 55%,#B8D5FF);border:5px solid #fff;box-shadow:0 0 0 5px #2B1342,0 20px 50px rgba(0,0,0,.5);
-  display:grid;place-items:center;animation:packIdle 1.6s ease-in-out infinite;overflow:hidden}
 
 /* arcade */
 #gArcade{padding:0;background:#120a1f}
@@ -146,18 +139,18 @@ body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family
 .g-time{flex:1;height:12px;border-radius:8px;background:#2f1f47;overflow:hidden;border:2px solid #3e2a5c}
 .g-time i{display:block;height:100%;background:linear-gradient(90deg,#7ED9B0,#FFB400,#FF6B6B);width:100%}
 .g-count{position:absolute;inset:0;display:grid;place-items:center;font-size:6rem;font-weight:700;color:#FFB400;text-shadow:0 8px 0 #2B1342;pointer-events:none;z-index:3}
-.g-count span{animation:countPop .9s cubic-bezier(.2,1.6,.4,1) both}
-@keyframes countPop{0%{transform:scale(3);opacity:0}30%{transform:scale(1);opacity:1}80%{opacity:1}100%{transform:scale(.6);opacity:0}}
+.g-count span{animation:countFade .8s var(--ease-move) both}
+@keyframes countFade{0%{opacity:0}25%,75%{opacity:1}100%{opacity:0}}
 .g-result{position:absolute;inset:0;z-index:4;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:#120a1fcc;text-align:center;padding:24px}
-.g-result.show{display:flex;animation:overIn .4s}
-.g-result h2{font-size:2.6rem;color:#FFB400;text-shadow:0 5px 0 #2B1342;animation:resPop 1.2s cubic-bezier(.2,1.6,.4,1) both}
-@keyframes resPop{from{transform:scale(0) rotate(-12deg)}}
+.g-result.show{display:flex;animation:overIn var(--dur) var(--ease-in)}
+.g-result h2{font-size:2.6rem;color:#FFB400;text-shadow:0 5px 0 #2B1342;animation:resFade var(--dur-slow) var(--ease-in) both}
+@keyframes resFade{from{opacity:0;transform:translateY(10px)}}
 .g-result .score{font-size:4rem;font-weight:700;line-height:1;display:inline-flex;align-items:center;gap:12px}
 .g-result .score .ico{width:.8em;height:.8em;vertical-align:0}
 .g-result p{font-family:Poppins;color:#cbbfe3}
 .g-flash{position:absolute;inset:0;background:#FF6B6B;opacity:0;pointer-events:none;z-index:2}
-.g-flash.on{animation:flash .35s}
-@keyframes flash{30%{opacity:.35}}
+.g-flash.on{animation:tint var(--dur) var(--ease-move)}
+@keyframes tint{40%{opacity:.18}}
 
 /* ===== round 1: play your way ===== */
 /* HUD: sound toggle and the Hire Ekky chip (B07), on every screen except live Star Catcher play */
@@ -198,13 +191,11 @@ body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family
 .g-head-row .g-btn{flex:none}
 /* isometric map: floating islands with Ekky's cut-outs (B06) */
 .g-bridges{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
-.g-place{position:absolute;z-index:2;display:flex;flex-direction:column;align-items:center;transform:translateX(-50%);animation:islandBob 4s ease-in-out infinite;-webkit-tap-highlight-color:transparent}
+.g-place{position:absolute;z-index:2;display:flex;flex-direction:column;align-items:center;transform:translateX(-50%);-webkit-tap-highlight-color:transparent}
 .g-place-ic{width:var(--s);height:var(--s);object-fit:contain;margin-bottom:calc(var(--h) / -2 - 4px);position:relative;z-index:1;filter:drop-shadow(0 3px 0 rgba(43,19,66,.35));transition:transform .15s}
 .g-place:active .g-place-ic{transform:translateY(4px) scale(.94)}
 .g-iso{display:block;filter:drop-shadow(0 10px 10px rgba(0,0,0,.35))}
 .g-place-label{margin-top:4px;padding:3px 10px;border-radius:10px;background:#241638;border:2px solid #3e2a5c;font-weight:700;font-size:.85rem;white-space:nowrap;text-shadow:none}
-.g-place.boss .g-place-label{background:#FF6B6B;border-color:#9d2c2c;color:#2B1342}
-@keyframes islandBob{50%{transform:translate(-50%,-5px)}}
 
 /* Art */
 .g-tag{display:inline-block;margin-top:4px;font-family:Poppins;font-size:.72rem;font-weight:600;padding:2px 7px;border-radius:7px;background:#3e2a5c;color:#e6defa}
@@ -238,7 +229,7 @@ body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family
 
 /* ===== Color with Ekky (B10), stickers (B21), reveal, share preview (B11), arrival (B12) ===== */
 .c-over{position:absolute;inset:0;z-index:7;display:none;background:radial-gradient(120% 70% at 50% 0%,#40236a 0,#1f1135 55%,#120a1f 100%)}
-.c-over.open{display:block;animation:overIn .25s ease}
+.c-over.open{display:block;animation:overIn var(--dur) var(--ease-in)}
 .s-over{z-index:9;background:#120a1fee}
 .c-view{position:absolute;inset:0;display:none;flex-direction:column;padding:calc(env(safe-area-inset-top) + 14px) 14px calc(env(safe-area-inset-bottom) + 14px);overflow-y:auto}
 .c-view.active{display:flex}
@@ -262,8 +253,6 @@ body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family
 .c-top .g-btn.sm{min-height:44px;padding:8px 14px}
 .c-stage-wrap{flex:1;min-height:0;display:grid;place-items:center}
 .c-stage{position:relative;border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 0 0 4px #FFB400,0 12px 30px rgba(0,0,0,.45);touch-action:none;max-width:100%}
-.c-stage.pop{animation:cPop .16s ease-out}
-@keyframes cPop{50%{transform:scale(1.012)}}
 .c-stage canvas{display:block;width:100%;height:100%}
 .c-peek{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;pointer-events:none;transition:opacity .2s}
 .c-peek.show{opacity:1}
@@ -272,7 +261,7 @@ body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family
 .c-bin{position:absolute;left:50%;bottom:10px;transform:translate(-50%,140%);display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:16px;background:#2B1342;color:#fff;font-family:Poppins;font-size:.8rem;transition:transform .2s,background .2s;pointer-events:none}
 .c-bin .ico{width:22px;height:22px;vertical-align:0}
 .c-bin.show{transform:translate(-50%,0)}.c-bin.hot{background:#FF6B6B;color:#2B1342}
-.c-hint{position:absolute;left:50%;top:12px;transform:translate(-50%,-160%);background:#2B1342;color:#fff;padding:8px 14px;border-radius:12px;font-family:Poppins;font-size:.85rem;white-space:nowrap;transition:transform .35s cubic-bezier(.2,1.4,.4,1);pointer-events:none}
+.c-hint{position:absolute;left:50%;top:12px;transform:translate(-50%,-160%);background:#2B1342;color:#fff;padding:8px 14px;border-radius:12px;font-family:Poppins;font-size:.85rem;white-space:nowrap;transition:transform .35s var(--ease-in);pointer-events:none}
 .c-hint.show{transform:translate(-50%,0)}
 .c-colors{display:flex;gap:4px;overflow-x:auto;padding:2px 2px 4px;scrollbar-width:none;flex:none}
 .c-colors::-webkit-scrollbar{display:none}
@@ -320,3 +309,43 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 .s-video[hidden]{display:none}
 .s-video:disabled{opacity:.7}
 .s-rec{position:fixed;left:-10000px;top:0;pointer-events:none}
+
+/* B39: nothing animates where nobody can see it */
+.g-screen:not(.active) *,.g-screen:not(.active){animation-play-state:paused!important}
+#game.playing .g-screen *{animation-play-state:paused!important}
+
+/* r1b: six of Ekky's drawings at once, a static 3 x 2 grid (no swipe), titled by COPY start.featured */
+.g-featured{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;overflow:visible;width:100%;margin:0;padding:0 0 4px;scroll-snap-type:none}
+.g-featured .g-feat{width:auto}
+.g-featured .g-feat img{aspect-ratio:1}
+.g-start{gap:8px}
+.g-tagline{font-size:1.05rem}
+.g-tile{min-height:84px}
+.g-tile img{width:40px;height:40px}
+/* HUD role line: wraps instead of cutting off at 390 px */
+.g-player small{white-space:normal;overflow:visible;line-height:1.2}
+/* sheets: the dim backdrop starts below the HUD, and the HUD sits above it, so the Hire chip stays one tap away */
+.g-sheet{top:calc(env(safe-area-inset-top) + 76px)}
+.g-hud{z-index:11}
+#game.playing .g-hud{z-index:5}
+/* "About" facts, the Hire sheet's other channels */
+.g-facts{margin:10px 0 0 18px;font-size:.88rem;line-height:1.6}
+.g-links{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px}
+.g-links a{min-height:44px;display:inline-flex;align-items:center;color:#2B1342;text-decoration:underline;text-underline-offset:3px;font-size:.88rem}
+/* Mine: reset sits inside the settings panel, above the tab bar */
+.g-row .g-reset{margin:0;padding:0;min-height:44px}
+/* overlays (coloring, share preview, Star Catcher) sit above the HUD; a Hire sheet opened from one rises above it */
+.c-over{z-index:12}.s-over{z-index:13}.g-over{z-index:12}
+#game:has(.c-over.open) .g-sheet{z-index:14;top:0}
+.c-tool span{font-size:.85rem;line-height:1.15}
+/* HUD avatar: Ekky's own head cut-out (assets/ui/ekky.png) */
+.g-avatar img{position:static;width:100%;height:100%;max-width:none;object-fit:contain;padding:2px}
+/* start: the tab bar steps aside (the tiles below are the start screen's own way in), so all six drawings,
+   the three tiles and "Just show me the art" fit at 390 x 664 */
+#game.at-start .g-tabs{transform:translateY(160%);transition:transform var(--dur) var(--ease-move)}
+.g-start{padding-bottom:calc(env(safe-area-inset-bottom) + 16px)}
+.g-start .g-logo{width:72px}
+.g-tile{flex-direction:row;min-height:56px;padding:6px;gap:4px;font-size:.92rem}
+.g-tile img{width:30px;height:30px}
+.g-tiles{gap:8px}
+.g-row .g-btn.sm.alt{min-width:48px;min-height:44px;padding:8px 14px}

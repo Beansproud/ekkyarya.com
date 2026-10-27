@@ -217,6 +217,7 @@ def check_badge(base, size):
 # name: spec. size = 2x the largest display size.
 ICONS = {
     "face":         dict(src="assets/face.png", box=(0, 0, 256, 256), seed=(128, 140), mode="color", bg=(212, 255, 215), tol=60, size=128),
+    "ekky":         dict(src="assets/hero.png", box=(244, 140, 346, 252), seed=(300, 175), mode="outline", dark=110, open=2, erase=[(238, 211), (254, 211), (254, 229), (238, 229)], size=128),
     "pen-hand":     dict(src="assets/hero.png", box=(170, 100, 262, 220), seed=(200, 140), mode="alpha", cut=((236, 182), (1, 1.6)), stroke=(INK, 2), stroke2=((255, 255, 255), 4), size=96),
     "palette":      dict(src="assets/hero.png", box=(388, 58, 486, 156), seed=(430, 100), mode="alpha", size=96),
     "planet":       dict(src="assets/hero.png", box=(428, 186, 526, 252), seed=(475, 220), mode="alpha", size=96),

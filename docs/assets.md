@@ -11,7 +11,8 @@ Every icon in the game and site is cut from Ekky's own artwork (`assets/ui/`) or
 
 | File | Size | Source piece | Crop area (x0, y0, x1, y1) | Type | Sticker | Used for |
 |---|---|---|---|---|---|---|
-| `face.png` | 128 | `assets/face.png` | 0, 0, 256, 256 | Cut-out (mint background removed) | yes | Level 1 "Who is Ekky?", game-mode button, desktop hero wave, Press Start and Nice to Meet You trophies |
+| `ekky.png` | 128 | `assets/hero.png` (Ekky, owner answer) | 244, 140, 346, 252 | Cut-out (head, inside the outline; laptop edge removed) | yes | HUD avatar, Level 1 "Who is Ekky?", desktop hero wave |
+| `face.png` | 128 | `assets/face.png` | 0, 0, 256, 256 | Cut-out (mint background removed) | yes | Game-mode button (the middle tab and favicon use `assets/face.png` itself) |
 | `pen-hand.png` | 96 | `assets/hero.png` | 170, 100, 262, 220 (cut at the wrist) | Cut-out with a light sticker outline | yes | Level 2 "Skill Tree" |
 | `palette.png` | 96 | `assets/hero.png` | 388, 58, 486, 156 | Cut-out | yes | Level 3 "Art Collection", Cards tab, Art Collector trophy, Star Catcher +3 |
 | `planet.png` | 96 | `assets/hero.png` | 428, 186, 526, 252 | Cut-out | yes | Sticker only for now |
@@ -54,53 +55,9 @@ Defined once as `<symbol>`s; use `<svg class="ico"><use href="#id"/></svg>`, or 
 
 ## Role map
 
-Owner direction: "make sure all art work has its role". Every piece is in the portfolio and is a game card in Art. Shareable pieces (`shareable()` in `js/data.js`) can also become icons, stickers, coloring pages or lead pieces. Regenerate this table with `node scripts/check.mjs --roles`; `npm run check` warns about every shareable piece that has no role beyond portfolio and game card yet. A `role` field in PROJECTS (UX lead) also counts.
+The plan for every piece (owner: "make sure all artwork has its role") is the `roles` array in `js/data.js` and the
+table in `docs/roles.md`, both by the UX lead. `node scripts/check.mjs --roles` prints the roles per piece;
+`npm run check` warns about any shareable original that has no creative role.
 
-| Piece | Kind | Shareable | Roles |
-|---|---|---|---|
-| Coexistence (`coexistence`) | original | yes | portfolio, game card, lead six |
-| Hidden Monster (`hidden-monster`) | original | yes | portfolio, game card, lead six |
-| The Blue Bird (`blue-bird`) | original | yes | portfolio, game card, lead six |
-| Broken-Down Bus (`old-bus`) | original | yes | portfolio, game card, lead six |
-| Monster Snack Bar (`monster-crowd`) | original | yes | portfolio, game card, lead six |
-| Monster World Doodles (`doodles`) | original | yes | portfolio, game card, lead six, icon (ghost), sticker (ghost) |
-| Monster in My Room (`monster`) | original | yes | portfolio, game card, icon (monster-head) |
-| Afloat (`floating-boy`) | original | yes | portfolio, game card |
-| Buried at the Beach (`summertime`) | original | yes | portfolio, game card |
-| Viking vs Dragon Kid (`beansproud-vs-puff`) | original | yes | portfolio, game card |
-| Virus and War (`virus-and-war`) | original | yes | portfolio, game card, icon (virus), sticker (virus) |
-| Boss Fight (`rpg`) | original | yes | portfolio, game card |
-| Big Catch (`shark`) | original | yes | portfolio, game card |
-| Giraffe Ride (`giraffe`) | original | yes | portfolio, game card, coloring page |
-| Noodle Bath (`noodles`) | original | yes | portfolio, game card |
-| Astronaut (`nft-3`) | original | yes | portfolio, game card, icon (helmet), icon (astronaut), sticker (astronaut) |
-| Radio Explorer (`nft-9`) | original | yes | portfolio, game card, icon (radio-explorer), sticker (radio-explorer) |
-| The Adventuring Party (`dnd`) | fan | no | portfolio, game card |
-| Retro Game Pattern (`game-pattern`) | fan | no | portfolio, game card |
-| One Piece Crew (`one-piece-fan-art`) | fan | no | portfolio, game card |
-| Rocket & Groot (`rocket-groot-fan-art`) | fan | no | portfolio, game card |
-| Miles Morales (`spider-verse-fan-art`) | fan | no | portfolio, game card |
-| Godzilla vs Kong (`godzilla-kong-fan-art`) | fan | no | portfolio, game card |
-| Finn & Jake: Bring It On (`adventure-time-fan-art`) | fan | no | portfolio, game card |
-| Morumelons (`morumelons`) | original | yes | portfolio, game card |
-| Oasis for Fizzy Tube (`oasis`) | original | yes | portfolio, game card |
-| Character Crowd Banner (`web-illustration`) | original | yes | portfolio, game card |
-| MSI Creator Banner (`msi`) | client | no | portfolio, game card |
-| Tea Break Website (`tea-break-website`) | client | no | portfolio, game card |
-| My Sports Club App (`my-sports-club`) | original | yes | portfolio, game card |
-| Save Early, Buy Future (`save-early-buy-future`) | original | yes | portfolio, game card |
-| Indomaret Shopping Rush (`indomaret`) | client | no | portfolio, game card |
-| Thinker & Doer (`thinker-doer`) | original | yes | portfolio, game card |
-| Plug Hero Mascot (`plug-hero`) | original | yes | portfolio, game card |
-| Monster Noodles Cup (`pop-mie`) | client | no | portfolio, game card |
-| BCA Flazz Card (`bca-flazz-card`) | client | no | portfolio, game card |
-| Ancol Logo Entry (`ancol-logo`) | client | no | portfolio, game card |
-| Toybox Packaging (`toybox`) | original | yes | portfolio, game card |
-| Type Is Art in Motion (`type-is-art`) | original | yes | portfolio, game card |
-| Secret Android (`android`) | original | yes | portfolio, game card, sticker (face) |
-| Year of the Tiger 2022 (`hello-2022`) | original | yes | portfolio, game card |
-| Little Planet (`little-planet`) | original | yes | portfolio, game card, sticker (cat), sticker (palette), sticker (planet), sticker (pen-hand), sticker (cat-illustration), sticker (cat-web), sticker (cat-branding), sticker (cat-social) |
-| Road Trip (`road-trip`) | original | yes | portfolio, game card |
-| A Day in the Life (`day-in-life`) | original | yes | portfolio, game card |
-| Merdeka 77 (`kemerdekaan`) | original | yes | portfolio, game card |
-| Tangled Hands (`hands`) | original | yes | portfolio, game card |
+Two code rules on top of `roles` (`creative()` in `js/features.js`): stickers, coloring pages, share cards and the
+featured rows use only shareable **original** pieces. Client and fan pieces stay in the portfolio list and the Art tab.

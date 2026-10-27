@@ -12,6 +12,8 @@ function check(data){
   const ok=typeof Color!=="undefined"?Color.stickers().map(s=>s.n):[];
   (data.stickers||[]).forEach(n=>{if(!ok.includes(n))throw new Error(`sticker ${n} is not shareable`)})}
 async function fonts(){try{await Promise.all([document.fonts.load("700 56px Fredoka"),document.fonts.load("600 40px Fredoka"),document.fonts.load("400 36px Poppins")])}catch{}}
+// shrink the current font until the text fits the width
+function fit(x,str,max){let m=x.font.match(/(\d+)px/),size=m?+m[1]:40;while(size>24&&x.measureText(str).width>max){size-=2;x.font=x.font.replace(/\d+px/,size+"px")}}
 function round(x,X,Y,w,h,r){x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+w,Y,X+w,Y+h,r);x.arcTo(X+w,Y+h,X,Y+h,r);x.arcTo(X,Y+h,X,Y,r);x.arcTo(X,Y,X+w,Y,r);x.closePath()}
 // Timeline in seconds (time = Infinity draws the finished card):
 //   0 to 0.4   the frame fades in with Ekky's lines on paper
@@ -26,9 +28,12 @@ function paintCard(x,data,time=Infinity){const done=time===Infinity;
   x.globalAlpha=frameIn;x.fillStyle="#b77e00";round(x,fx,fy+14,fw,fh,36);x.fill();x.fillStyle="#fff";round(x,fx,fy,fw,fh,36);x.fill();
   x.save();round(x,fx+pad,fy+pad,pw,ph,16);x.clip();data.draw(x,fx+pad,fy+pad,pw,done?1:clamp((time-.4)/3.2));x.restore();
   x.globalAlpha=done?1:ease((time-3.6)/.7);x.textAlign="center";x.textBaseline="alphabetic";let y=FREE_TOP+30+fh+110;
-  if(data.name){x.fillStyle="#FFB400";x.font="700 64px Fredoka, sans-serif";x.fillText(t("card.colored",{name:data.name}),W/2,y);y+=66}
-  x.fillStyle="#e6defa";x.font="400 38px Poppins, sans-serif";x.fillText(data.page==="scratch"?t("card.scene"):t("card.title",{title:data.title}),W/2,y);
-  const cy=Math.min(y+120,H-FREE_BOTTOM-120);x.font="700 44px Fredoka, sans-serif";const label=t("card.cta"),lw=x.measureText(label).width+90;
+  // headline: "Colored by Rina" with the piece's name under it; with no name, one line that names the piece (UX review)
+  const scene=data.page==="scratch",head=data.name?t("card.colored",{name:data.name}):scene?t("card.headline.scene"):t("card.headline",{title:data.title});
+  x.fillStyle="#FFB400";x.font="700 64px Fredoka, sans-serif";fit(x,head,W-120);x.fillText(head,W/2,y);y+=66;
+  if(data.name){x.fillStyle="#e6defa";x.font="400 38px Poppins, sans-serif";x.fillText(scene?t("card.scene"):t("card.title",{title:data.title}),W/2,y)}
+  // the call to action names the host the link really points at (siteHost() in js/data.js), never a hard-coded domain
+  const cy=Math.min(y+120,H-FREE_BOTTOM-120);x.font="700 44px Fredoka, sans-serif";const label=t("card.cta",{host:siteHost()}),lw=x.measureText(label).width+90;
   x.fillStyle="#FFB400";round(x,(W-lw)/2,cy-62,lw,88,44);x.fill();x.fillStyle="#2B1342";x.fillText(label,W/2,cy-4);
   x.fillStyle="#fff";x.font="600 40px Fredoka, sans-serif";x.fillText(t("credit.full"),W/2,H-FREE_BOTTOM-36);x.globalAlpha=1}
 async function renderCard(kind,data){
@@ -56,7 +61,7 @@ function save(blob,name){const a=document.createElement("a");a.href=URL.createOb
 const pngOf=card=>new Promise(r=>{try{card.toBlob(r,"image/png")}catch{r(null)}});
 async function download(data){const blob=await pngOf(await renderCard("coloring",data));if(blob){save(blob,fileName(data,"png"));say(t("dl.saved"),"i-check")}else say(t("share.copied"))}
 // Phones: the system share sheet with the file and the link. Desktops: save the file and copy the link.
-async function send(file,blob,url,savedMsg){const text=t("share.color",{url});
+async function send(file,blob,data,url,savedMsg){const text=t(data.page==="scratch"?"share.textScene":"share.textColor",{url});
   try{
     if(file&&navigator.canShare&&navigator.canShare({files:[file]}))return await navigator.share({files:[file],text,title:"Ekky Arya"});
     if(navigator.share&&matchMedia("(pointer:coarse)").matches){await navigator.share({text,url});if(blob)save(blob,file.name);return}
@@ -71,7 +76,7 @@ document.getElementById("game").insertAdjacentHTML("beforeend",`<div class="c-ov
     <label class="s-sign">${t("share.sign")}<input id="sName" maxlength="16" autocomplete="given-name" placeholder="${t("share.sign.ph")}"></label>
     <div class="s-row"><button class="g-btn" id="sGo"><svg class="ico" aria-hidden="true"><use href="#i-share"/></svg> ${t("share.go")}</button>
       <button class="g-btn alt" id="sDl"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg> ${t("dl.button")}</button></div>
-    <button class="g-btn pink s-video" id="sVideo" hidden><svg class="ico" aria-hidden="true"><use href="#i-play"/></svg> <span>${t("share.video")}</span></button>
+    <button class="g-btn pink s-video" id="sVideo" hidden><svg class="ico" aria-hidden="true"><use href="#i-play"/></svg> <span>${tt("share.video","Share as video")}</span></button>
     <div class="c-actions"><button class="g-hire" data-hire aria-label="${t("hire.chip.aria")}"><img src="assets/ui/monster-head.png" alt=""><span>${t("hire.chip")}</span></button></div>
   </section></div>`);
 let cur=null,timer=0;
@@ -82,10 +87,10 @@ async function draw(){const card=await renderCard("coloring",withName()),p=$("sC
 $("sName").addEventListener("input",()=>{clearTimeout(timer);timer=setTimeout(draw,250)});
 $("sX").onclick=()=>$("gShare").classList.remove("open");
 $("sGo").onclick=async()=>{remember();const d=withName(),blob=await pngOf(await renderCard("coloring",d)),name=fileName(d,"png");
-  await send(blob&&new File([blob],name,{type:"image/png"}),blob,cur.link(d.name),t("share.saved"))};
+  await send(blob&&new File([blob],name,{type:"image/png"}),blob,d,cur.link(d.name),t("share.saved"))};
 $("sDl").onclick=()=>{remember();download(withName())};
-$("sVideo").onclick=async()=>{const b=$("sVideo");if(b.disabled)return;remember();b.disabled=true;const label=b.querySelector("span");label.textContent=t("share.video.making");
-  try{const d=withName(),v=await renderVideo(d),name=fileName(d,v.ext);await send(new File([v.blob],name,{type:v.blob.type}),v.blob,cur.link(d.name),t("share.video.saved"))}
-  catch{say(t("share.copied"))}finally{b.disabled=false;label.textContent=t("share.video")}};
+$("sVideo").onclick=async()=>{const b=$("sVideo");if(b.disabled)return;remember();b.disabled=true;const label=b.querySelector("span");label.textContent=tt("share.video.making","Making your video...");
+  try{const d=withName(),v=await renderVideo(d),name=fileName(d,v.ext);await send(new File([v.blob],name,{type:v.blob.type}),v.blob,d,cur.link(d.name),tt("share.video.saved","Video saved, link copied"))}
+  catch{say(t("share.copied"))}finally{b.disabled=false;label.textContent=tt("share.video","Share as video")}};
 return {renderCard,renderVideo,paintCard,openPreview,download,canVideo};
 })();

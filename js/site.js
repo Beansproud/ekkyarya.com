@@ -1,4 +1,5 @@
 // Desktop portfolio: gallery, lightbox, menus, theme, contact form and motion. Its globals (catImg, ico, uiImg, artOf, show, say, confetti, reduce) are used by js/game.js.
+document.documentElement.lang=LANG;   // B41: the page language follows the visitor (js/data.js picks it)
 /* ===== Feature switches: entry points of a switched-off feature disappear (js/features.js) ===== */
 document.querySelectorAll("[data-feature]").forEach(el=>{if(!feature(el.dataset.feature))el.remove()});
 
@@ -90,13 +91,6 @@ lb.addEventListener("keydown",e=>{if(e.key==="ArrowRight")step(1);if(e.key==="Ar
     el.textContent=words[w].slice(0,c)||"\u200b";setTimeout(tick,del?55:95)})();
 })();
 
-/* ===== Parallax floats ===== */
-const scene=document.getElementById("scene");
-if(matchMedia("(pointer:fine)").matches&&!matchMedia("(prefers-reduced-motion: reduce)").matches){
-  window.addEventListener("mousemove",e=>{const x=e.clientX/innerWidth-.5,y=e.clientY/innerHeight-.5;
-    scene.querySelectorAll(".float").forEach(f=>{const d=+f.dataset.depth;f.style.transform=`translate(${x*d}px,${y*d}px)`})});
-}
-
 /* ===== Reveal, active nav, progress, to-top ===== */
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.12});
 document.querySelectorAll(".reveal").forEach((el,i)=>{el.style.transitionDelay=(i%4)*70+"ms";io.observe(el)});
@@ -129,14 +123,15 @@ const mail=document.getElementById("mailLink");mail.textContent=CONFIG.email;mai
 // B15 safe default: a placeholder email or a link to a bare home page (no profile path) stays hidden until CONFIG is filled in.
 const realLink=u=>{try{return new URL(u).pathname.replace(/\/+$/,"").length>0}catch{return false}};
 document.querySelectorAll("[data-link]").forEach(a=>{const u=CONFIG.links[a.dataset.link];if(realLink(u))a.href=u;else a.remove()});
-if(/example\.com$/i.test(CONFIG.email)){document.querySelector(".mail").remove();document.querySelector('.socials a[href="#contact"]')?.remove()}
-const copyMail=document.getElementById("copyMail");if(copyMail)copyMail.onclick=async()=>{try{await navigator.clipboard.writeText(CONFIG.email);say("Email copied","i-check")}catch{say(CONFIG.email)}};
+if(!CONFIG.email){document.querySelector(".mail").remove();document.querySelector('.socials a[href="#contact"]')?.remove()}
+const copyMail=document.getElementById("copyMail");if(copyMail)copyMail.onclick=async()=>{try{await navigator.clipboard.writeText(CONFIG.email);say(t("hire.copied"),"i-check")}catch{say(CONFIG.email)}};
 document.getElementById("form").addEventListener("submit",e=>{e.preventDefault();const f=e.target;let ok=true;
   f.querySelectorAll("[required]").forEach(i=>{const err=i.parentElement.querySelector(".err");
     const msg=i.validity.valueMissing?"This one's needed":i.validity.typeMismatch?"Hmm, that email looks off":i.validity.tooShort?"A few more words, please":"";
     err.textContent=msg;if(msg)ok=false});
   if(!ok)return say("Please check the form");
   const d=Object.fromEntries(new FormData(f));
+  if(!CONFIG.email){open(hireTarget().href,"_blank","noopener");return}
   location.href=`mailto:${CONFIG.email}?subject=${encodeURIComponent(d.type+" project from "+d.name)}&body=${encodeURIComponent(d.message+"\n\n"+d.name+" ("+d.email+")")}`;
   say("Opening your email app…");confetti();
 });
@@ -165,25 +160,7 @@ if(fine&&!reduce){const c=document.getElementById("cursor"),d=document.getElemen
   (function loop(){cx+=(x-cx)*.18;cy+=(y-cy)*.18;c.style.transform=`translate(${cx}px,${cy}px)`;requestAnimationFrame(loop)})();
   document.addEventListener("mouseover",e=>c.classList.toggle("big",!!e.target.closest("a,button,.tile,input,select,textarea")));
 }else{document.getElementById("cursor").remove();document.getElementById("cursorDot").remove()}
-// magnetic buttons
-if(fine&&!reduce)document.querySelectorAll(".btn,.socials a,.to-top").forEach(b=>{
-  b.addEventListener("mousemove",e=>{const r=b.getBoundingClientRect();b.style.translate=`${(e.clientX-r.left-r.width/2)*.25}px ${(e.clientY-r.top-r.height/2)*.35}px`});
-  b.addEventListener("mouseleave",()=>b.style.translate="");
-});
-// 3D tilt on cards and tiles
-if(fine&&!reduce)document.querySelectorAll(".card,.tile").forEach(t=>{
-  t.classList.add("tilt");t.insertAdjacentHTML("beforeend",'<span class="shine"></span>');
-  t.addEventListener("mousemove",e=>{const r=t.getBoundingClientRect(),px=(e.clientX-r.left)/r.width,py=(e.clientY-r.top)/r.height;
-    t.style.transform=`perspective(800px) rotateX(${(.5-py)*10}deg) rotateY(${(px-.5)*12}deg) translateY(-6px)`;
-    t.style.setProperty("--mx",px*100+"%");t.style.setProperty("--my",py*100+"%")});
-  t.addEventListener("mouseleave",()=>t.style.transform="");
-});
-// sparkle burst on click
-if(!reduce)addEventListener("click",e=>{const cols=["#FFB400","#FF6B6B","#7ED9B0","#B8D5FF","#9C91BD"];
-  for(let i=0;i<8;i++){const s=document.createElement("span");s.className=i%2?"spark":"spark dot";if(i%2)s.innerHTML=ico("s-sparkle");
-    const a=Math.PI*2*i/8,dist=30+Math.random()*30;
-    s.style.cssText=`left:${e.clientX-6}px;top:${e.clientY-8}px;color:${cols[i%5]};--dx:${Math.cos(a)*dist}px;--dy:${Math.sin(a)*dist}px`;
-    document.body.appendChild(s);setTimeout(()=>s.remove(),800)}});
+// B39: decorative motion removed (parallax, magnetic buttons, 3D tilt, click sparkles); hover keeps calm CSS transitions
 // stagger chips
 document.querySelectorAll(".chip").forEach((c,i)=>c.style.animationDelay=i*60+"ms");
 // confetti
@@ -191,7 +168,5 @@ function confetti(){if(reduce)return;const cols=["#FFB400","#FF6B6B","#7ED9B0","
   for(let i=0;i<90;i++){const c=document.createElement("i");c.className="confetti";
     c.style.cssText=`left:${Math.random()*100}vw;background:${cols[i%5]};--dx:${(Math.random()-.5)*200}px;--r:${Math.random()*900}deg;animation-duration:${1.8+Math.random()*1.6}s;animation-delay:${Math.random()*.4}s;border-radius:${i%3?2:50}%`;
     document.body.appendChild(c);setTimeout(()=>c.remove(),4000)}}
-// subtle scroll parallax on the hero scene
-if(!reduce)addEventListener("scroll",()=>{const y=scrollY;if(y<innerHeight)scene.style.translate=`0 ${y*.15}px`},{passive:true});
 
 document.getElementById("year").textContent=new Date().getFullYear();

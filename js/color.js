@@ -79,7 +79,7 @@ function close(){over.classList.remove("open");cur=null}
 
 /* ---- picker ---- */
 function openPicker(){
-  $("cPages").innerHTML=pages().map(p=>{const pr=bySlug(p.slug);return `<button class="c-page" data-page="${p.id}"><img src="${pr.img}" alt="" loading="lazy"><b>${esc(pr.title)}</b></button>`}).join("")+
+  $("cPages").innerHTML=pages().map(p=>{const pr=bySlug(p.slug);return `<button class="c-page" data-page="${p.id}"><img src="${pr.img}" alt="" loading="lazy"><b>${esc(ptitle(pr))}</b></button>`}).join("")+
     (feature("doodleScene")?`<button class="c-page c-scratch" data-page="scratch">${ico("i-plus")}<b>${esc(t("color.scratch"))}</b><small>${esc(t("color.scratch.sub"))}</small></button>`:"");
   view("cPick");setTimeout(()=>$("cPickX").focus({preventScroll:true}),50)}
 $("cPages").addEventListener("click",e=>{const b=e.target.closest("[data-page]");if(b){Game.buzz(10);Game.sfx("tap");open(b.dataset.page)}});
@@ -124,11 +124,14 @@ function paint(s,cv){const {meta,start,idx,line}=s.pd;cv.width=meta.w;cv.height=
     for(let j=start[r];j<start[r+1];j++){const o=idx[j]*4;d[o]=R;d[o+1]=G2;d[o+2]=B}}
   x.putImageData(img,0,0);if(line)x.drawImage(line,0,0)}
 // Repaint only the bounding box of region r: paper, then each pixel's region color, then Ekky's lines on top.
-function paintRegion(s,cv,r){const {meta,start,idx,line,ids}=s.pd;const x=cv.getContext("2d");
+// fade: the new color fades into the shape over 250 ms (B39: shows which shape changed; reduced motion paints at once).
+function paintRegion(s,cv,r,fade){const {meta,start,idx,line,ids}=s.pd;const x=cv.getContext("2d");
   let x0=meta.w,y0=meta.h,x1=0,y1=0;for(let j=start[r];j<start[r+1];j++){const i=idx[j],px=i%meta.w,py=(i-px)/meta.w;if(px<x0)x0=px;if(px>x1)x1=px;if(py<y0)y0=py;if(py>y1)y1=py}
   if(x1<x0)return;const w=x1-x0+1,h=y1-y0+1,img=x.createImageData(w,h),d=img.data,rgb=[];for(let v=0;v<16;v++)rgb[v]=hexRgb(colorOf(s,v));
   for(let yy=0;yy<h;yy++)for(let xx=0;xx<w;xx++){const c=rgb[s.fills[ids[(y0+yy)*meta.w+x0+xx]]],o=(yy*w+xx)*4;d[o]=c[0];d[o+1]=c[1];d[o+2]=c[2];d[o+3]=255}
-  x.putImageData(img,x0,y0);if(line)x.drawImage(line,x0,y0,w,h,x0,y0,w,h)}
+  const box=document.createElement("canvas");box.width=w;box.height=h;const bx=box.getContext("2d");bx.putImageData(img,0,0);if(line)bx.drawImage(line,x0,y0,w,h,0,0,w,h);
+  if(!fade||reduce){x.drawImage(box,x0,y0);return}
+  const t0=performance.now();(function step(now){const k=Math.min(1,(now-t0)/250);x.globalAlpha=k<1?.35:1;x.drawImage(box,x0,y0);x.globalAlpha=1;if(k<1)requestAnimationFrame(step)})(t0)}
 // Draw the whole picture (fills, lines, stickers) into a box on any canvas: thumbnails, reveal, share card, arrival.
 // t (0..1) plays the picture as a timeline for the share video: the fills sweep in (to 0.8), then the stickers pop in.
 function compose(s,ctx,X,Y,W,t=1){const {meta,rank}=s.pd,H=W*meta.h/meta.w,c=document.createElement("canvas");
@@ -145,7 +148,7 @@ async function open(id,opts={}){
   let pd;try{pd=await pageData(id)}catch{return openPicker()}
   const saved=opts.fresh?null:(Game.st.colorings||{})[id];
   cur=makeState(pd,saved);color=pd.id==="scratch"?4:1;
-  const title=id==="scratch"?SCRATCH.title:(bySlug(pd.meta.slug)||{}).title||pd.meta.title;cur.title=title;
+  const pr=bySlug(pd.meta.slug),title=id==="scratch"?t("color.scratch"):pr?ptitle(pr):pd.meta.title;cur.title=title;
   $("cTitle").textContent=title;stage.style.aspectRatio=`${pd.meta.w}/${pd.meta.h}`;
   $("cPeek").src=id==="scratch"?"":(bySlug(pd.meta.slug)||{}).full||"";$("cPeekBtn").hidden=id==="scratch";
   paint(cur,cv);renderColors();renderStickers();$("cTray").hidden=true;
@@ -169,8 +172,7 @@ $("cAny").addEventListener("change",e=>{const c=e.target.value.toUpperCase();let
 function pagePoint(e){const r=cv.getBoundingClientRect();return [Math.floor((e.clientX-r.left)/r.width*cur.pd.meta.w),Math.floor((e.clientY-r.top)/r.height*cur.pd.meta.h)]}
 stage.addEventListener("pointerdown",e=>{if(!cur||e.target.closest(".c-st"))return;
   const [x,y]=pagePoint(e);if(x<0||y<0||x>=cur.pd.meta.w||y>=cur.pd.meta.h)return;const r=cur.pd.ids[y*cur.pd.meta.w+x];if(!r||cur.fills[r]===color)return;
-  cur.undo.push([r,cur.fills[r]]);cur.fills[r]=color;paintRegion(cur,cv,r);Game.sfx("fill");Game.buzz(8);
-  if(!reduce){stage.classList.remove("pop");void stage.offsetWidth;stage.classList.add("pop")}save()});
+  cur.undo.push([r,cur.fills[r]]);cur.fills[r]=color;paintRegion(cur,cv,r,true);Game.sfx("fill");Game.buzz(8);save()});
 $("cUndo").onclick=()=>{const u=cur&&cur.undo.pop();if(!u)return;Game.buzz(6);
   if(u[0]==="st"){cur.stickers=u[1];renderStickers()}else{cur.fills[u[0]]=u[1];paintRegion(cur,cv,u[0])}save()};
 // Peek: hold to see Ekky's own colors
@@ -223,7 +225,7 @@ function save(now){if(!cur)return;clearTimeout(saveT);const run=()=>{if(!cur)ret
 function reveal(){const scratch=cur.pd.id==="scratch",c=$("cYours"),{w,h}=cur.pd.meta;c.width=480;c.height=Math.round(480*h/w);compose(cur,c.getContext("2d"),0,0,480);
   $("cRevTitle").textContent=scratch?t("color.scratch"):t("reveal.title");$("cEkkyFig").hidden=scratch;$("cEkky").src=scratch?"":(bySlug(cur.pd.meta.slug)||{}).full||"";
   view("cReveal");Game.sfx("level");
-  if(!Game.st.firstDone){Game.st.firstDone=1;Game.save();if(typeof confetti==="function")confetti()}}
+  Game.st.firstDone=1;Game.save()}   // no confetti here: it covered the comparison (share playtest); the reveal itself is the reward
 $("cClose").onclick=close;$("cAgain").onclick=()=>{view("cEdit");sizeStage()};$("cAnother").onclick=openPicker;
 if($("cShare"))$("cShare").onclick=()=>typeof Share!=="undefined"&&Share.openPreview(shareData());
 if($("cDl"))$("cDl").onclick=()=>typeof Share!=="undefined"&&Share.download({...shareData(),name:Game.st.name||""});
@@ -232,11 +234,11 @@ function shareData(){const s=cur;return {art:s.pd.meta.slug||null,page:s.pd.id,t
 
 /* ---- arrival: a friend's coloring link (js/links.js) ---- */
 async function showArrival(id,fills,custom,stks,from){let pd;try{pd=await pageData(id)}catch{return false}
-  const s=makeState(pd,{fills,custom,stickers:stks});const title=id==="scratch"?SCRATCH.title:(bySlug(pd.meta.slug)||{}).title;s.title=title;
+  const s=makeState(pd,{fills,custom,stickers:stks}),pr=bySlug(pd.meta.slug),title=id==="scratch"?t("color.scratch"):ptitle(pr);s.title=title;
   const c=$("cArriveCanvas");c.width=560;c.height=Math.round(560*pd.meta.h/pd.meta.w);
   await Promise.all(s.stickers.map(x=>{const im=imgOf(x.n);return im.complete?0:new Promise(r=>{im.onload=im.onerror=r})}));
   compose(s,c.getContext("2d"),0,0,560);
-  $("cArriveTitle").textContent=from?t("arrive.color",{name:from,title}):t("arrive.color.anon",{title});
+  $("cArriveTitle").textContent=id==="scratch"?(from?t("arrive.scene",{name:from}):t("arrive.sceneAnon")):from?t("arrive.color",{name:from,title}):t("arrive.color.anon",{title});
   $("cArriveColor").onclick=()=>open(id);view("cArrive");return true}
 $("cArriveX").onclick=close;$("cArriveExplore").onclick=()=>{close();Game.go("map")};
 

@@ -21,7 +21,8 @@ function encStickers(list){return "v1."+b64(list.flatMap(s=>[s.n,Math.round(s.x*
 function decStickers(str){if(!str)return [];if(!str.startsWith("v1."))throw new Error("bad link");const b=unb64(str.slice(3));if(b.length%5||b.length>60)throw new Error("bad link");
   const ok=Color.stickers().map(s=>s.n),out=[];
   for(let i=0;i<b.length;i+=5){if(!ok.includes(b[i]))continue;out.push({n:b[i],x:b[i+1]/255,y:b[i+2]/255,s:.04+b[i+3]/255*.76,r:b[i+4]/256*TAU})}return out}
-function base(){if(CONFIG.siteUrl)return CONFIG.siteUrl;return location.protocol==="file:"?location.href.split(/[?#]/)[0]:location.origin+location.pathname}
+// siteBase() (js/data.js): CONFIG.siteUrl when set, else this page's own host and path; never a hard-coded domain.
+function base(){const b=siteBase();return b?b.replace(/\/?$/,"/"):location.href.split(/[?#]/)[0]}
 function colorUrl(state,name){const q=new URLSearchParams({color:state.pd.id,f:encFills(state.fills,state.custom)});
   if(state.stickers.length)q.set("s",encStickers(state.stickers));const n=cleanName(name);if(n)q.set("from",n);return base()+"?"+q}
 async function arrive(){const q=new URLSearchParams(location.search);if(!q.has("color"))return;
