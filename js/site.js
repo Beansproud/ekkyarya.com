@@ -55,6 +55,8 @@ grid.innerHTML=PROJECTS.map((p,i)=>`<button class="tile reveal" data-cat="${p.ca
   <span class="tile-cat">${catImg(p.cat,"")}</span><div class="art">${artOf(p)}</div><span class="view">View</span>
   <div class="meta"><small>${catName(p.cat)}</small><h3>${ptitle(p)}</h3>${tagOf(p)}</div></button>`).join("");
 
+// sidebar category names follow the language (catName); the icon goes in front
+document.querySelectorAll("#sideCats [data-filter]").forEach(b=>{const n=catName(b.dataset.filter);if(n)b.textContent=n});
 document.querySelectorAll("#filters [data-filter],#sideCats [data-filter]").forEach(b=>b.insertAdjacentHTML("afterbegin",catImg(b.dataset.filter)));
 document.querySelectorAll(".card[data-jump] > .ico").forEach(i=>i.innerHTML=catImg(i.parentElement.dataset.jump,""));
 let shown=12;
@@ -134,7 +136,7 @@ addEventListener("keydown",e=>{if(e.key==="Escape")closeMenu()});
 /* ===== Theme ===== */
 const root=document.documentElement,label=document.getElementById("themeLabel");
 function isDark(){return root.dataset.theme?root.dataset.theme==="dark":matchMedia("(prefers-color-scheme: dark)").matches}
-function applyTheme(t){if(t)root.dataset.theme=t;label.textContent=isDark()?"Light mode":"Dark mode"}
+function applyTheme(th){if(th)root.dataset.theme=th;label.textContent=t(isDark()?"nav.light":"nav.dark")}
 try{applyTheme(localStorage.getItem("theme")||(isDark()?"dark":"light"))}catch{applyTheme(isDark()?"dark":"light")}
 document.getElementById("themeToggle").onclick=()=>{const t=isDark()?"light":"dark";applyTheme(t);try{localStorage.setItem("theme",t)}catch{}};
 
