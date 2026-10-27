@@ -121,34 +121,49 @@ async function pageData(id){
 const hexRgb=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
 function colorOf(s,v){return v===0?"#FFFFFF":v<=12?s.pd.meta.colors[v-1]:s.custom[v-13]||"#FFFFFF"}
 const UNDO_KEEP=40;
-function makeState(pd,saved){const k=pd.meta.regions;const s={pd,fills:new Uint8Array(k+1),custom:[],stickers:[],undo:[]};
+function makeState(pd,saved){const k=pd.meta.regions;bboxAll(pd);const s={pd,fills:new Uint8Array(k+1),custom:[],stickers:[],undo:[]};
   // fills saved for a different region map (the page was rebuilt) are dropped rather than painted onto the wrong shapes
   if(saved){if((saved.fills||[]).length===k+1)saved.fills.forEach((v,r)=>{s.fills[r]=v});s.custom=(saved.custom||[]).slice(0,MAX_CUSTOM);s.stickers=(saved.stickers||[]).filter(x=>stickers().some(t=>t.n===x.n)).slice(0,MAX_STICKERS);
     if((saved.fills||[]).length===k+1&&Array.isArray(saved.undo))s.undo=saved.undo.filter(u=>Array.isArray(u)&&(u[0]==="st"?Array.isArray(u[1]):u[0]>0&&u[0]<=k)).slice(-UNDO_KEEP)}
   if(pd.id==="scratch"&&!saved)s.fills[1]=1;
   return s}
 // Paint the fill layer of a state onto a canvas at the page's own size.
-function paint(s,cv){const {meta,start,idx,line}=s.pd;cv.width=meta.w;cv.height=meta.h;const x=cv.getContext("2d");
+function paint(s,cv){flushFades();const {meta,start,idx,line}=s.pd;cv.width=meta.w;cv.height=meta.h;const x=cv.getContext("2d");
   const img=x.createImageData(meta.w,meta.h),d=img.data;d.fill(255);
   for(let r=1;r<=meta.regions;r++){const v=s.fills[r];if(!v)continue;const [R,G2,B]=hexRgb(colorOf(s,v));
     for(let j=start[r];j<start[r+1];j++){const o=idx[j]*4;d[o]=R;d[o+1]=G2;d[o+2]=B}}
   x.putImageData(img,0,0);if(line)x.drawImage(line,0,0)}
 // Repaint only the bounding box of region r: paper, then each pixel's region color, then Ekky's lines on top.
 // fade: the new color fades into the shape over 250 ms (B39: shows which shape changed; reduced motion paints at once).
-function paintRegion(s,cv,r,fade){const {meta,start,idx,line,ids}=s.pd;const x=cv.getContext("2d");
-  let x0=meta.w,y0=meta.h,x1=0,y1=0;for(let j=start[r];j<start[r+1];j++){const i=idx[j],px=i%meta.w,py=(i-px)/meta.w;if(px<x0)x0=px;if(px>x1)x1=px;if(py<y0)y0=py;if(py>y1)y1=py}
-  if(x1<x0)return;const w=x1-x0+1,h=y1-y0+1,img=x.createImageData(w,h),d=img.data,rgb=[];for(let v=0;v<16;v++)rgb[v]=hexRgb(colorOf(s,v));
-  for(let yy=0;yy<h;yy++)for(let xx=0;xx<w;xx++){const c=rgb[s.fills[ids[(y0+yy)*meta.w+x0+xx]]],o=(yy*w+xx)*4;d[o]=c[0];d[o+1]=c[1];d[o+2]=c[2];d[o+3]=255}
-  const box=document.createElement("canvas");box.width=w;box.height=h;const bx=box.getContext("2d");bx.putImageData(img,0,0);if(line)bx.drawImage(line,x0,y0,w,h,0,0,w,h);
-  if(!fade||reduce){x.drawImage(box,x0,y0);return}
-  // a true 250 ms fade, by time not by frame: the old picture of the box, with the new one on top at the elapsed share
-  const old=document.createElement("canvas");old.width=w;old.height=h;old.getContext("2d").drawImage(cv,x0,y0,w,h,0,0,w,h);
-  const t0=performance.now();(function step(now){const k=Math.min(1,(now-t0)/250);x.drawImage(old,x0,y0);x.globalAlpha=k;x.drawImage(box,x0,y0);x.globalAlpha=1;if(k<1)requestAnimationFrame(step)})(t0)}
+// Smooth fills (owner: "some animation is very clunky"): the bounding box of each region is found once and cached, pixels are written
+// as 32-bit words, and a big region is built in slices of at most 10 ms so a 4x slower phone never stalls a frame. The new color
+// then fades in as an overlay canvas whose opacity is animated (compositor only), and is committed to the picture when it ends.
+const fading=[];
+function flushFades(){while(fading.length)fading.shift()()}
+function bboxAll(pd){if(pd.bb)return pd.bb;const {meta,start,idx}=pd,W=meta.w,b=pd.bb=new Int32Array((meta.regions+1)*4);   // every region's box in one pass, when the page opens
+  for(let r=0;r<=meta.regions;r++){let x0=W,y0=meta.h,x1=-1,y1=-1;for(let j=start[r],e=start[r+1];j<e;j++){const i=idx[j],py=(i/W)|0,px=i-py*W;if(px<x0)x0=px;if(px>x1)x1=px;if(py<y0)y0=py;if(py>y1)y1=py}
+    b[r*4]=x0;b[r*4+1]=y0;b[r*4+2]=x1;b[r*4+3]=y1}
+  return b}
+function bboxOf(pd,r){const b=bboxAll(pd),o=r*4;return [b[o],b[o+1],b[o+2],b[o+3]]}
+function paintRegion(s,cv,r,fade){flushFades();const {meta,line,ids}=s.pd,W=meta.w,x=cv.getContext("2d"),[x0,y0,x1,y1]=bboxOf(s.pd,r);
+  if(x1<x0)return;const w=x1-x0+1,h=y1-y0+1,box=document.createElement("canvas");box.width=w;box.height=h;
+  const bx=box.getContext("2d"),img=bx.createImageData(w,h),d32=new Uint32Array(img.data.buffer),col=new Uint32Array(16),fills=s.fills;
+  for(let v=0;v<16;v++){const c=hexRgb(colorOf(s,v));col[v]=(255<<24|c[2]<<16|c[1]<<8|c[0])>>>0}
+  let yy=0;const rows=until=>{for(;yy<h&&performance.now()<until;yy++){const base=(y0+yy)*W+x0,o=yy*w;for(let xx=0;xx<w;xx++)d32[o+xx]=col[fills[ids[base+xx]]]}};
+  const done=()=>{bx.putImageData(img,0,0);if(line)bx.drawImage(line,x0,y0,w,h,0,0,w,h);
+    if(!fade||reduce){x.drawImage(box,x0,y0);return}
+    box.className="c-fadein";box.style.cssText=`left:${x0/W*100}%;top:${y0/meta.h*100}%;width:${w/W*100}%;height:${h/meta.h*100}%`;
+    stage.insertBefore(box,$("cPeek"));void box.offsetWidth;box.style.opacity=1;
+    let tm=0;const commit=()=>{clearTimeout(tm);const k=fading.indexOf(commit);if(k>=0)fading.splice(k,1);if(box.parentNode){x.drawImage(box,x0,y0);box.remove()}};
+    fading.push(commit);tm=setTimeout(commit,270)};
+  rows(performance.now()+10);if(yy>=h)return done();
+  const tick=()=>{rows(performance.now()+10);yy>=h?done():requestAnimationFrame(tick)};requestAnimationFrame(tick)}
 // Draw the whole picture (fills, lines, stickers) into a box on any canvas: thumbnails, reveal, share card, arrival.
 // t (0..1) plays the picture as a timeline for the share video: the fills sweep in (to 0.8), then the stickers pop in.
-function compose(s,ctx,X,Y,W,t=1){const {meta,rank}=s.pd,H=W*meta.h/meta.w,c=document.createElement("canvas");
+function compose(s,ctx,X,Y,W,t=1,src){const {meta,rank}=s.pd,H=W*meta.h/meta.w,c=document.createElement("canvas");
   const fillT=Math.min(1,t/.8),stT=Math.max(0,Math.min(1,(t-.8)/.2)),pop=t>=1?1:1-Math.pow(1-stT,3);
-  paint(t>=1?s:{...s,fills:s.fills.map((v,r)=>rank[r]<fillT*meta.regions?v:0)},c);ctx.drawImage(c,X,Y,W,H);
+  if(src&&t>=1)ctx.drawImage(src,X,Y,W,H);   // the live picture is already painted: a thumbnail is one scaled draw, not a repaint
+  else{paint(t>=1?s:{...s,fills:s.fills.map((v,r)=>rank[r]<fillT*meta.regions?v:0)},c);ctx.drawImage(c,X,Y,W,H)}
   if(!pop)return H;
   s.stickers.forEach(st=>{const im=imgOf(st.n);if(!im||!im.complete||!im.naturalWidth)return;const w=st.s*W*pop,h=w*im.naturalHeight/im.naturalWidth;
     ctx.save();ctx.translate(X+st.x*W,Y+st.y*H);ctx.rotate(st.r);ctx.drawImage(im,-w/2,-h/2,w,h);ctx.restore()});return H}
@@ -240,20 +255,23 @@ function renderStickers(){$("cStickers").innerHTML=cur.stickers.map((s,k)=>{cons
 const pts=new Map();let gest=null;
 $("cStickers").addEventListener("pointerdown",e=>{const el=e.target.closest(".c-st");if(!el||!cur)return;e.preventDefault();el.setPointerCapture(e.pointerId);
   pts.set(e.pointerId,[e.clientX,e.clientY]);const k=+el.dataset.k;
-  if(!gest||gest.k!==k){gest={k,el,before:cur.stickers.map(x=>({...x}))};$("cBin").classList.add("show")}
+  if(!gest||gest.k!==k){gest={k,el,before:cur.stickers.map(x=>({...x})),orig:{...cur.stickers[k]},rect:stage.getBoundingClientRect(),bin:null,hot:false};$("cBin").classList.add("show");setTimeout(()=>{if(gest&&gest.el===el)gest.bin=$("cBin").getBoundingClientRect()},260)}
   el.classList.add("drag");
   gest.base={...cur.stickers[k]};gest.start=[...pts.values()].map(p=>p.slice())});
-$("cStickers").addEventListener("pointermove",e=>{if(!gest||!pts.has(e.pointerId))return;pts.set(e.pointerId,[e.clientX,e.clientY]);
-  const r=stage.getBoundingClientRect(),s=cur.stickers[gest.k],b=gest.base,now=[...pts.values()],st=gest.start;
+/* Dragging runs on requestAnimationFrame and moves the sticker with a transform only: the stage and bin rectangles are read once, never per move. */
+let dragRaf=0;
+function dragFrame(){dragRaf=0;if(!gest||!cur)return;const r=gest.rect,s=cur.stickers[gest.k],b=gest.base,o=gest.orig,now=[...pts.values()],st=gest.start;if(!now.length)return;
   if(now.length>=2&&st.length>=2){const d0=Math.hypot(st[1][0]-st[0][0],st[1][1]-st[0][1]),d1=Math.hypot(now[1][0]-now[0][0],now[1][1]-now[0][1]);
     const a0=Math.atan2(st[1][1]-st[0][1],st[1][0]-st[0][0]),a1=Math.atan2(now[1][1]-now[0][1],now[1][0]-now[0][0]);
     s.s=Math.max(.06,Math.min(.8,b.s*d1/(d0||1)));s.r=b.r+a1-a0;
     s.x=b.x+((now[0][0]+now[1][0])-(st[0][0]+st[1][0]))/2/r.width;s.y=b.y+((now[0][1]+now[1][1])-(st[0][1]+st[1][1]))/2/r.height}
   else{s.x=b.x+(now[0][0]-st[0][0])/r.width;s.y=b.y+(now[0][1]-st[0][1])/r.height}
   s.x=Math.max(0,Math.min(1,s.x));s.y=Math.max(0,Math.min(1,s.y));
-  gest.el.style.left=s.x*100+"%";gest.el.style.top=s.y*100+"%";gest.el.style.width=s.s*100+"%";gest.el.style.transform=`translate(-50%,-50%) rotate(${s.r}rad)`;
-  const bin=$("cBin").getBoundingClientRect();$("cBin").classList.toggle("hot",e.clientX>bin.left&&e.clientX<bin.right&&e.clientY>bin.top&&e.clientY<bin.bottom)});
-function endGesture(e){if(!gest||!pts.has(e.pointerId))return;pts.delete(e.pointerId);
+  gest.el.style.transform=`translate(-50%,-50%) translate3d(${(s.x-o.x)*r.width}px,${(s.y-o.y)*r.height}px,0) rotate(${s.r}rad) scale(${s.s/o.s})`;
+  const bn=gest.bin,p=now[now.length-1],hot=!!bn&&p[0]>bn.left&&p[0]<bn.right&&p[1]>bn.top&&p[1]<bn.bottom;
+  if(hot!==gest.hot){gest.hot=hot;$("cBin").classList.toggle("hot",hot)}}
+$("cStickers").addEventListener("pointermove",e=>{if(!gest||!pts.has(e.pointerId))return;pts.set(e.pointerId,[e.clientX,e.clientY]);if(!dragRaf)dragRaf=requestAnimationFrame(dragFrame)});
+function endGesture(e){if(!gest||!pts.has(e.pointerId))return;if(dragRaf){cancelAnimationFrame(dragRaf);dragFrame()}pts.delete(e.pointerId);
   if(pts.size){gest.base={...cur.stickers[gest.k]};gest.start=[...pts.values()].map(p=>p.slice());return}
   const hot=$("cBin").classList.contains("hot");$("cBin").classList.remove("show","hot");
   const k=gest.k,moved=JSON.stringify(gest.before[k])!==JSON.stringify(cur.stickers[k]);   // a plain tap on a sticker is not an edit: no Undo step
@@ -264,9 +282,9 @@ function popSticker(k){const el=$("cStickers").children[k];if(el){el.classList.a
 /* ---- autosave to Mine ---- */
 let saveT=0;
 function save(now){updUndo();if(!cur)return;clearTimeout(saveT);const run=()=>{if(!cur)return;const st=Game.st;st.colorings=st.colorings||{};
-  let thumb="";try{const c=document.createElement("canvas");c.width=240;c.height=Math.round(240*cur.pd.meta.h/cur.pd.meta.w);compose(cur,c.getContext("2d"),0,0,240);thumb=c.toDataURL("image/jpeg",.7)}catch{}
+  let thumb="";try{const c=document.createElement("canvas");c.width=240;c.height=Math.round(240*cur.pd.meta.h/cur.pd.meta.w);flushFades();compose(cur,c.getContext("2d"),0,0,240,1,cv);thumb=c.toDataURL("image/jpeg",.7)}catch{}
   st.colorings[cur.pd.id]={title:cur.title,fills:[...cur.fills],custom:cur.custom,stickers:cur.stickers.map(s=>({n:s.n,x:+s.x.toFixed(4),y:+s.y.toFixed(4),s:+s.s.toFixed(4),r:+s.r.toFixed(4)})),undo:cur.undo.slice(-UNDO_KEEP),at:Date.now(),thumb};Game.save();updUndo()};
-  if(now)run();else saveT=setTimeout(run,400)}
+  if(now)run();else saveT=setTimeout(()=>window.requestIdleCallback?requestIdleCallback(run,{timeout:1500}):run(),400)}
 
 /* ---- reveal: yours and Ekky's, then the share preview ---- */
 function reveal(){const scratch=cur.pd.id==="scratch",c=$("cYours"),{w,h}=cur.pd.meta;c.width=480;c.height=Math.round(480*h/w);compose(cur,c.getContext("2d"),0,0,480);

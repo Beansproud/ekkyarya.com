@@ -798,24 +798,28 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 }
 @media (prefers-reduced-motion:reduce){.t-squash,.t-wiggle,.t-bounce,.t-nod,.t-burst{animation:none}.t-burst{display:none}
   .btn:hover,.g-btn:hover,.g-tile:hover,.play-card:hover,.tile:hover,.feat:hover,.g-feat:hover,.g-card:hover,.g-mine-item:hover,.g-hire:hover,.v-place:hover,.v-walker:hover,.v-folk:hover{animation:none;translate:none;scale:none;rotate:none}}
-.c-ripple{position:absolute;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;background:var(--c);opacity:.45;pointer-events:none;transform:scale(.3);animation:cRipple .3s ease-out forwards;z-index:3}
+.c-ripple{position:absolute;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;background:var(--c);opacity:.45;pointer-events:none;transform:scale(.3);animation:cRipple .3s cubic-bezier(.22,.61,.36,1) forwards;z-index:3;will-change:transform,opacity}
 @keyframes cRipple{to{transform:scale(4);opacity:0}}
-.c-sw.pop::before{animation:cPop .3s ease-out}
-@keyframes cPop{40%{transform:scale(1.18)}}
+.c-sw.pop::before{animation:cPop .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes cPop{from{transform:scale(.8)}to{transform:scale(1)}}
 @media (prefers-reduced-motion:reduce){.c-ripple{display:none}.c-sw.pop::before{animation:none}}
 /* Doodle Scene: a sticker lifts while it is held, and pops when it lands or is added */
-.c-st.drag{scale:1.1;filter:drop-shadow(0 8px 8px rgba(0,0,0,.3))}
-.c-st.pop{animation:cStPop .3s ease-out}
-@keyframes cStPop{0%{scale:.7}60%{scale:1.14}100%{scale:1}}
+.c-st{will-change:transform}
+.c-st.drag{scale:1.1;transition:scale .15s cubic-bezier(.34,1.56,.64,1)}
+.c-st.pop{animation:cStPop .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes cStPop{from{scale:.7}to{scale:1}}
 @media (prefers-reduced-motion:reduce){.c-st.pop{animation:none}}
 /* Doodle Scene: the bin opens its lid while a sticker is over it; stickers wobble a hair under a mouse (touch never hovers) */
 .c-lid{transform-box:fill-box;transform-origin:0 100%}
 .c-bin.hot .c-lid{transform:translate(1px,-2px) rotate(-28deg)}
 @media (prefers-reduced-motion:no-preference){
-  .c-lid{transition:transform .15s ease-out}
+  .c-lid{transition:transform .2s cubic-bezier(.34,1.56,.64,1)}
   @media (hover:hover) and (pointer:fine){
     .c-st:not(.drag):hover{animation:cStWob .35s ease-in-out}
   }
 }
 @keyframes cStWob{25%{rotate:-4deg}75%{rotate:4deg}}
 .c-page{display:flex;flex-direction:column;justify-content:flex-start}   /* a button centers its content: a one-line title beside a two-line one left a gap above the picture */
+.c-stage canvas.c-fadein{position:absolute;display:block;opacity:0;pointer-events:none;transition:opacity .25s linear}   /* the new color of a fill: opacity only, committed to the picture when it ends */
+.c-bin{transition:transform .25s cubic-bezier(.34,1.56,.64,1)}   /* transform only (the red "hot" color now switches at once) */
+@media (prefers-reduced-motion:reduce){.c-stage canvas.c-fadein{transition:none}}
