@@ -60,33 +60,85 @@ G.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(g){buzz(
 
 /* ---- start screen: the featured six open the lightbox ---- */
 function renderStart(){const six=featuredSix().map(p=>({p,i:PROJECTS.indexOf(p)}));
-  $("gFeatured").innerHTML=six.map(({p,i})=>`<button class="g-feat" data-i="${i}" aria-label="${esc(ptitle(p))}"><img src="${p.img}" alt="" decoding="async"><b>${esc(ptitle(p))}</b></button>`).join("")}
+  $("gFeatured").innerHTML=six.map(({p,i})=>`<button class="g-feat" data-i="${i}" aria-label="${esc(ptitle(p))}"><img src="${thumbOf(p)}" alt="" decoding="async"><b>${esc(ptitle(p))}</b></button>`).join("")}
 $("gFeatured").addEventListener("click",e=>{const b=e.target.closest(".g-feat");if(b){buzz(10);show(+b.dataset.i)}});
 
-/* ---- map: an isometric world of 5 floating islands, never locked, no "next level" pressure (B06) ---- */
-// Each place is a small isometric island (grass top, earth sides) with Ekky's cut-out standing on it; plank bridges join them.
-const ISLAND={about:["#7ED9B0","#3f9f74","#2f7d59"],color:["#FFD45C","#c99a1e","#a87d12"],art:["#C9A7FF","#8f6fd1","#7558b5"],
-  process:["#B8D5FF","#7a9fd6","#5f84bd"],hire:["#FF9A8A","#d45a45","#a8402f"]};
-function isoIsland(n,tw,d,[top,left,right]){const th=tw/2,W=n*tw,H=n*th;let grid="";
-  for(let k=1;k<n;k++)grid+=`M${W/2-k*tw/2} ${k*th/2}L${W-k*tw/2} ${H/2+k*th/2}M${W/2+k*tw/2} ${k*th/2}L${k*tw/2} ${H/2+k*th/2}`;
-  return `<svg class="g-iso" width="${W}" height="${H+d}" viewBox="0 0 ${W} ${H+d}" aria-hidden="true">
-    <path d="M0 ${H/2}L${W/2} ${H}V${H+d}L0 ${H/2+d}z" fill="${left}"/><path d="M${W/2} ${H}L${W} ${H/2}V${H/2+d}L${W/2} ${H+d}z" fill="${right}"/>
-    <path d="M${W/2} 0L${W} ${H/2}L${W/2} ${H}L0 ${H/2}z" fill="${top}"/><path d="${grid}" stroke="#fff" stroke-opacity=".35" stroke-width="1"/>
-    <path d="M0 ${H/2}L${W/2} 0L${W} ${H/2}" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="2" stroke-linejoin="round"/>
-    <ellipse cx="${W/2}" cy="${H/2+2}" rx="${tw*.55}" ry="${th*.45}" fill="#2B1342" opacity=".22"/></svg>`}
+/* ---- map: Ekky's Village (B42 V1). One pre-composited picture (scripts/village.py: plain ground shapes plus Ekky's
+   cut-outs, placed as drawn) under real buttons for the places, and four frames on the gallery walls that hang
+   featuredPick(4) real pieces on every visit. Never locked, no "next" glow, no boss. ---- */
+// place id -> what it opens (index in LEVELS, or Star Catcher), its label key, and a feature switch if it has one
+const PLACES=[
+  {id:"home",        key:"town.home",    open:()=>openLevel(0)},
+  {id:"studio",      key:"town.studio",  open:()=>openLevel(1)},
+  {id:"gallery",     key:"town.gallery", open:()=>openLevel(2)},
+  {id:"doodle",      key:"town.workshop",open:()=>openLevel(3)},
+  {id:"observatory", key:"town.launch",  open:()=>startArcade(), feature:"starCatcher"},
+  {id:"hire",        key:"town.hire",    open:()=>openHire(), hire:true},
+];
+const pct=(v,of)=>(v/of*100).toFixed(3)+"%";
 function renderMap(){
-  const W=$("gMapWrap"),cw=Math.min(420,W.clientWidth||innerWidth-32),TOP=52,STEP=62,D=12;
-  const P=LEVELS.map((l,i)=>{const last=i===LEVELS.length-1,n=3,tw=last?42:36,s=last?60:52;
-    return {l,i,n,tw,s,H:n*tw/2,x:cw*(last?.38:i%2?.72:.28),y:TOP+i*STEP+(last?18:0)}});
-  const last=P[P.length-1],h=last.y+last.H/2+D+30;
-  let planks="";for(let i=1;i<P.length;i++){const a=P[i-1],b=P[i],steps=Math.floor(Math.hypot(b.x-a.x,b.y-a.y)/13);
-    for(let k=1;k<steps;k++){const x=a.x+(b.x-a.x)*k/steps,y=a.y+(b.y-a.y)*k/steps;planks+=`<path d="M${x.toFixed(1)} ${(y-3).toFixed(1)}l7 3-7 3-7-3z"/>`}}
-  W.style.height=h+"px";
-  W.innerHTML=`<svg class="g-bridges" width="${cw}" height="${h}" viewBox="0 0 ${cw} ${h}" aria-hidden="true"><g fill="#c98a4a" stroke="#7a4a22" stroke-width="1.2" stroke-linejoin="round">${planks}</g></svg>`+
-    P.map(({l,i,n,tw,s,H,x,y})=>`<button class="g-node g-place" style="left:${x}px;top:${y-s+4}px;--s:${s}px;--h:${H}px" data-l="${i}" aria-label="${esc(t(l.key))}">
-      ${uiImg(l.icon,"g-place-ic")}${isoIsland(n,tw,D,ISLAND[l.id])}<span class="g-place-label">${esc(t(l.key))}</span></button>`).join("");
+  const V=window.VILLAGE,W=$("gMapWrap");if(!V)return;
+  const places=PLACES.filter(p=>!p.feature||feature(p.feature));
+  const art=featuredSix(4);
+  W.style.height="";W.className="g-map-wrap v-map";W.style.aspectRatio=`${V.w}/${V.h}`;
+  W.innerHTML=`<img class="v-ground" src="assets/village/village.png" alt="" decoding="async" fetchpriority="high">`+
+    V.frames.map((f,k)=>{const p=art[k];if(!p)return "";const deg=(Math.atan(f.slope)*180/Math.PI).toFixed(2);
+      return `<img class="v-frame" src="${thumbOf(p)}" alt="" decoding="async" style="left:${pct(f.x,V.w)};top:${pct(f.y,V.h)};width:${pct(f.w,V.w)};height:${pct(f.h,V.h)};transform:skewY(${deg}deg)">`}).join("")+
+    places.map(p=>{const b=V.places[p.id].box,l=V.places[p.id].label;
+      return `<button class="v-place${p.hire?" hire":""}" data-place="${p.id}" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}" aria-label="${esc(t(p.key))}"></button>
+      <span class="v-label${p.hire?" hire":""}" aria-hidden="true" style="left:${pct(l[0],V.w)};top:${pct(l[1],V.h)}">${esc(t(p.key))}</span>`}).join("");
+  W.insertAdjacentHTML("beforeend",villageLife(V));
+  $("gMapList").innerHTML=places.map(p=>`<li><button class="g-btn sm${p.hire?" pink":" alt"}" data-place="${p.id}">${esc(t(p.key))}</button></li>`).join("");
 }
-$("gMapWrap").addEventListener("click",e=>{const n=e.target.closest(".g-node");if(!n)return;buzz(15);sfx("tap");openLevel(+n.dataset.l)});
+/* ---- Village life (B42 V3), inside the ambience budget (decision 10, docs/motion.md): walkers, two clouds, the
+   gate's lantern, the noodle bath's steam and the water shimmer. All CSS animations on transform and opacity, so the
+   off-screen pause and reduced motion (villagers stand still) apply; day or night is set once, on load. ---- */
+const TILE=36,TILE_S=1.6,END_PAUSE=2,CORNER_PAUSE=.8;   // 1 tile (36 image px) per 1.6 s; pauses at the ends and corners
+function walkCss(w,k,V){
+  const fwd=w.route,pts=fwd.concat(fwd.slice(0,-1).reverse()),steps=[];let t=0;
+  for(let i=0;i<pts.length;i++){const end=i===0||i===fwd.length-1;
+    steps.push([t,pts[i]]);t+=end?END_PAUSE:CORNER_PAUSE;steps.push([t,pts[i]]);
+    if(i<pts.length-1)t+=Math.hypot(pts[i+1][0]-pts[i][0],pts[i+1][1]-pts[i][1])/TILE*TILE_S}
+  const at=(x,y)=>`transform:translate(${pct(x,V.w)},${pct(y,V.h)})`,off=v=>(v/t*100).toFixed(3)+"%";
+  const face=(a,b)=>w.face===0?1:Math.sign(b[0]-a[0]||1)*w.face;
+  let move="",turn="";
+  for(const [time,p] of steps)move+=`${off(time)}{${at(p[0],p[1])}}`;
+  for(let i=0;i<pts.length-1;i++){turn+=`${off(steps[2*i+1][0])}{transform:scaleX(${face(pts[i],pts[i+1])})}`}
+  return {dur:t.toFixed(2),start:at(fwd[0][0],fwd[0][1]),face0:face(pts[0],pts[1]),
+    css:`@keyframes vw${k}{${move}100%{${at(pts[0][0],pts[0][1])}}}@keyframes vf${k}{0%{transform:scaleX(${face(pts[0],pts[1])})}${turn}}`}
+}
+function villageLife(V){
+  const night=(h=>h<6||h>=19)(new Date().getHours());
+  $("gMapWrap").classList.toggle("night",night);
+  let css="",html=`<img class="v-shimmer" src="assets/village/shimmer.png" alt="" decoding="async">`+
+    // clouds drift over the drawn village only (masked by its picture), never as grey blobs on the night sky
+    `<div class="v-sky"><div class="v-cloudrow" style="top:${pct(V.h*.18,V.h)}"><i class="v-cloud" style="animation-duration:84s;animation-delay:-30s"></i></div>`+
+    `<div class="v-cloudrow" style="top:${pct(V.h*.62,V.h)}"><i class="v-cloud small" style="animation-duration:72s;animation-delay:-58s"></i></div></div>`;
+  if(V.lantern)html+=`<i class="v-lantern" style="left:${pct(V.lantern[0],V.w)};top:${pct(V.lantern[1],V.h)}"></i>`;
+  (V.smoke||[]).forEach(s=>html+=`<i class="v-smoke" style="left:${pct(s[0],V.w)};top:${pct(s[1],V.h)}"></i>`);
+  const card=piece=>{const p=PROJECTS.find(q=>q.id===piece||q.slug===piece);return p&&creative(p)?p:null};
+  for(const [name,f] of Object.entries(V.folk||{})){const p=card(f.piece);if(!p)continue;const b=f.box;
+    html+=`<button class="v-folk" data-piece="${PROJECTS.indexOf(p)}" data-sprite="assets/sprites/${name}.png" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}" aria-label="${esc(t("town.seeArt")+": "+ptitle(p))}"></button>`}
+  // V5: client scenery, only with the clientScenery switch; each opens its piece, whose card shows the client tag
+  if(feature("clientScenery"))(V.scenery||[]).forEach(c=>{const p=PROJECTS.find(q=>q.slug===c.piece);
+    if(!p||p.kind!=="client"||!hasRole(p,"village"))return;const b=c.box;
+    html+=`<button class="v-folk v-scenery" data-piece="${PROJECTS.indexOf(p)}" data-sprite="${esc(c.src)}" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}" aria-label="${esc(t("town.seeArt")+": "+ptitle(p))}"><img src="${esc(c.src)}" alt=""></button>`});
+  (V.walkers||[]).slice(0,8).forEach((w,k)=>{const p=card(w.piece);if(!p)return;const c=walkCss(w,k,V);css+=c.css;
+    const delay=`-${(Math.random()*c.dur).toFixed(2)}s`;
+    html+=`<div class="v-walk" style="${c.start};animation:vw${k} ${c.dur}s linear ${delay} infinite"><button class="v-walker" data-piece="${PROJECTS.indexOf(p)}" data-sprite="${w.src}" aria-label="${esc(t("town.seeArt")+": "+ptitle(p))}"><img src="${w.src}" alt="" decoding="async" style="height:${(w.h/V.w*100).toFixed(2)}cqw;transform:scaleX(${c.face0});animation:vf${k} ${c.dur}s steps(1,end) ${delay} infinite"></button></div>`});
+  let st=$("vWalkCss");if(!st){st=document.createElement("style");st.id="vWalkCss";document.head.appendChild(st)}st.textContent=css;
+  return html}
+function openVillager(b){const k=+b.dataset.piece,p=PROJECTS[k];if(!p)return;
+  openSheet(`<h2 id="gSheetTitle"><img class="h-ico" src="${esc(b.dataset.sprite)}" alt="">${esc(ptitle(p))}</h2>
+    <button class="g-villager-art" data-see="${k}" aria-label="${esc(t("town.seeArt")+": "+ptitle(p))}"><img src="${thumbOf(p)}" alt="" loading="lazy"></button>
+    ${plabel(p)?`<p><span class="tag">${esc(plabel(p))}</span></p>`:""}<p>${esc(pdesc(p))}</p><p><button class="g-btn" data-see="${k}">${ico("i-eye")} ${esc(t("town.seeArt"))}</button></p>`+hireChip())}
+$("gMapWrap").addEventListener("click",e=>{const v=e.target.closest(".v-folk,.v-walker");if(v){buzz(10);sfx("tap");return openVillager(v)}
+  const b=e.target.closest(".v-place");if(!b)return;buzz(15);sfx("tap");
+  // the place lifts and its label glows once (300 ms), then it opens (B42: "I'm going there")
+  const l=b.nextElementSibling;if(!reduce&&l){l.classList.remove("go");void l.offsetWidth;l.classList.add("go")}
+  setTimeout(()=>PLACES.find(p=>p.id===b.dataset.place).open(),reduce?0:300)});
+$("gMapList").addEventListener("click",e=>{const b=e.target.closest("[data-place]");if(b){buzz(10);sfx("tap");PLACES.find(p=>p.id===b.dataset.place).open()}});
+$("gMapListBtn").onclick=()=>{const l=$("gMapList"),open=l.hidden;l.hidden=!open;$("gMapListBtn").setAttribute("aria-expanded",open)};
 
 /* ---- sheets ---- */
 const sheet=$("gSheet");let sheetFrom=null;
@@ -107,14 +159,15 @@ function openLevel(i){const l=LEVELS[i];
   if(l.id==="about"){const three=featuredSix(3).map(p=>({p,k:PROJECTS.indexOf(p)}));
     const facts=["about.fact.from","about.fact.lang","about.fact.hours","about.fact.price","about.workedWith"].map(k=>t(k)).filter(v=>v&&!v.startsWith("about."));
     openSheet(head(l)+`<p>${esc(t("about.body"))}</p>${facts.length?`<ul class="g-facts">${facts.map(f=>`<li>${esc(f)}</li>`).join("")}</ul>`:""}<h3 class="g-sheet-h3">${esc(t("about.pieces"))}</h3>
-      <div class="g-three">${three.map(({p,k})=>`<button class="g-feat" data-i="${k}" aria-label="${esc(ptitle(p))}"><img src="${p.img}" alt="" loading="lazy"><b>${esc(ptitle(p))}</b></button>`).join("")}</div>`+hireChip())}
+      <div class="g-three">${three.map(({p,k})=>`<button class="g-feat" data-i="${k}" aria-label="${esc(ptitle(p))}"><img src="${thumbOf(p)}" alt="" loading="lazy"><b>${esc(ptitle(p))}</b></button>`).join("")}</div>`+hireChip())}
   if(l.id==="process"){openSheet(head(l)+`<p>${esc(t("process.intro"))}</p>`+
     [["Brief & chat","We talk about your idea, audience and the feeling it should give."],["Sketches","Rough concepts so we pick a direction early."],["Color & polish","Line, color and texture, with room for revisions."],["Delivery","Final files for print, web and social."]]
      .map(([h,d],k)=>`<div class="g-quest" data-k="${k}"><span class="chk">${ico("i-check")}</span><div><b>${esc(tt(`process.step${k+1}`,h))}</b><p>${esc(tt(`process.step${k+1}.body`,d))}</p></div></div>`).join("")+hireChip());
     // the steps tick one after another, slowly, so the order of the process reads (B39)
     setTimeout(()=>$("gSheetBody").querySelectorAll(".g-quest").forEach(q=>setTimeout(()=>q.classList.add("ok"),reduce?0:500+q.dataset.k*600)),300)}
 }
-$("gSheetBody").addEventListener("click",e=>{const f=e.target.closest(".g-feat");if(f){show(+f.dataset.i)}});
+$("gSheetBody").addEventListener("click",e=>{const f=e.target.closest(".g-feat");if(f){show(+f.dataset.i)}
+  const s=e.target.closest("[data-see]");if(s){buzz(10);show(+s.dataset.see)}});
 
 /* ---- Final Quest: the Hire sheet (B07, B17). Opens over the current screen; closing returns there. ---- */
 function openHire(prefill){const l=LEVELS[4];

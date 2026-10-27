@@ -369,3 +369,114 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 .s-video{margin:0 auto}
 /* skeleton shimmer runs a few times while an image loads, never endlessly */
 .g-card .art,.art{animation-iteration-count:3!important}
+
+/* ===== Ekky's Village (B42 V1): the map ===== */
+#g-map .g-head{margin-bottom:0}
+#g-map .g-title{font-size:1.5rem}
+.v-map{position:relative;width:100%;max-width:420px;margin:0 auto;container-type:inline-size}
+.v-ground{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;user-select:none}
+.v-frame{position:absolute;object-fit:cover;transform-origin:0 0;pointer-events:none;box-shadow:0 0 0 1px #2B1342}
+.v-place{position:absolute;background:none;border-radius:16px;min-width:44px;min-height:44px}
+.v-place:focus-visible{outline:3px solid #FFB400;outline-offset:2px}
+.v-label{position:absolute;transform:translate(-50%,0);padding:3px 9px;border-radius:10px;background:#241638;border:2px solid #3e2a5c;color:#fff;
+  font-weight:700;font-size:.78rem;white-space:nowrap;pointer-events:none;transition:transform var(--dur-fast) var(--ease-move),box-shadow var(--dur-fast)}
+.v-label.hire{background:#FFB400;border-color:#b77e00;color:#2B1342}
+.v-label.go{transform:translate(-50%,-4px);box-shadow:0 0 0 3px #FFB400}
+.v-listbtn{display:block;margin:4px auto 0;min-height:44px;padding:0 12px}
+.v-list{list-style:none;display:grid;gap:8px;padding:0;margin:4px auto 0;max-width:320px}
+.v-list .g-btn{width:100%;min-height:48px}
+.v-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.v-head .g-title{text-align:left}
+.v-head .v-listbtn{margin:0;font-size:.8rem;text-align:right;max-width:52%}
+.v-label{font-size:.75rem}
+.v-list{margin-top:8px}
+.v-list[hidden]{display:none}
+
+/* ===== Start screen, neat pass (owner: "make sure this one neat") =====
+   One 16 px gutter, one 12 px gap, one radius (14 px) and one shadow for every card and tile. The six drawings fill
+   the middle; the three action tiles and the bottom row sit at the bottom, in thumb reach. No scrolling at 390 x 664. */
+#game{--gut:16px;--gap:12px;--rad:14px;--lift:0 4px 0 rgba(0,0,0,.3)}
+.g-hud{gap:8px;padding:calc(env(safe-area-inset-top) + 12px) var(--gut) 12px}
+.g-avatar{width:44px;height:44px;border-radius:var(--rad);border-width:2px}
+.g-player b{font-size:1rem;line-height:1.15}
+.g-player small{white-space:nowrap;overflow:visible;font-family:Fredoka;font-weight:500;font-size:.75rem;line-height:1.2}
+.g-round{width:44px;height:44px;border-radius:var(--rad)}
+.g-hud .g-hire{height:44px;min-height:44px;padding:0 12px 0 5px;border-radius:var(--rad);font-size:.9rem}
+.g-hud .g-hire img{width:32px;height:32px;border-radius:10px}
+.g-start{gap:var(--gap);padding:calc(env(safe-area-inset-top) + 72px) var(--gut) calc(env(safe-area-inset-bottom) + var(--gut));justify-content:flex-start}
+.g-start .g-logo{width:64px;margin-bottom:-6px}
+.g-tagline{font-size:1rem;line-height:1.25;margin:0}
+.g-row-title{margin:0;font-size:.9rem}
+.g-featured{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:1fr 1fr;gap:var(--gap);padding:0}
+.g-featured .g-feat{display:flex;flex-direction:column;min-height:0;border-radius:var(--rad);border-width:2px;box-shadow:var(--lift)}
+.g-featured .g-feat img{flex:1 1 auto;min-height:56px;height:0;aspect-ratio:auto}
+.g-featured .g-feat b{flex:none;font-size:.75rem;line-height:1.2;padding:5px 6px 6px;white-space:normal;overflow:hidden;text-overflow:clip;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;min-height:calc(2 * 1.2em + 11px)}
+.g-tiles{gap:var(--gap)}
+.g-tile,.g-tile.catch,.g-tile.explore{flex-direction:column;gap:4px;height:68px;min-height:68px;padding:6px 4px;border-radius:var(--rad);color:#2B1342;font-size:.85rem;box-shadow:var(--lift)}
+.g-tile span{white-space:nowrap}
+.g-tile img{width:32px;height:32px}
+.g-start-foot{gap:var(--gap);align-items:stretch}
+.g-start-foot .g-classic,.g-start-foot .lang-switch{height:48px;min-height:48px;border-radius:var(--rad);border:2px solid #3e2a5c;box-sizing:border-box}
+.g-start-foot .lang-switch button{min-height:0;height:100%}
+/* UX lead's rules: the art is the hero (thumbnails at least 100 px at 360 x 640); logo, tagline, grid, tiles and the
+   bottom row share the 16 px gutter; 16 px between groups, 12 px inside a group, 8 px between an icon and its label */
+.g-start{align-items:stretch;text-align:left;gap:16px}
+.g-start-head{display:flex;align-items:center;gap:12px}
+.g-start .g-logo{width:56px;margin:0;flex:none}
+.g-start .g-tagline{font-size:.95rem;line-height:1.3;max-width:none;text-align:left}
+.g-row-title{align-self:stretch;margin:0 0 -4px}
+.g-featured{gap:12px}
+.g-tile,.g-tile.catch,.g-tile.explore{gap:8px;height:64px;min-height:64px;padding:8px 4px}
+.g-tile img{width:24px;height:24px}
+.g-start-foot .g-classic,.g-start-foot .lang-switch{height:44px;min-height:44px}
+.g-featured .g-feat{border:0;box-shadow:0 0 0 2px #FFB400,var(--lift)}
+.g-featured .g-feat b{padding:5px 5px 6px;letter-spacing:-.01em}
+.g-featured .g-feat b{-webkit-line-clamp:2;text-overflow:ellipsis}   /* two lines; an ellipsis only as a safety net */
+/* the village uses the free height evenly: centred between the header and the tab bar */
+#g-map.active{display:flex;flex-direction:column}
+#g-map .v-map{margin:auto}
+/* narrow phones (360 px): the Hire chip drops its picture so the header stays on one line in every language */
+/* narrow phones (under 380 px): the header drops its sound button (Mine has the Sound switch) so title and role fit */
+@media (max-width:380px){#game .g-hud .g-round{display:none}}
+.g-player b,.g-player small{white-space:nowrap}
+.g-start-foot .lang-switch{border:0;box-shadow:inset 0 0 0 2px #3e2a5c}   /* the outline takes no space, so EN and ID stay 44 px tall */
+
+/* Village life (B42 V3). Budget: walkers (move + turn), 2 clouds, lantern 6 s, steam 6 s, water 10 s; nothing else
+   loops. Only transform and opacity animate. Reduced motion (css/site.css) stops all of it: walkers stand at the
+   start of their route, the steam and shimmer are not shown, the lantern glows still. */
+.v-shimmer{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:0;animation:vShimmer 10s ease-in-out infinite}
+@keyframes vShimmer{50%{opacity:.1}}
+.v-sky{position:absolute;inset:0;pointer-events:none;-webkit-mask:url(../assets/village/village.png) 0 0/100% 100% no-repeat;mask:url(../assets/village/village.png) 0 0/100% 100% no-repeat}
+.v-cloudrow{position:absolute;left:0;width:100%;height:14%;pointer-events:none}
+.v-cloud{position:absolute;left:0;top:30%;display:block;width:20%;aspect-ratio:3/1;border-radius:999px;background:#fff;opacity:.7;
+  transform:translateX(-110%);animation:vCloud 80s linear infinite}
+.v-cloud::before,.v-cloud::after{content:"";position:absolute;bottom:40%;border-radius:50%;background:inherit}
+.v-cloud::before{left:18%;width:34%;aspect-ratio:1}
+.v-cloud::after{left:44%;width:44%;aspect-ratio:1}
+.v-cloud.small{width:14%;opacity:.6}
+@keyframes vCloud{from{transform:translateX(-110%)}to{transform:translateX(560%)}}
+.v-cloud.small{animation-name:vCloudS}
+@keyframes vCloudS{from{transform:translateX(-110%)}to{transform:translateX(720%)}}
+.v-lantern{position:absolute;width:9%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,rgba(255,226,140,.85),rgba(255,200,80,0) 68%);opacity:.35;animation:vLantern 6s ease-in-out infinite}
+@keyframes vLantern{50%{opacity:.8}}
+.v-smoke{position:absolute;width:5%;aspect-ratio:1;border-radius:50%;pointer-events:none;opacity:0;
+  background:radial-gradient(circle,rgba(255,255,255,.9),rgba(255,255,255,0) 70%);transform:translate(-50%,-50%) scale(.6);animation:vSmoke 6s ease-out infinite}
+@keyframes vSmoke{8%{opacity:.85;transform:translate(-50%,-50%) scale(.7)}45%{opacity:0;transform:translate(-50%,-260%) scale(1.4)}100%{opacity:0;transform:translate(-50%,-260%) scale(1.4)}}
+.v-walk{position:absolute;inset:0;pointer-events:none}
+.v-map .v-label{z-index:3}   /* labels stay readable when a walker passes */
+.v-map .v-place{z-index:1}   /* a place always takes its tap, even with a walker passing in front */
+.v-map .v-folk{z-index:2}    /* the still villagers are small and sit on top of the place boxes */
+.v-walker{position:absolute;left:0;top:0;min-width:44px;min-height:44px;transform:translate(-50%,-100%);padding:0;background:none;border:0;
+  display:flex;align-items:flex-end;justify-content:center;pointer-events:auto;cursor:pointer}
+.v-walker img{display:block;width:auto;pointer-events:none}   /* height in cqw: the walker's own size, the button keeps 44 px to tap */
+.v-walker:focus-visible,.v-folk:focus-visible{outline:3px solid #FFB400;outline-offset:2px;border-radius:12px}
+.v-folk{position:absolute;min-width:44px;min-height:44px;background:none;border:0;padding:0;cursor:pointer}
+.v-map.night .v-ground{filter:brightness(.7) saturate(.85)}
+.v-map.night .v-walker img{filter:brightness(.8)}
+.v-map.night .v-lantern{opacity:.6}
+.g-villager-art{display:block;width:100%;padding:0;border:0;border-radius:14px;overflow:hidden;background:#241638;margin:4px 0 10px}
+.g-villager-art img{display:block;width:100%;max-height:46vh;object-fit:contain}
+@media (prefers-reduced-motion:reduce){.v-smoke,.v-shimmer,.v-cloud{display:none}}
+.v-scenery img{display:block;width:100%;height:100%;object-fit:contain;pointer-events:none}

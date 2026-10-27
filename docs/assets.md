@@ -61,3 +61,29 @@ table in `docs/roles.md`, both by the UX lead. `node scripts/check.mjs --roles` 
 
 Two code rules on top of `roles` (`creative()` in `js/features.js`): stickers, coloring pages, share cards and the
 featured rows use only shareable **original** pieces. Client and fan pieces stay in the portfolio list and the Art tab.
+
+## Village sprites (`assets/sprites/`, B42)
+
+Cut by `python3 scripts/sprites.py` (same tools as `ui-assets.py`), exactly as drawn; busy pieces use a polygon or
+ellipse selection mask that only selects part of the drawing. `assets/sprites/index.json` lists piece, file, size,
+role and cut method. Every piece must be shareable and carry the `village` role (`npm run check` enforces it).
+Batch 1 (the main places): `home` (Little Planet, Ekky at his desk), `studio` (Giraffe Ride with fence and trees),
+`toybox` (the gallery's sign), `gate` (Hidden Monster's stone gate with the two kids and their lantern), plus
+`ghost`, `astronaut`, `radio-explorer`, `palette`, `pen-hand` and `helmet` reused from `assets/ui/`.
+Batch 2 (villagers and scenery, V2, originals only): from Monster World Doodles `croc`, `dog`, `ufo`,
+`orange-monster`, `pickle`, `blob`, `skull`, `doodle-cat`, `waver`; `plug-hero`; Noodle Bath `noodle-bath` (scenery,
+the bath that steams in V3); Road Trip `car` and `signpost`; Buried at the Beach `crab`; RPG `fire-spirit` (cut at
+the mouse knight's head, which stands in front of it). Tried and dropped because the cut was not clean: the Big Catch
+shark (the kid and the splash overlap it) and the Monster Snack Bar monsters and fries (too tangled to cut as drawn).
+Contact sheet: `docs/village-sprites.png` (`python3 scripts/sprites.py --sheet`).
+
+Client scenery (V5) is built behind the `clientScenery` switch (`js/features.js`, off). The path is ready: entries in
+`CLIENT_SCENERY` (`scripts/village.py`) become separate images over the village (never baked into `village.png`), are
+drawn only when the switch is on and the piece is a client piece with the `village` role, and open a card that shows
+the piece's tag ("Client: X"). The list is empty and no client cut-out exists in the repo: the project rule keeps
+client pieces in the portfolio list until the owner confirms the change to the Developer directly. Then the cuts follow
+the element lists in `docs/roles.md` (characters and props only, never a logo, wordmark, sign or campaign lettering).
+
+`python3 scripts/village.py` composes the first frame `assets/village/village.png` from those cut-outs on plain ground
+shapes in Ekky's palette (sea, islands, paths, plank bridges, the gallery block), and writes the place and frame
+positions to `village.json` / `village.js`.

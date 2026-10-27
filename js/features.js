@@ -15,6 +15,9 @@ const FEATURES = {
   pageRoadTrip: false,   // Road Trip coloring page: built (assets/color/road-trip/), waits for Ekky to approve the lines (D8)
   artDownload: true,     // lightbox Download: a copy of at most 1600 px with a subtle mark, never on fan art (owner: yes)
   sound: true,           // sound effects and the sound toggle
+  clientScenery: false,  // V5: drawn elements of client pieces as village scenery, each opening its piece with its tag.
+                         // Off until the owner confirms the client-piece change to the Developer directly; no client
+                         // cut-out is made or committed before that (scripts/village.py CLIENT_SCENERY stays empty).
 };
 const feature = name => FEATURES[name] === true;
 // Creative use (icons, stickers, coloring pages, share cards, the featured rows): the piece must be shareable() AND Ekky's

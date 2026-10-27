@@ -12,6 +12,11 @@ Ambient loops run 9 to 48 s. At most one decorative loop per screen besides the 
 (`css/site.css`); content appears in place. Star Catcher keeps its falling items (that is the game) but drops the
 shake, the hit tint and the particle bursts.
 
+**Village budget** (B42 decision 10): the village is a place, not a UI screen, so it has its own list above: walkers
+(2 animations each, moving and turning), 2 clouds, the lantern, the steam and the water. `document.getAnimations()` on
+the map shows exactly these. Under reduced motion none of them run: villagers stand at the start of their path, no
+steam, no clouds, no shimmer, and places open at once.
+
 **Off-screen**: game screens that are not showing have their animations paused; skeleton shimmer stops as soon as
 an image has loaded; the loader dots are removed once the page has loaded.
 
@@ -60,7 +65,13 @@ step "jelly", mouse parallax, magnetic buttons, 3D tilt, and the click sparkle b
 | Star Catcher hit | small shake and a soft tint, 500 ms | you touched a virus (minus 2) |
 | Star Catcher catch | a few particles and "+n" rise | what you caught was worth n |
 | Result | title fades up, 1 s | the round is over, here is your score |
-| Map islands | still | the places don't need to move to be found |
+| Village places | still; a tapped place's label lifts 4 px and glows once (300 ms), then the place opens | "I'm going there" |
+| Village walkers (V3) | 6 of Ekky's characters walk their path, 1 tile (36 px) per 1.6 s, pause 2 s at each end and 0.8 s at corners, and turn to face where they go | the village is lived in; tap one to see the artwork it comes from |
+| Village clouds | two clouds cross over the island, 72 and 84 s, only over the drawn village | the background loop of the village |
+| Gate lantern | soft glow, one pulse every 6 s | points to "Work with Ekky" |
+| Noodle Bath steam | one puff every 6 s | the bath is warm (the only smoke: the snack bar could not be cut cleanly) |
+| Water | lightens by at most 10 % over 10 s | the sea is water, not paint |
+| Day and night | set once, on load, from the visitor's clock (night 19:00 to 6:00); framed art, labels and "Work with Ekky" keep full brightness | the village keeps the visitor's time without a live fade |
 
 Removed: the PLAY pulse, ring pings around map nodes, path dash crawl, tab icon wiggle, tab bounce, face idle sway
 and "boing", category icon bob, logo float, island bob, card shimmer after load, endless holo, overshooting pops on
