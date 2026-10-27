@@ -24,3 +24,7 @@ These are not blocking: everything they unlock is ready behind a switch that sta
    - **Unlocks:** `FEATURES.aboutPhoto`, the photo slot in About (taped on like the art). Drop it in `assets/hand/` and add `"ekky.jpg"` to `assets/hand/index.json`.
 3. **A one-line handwritten note:** "Thanks for stopping by, Ekky".
 4. **Client pieces as village scenery:** a yes or no (`FEATURES.clientScenery`).
+5. **The Android app (see docs/android-apk.md).** It builds and syncs, and Ekky's face is the launcher icon. Three decisions before an APK:
+   - Is `com.ekkyarya.app` the final app ID? It can't change after the first release.
+   - Who keeps the release signing key (stored outside git)?
+   - Google Play listing, or a direct APK download from the site?

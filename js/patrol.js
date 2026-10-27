@@ -7,7 +7,7 @@ const G=document.getElementById("game"),reduce=matchMedia("(prefers-reduced-moti
 const {sfx,buzz,esc}=window.Game;
 const PP={worldH:540,ground:470,heroH:110,run:200,gravity:1800,jumpHeights:1.6,paintRate:4,paintSpeed:650,bombRecharge:12,
   waveEvery:[3,5],maxOnScreen:5,hits:{normal:3,big:6},friendMeter:40,attackEvery:[2.5,3.5],telegraph:.8,
-  stageScreens:12,screenW:960,knockback:120,invulnerable:.8,powerTime:6,dropChance:.25};
+  stageScreens:12,screenW:960,knockback:80,invulnerable:.8,powerTime:6,dropChance:.25};
 const DOODLES=[["virus","assets/ui/virus.png",58,0],["blob","assets/sprites/blob.png",70,0],["skull","assets/sprites/skull.png",56,0],
   ["orange-monster","assets/sprites/orange-monster.png",72,0],["pickle","assets/sprites/pickle.png",92,1],["dog","assets/sprites/dog.png",100,1],
   ["doodle-cat","assets/sprites/doodle-cat.png",62,0],["waver","assets/sprites/waver.png",96,1],["ufo","assets/sprites/ufo.png",70,0,1]];
@@ -37,6 +37,8 @@ function build(){
     else if(a==="resume")pause(false);
     else if(a==="quit"||a==="other")close();
     else if(a==="again")open();
+    else if(a==="share")shareCard();
+    else if(a==="save")saveCard();
     else if(a==="see"){const k=+b.dataset.k;close();if(typeof show==="function")show(k)}});
   el.querySelector(".pp-pause").onclick=()=>{sfx("tap");pause(true)};
   addEventListener("resize",()=>{if(S)size()});
@@ -139,12 +141,42 @@ function step(dt){const h=S.hero;S.t+=dt;
     if(f.calm&&f.st>1.8&&!S.ended)end()}
   const bp=Math.round(S.bomb/PP.bombRecharge*20);if(bp!==S.bombShown){S.bombShown=bp;el.querySelector(".pp-bomb i").style.height=bp*5+"%";el.querySelector(".pp-bomb").classList.toggle("ready",bp===20)}}
 function calm(){const f=S.friend;f.calm=true;f.st=0;f.waves=[];sfx("legend");burst(S.cam+S.viewW-f.w*.5,PP.ground-200,30)}
+/* ---- the share card (1080 x 1920, the stars card's layout): Coexistence, the stage's cast cut from Ekky's pieces,
+   the headline, "Your turn" with the site, and the credit. Share sends it with the link; Download goes through Share.save. */
+const loadImg=src=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=src});
+async function card(){const CW=1080,CH=1920,TOP=220,BOT=300,c=document.createElement("canvas");c.width=CW;c.height=CH;const x=c.getContext("2d");
+  try{await document.fonts.load("700 84px Fredoka")}catch{}
+  const g=x.createRadialGradient(CW/2,0,100,CW/2,CH*.4,CH);g.addColorStop(0,"#40236a");g.addColorStop(.55,"#1f1135");g.addColorStop(1,"#120a1f");x.fillStyle=g;x.fillRect(0,0,CW,CH);
+  let seed=11;const r=()=>(seed=(seed*16807)%2147483647)/2147483647;x.fillStyle="#fff";
+  for(let i=0;i<80;i++){x.globalAlpha=.25+r()*.6;const z=1.5+r()*3;x.fillRect(r()*CW,r()*CH,z,z)}x.globalAlpha=1;
+  const p=PROJECTS.find(q=>q.slug==="coexistence");
+  if(p&&creative(p))try{const im=await loadImg(p.full||"assets/work/coexistence.jpg"),w=760,h=w*im.height/im.width,y=TOP+30;
+    x.save();x.translate(CW/2,y+h/2);x.rotate(-.02);x.fillStyle="#FFFDF8";x.fillRect(-w/2-16,-h/2-16,w+32,h+32);x.drawImage(im,-w/2,-h/2,w,h);x.restore()}catch{}
+  const row=[["hero",250],["virus",120],["blob",140],["dog",190],["friend",300]].filter(([k])=>IMG[k]);let tw=0;row.forEach(([k,h])=>tw+=h*IMG[k].width/IMG[k].height+20);
+  let cx=(CW-tw)/2;const base=TOP+30+760+250;row.forEach(([k,h])=>{const i=IMG[k],w=h*i.width/i.height;x.drawImage(i,cx,base-h,w,h);cx+=w+20});
+  x.textAlign="center";x.fillStyle="#FFB400";x.font="700 84px Fredoka, sans-serif";x.fillText(tt("patrol.card.title","Rush Hour, done!"),CW/2,base+110);
+  x.fillStyle="#e6defa";x.font="400 40px Poppins, sans-serif";x.fillText(tt("patrol.title","Paint Patrol"),CW/2,base+170);
+  const cy=CH-BOT-120;x.font="700 44px Fredoka, sans-serif";const label=t("card.cta",{host:siteHost()}),lw=x.measureText(label).width+90;
+  x.fillStyle="#FFB400";x.beginPath();x.roundRect((CW-lw)/2,cy-62,lw,88,44);x.fill();x.fillStyle="#2B1342";x.fillText(label,CW/2,cy-4);
+  x.fillStyle="#fff";x.font="600 40px Fredoka, sans-serif";x.fillText(t("credit.full"),CW/2,CH-BOT-36);
+  return new Promise(ok=>c.toBlob(ok,"image/png"))}
+async function shareCard(){const blob=await card();if(!blob)return;const file=new File([blob],"ekkyarya-paint-patrol.png",{type:"image/png"}),url=siteBase();
+  try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text:tt("patrol.shareText","I calmed the green monster in Ekky's Paint Patrol.")+" "+url,url});return}}
+  catch(e){if(e&&e.name==="AbortError")return}
+  saveCard(blob)}
+async function saveCard(blob){blob=blob||await card();if(blob&&typeof Share!=="undefined"&&Share.save)Share.save(blob,"ekkyarya-paint-patrol.png")}
+
+// Every character names its piece (G2): the stage's cast, one tap each to its artwork
+const CAST=[["little-planet"],["virus-and-war"],["doodles"],["monster"]];
+function cast(){const ps=CAST.map(([slug])=>PROJECTS.find(q=>q.slug===slug)).filter(p=>p&&creative(p));
+  return `<p class="pp-cast">${esc(tt("patrol.end.cast","Everyone here comes from:"))} ${ps.map(p=>`<button class="g-link" data-pp="see" data-k="${PROJECTS.indexOf(p)}">${esc(ptitle(p))}</button>`).join(", ")}</p>`}
 function end(){S.ended=true;S.run=false;const p=PROJECTS.find(q=>q.slug==="coexistence"),k=PROJECTS.indexOf(p);
   const c=el.querySelector(".pp-end");c.innerHTML=`<img class="pp-art" src="${esc(p?typeof thumbOf==="function"?thumbOf(p):"assets/work/coexistence.jpg":"")}" alt="">
     <h2>${esc(p?ptitle(p):"")}</h2><p>${esc(p?pdesc(p):"")}</p>
+    ${cast()}
     <div class="pp-row"><button class="g-btn" data-pp="see" data-k="${k}">${esc(tt("patrol.end.see","See it in the portfolio"))}</button>
     <button class="g-hire" data-hire><img src="assets/ui/monster-head.png" alt=""><span>${esc(t("hire.chip"))}</span></button></div>
-    <div class="pp-row"><button class="g-btn alt sm" data-pp="again">${esc(tt("patrol.end.again","Play again"))}</button><button class="g-btn alt sm" data-pp="other">${esc(tt("patrol.end.other","Something else"))}</button></div>`;
+    <div class="pp-row">${feature("shareCards")?`<button class="g-btn alt sm" data-pp="share">${esc(t("reveal.share"))}</button>`:""}${typeof Share!=="undefined"&&Share.save?`<button class="g-btn alt sm" data-pp="save">${esc(t("dl.button"))}</button>`:""}<button class="g-btn alt sm" data-pp="again">${esc(tt("patrol.end.again","Play again"))}</button><button class="g-btn alt sm" data-pp="other">${esc(tt("patrol.end.other","Something else"))}</button></div>`;
   c.hidden=false;c.classList.remove("in");void c.offsetWidth;c.classList.add("in");el.querySelector(".pp-meter").hidden=true}
 
 /* ---- drawing: plain-shape street in Ekky's palette, every character one of his cut-outs ---- */

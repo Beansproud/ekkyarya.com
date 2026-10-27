@@ -26,7 +26,9 @@ G.querySelectorAll("[data-t]").forEach(el=>el.textContent=t(el.dataset.t));
 G.querySelectorAll("[data-t-aria]").forEach(el=>el.setAttribute("aria-label",t(el.dataset.tAria)));
 
 /* ---- mode switching ---- */
-const phone=matchMedia("(max-width:760px)");
+// a phone held sideways is wider than 760 px: keep it in game mode (touch screen, short viewport), or turning the
+// phone for Paint Patrol would drop the visitor onto the classic site
+const phone=matchMedia("(max-width:760px), (pointer:coarse) and (max-height:520px)");
 const pref=()=>{try{return localStorage.getItem("ekkyMode")}catch{return null}};
 const q=new URLSearchParams(location.search);
 const deep=["color","challenge","card"].some(k=>q.has(k));   // any deep link opens game mode, on desktop too (B12)
@@ -46,7 +48,7 @@ let screen="start";
 function go(to){
   if(to==="color")return typeof Color!=="undefined"?Color.openPicker():null;
   if(to==="hire")return openHire();
-  screen=to;G.classList.toggle("at-start",to==="start");
+  screen=to;G.classList.toggle("at-start",to==="start");G.classList.toggle("at-paper",to==="art"||to==="mine");   // S1: Art and Mine on paper
   G.querySelectorAll(".g-screen").forEach(s=>s.classList.toggle("active",s.id==="g-"+to));
   G.querySelectorAll(".g-tabs button").forEach(b=>b.classList.toggle("active",b.dataset.tab===to));
   if(to==="mine")renderMine();
@@ -95,7 +97,7 @@ function renderMap(){
       <span class="v-label${p.hire?" hire":""}" aria-hidden="true" style="left:${pct(l[0],V.w)};top:${pct(l[1],V.h)}">${esc(t(p.key))}</span>`}).join("");
   $("gMapZoom").insertAdjacentHTML("beforeend",villageLife(V)+"</div>");
   W.insertAdjacentHTML("beforeend",`<div class="v-zoomctl"><button class="g-round" data-zoom="1" aria-label="${esc(tt("town.zoomIn","Zoom in"))}">${ico("i-plus")}</button><button class="g-round" data-zoom="-1" aria-label="${esc(tt("town.zoomOut","Zoom out"))}"><b aria-hidden="true">&minus;</b></button></div>`);
-  zoomTo(1,0,0);
+  Z.base=null;Z.s=1;zoomTo(1,0,0);
   $("gMapList").innerHTML=places.map(p=>`<li><button class="v-row${p.hire?" hire":""}" data-place="${p.id}"><img src="${p.icon}" alt="" loading="lazy">${esc(t(p.key))}</button></li>`).join("");
 }
 /* ---- Village life (B42 V3), inside the ambience budget (decision 10, docs/motion.md): walkers, two clouds, the
@@ -124,11 +126,22 @@ function villageLife(V){
 /* ---- Zoom (G1): pinch or drag with a finger, or the +/- buttons; 1x to 2x. A place is still one tap: a touch
    that moved more than 8 px is a pan, not a tap. Nothing animates; the view follows the finger. ---- */
 const Z={s:1,x:0,y:0,pts:new Map(),moved:false,start:null};
+// At 1x the map is its framed size. Zoomed, the frame widens to the full screen width at the same height, and the
+// village layer keeps its 1x size in px, so more of the island shows side to side; labels keep their 1x size (UX nit).
+function widen(on){const W=$("gMapWrap"),L=$("gMapZoom");
+  if(on&&!Z.base){Z.base={w:L.clientWidth,h:L.clientHeight,css:W.style.width};
+    Object.assign(L.style,{width:Z.base.w+"px",height:Z.base.h+"px",inset:"0 auto auto 0"});
+    Object.assign(W.style,{width:"100%",height:Z.base.h+"px",aspectRatio:"auto"});Z.x=(W.clientWidth-Z.base.w)/2;Z.y=0}
+  if(!on&&Z.base){Object.assign(L.style,{width:"",height:"",inset:""});
+    Object.assign(W.style,{width:Z.base.css,height:"",aspectRatio:`${window.VILLAGE.w}/${window.VILLAGE.h}`});Z.base=null}}
 function zoomTo(s,x,y){const W=$("gMapWrap"),L=$("gMapZoom");if(!L)return;
-  Z.s=Math.max(1,Math.min(2,s));const w=W.clientWidth,h=W.clientHeight;
-  Z.x=Math.min(0,Math.max(w-w*Z.s,x));Z.y=Math.min(0,Math.max(h-h*Z.s,y));
-  L.style.transform=Z.s===1?"":`translate(${Z.x}px,${Z.y}px) scale(${Z.s})`;W.classList.toggle("zoomed",Z.s>1)}
-function zoomAt(k,cx,cy){const r=$("gMapWrap").getBoundingClientRect(),px=cx-r.left,py=cy-r.top,ns=Math.max(1,Math.min(2,Z.s*k)),f=ns/Z.s;
+  Z.s=Math.max(1,Math.min(2,s));if(Z.s===1)widen(false);
+  if(!Z.base){L.style.transform="";L.style.removeProperty("--zs");W.classList.remove("zoomed");Z.x=Z.y=0;return}
+  const cw=W.clientWidth,w=Z.base.w*Z.s,h=Z.base.h;
+  Z.x=w<=cw?(cw-w)/2:Math.min(0,Math.max(cw-w,x));Z.y=Math.min(0,Math.max(h-h*Z.s,y));
+  L.style.transform=`translate(${Z.x}px,${Z.y}px) scale(${Z.s})`;L.style.setProperty("--zs",(1/Z.s).toFixed(3));W.classList.add("zoomed")}
+function zoomAt(k,cx,cy){const ns=Math.max(1,Math.min(2,Z.s*k));if(ns>1)widen(true);
+  const r=$("gMapWrap").getBoundingClientRect(),px=cx-r.left,py=cy-r.top,f=ns/Z.s;
   zoomTo(ns,px-(px-Z.x)*f,py-(py-Z.y)*f)}
 (()=>{const W=$("gMapWrap");
   W.addEventListener("pointerdown",e=>{if(e.target.closest(".v-zoomctl"))return;if(e.isPrimary){Z.pts.clear();Z.pinch=null}Z.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
@@ -145,7 +158,7 @@ function zoomAt(k,cx,cy){const r=$("gMapWrap").getBoundingClientRect(),px=cx-r.l
   W.addEventListener("click",e=>{const b=e.target.closest("[data-zoom]");if(!b)return;e.stopPropagation();buzz(8);
     const r=W.getBoundingClientRect();zoomAt(+b.dataset.zoom>0?2:.5,r.left+r.width/2,r.top+r.height/2)},true);
   W.addEventListener("wheel",e=>{if(!e.ctrlKey)return;e.preventDefault();zoomAt(e.deltaY<0?1.1:1/1.1,e.clientX,e.clientY)},{passive:false});
-  addEventListener("resize",()=>zoomTo(1,0,0))})();
+  addEventListener("resize",()=>{if(Z.base)zoomTo(1,0,0)})})();
 
 function openVillager(b){const k=+b.dataset.piece,p=PROJECTS[k];if(!p)return;
   openSheet(`<h2 id="gSheetTitle"><img class="h-ico" src="${esc(b.dataset.sprite)}" alt="">${esc(ptitle(p))}</h2>
@@ -226,7 +239,7 @@ function renderArt(){
   $("gFilters").innerHTML=[["all","All"],["illustration","Illustration"],["web","Web & UI"],["branding","Branding"],["social","Social"]]
     .map(([f,n])=>`<button class="${f===gFilter?"active":""}" data-f="${f}" aria-pressed="${f===gFilter}">${catImg(f)}${esc(tt("filter."+f,n))}</button>`).join("");
   const list=PROJECTS.map((p,i)=>({p,i})).filter(x=>gFilter==="all"||x.p.cat===gFilter);
-  $("gCards").innerHTML=list.map(({p,i},k)=>`<button class="g-card${p.rar===3?" legendary":""}" data-i="${i}" style="--rc:${RARITY[p.rar||0]};animation-delay:${Math.min(k,12)*.04}s"><div class="inner">
+  $("gCards").innerHTML=list.map(({p,i},k)=>`<button class="g-card" data-i="${i}" style="--tilt:${typeof tiltOf==="function"?tiltOf(p):"-1deg"}"><div class="inner">
       <span class="gcat">${catImg(p.cat,"")}</span><div class="art">${artOf(p)}</div><div class="info"><b>${esc(ptitle(p))}</b>${p.label?`<span class="g-tag">${esc(plabel(p))}</span>`:""}</div></div></button>`).join("");
   $("gArtCount").textContent=t("art.count",{n:list.length});
 }
@@ -236,7 +249,7 @@ $("gCards").addEventListener("click",e=>{const c=e.target.closest(".g-card");if(
 /* ---- Mine: things you made, never rewards ---- */
 function renderMine(){
   const list=Object.entries(st.colorings||{}).sort((a,b)=>(b[1].at||0)-(a[1].at||0));
-  $("gMineList").innerHTML=list.length?list.map(([id,c])=>`<button class="g-mine-item" data-page="${esc(id)}" aria-label="${esc(c.title||id)}">${c.thumb?`<img src="${c.thumb}" alt="">`:""}<b>${esc(c.title||id)}</b></button>`).join(""):`<p class="g-small">${esc(t("mine.empty"))}</p>`;
+  $("gMineList").innerHTML=list.length?list.map(([id,c])=>`<button class="g-mine-item" data-page="${esc(id)}" aria-label="${esc(c.title||id)}" style="--tilt:${typeof tiltOf==="function"?tiltOf({slug:id}):"-1deg"}">${c.thumb?`<img src="${c.thumb}" alt="">`:""}<b>${esc(c.title||id)}</b></button>`).join(""):`<p class="g-small">${esc(t("mine.empty"))}</p>`;
   if($("gBest"))$("gBest").innerHTML=st.best?`${ico("s-star")} ${esc(t("mine.best",{n:st.best}))}`:esc(t("mine.best.none"));
   syncToggles();
 }
@@ -332,7 +345,8 @@ let lastScore=0;
 async function shareStars(){if(typeof Share==="undefined")return;
   try{const c=await Share.renderCard("stars",{score:lastScore}),blob=await new Promise(ok=>c.toBlob(ok,"image/png"));
     const file=new File([blob],`ekkyarya-stars-${lastScore}.png`,{type:"image/png"});
-    if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text:tt("stars.shareText","I caught {n} points in Ekky's Star Catcher.",{n:lastScore}).replace("{n}",lastScore)});return}
+    if(navigator.canShare&&navigator.canShare({files:[file]})){const url=siteBase();   // a friend can open the game from the share
+      await navigator.share({files:[file],text:tt("stars.shareText","I caught {n} points in Ekky's Star Catcher.",{n:lastScore}).replace("{n}",lastScore)+" "+url,url});return}
   }catch(e){if(e&&e.name==="AbortError")return}
   Share.downloadStars(lastScore)}
 if(cv&&feature("shareCards")&&!$("gResShare")){$("gAgain").insertAdjacentHTML("afterend",`<button class="g-btn alt sm" id="gResShare">${ico("i-share")} <span>${esc(t("reveal.share"))}</span></button>`);
@@ -353,7 +367,9 @@ document.addEventListener("visibilitychange",()=>{if(!A)return;if(document.hidde
 
 // A friend's link draws their coloring first; the start thumbnails and the Art cards load after it (share playtest).
 let artDone=false;
-function renderAll(){if(deep)setTimeout(renderStart,2500);else renderStart();renderMap();renderMine();setTimeout(moveInd,60)}
+// The village (village.png and its sprites, about 1 MB) is built when the map opens (go("map")), not at load, so the
+// start screen's drawings come first on a slow phone (S5, Developer B).
+function renderAll(){if(deep)setTimeout(renderStart,2500);else renderStart();renderMine();setTimeout(moveInd,60)}
 // Shared with js/color.js, js/share.js and js/links.js.
 window.Game={go,openHire,openPatrol,openSheet,closeSheet,sfx,buzz,save,get st(){return st},esc,contactReady,screen:()=>screen};
 window.openHire=openHire;
