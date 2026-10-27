@@ -432,11 +432,12 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 .g-start-foot .g-classic,.g-start-foot .lang-switch{height:44px;min-height:44px}
 .g-featured .g-feat{border:0;box-shadow:0 0 0 2px #FFB400,var(--lift)}
 .g-featured .g-feat b{padding:5px 5px 6px;letter-spacing:-.01em}
-.g-featured .g-feat b{-webkit-line-clamp:3}   /* two lines are reserved; a long Indonesian title may take a third */
+.g-featured .g-feat b{-webkit-line-clamp:2;text-overflow:ellipsis}   /* two lines; an ellipsis only as a safety net */
 /* the village uses the free height evenly: centred between the header and the tab bar */
 #g-map.active{display:flex;flex-direction:column}
 #g-map .v-map{margin:auto}
 /* narrow phones (360 px): the Hire chip drops its picture so the header stays on one line in every language */
-@media (max-width:380px){.g-hud .g-hire img{display:none}.g-hud .g-hire{padding:0 12px}}
+/* narrow phones (under 380 px): the header drops its sound button (Mine has the Sound switch) so title and role fit */
+@media (max-width:380px){#game .g-hud .g-round{display:none}}
 .g-player b,.g-player small{white-space:nowrap}
 .g-start-foot .lang-switch{border:0;box-shadow:inset 0 0 0 2px #3e2a5c}   /* the outline takes no space, so EN and ID stay 44 px tall */

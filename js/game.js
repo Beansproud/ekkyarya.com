@@ -60,7 +60,7 @@ G.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(g){buzz(
 
 /* ---- start screen: the featured six open the lightbox ---- */
 function renderStart(){const six=featuredSix().map(p=>({p,i:PROJECTS.indexOf(p)}));
-  $("gFeatured").innerHTML=six.map(({p,i})=>`<button class="g-feat" data-i="${i}" aria-label="${esc(ptitle(p))}"><img src="${p.img}" alt="" decoding="async"><b>${esc(ptitle(p))}</b></button>`).join("")}
+  $("gFeatured").innerHTML=six.map(({p,i})=>`<button class="g-feat" data-i="${i}" aria-label="${esc(ptitle(p))}"><img src="${thumbOf(p)}" alt="" decoding="async"><b>${esc(ptitle(p))}</b></button>`).join("")}
 $("gFeatured").addEventListener("click",e=>{const b=e.target.closest(".g-feat");if(b){buzz(10);show(+b.dataset.i)}});
 
 /* ---- map: Ekky's Village (B42 V1). One pre-composited picture (scripts/village.py: plain ground shapes plus Ekky's
@@ -83,7 +83,7 @@ function renderMap(){
   W.style.height="";W.className="g-map-wrap v-map";W.style.aspectRatio=`${V.w}/${V.h}`;
   W.innerHTML=`<img class="v-ground" src="assets/village/village.png" alt="" decoding="async" fetchpriority="high">`+
     V.frames.map((f,k)=>{const p=art[k];if(!p)return "";const deg=(Math.atan(f.slope)*180/Math.PI).toFixed(2);
-      return `<img class="v-frame" src="${p.img}" alt="" decoding="async" style="left:${pct(f.x,V.w)};top:${pct(f.y,V.h)};width:${pct(f.w,V.w)};height:${pct(f.h,V.h)};transform:skewY(${deg}deg)">`}).join("")+
+      return `<img class="v-frame" src="${thumbOf(p)}" alt="" decoding="async" style="left:${pct(f.x,V.w)};top:${pct(f.y,V.h)};width:${pct(f.w,V.w)};height:${pct(f.h,V.h)};transform:skewY(${deg}deg)">`}).join("")+
     places.map(p=>{const b=V.places[p.id].box,l=V.places[p.id].label;
       return `<button class="v-place${p.hire?" hire":""}" data-place="${p.id}" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}" aria-label="${esc(t(p.key))}"></button>
       <span class="v-label${p.hire?" hire":""}" aria-hidden="true" style="left:${pct(l[0],V.w)};top:${pct(l[1],V.h)}">${esc(t(p.key))}</span>`}).join("");
@@ -115,7 +115,7 @@ function openLevel(i){const l=LEVELS[i];
   if(l.id==="about"){const three=featuredSix(3).map(p=>({p,k:PROJECTS.indexOf(p)}));
     const facts=["about.fact.from","about.fact.lang","about.fact.hours","about.fact.price","about.workedWith"].map(k=>t(k)).filter(v=>v&&!v.startsWith("about."));
     openSheet(head(l)+`<p>${esc(t("about.body"))}</p>${facts.length?`<ul class="g-facts">${facts.map(f=>`<li>${esc(f)}</li>`).join("")}</ul>`:""}<h3 class="g-sheet-h3">${esc(t("about.pieces"))}</h3>
-      <div class="g-three">${three.map(({p,k})=>`<button class="g-feat" data-i="${k}" aria-label="${esc(ptitle(p))}"><img src="${p.img}" alt="" loading="lazy"><b>${esc(ptitle(p))}</b></button>`).join("")}</div>`+hireChip())}
+      <div class="g-three">${three.map(({p,k})=>`<button class="g-feat" data-i="${k}" aria-label="${esc(ptitle(p))}"><img src="${thumbOf(p)}" alt="" loading="lazy"><b>${esc(ptitle(p))}</b></button>`).join("")}</div>`+hireChip())}
   if(l.id==="process"){openSheet(head(l)+`<p>${esc(t("process.intro"))}</p>`+
     [["Brief & chat","We talk about your idea, audience and the feeling it should give."],["Sketches","Rough concepts so we pick a direction early."],["Color & polish","Line, color and texture, with room for revisions."],["Delivery","Final files for print, web and social."]]
      .map(([h,d],k)=>`<div class="g-quest" data-k="${k}"><span class="chk">${ico("i-check")}</span><div><b>${esc(tt(`process.step${k+1}`,h))}</b><p>${esc(tt(`process.step${k+1}.body`,d))}</p></div></div>`).join("")+hireChip());
