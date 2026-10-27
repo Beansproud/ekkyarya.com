@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Ekky Arya</string>
+    <string name="title_activity_main">Ekky Arya</string>
+    <string name="package_name">com.ekkyarya.app</string>
+    <string name="custom_url_scheme">com.ekkyarya.app</string>
+</resources>
