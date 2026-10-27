@@ -8,9 +8,16 @@ const FEATURES = {
   doodleScene: true,     // "Start from scratch": a plain page for stickers and colors
   anyColor: true,        // "Any color" swatch (system color picker) next to Ekky's colors
   shareCards: true,      // share image (1080 x 1920) and the share sheet
+  shareVideo: true,      // "Share as video": the coloring plays back as a 5 s clip, recorded in the browser (no library)
   challengeLinks: true,  // Star Catcher challenge links (later ticket B22)
   holoCards: true,       // holo foil on tilt (later ticket B36)
   pwa: true,             // install and offline (later ticket B37)
   sound: true,           // sound effects and the sound toggle
 };
 const feature = name => FEATURES[name] === true;
+// Creative use (icons, stickers, coloring pages, share cards, the featured rows): the piece must be shareable() AND Ekky's
+// own original work. Project rule: client and fan pieces stay in the portfolio list and the Art tab only, whatever
+// CONFIG.reuse says. npm run check enforces the same rule on the code.
+const creative = p => !!p && shareable(p) && p.kind === "original";
+// The featured row and the desktop strip: a fresh pick on every visit (featuredPick in js/data.js), original pieces only.
+const featuredSix = (n = 6) => featuredPick(PROJECTS.length).filter(creative).slice(0, n);

@@ -311,3 +311,12 @@ body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family
 body.game-mode .toast{top:calc(env(safe-area-inset-top) + 78px);bottom:auto;transform:translate(-50%,-220px);z-index:120}
 body.game-mode .toast.show{transform:translate(-50%,0)}
 .g-sheet-hire{margin-top:18px;text-align:center}
+
+/* share and download side by side (B40), share as video */
+.s-row{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.c-actions .s-row{margin-top:0}
+.c-actions .s-row .g-btn,.s-row .g-btn{min-width:0;flex:1 1 140px;max-width:200px}
+.s-video{display:flex;margin:12px auto 0;min-width:220px}
+.s-video[hidden]{display:none}
+.s-video:disabled{opacity:.7}
+.s-rec{position:fixed;left:-10000px;top:0;pointer-events:none}

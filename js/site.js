@@ -53,7 +53,7 @@ document.querySelectorAll("#sideCats button,[data-jump]").forEach(b=>b.addEventL
 }));
 
 /* ===== Selected work: the featured six under the hero (B08) ===== */
-document.getElementById("featStrip").innerHTML=PROJECTS.map((p,i)=>({p,i})).filter(x=>x.p.featured).sort((a,b)=>a.p.featured-b.p.featured)
+document.getElementById("featStrip").innerHTML=featuredSix().map(p=>({p,i:PROJECTS.indexOf(p)}))
   .map(({p,i})=>`<button class="feat" data-i="${i}"><img src="${p.img}" alt="" loading="lazy" decoding="async"><span>${p.title}</span></button>`).join("");
 document.getElementById("featStrip").addEventListener("click",e=>{const b=e.target.closest(".feat");if(b)show(+b.dataset.i)});
 

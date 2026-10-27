@@ -27,7 +27,7 @@ const STICKERS=[
 ];
 const MAX_STICKERS=12, MAX_CUSTOM=3;
 const bySlug=s=>PROJECTS.find(p=>p.slug===s);
-const okSlug=s=>{if(s==null)return true;const p=bySlug(s);return !!p&&shareable(p)};
+const okSlug=s=>s==null||creative(bySlug(s));
 const pages=()=>PAGES.filter(p=>okSlug(p.slug));
 const stickers=()=>feature("stickers")?STICKERS.filter(s=>okSlug(s.from)):[];
 const stickerImg={};
@@ -60,7 +60,7 @@ G.insertAdjacentHTML("beforeend",`<div class="c-over" id="gColor" role="dialog" 
     <h2 class="g-title" id="cRevTitle"></h2>
     <div class="c-pair"><figure><canvas id="cYours"></canvas><figcaption>${esc(t("reveal.yours"))}</figcaption></figure>
       <figure id="cEkkyFig"><img id="cEkky" alt=""><figcaption>${esc(t("reveal.ekky"))}</figcaption></figure></div>
-    <div class="c-actions">${feature("shareCards")?`<button class="g-btn" id="cShare">${ico("i-share")} ${esc(t("reveal.share"))}</button>`:""}
+    <div class="c-actions">${feature("shareCards")?`<div class="s-row"><button class="g-btn" id="cShare">${ico("i-share")} ${esc(t("reveal.share"))}</button><button class="g-btn alt" id="cDl">${ico("i-download")} ${esc(t("dl.button"))}</button></div>`:""}
       <button class="g-btn alt" id="cAgain">${esc(t("reveal.again"))}</button><button class="g-link" id="cAnother">${esc(t("reveal.another"))}</button>
       <button class="g-hire" data-hire aria-label="${esc(t("hire.chip.aria"))}"><img src="assets/ui/monster-head.png" alt=""><span>${esc(t("hire.chip"))}</span></button></div>
   </section>
@@ -104,7 +104,10 @@ async function pageData(id){
   for(let r=1;r<=k+1;r++)start[r]+=start[r-1];
   const fillPos=start.slice();for(let i=0;i<ids.length;i++)idx[fillPos[ids[i]]++]=i;
   const line=meta.line?await loadImg(`assets/color/${id}/${meta.line}`).catch(()=>null):null;
-  return cache[id]={id,meta,ids,start,idx,line};
+  // rank: the order regions fill in the share video, a top-to-bottom sweep by each region's center
+  const cy=[];for(let r=1;r<=k;r++){let sy=0,sx=0,n=start[r+1]-start[r];for(let j=start[r];j<start[r+1];j++){sy+=Math.floor(idx[j]/meta.w);sx+=idx[j]%meta.w}cy.push([r,n?sy/n+sx/n*.25:0])}
+  const rank=new Int32Array(k+1);cy.sort((a,b)=>a[1]-b[1]).forEach(([r],i)=>rank[r]=i);
+  return cache[id]={id,meta,ids,start,idx,line,rank};
 }
 
 /* ---- drawing: fills (0 = paper, 1..12 = the page's colors, 13..15 = custom colors), Ekky's lines on top ---- */
@@ -127,8 +130,12 @@ function paintRegion(s,cv,r){const {meta,start,idx,line,ids}=s.pd;const x=cv.get
   for(let yy=0;yy<h;yy++)for(let xx=0;xx<w;xx++){const c=rgb[s.fills[ids[(y0+yy)*meta.w+x0+xx]]],o=(yy*w+xx)*4;d[o]=c[0];d[o+1]=c[1];d[o+2]=c[2];d[o+3]=255}
   x.putImageData(img,x0,y0);if(line)x.drawImage(line,x0,y0,w,h,x0,y0,w,h)}
 // Draw the whole picture (fills, lines, stickers) into a box on any canvas: thumbnails, reveal, share card, arrival.
-function compose(s,ctx,X,Y,W){const {meta}=s.pd,H=W*meta.h/meta.w,c=document.createElement("canvas");paint(s,c);ctx.drawImage(c,X,Y,W,H);
-  s.stickers.forEach(st=>{const im=imgOf(st.n);if(!im||!im.complete||!im.naturalWidth)return;const w=st.s*W,h=w*im.naturalHeight/im.naturalWidth;
+// t (0..1) plays the picture as a timeline for the share video: the fills sweep in (to 0.8), then the stickers pop in.
+function compose(s,ctx,X,Y,W,t=1){const {meta,rank}=s.pd,H=W*meta.h/meta.w,c=document.createElement("canvas");
+  const fillT=Math.min(1,t/.8),stT=Math.max(0,Math.min(1,(t-.8)/.2)),pop=t>=1?1:1-Math.pow(1-stT,3);
+  paint(t>=1?s:{...s,fills:s.fills.map((v,r)=>rank[r]<fillT*meta.regions?v:0)},c);ctx.drawImage(c,X,Y,W,H);
+  if(!pop)return H;
+  s.stickers.forEach(st=>{const im=imgOf(st.n);if(!im||!im.complete||!im.naturalWidth)return;const w=st.s*W*pop,h=w*im.naturalHeight/im.naturalWidth;
     ctx.save();ctx.translate(X+st.x*W,Y+st.y*H);ctx.rotate(st.r);ctx.drawImage(im,-w/2,-h/2,w,h);ctx.restore()});return H}
 
 /* ---- editor ---- */
@@ -219,8 +226,9 @@ function reveal(){const scratch=cur.pd.id==="scratch",c=$("cYours"),{w,h}=cur.pd
   if(!Game.st.firstDone){Game.st.firstDone=1;Game.save();if(typeof confetti==="function")confetti()}}
 $("cClose").onclick=close;$("cAgain").onclick=()=>{view("cEdit");sizeStage()};$("cAnother").onclick=openPicker;
 if($("cShare"))$("cShare").onclick=()=>typeof Share!=="undefined"&&Share.openPreview(shareData());
+if($("cDl"))$("cDl").onclick=()=>typeof Share!=="undefined"&&Share.download({...shareData(),name:Game.st.name||""});
 function shareData(){const s=cur;return {art:s.pd.meta.slug||null,page:s.pd.id,title:s.title,stickers:s.stickers.map(x=>x.n),
-  draw:(ctx,X,Y,W)=>compose(s,ctx,X,Y,W),aspect:s.pd.meta.h/s.pd.meta.w,link:name=>Links.colorUrl(s,name)}}
+  draw:(ctx,X,Y,W,t)=>compose(s,ctx,X,Y,W,t),aspect:s.pd.meta.h/s.pd.meta.w,link:name=>Links.colorUrl(s,name)}}
 
 /* ---- arrival: a friend's coloring link (js/links.js) ---- */
 async function showArrival(id,fills,custom,stks,from){let pd;try{pd=await pageData(id)}catch{return false}

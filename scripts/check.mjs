@@ -30,7 +30,8 @@ const iconSources = [join(ROOT, "scripts", "ui-assets.py")];
 
 // slug -> shareable(p), computed by js/data.js itself (CONFIG.reuse and CONFIG.reuseBlock decide)
 const data = vm.runInNewContext(readFileSync(join(ROOT, "js", "data.js"), "utf8") + ";({PROJECTS, shareable})", {});
-const SHAREABLE = new Map(data.PROJECTS.map(p => [p.slug, data.shareable(p) === true]));
+// creative use needs shareable(p) and an original piece (js/features.js): client and fan pieces stay portfolio-only
+const SHAREABLE = new Map(data.PROJECTS.map(p => [p.slug, data.shareable(p) === true && p.kind === "original"]));
 const WORK = /assets\/work\/(?:thumb\/)?([a-z0-9-]+)\.\w+/gi;
 
 const problems = [];
@@ -57,15 +58,14 @@ for (const f of [...ui, ...iconSources]) {
 
 // Roles (owner: "make sure all art work has its role"). Every piece is in the portfolio and is a game card; a
 // shareable piece should also feed something made from it: an icon, a sticker, a coloring page or the lead six.
-// A `role` field in PROJECTS (UX lead) counts too. Pieces with no such role are a warning, not a failure.
-const roles = new Map(data.PROJECTS.map(p => [p.slug, new Set(["portfolio", "game card"].concat(p.role ? [].concat(p.role) : []))]));
-for (const p of data.PROJECTS) if (p.featured) roles.get(p.slug).add("lead six");
+// The `roles` arrays in PROJECTS (UX lead, docs/roles.md) are the plan; the code-derived roles show what is built. Pieces with no such role are a warning, not a failure.
+const roles = new Map(data.PROJECTS.map(p => [p.slug, new Set((p.roles || ["portfolio", "card"]).filter(r => SHAREABLE.get(p.slug) || ["portfolio", "card"].includes(r)))]));
 const add = (slug, r) => roles.has(slug) && roles.get(slug).add(r);
 for (const m of readFileSync(join(ROOT, "scripts", "ui-assets.py"), "utf8").matchAll(/^\s*"([a-z-]+)":\s*dict\(src="assets\/work\/([a-z0-9-]+)\./gm)) add(m[2], `icon (${m[1]})`);
 const colorJs = readFileSync(join(ROOT, "js", "color.js"), "utf8");
 for (const m of colorJs.matchAll(/src:"[^"]*\/([a-z0-9-]+)\.png",from:"([a-z0-9-]+)"/g)) add(m[2], `sticker (${m[1]})`);
 for (const m of colorJs.matchAll(/\{id:"([a-z0-9-]+)",slug:"([a-z0-9-]+)"\}/g)) add(m[2], "coloring page");
-const roleless = data.PROJECTS.filter(p => SHAREABLE.get(p.slug) && roles.get(p.slug).size <= 2).map(p => p.slug);
+const roleless = data.PROJECTS.filter(p => SHAREABLE.get(p.slug) && [...roles.get(p.slug)].every(r => ["portfolio", "card"].includes(r))).map(p => p.slug);
 if (process.argv.includes("--roles")) {
   console.log("| Piece | Kind | Shareable | Roles |\n|---|---|---|---|");
   for (const p of data.PROJECTS) console.log(`| ${p.title} (\`${p.slug}\`) | ${p.kind} | ${SHAREABLE.get(p.slug) ? "yes" : "no"} | ${[...roles.get(p.slug)].join(", ")} |`);

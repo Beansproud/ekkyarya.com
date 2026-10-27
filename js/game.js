@@ -58,7 +58,7 @@ G.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(g){buzz(
   if(e.target.closest("[data-hire]")){buzz(10);openHire()}});
 
 /* ---- start screen: the featured six open the lightbox ---- */
-function renderStart(){const six=PROJECTS.map((p,i)=>({p,i})).filter(x=>x.p.featured).sort((a,b)=>a.p.featured-b.p.featured);
+function renderStart(){const six=featuredSix().map(p=>({p,i:PROJECTS.indexOf(p)}));
   $("gFeatured").innerHTML=six.map(({p,i})=>`<button class="g-feat" data-i="${i}" aria-label="${esc(p.title)}"><img src="${p.img}" alt="" loading="lazy"><b>${esc(p.title)}</b></button>`).join("")}
 $("gFeatured").addEventListener("click",e=>{const b=e.target.closest(".g-feat");if(b){buzz(10);show(+b.dataset.i)}});
 
@@ -102,7 +102,7 @@ function openLevel(i){const l=LEVELS[i];
   if(l.id==="color")return go("color");
   if(l.id==="art")return go("art");
   if(l.id==="hire")return openHire();
-  if(l.id==="about"){const three=PROJECTS.map((p,k)=>({p,k})).filter(x=>shareable(x.p)&&x.p.featured).slice(0,3);
+  if(l.id==="about"){const three=featuredSix(3).map(p=>({p,k:PROJECTS.indexOf(p)}));
     openSheet(head(l,i)+`<p>${esc(t("about.body"))}</p><h3 class="g-sheet-h3">${esc(t("about.pieces"))}</h3>
       <div class="g-three">${three.map(({p,k})=>`<button class="g-feat" data-i="${k}" aria-label="${esc(p.title)}"><img src="${p.img}" alt="" loading="lazy"><b>${esc(p.title)}</b></button>`).join("")}</div>`+hireChip())}
   if(l.id==="process"){openSheet(head(l,i)+`<p>${esc(t("process.intro"))}</p>`+
