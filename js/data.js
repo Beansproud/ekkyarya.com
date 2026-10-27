@@ -4,15 +4,18 @@
 const CONFIG = {
   name: "Ekky Arya",
   site: "https://ekkyarya.com/",              // official site: share and download credits, base of share links (D10)
-  email: "",                                  // owner to send; email buttons stay hidden until then
-  whatsapp: "",                               // owner to send
+  email: "ekkyarya87@gmail.com",              // business email: Hire Ekky, Final Quest, quick actions
+  emailPersonal: "ekkyaryasm@gmail.com",      // personal/inquiries; not shown in round 1 (one clear address is easier to act on)
+  whatsapp: "",                               // owner to send; the WhatsApp button stays hidden until then
+  contactPage: "https://ekkyarya.com/contact/",
   links: {
-    dribbble: "https://dribbble.com/shots/6634499-Flat-Guy-Illustration", // a single shot for now; profile URL to come
-    instagram: "",                            // owner to send
-    behance: ""                               // owner to send
+    instagram: "https://www.instagram.com/ekkyarya/",
+    behance: "https://www.behance.net/ekkyarya",          // owner wrote "ekkyarya Portfolio"; URL to confirm
+    linkedin: "https://id.linkedin.com/in/ekkyarya",
+    dribbble: "https://dribbble.com/shots/6634499-Flat-Guy-Illustration" // a single shot for now; profile URL to come
   },
-  // Where "Hire Ekky" sends people while there is no email: the first non-empty of these.
-  hireFallback: ["dribbble"],
+  // Where "Hire Ekky" sends people if there is no email: the first non-empty of these.
+  hireFallback: ["contactPage", "instagram"],
   // Which kinds of piece may take creative roles (sticker, coloring, sprite, level, scene, share, featured, avatar).
   // Every piece always keeps its portfolio and card roles, whatever these say.
   // original and client: Ekky's own work (owner, "yes to all": client pieces may be reused too, with their "Client: X" tag kept).
@@ -109,7 +112,7 @@ const CAT_NAME_ID={illustration:"Ilustrasi Proyek",web:"Desain Web & UI",brandin
 // Where Hire Ekky goes today: the email if there is one, else the first fallback link, else the site.
 function hireTarget() {
   if (CONFIG.email) return { kind: "email", href: "mailto:" + CONFIG.email };
-  for (const k of CONFIG.hireFallback) if (CONFIG.links[k]) return { kind: k, href: CONFIG.links[k] };
+  for (const k of CONFIG.hireFallback) { const href = CONFIG[k] || CONFIG.links[k]; if (href) return { kind: k, href }; }
   return { kind: "site", href: CONFIG.site };
 }
 const COPY = {
@@ -184,8 +187,11 @@ const COPY = {
     "hire.price": "Projects from $25",
     "hire.email": "Email Ekky",
     "hire.whatsapp": "WhatsApp Ekky",
-    "hire.dribbble": "Message Ekky on Dribbble",
-    "hire.site": "Visit ekkyarya.com",
+    "hire.dribbble": "Ekky on Dribbble",
+    "hire.instagram": "Message Ekky on Instagram",
+    "hire.linkedin": "Ekky on LinkedIn",
+    "hire.behance": "Ekky on Behance",
+    "hire.site": "Contact page on ekkyarya.com",
     "hire.copy": "Copy email",
     "hire.copied": "Email copied",
     "hire.formTitle": "Or send a quick note",
@@ -312,8 +318,11 @@ const COPY = {
     "hire.price": "Proyek mulai $25",
     "hire.email": "Email Ekky",
     "hire.whatsapp": "WhatsApp Ekky",
-    "hire.dribbble": "Kirim pesan ke Ekky di Dribbble",
-    "hire.site": "Kunjungi ekkyarya.com",
+    "hire.dribbble": "Ekky di Dribbble",
+    "hire.instagram": "Kirim DM ke Ekky di Instagram",
+    "hire.linkedin": "Ekky di LinkedIn",
+    "hire.behance": "Ekky di Behance",
+    "hire.site": "Halaman kontak di ekkyarya.com",
     "hire.copy": "Salin email",
     "hire.copied": "Email disalin",
     "hire.formTitle": "Atau kirim pesan singkat",
