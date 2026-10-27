@@ -41,6 +41,7 @@ G.insertAdjacentHTML("beforeend",`<div class="c-over" id="gColor" role="dialog" 
     <button class="g-x" id="cPickX" aria-label="Close">${ico("i-close")}</button>
     <h2 class="g-title">${esc(t("color.title"))}</h2><p class="g-sub">${esc(t("color.intro"))}</p>
     <div class="c-pages" id="cPages"></div>
+    <div class="c-actions"><button class="g-hire" data-hire aria-label="${esc(t("hire.chip.aria"))}"><img src="assets/ui/monster-head.png" alt=""><span>${esc(t("sheet.hire"))}</span></button></div>
   </section>
   <section class="c-view c-edit" id="cEdit">
     <div class="c-top"><button class="c-icon" id="cBack" aria-label="Back">${ico("i-back")}</button><b id="cTitle"></b>
@@ -150,7 +151,7 @@ async function open(id,opts={}){
   cur=makeState(pd,saved);color=pd.id==="scratch"?4:1;
   const pr=bySlug(pd.meta.slug),title=id==="scratch"?t("color.scratch"):pr?ptitle(pr):pd.meta.title;cur.title=title;
   $("cTitle").textContent=title;stage.style.aspectRatio=`${pd.meta.w}/${pd.meta.h}`;
-  $("cPeek").src=id==="scratch"?"":(bySlug(pd.meta.slug)||{}).full||"";$("cPeekBtn").hidden=id==="scratch";
+  $("cPeek").src=id==="scratch"?"":pd.meta.original||(bySlug(pd.meta.slug)||{}).full||"";$("cPeekBtn").hidden=id==="scratch";
   paint(cur,cv);renderColors();renderStickers();$("cTray").hidden=true;
   view("cEdit");sizeStage();
   if(!hintShown&&!(Game.st.hints||{}).color){hintShown=true;const h=$("cHint");h.textContent=t("color.hint");h.classList.add("show");setTimeout(()=>h.classList.remove("show"),2600);
@@ -223,7 +224,7 @@ function save(now){if(!cur)return;clearTimeout(saveT);const run=()=>{if(!cur)ret
 
 /* ---- reveal: yours and Ekky's, then the share preview ---- */
 function reveal(){const scratch=cur.pd.id==="scratch",c=$("cYours"),{w,h}=cur.pd.meta;c.width=480;c.height=Math.round(480*h/w);compose(cur,c.getContext("2d"),0,0,480);
-  $("cRevTitle").textContent=scratch?t("color.scratch"):t("reveal.title");$("cEkkyFig").hidden=scratch;$("cEkky").src=scratch?"":(bySlug(cur.pd.meta.slug)||{}).full||"";
+  $("cRevTitle").textContent=scratch?t("color.scratch"):t("reveal.title");$("cEkkyFig").hidden=scratch;$("cEkky").src=scratch?"":cur.pd.meta.original||(bySlug(cur.pd.meta.slug)||{}).full||"";
   view("cReveal");Game.sfx("level");
   Game.st.firstDone=1;Game.save()}   // no confetti here: it covered the comparison (share playtest); the reveal itself is the reward
 $("cClose").onclick=close;$("cAgain").onclick=()=>{view("cEdit");sizeStage()};$("cAnother").onclick=openPicker;

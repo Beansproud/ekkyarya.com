@@ -7,6 +7,7 @@
 //                Areas under MIN_AREA px merge into the line.
 //   page.json    size, region count, 12 "Ekky's colors" sampled from the original, and the original's path
 //   page.js      page.json plus regions.png as a data URL, for js/color.js
+//   original.jpg Ekky's colored original with the same crop (Peek and the reveal)
 // Deterministic: running it twice gives byte-identical files (own PNG encoder, fixed k-means start).
 // --verify fills each region alone and checks that no pixel outside it changes, and that the files are reproducible.
 // Needs the preinstalled Playwright Chromium only to decode the JPG. No new npm package.
@@ -21,7 +22,8 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(import.meta.url);
 // Pages: slug of the PROJECTS piece, and the darkness threshold that separates Ekky's lines from color.
 const PAGES = {
-  giraffe: { slug: "giraffe", lineMax: 128, inkSoft: 140 },
+  // crop: the drawing itself, without the empty paper around it (a crop changes no line)
+  giraffe: { slug: "giraffe", lineMax: 128, inkSoft: 140, crop: [33, 107, 733, 714] },
 };
 const MIN_AREA = 40, COLORS = 12;
 
@@ -32,20 +34,21 @@ const data = vm.runInNewContext(readFileSync(join(ROOT, "js", "data.js"), "utf8"
 const piece = data.PROJECTS.find(p => p.slug === page.slug);
 if (!piece || !data.shareable(piece)) { console.error(`"${page.slug}" is not shareable (CONFIG.reuse / reuseBlock), so it can't be a coloring page.`); process.exit(1); }
 
-async function decode(file) {
+async function decode(file, crop) {
   const { chromium } = require("playwright");
   const b = await chromium.launch(), p = await b.newPage();
   const src = "data:image/jpeg;base64," + readFileSync(join(ROOT, file)).toString("base64");
-  const out = await p.evaluate(async src => {
+  const out = await p.evaluate(async ([src, crop]) => {
     const im = new Image(); im.src = src; await im.decode();
-    const c = document.createElement("canvas"); c.width = im.naturalWidth; c.height = im.naturalHeight;
-    const x = c.getContext("2d"); x.drawImage(im, 0, 0);
+    const [cx, cy, cw, ch] = crop || [0, 0, im.naturalWidth, im.naturalHeight];
+    const c = document.createElement("canvas"); c.width = cw; c.height = ch;
+    const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, cw, ch); x.drawImage(im, -cx, -cy);
     const d = x.getImageData(0, 0, c.width, c.height).data; let s = "";
     for (let i = 0; i < d.length; i += 32768) s += String.fromCharCode.apply(null, d.subarray(i, i + 32768));
-    return { w: c.width, h: c.height, b64: btoa(s) };
-  }, src);
+    return { w: c.width, h: c.height, b64: btoa(s), jpg: c.toDataURL("image/jpeg", .9).split(",")[1] };
+  }, [src, crop]);
   await b.close();
-  return { w: out.w, h: out.h, px: Buffer.from(out.b64, "base64") };
+  return { w: out.w, h: out.h, px: Buffer.from(out.b64, "base64"), jpg: Buffer.from(out.jpg, "base64") };
 }
 
 function png(w, h, rgba) {
@@ -55,6 +58,27 @@ function png(w, h, rgba) {
     const tb = Buffer.concat([Buffer.from(type), body]); const crc = Buffer.alloc(4); crc.writeUInt32BE(crc32(tb) >>> 0); return Buffer.concat([len, tb, crc]); };
   const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(w, 0); ihdr.writeUInt32BE(h, 4); ihdr[8] = 8; ihdr[9] = 6;
   return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk("IHDR", ihdr), chunk("IDAT", deflateSync(raw, { level: 9 })), chunk("IEND", Buffer.alloc(0))]);
+}
+
+// Indexed PNG for the line layer (about a tenth of the RGBA size): 4 ink tones, each at 15 opacity levels.
+function pngLines(w, h, rgba) {
+  const n = w * h, ink = [];
+  for (let i = 0; i < n; i++) if (rgba[i * 4 + 3]) ink.push([rgba[i * 4], rgba[i * 4 + 1], rgba[i * 4 + 2], rgba[i * 4 + 3]]);
+  // 4 tones by weighted k-means with a fixed start (the darkest ink first, then the farthest), so output is reproducible
+  let tones = [ink.reduce((a, b) => (a[0] + a[1] + a[2] <= b[0] + b[1] + b[2] ? a : b)).slice(0, 3)];
+  while (tones.length < 4) tones.push(ink.reduce((best, p) => { const d = Math.min(...tones.map(t => dist(t, p))); return d > best[1] ? [p, d] : best }, [ink[0], -1])[0].slice(0, 3));
+  for (let it = 0; it < 10; it++) { const acc = tones.map(() => [0, 0, 0, 0]);
+    for (const p of ink) { const k = nearest(tones, p), a = p[3]; acc[k][0] += p[0] * a; acc[k][1] += p[1] * a; acc[k][2] += p[2] * a; acc[k][3] += a }
+    tones = tones.map((t, k) => acc[k][3] ? [acc[k][0] / acc[k][3], acc[k][1] / acc[k][3], acc[k][2] / acc[k][3]] : t) }
+  const raw = Buffer.alloc((w + 1) * h);
+  for (let i = 0; i < n; i++) { const a = rgba[i * 4 + 3], lv = Math.round(a / 17), o = Math.floor(i / w) * (w + 1) + 1 + (i % w);
+    raw[o] = lv ? 1 + nearest(tones, [rgba[i * 4], rgba[i * 4 + 1], rgba[i * 4 + 2]]) * 15 + (lv - 1) : 0 }
+  const plte = Buffer.alloc(61 * 3), trns = Buffer.alloc(61);
+  for (let k = 0; k < 4; k++) for (let l = 1; l <= 15; l++) { const i = 1 + k * 15 + (l - 1); tones[k].forEach((v, c) => plte[i * 3 + c] = Math.round(v)); trns[i] = l * 17 }
+  const chunk = (type, body) => { const len = Buffer.alloc(4); len.writeUInt32BE(body.length);
+    const tb = Buffer.concat([Buffer.from(type), body]); const crc = Buffer.alloc(4); crc.writeUInt32BE(crc32(tb) >>> 0); return Buffer.concat([len, tb, crc]); };
+  const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(w, 0); ihdr.writeUInt32BE(h, 4); ihdr[8] = 8; ihdr[9] = 3;
+  return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk("IHDR", ihdr), chunk("PLTE", plte), chunk("tRNS", trns), chunk("IDAT", deflateSync(raw, { level: 9 })), chunk("IEND", Buffer.alloc(0))]);
 }
 
 function build({ w, h, px }) {
@@ -106,14 +130,14 @@ function build({ w, h, px }) {
   const hue = ([r, g, b]) => { const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn; if (d < 18) return 400 + (255 - mx);
     const h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return (h * 60 + 360) % 360 };
   const colors = cent.slice().sort((a, b) => hue(a) - hue(b)).map(hex);
-  return { line: png(w, h, line), regions: png(w, h, regions), own, k,
+  return { line: pngLines(w, h, line), regions: png(w, h, regions), own, k,
     json: JSON.stringify({ page: name, slug: page.slug, title: piece.title, w, h, regions: k, colors,
-      ekky: regionColor.map(hex), original: piece.full, line: "line.png", map: "regions.png" }, null, 1) + "\n" };
+      ekky: regionColor.map(hex), original: `assets/color/${name}/original.jpg`, crop: page.crop || null, line: "line.png", map: "regions.png" }, null, 1) + "\n" };
 }
 function dist(a, b) { return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]) }
 function nearest(cs, p) { let best = 0, bd = Infinity; cs.forEach((c, j) => { const d = dist(c, p); if (d < bd) { bd = d; best = j } }); return best }
 
-const img = await decode(piece.full);
+const img = await decode(piece.full, page.crop);
 const out = build(img);
 const dir = join(ROOT, "assets", "color", name);
 if (flag === "--verify") {
@@ -133,6 +157,7 @@ if (flag === "--verify") {
 }
 mkdirSync(dir, { recursive: true });
 writeFileSync(join(dir, "line.png"), out.line);
+writeFileSync(join(dir, "original.jpg"), img.jpg);   // Ekky's colored original, same crop: Peek and "Ekky's" in the reveal
 writeFileSync(join(dir, "regions.png"), out.regions);
 writeFileSync(join(dir, "page.json"), out.json);
 // page.js: the same data for the browser, with the fill map embedded as a data URL so the page also works from file://

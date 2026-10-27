@@ -50,6 +50,7 @@ function go(to){
   G.querySelectorAll(".g-screen").forEach(s=>s.classList.toggle("active",s.id==="g-"+to));
   G.querySelectorAll(".g-tabs button").forEach(b=>b.classList.toggle("active",b.dataset.tab===to));
   if(to==="mine")renderMine();
+  if(to==="art"&&!artDone){artDone=true;renderArt()}
   if(to==="map")renderMap();
   requestAnimationFrame(moveInd);
 }
@@ -154,7 +155,7 @@ function renderArt(){
       <span class="gcat">${catImg(p.cat,"")}</span><div class="art">${artOf(p)}</div><div class="info"><b>${esc(ptitle(p))}</b>${p.label?`<span class="g-tag">${esc(plabel(p))}</span>`:""}</div></div></button>`).join("");
   $("gArtCount").textContent=t("art.count",{n:list.length});
 }
-$("gFilters").addEventListener("click",e=>{const b=e.target.closest("button");if(b){gFilter=b.dataset.f;buzz(8);renderArt()}});
+$("gFilters").addEventListener("click",e=>{const b=e.target.closest("button");if(b){gFilter=b.dataset.f;buzz(8);artDone=true;renderArt()}});
 $("gCards").addEventListener("click",e=>{const c=e.target.closest(".g-card");if(!c)return;buzz(15);sfx("flip");show(+c.dataset.i)});
 
 /* ---- Mine: things you made, never rewards ---- */
@@ -255,7 +256,9 @@ let pausedByHide=false;
 document.addEventListener("visibilitychange",()=>{if(!A)return;if(document.hidden){if(A.run){A.run=false;pausedByHide=true}}
   else if(pausedByHide){pausedByHide=false;setTimeout(()=>{if(A&&!document.hidden&&A.t>0)A.run=true},600)}});
 
-function renderAll(){renderStart();renderMap();renderArt();renderMine();setTimeout(moveInd,60)}
+// A friend's link draws their coloring first; the start thumbnails and the Art cards load after it (share playtest).
+let artDone=false;
+function renderAll(){if(deep)setTimeout(renderStart,2500);else renderStart();renderMap();renderMine();setTimeout(moveInd,60)}
 // Shared with js/color.js, js/share.js and js/links.js.
 window.Game={go,openHire,openSheet,closeSheet,sfx,buzz,save,get st(){return st},esc,contactReady,screen:()=>screen};
 window.openHire=openHire;

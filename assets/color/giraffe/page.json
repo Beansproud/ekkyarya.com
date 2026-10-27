@@ -2,8 +2,8 @@
  "page": "giraffe",
  "slug": "giraffe",
  "title": "Giraffe Ride",
- "w": 800,
- "h": 930,
+ "w": 733,
+ "h": 714,
  "regions": 46,
  "colors": [
   "#C26C5D",
@@ -17,10 +17,10 @@
   "#73C3CA",
   "#A7D9DE",
   "#4296CE",
-  "#F7FBFC"
+  "#ECF6F7"
  ],
  "ekky": [
-  "#F7FBFC",
+  "#ECF6F7",
   "#F0BE5C",
   "#F1CB79",
   "#F4E3C9",
@@ -67,7 +67,13 @@
   "#C68A7C",
   "#F8C868"
  ],
- "original": "assets/work/giraffe.jpg",
+ "original": "assets/color/giraffe/original.jpg",
+ "crop": [
+  33,
+  107,
+  733,
+  714
+ ],
  "line": "line.png",
  "map": "regions.png"
 }
