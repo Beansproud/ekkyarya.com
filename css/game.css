@@ -306,3 +306,8 @@ body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family
 .s-preview canvas{height:min(52vh,460px);width:auto;border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.5)}
 .s-sign{display:grid;gap:6px;margin:14px auto 0;width:min(100%,320px);font-family:Poppins;font-size:.85rem;color:#cbbfe3}
 .s-sign input{min-height:44px;border-radius:12px;border:2px solid #3e2a5c;background:#241638;color:#fff;padding:8px 12px;font-size:1rem}
+
+/* D14: toasts sit under the HUD in game mode; B07: Hire chip on every level sheet */
+body.game-mode .toast{top:calc(env(safe-area-inset-top) + 78px);bottom:auto;transform:translate(-50%,-220px);z-index:120}
+body.game-mode .toast.show{transform:translate(-50%,0)}
+.g-sheet-hire{margin-top:18px;text-align:center}

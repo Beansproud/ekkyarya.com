@@ -96,6 +96,7 @@ $("gSheetX").onclick=closeSheet;sheet.addEventListener("click",e=>{if(e.target==
 addEventListener("keydown",e=>{if(e.key==="Escape"&&sheet.classList.contains("open"))closeSheet()});
 let sy=null;sheet.firstElementChild.addEventListener("touchstart",e=>{sy=sheet.firstElementChild.scrollTop>0?null:e.touches[0].clientY},{passive:true});
 sheet.firstElementChild.addEventListener("touchend",e=>{if(sy!==null&&e.changedTouches[0].clientY-sy>90)closeSheet();sy=null});
+const hireChip=()=>`<p class="g-sheet-hire"><button class="g-hire" data-hire aria-label="${esc(t("hire.chip.aria"))}"><img src="assets/ui/monster-head.png" alt=""><span>${esc(t("hire.chip"))}</span></button></p>`;
 const head=(l,i)=>`<span class="g-ribbon">${l.boss?"BOSS LEVEL":"LEVEL "+(i+1)}</span><h2 id="gSheetTitle">${uiImg(l.icon,"h-ico")}${esc(t(l.key))}</h2>`;
 function openLevel(i){const l=LEVELS[i];
   if(l.id==="color")return go("color");
@@ -103,10 +104,10 @@ function openLevel(i){const l=LEVELS[i];
   if(l.id==="hire")return openHire();
   if(l.id==="about"){const three=PROJECTS.map((p,k)=>({p,k})).filter(x=>shareable(x.p)&&x.p.featured).slice(0,3);
     openSheet(head(l,i)+`<p>${esc(t("about.body"))}</p><h3 class="g-sheet-h3">${esc(t("about.pieces"))}</h3>
-      <div class="g-three">${three.map(({p,k})=>`<button class="g-feat" data-i="${k}" aria-label="${esc(p.title)}"><img src="${p.img}" alt="" loading="lazy"><b>${esc(p.title)}</b></button>`).join("")}</div>`)}
+      <div class="g-three">${three.map(({p,k})=>`<button class="g-feat" data-i="${k}" aria-label="${esc(p.title)}"><img src="${p.img}" alt="" loading="lazy"><b>${esc(p.title)}</b></button>`).join("")}</div>`+hireChip())}
   if(l.id==="process"){openSheet(head(l,i)+`<p>${esc(t("process.intro"))}</p>`+
     [["Brief & chat","We talk about your idea, audience and the feeling it should give."],["Sketches","Rough concepts so we pick a direction early."],["Color & polish","Line, color and texture, with room for revisions."],["Delivery","Final files for print, web and social."]]
-     .map(([h,d],k)=>`<div class="g-quest" data-k="${k}"><span class="chk">${ico("i-check")}</span><div><b>${esc(h)}</b><p>${esc(d)}</p></div></div>`).join(""));
+     .map(([h,d],k)=>`<div class="g-quest" data-k="${k}"><span class="chk">${ico("i-check")}</span><div><b>${esc(h)}</b><p>${esc(d)}</p></div></div>`).join("")+hireChip());
     setTimeout(()=>$("gSheetBody").querySelectorAll(".g-quest").forEach(q=>setTimeout(()=>q.classList.add("ok"),reduce?0:300+q.dataset.k*350)),300)}
 }
 $("gSheetBody").addEventListener("click",e=>{const f=e.target.closest(".g-feat");if(f){show(+f.dataset.i)}});

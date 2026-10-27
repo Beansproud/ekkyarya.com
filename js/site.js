@@ -124,7 +124,7 @@ document.getElementById("themeToggle").onclick=()=>{const t=isDark()?"light":"da
 
 /* ===== Contact ===== */
 const toast=document.getElementById("toast");
-function say(m,icon){toast.textContent=m;if(icon)toast.insertAdjacentHTML("afterbegin",ico(icon));toast.classList.add("show");clearTimeout(say.t);say.t=setTimeout(()=>toast.classList.remove("show"),2400)}
+function say(m,icon){toast.textContent=m;if(icon)toast.insertAdjacentHTML("afterbegin",ico(icon));toast.classList.add("show");clearTimeout(say.t);say.t=setTimeout(()=>toast.classList.remove("show"),document.body.classList.contains("game-mode")?1500:2400)}   // D14: 1.5 s in the game
 const mail=document.getElementById("mailLink");mail.textContent=CONFIG.email;mail.href="mailto:"+CONFIG.email;
 // B15 safe default: a placeholder email or a link to a bare home page (no profile path) stays hidden until CONFIG is filled in.
 const realLink=u=>{try{return new URL(u).pathname.replace(/\/+$/,"").length>0}catch{return false}};
