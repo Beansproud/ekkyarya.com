@@ -8,13 +8,41 @@ document.querySelectorAll("[data-tta]").forEach(el=>{const [k,en]=el.dataset.tta
 // EN / ID switch (B41): remembers the choice (setLang in js/data.js) and redraws the page in that language.
 document.querySelectorAll("[data-lang]").forEach(b=>{b.setAttribute("aria-pressed",b.dataset.lang===LANG);
   b.addEventListener("click",()=>{if(b.dataset.lang===LANG)return;setLang(b.dataset.lang);location.reload()})});
-/* ===== Install the app (B40, FEATURES.pwa): only where the browser offers it ===== */
+/* ===== Install the app (B40, FEATURES.pwa). Where the browser offers it (beforeinstallprompt, Chrome), the button opens
+   the browser's own install prompt. Everywhere else (iPhone, an in-app browser, Chrome before it decides to offer it) the
+   button used to do nothing; now it shows how to add Try Ekky to the home screen. Hidden once running as the app. ===== */
 if(feature("pwa")&&"serviceWorker" in navigator&&/^https?:/.test(location.protocol))addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 let installEvt=null;
-addEventListener("beforeinstallprompt",e=>{if(!feature("pwa"))return;e.preventDefault();installEvt=e;
-  document.querySelectorAll("[data-install],[data-install-row]").forEach(b=>b.hidden=false)});
-document.addEventListener("click",async e=>{if(!e.target.closest("[data-install]")||!installEvt)return;installEvt.prompt();
-  try{await installEvt.userChoice}catch{}installEvt=null;document.querySelectorAll("[data-install],[data-install-row]").forEach(b=>b.hidden=true)});
+const installed=()=>matchMedia("(display-mode: standalone)").matches||navigator.standalone===true||!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+const showInstall=on=>document.querySelectorAll("[data-install],[data-install-row]").forEach(b=>b.hidden=!on);
+if(feature("pwa"))showInstall(!installed());
+addEventListener("beforeinstallprompt",e=>{if(!feature("pwa"))return;e.preventDefault();installEvt=e;showInstall(true)});
+addEventListener("appinstalled",()=>{installEvt=null;showInstall(false)});
+function installHelp(){
+  const ua=navigator.userAgent,iOS=/iP(hone|ad|od)/.test(ua)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+  const inApp=/\bwv\b|FBAN|FBAV|Instagram|Line\/|WhatsApp|Telegram|TikTok|musical_ly|Snapchat|Twitter|GSA\//i.test(ua);
+  const key=inApp?"app.help.inapp":iOS?"app.help.ios":/Android/i.test(ua)?"app.help.android":"app.help.desktop";
+  const fall={"app.help.inapp":"Open this page in Chrome or Safari first (use the menu and choose Open in browser), then install it from there.",
+    "app.help.ios":"Tap the Share button in the browser bar, then choose Add to Home Screen.",
+    "app.help.android":"Open the browser menu (the three dots at the top right), then tap Install app or Add to Home screen.",
+    "app.help.desktop":"Click the install icon at the right of the address bar, or open the browser menu and choose Install."};
+  let d=document.getElementById("installDlg");
+  if(!d){document.body.insertAdjacentHTML("beforeend",`<dialog class="save-dlg" id="installDlg" aria-labelledby="installDlgT"><div class="save-in">
+    <img src="assets/favicon-192.png" alt="" width="72" height="72" style="border-radius:18px">
+    <h3 id="installDlgT"></h3><p class="save-hint"></p>
+    <div class="save-row"><button class="btn" id="installDlgCopy" hidden></button><button class="btn ghost" id="installDlgX"></button></div></div></dialog>`);
+    d=document.getElementById("installDlg");document.getElementById("installDlgX").onclick=()=>d.close();
+    d.addEventListener("click",e=>{if(e.target===d)d.close()})}
+  d.querySelector("h3").textContent=tt("app.help.title","Add Try Ekky to your home screen");
+  d.querySelector(".save-hint").textContent=tt(key,fall[key]);
+  const c=d.querySelector("#installDlgCopy");c.hidden=!inApp;c.textContent=tt("app.help.copy","Copy link");
+  c.onclick=async()=>{try{await navigator.clipboard.writeText(location.href.split("#")[0]);c.textContent=t("share.copied")}catch{}};
+  d.querySelector("#installDlgX").textContent=tt("ui.close","Close");
+  if(!d.open)d.showModal()}
+document.addEventListener("click",async e=>{if(!e.target.closest("[data-install]"))return;
+  if(!installEvt)return installHelp();
+  const ev=installEvt;installEvt=null;ev.prompt();let out="";try{out=(await ev.userChoice).outcome}catch{}
+  if(out==="accepted")showInstall(false)});
 /* ===== The classic hero image (300 KB) loads only when the classic site is showing, never under game mode ===== */
 function heroArt(){if(document.body.classList.contains("game-mode"))return;const i=document.querySelector(".hero-art[data-src]");if(i){i.src=i.dataset.src;i.removeAttribute("data-src")}}
 setTimeout(heroArt,0);document.addEventListener("click",e=>{if(e.target.closest("[data-classic]"))setTimeout(heroArt,0)});

@@ -344,3 +344,4 @@ footer a .ico{vertical-align:-.12em}
 .save-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 .save-row .btn{min-height:44px}
 .save-row .btn[disabled]{opacity:.6}
+.save-row [hidden]{display:none!important}
