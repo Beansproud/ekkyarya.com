@@ -36,9 +36,9 @@ img,svg{display:block}
 .logo .y{color:var(--accent);display:inline-block;transform:translateY(.08em) rotate(8deg);animation:none}
 .nav{margin-top:40px;display:flex;flex-direction:column;gap:6px}
 .nav a,.cats button{color:var(--muted);font-size:.95rem;padding:6px 0;position:relative;width:max-content;transition:color .2s,transform .2s;text-align:left}
-.nav a::after,.cats button::after{content:"";position:absolute;left:0;bottom:2px;height:2px;width:0;background:var(--accent);transition:width .25s;border-radius:2px}
+.nav a::after,.cats button::after{content:"";position:absolute;left:0;bottom:2px;height:2px;width:100%;transform:scaleX(0);transform-origin:left center;background:var(--accent);transition:transform .25s ease-out;border-radius:2px}
 .nav a:hover,.nav a.active,.cats button:hover,.cats button.active{color:var(--ink);transform:translateX(4px)}
-.nav a.active::after,.cats button.active::after,.nav a:hover::after,.cats button:hover::after{width:100%}
+.nav a.active::after,.cats button.active::after,.nav a:hover::after,.cats button:hover::after{transform:scaleX(1)}
 .side-h{font-size:1.9rem;margin:48px 0 18px}
 .cats{display:flex;flex-direction:column;gap:8px}
 .cats button:first-child{font-weight:600}
@@ -119,11 +119,11 @@ html{overflow-x:clip}
 /* work */
 .work-head{display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap}
 .filters{display:flex;gap:8px;flex-wrap:wrap}
-.filters button{padding:9px 16px;border-radius:30px;font-size:.85rem;border:1px solid var(--line);color:var(--muted);background:var(--card);transition:all .2s}
+.filters button{padding:9px 16px;border-radius:30px;font-size:.85rem;border:1px solid var(--line);color:var(--muted);background:var(--card);transition:background .2s,color .2s,border-color .2s,translate .24s ease-out}
 .filters button:hover{color:var(--ink);border-color:var(--ink)}
 .filters button.active{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:22px;margin-top:40px}
-.tile{border-radius:var(--radius);overflow:hidden;background:var(--card);border:1px solid var(--line);text-align:left;transition:transform .3s,box-shadow .3s,opacity .3s;position:relative}
+.tile{border-radius:var(--radius);overflow:hidden;background:var(--card);border:1px solid var(--line);text-align:left;transition:transform .3s ease-out,opacity .3s ease-out;position:relative}
 .tile.hide{display:none}
 .tile .art{aspect-ratio:4/3;overflow:hidden}
 .tile .art svg{width:100%;height:100%;transition:transform .5s}
@@ -132,7 +132,7 @@ html{overflow-x:clip}
 .tile .meta{padding:16px 18px 18px}
 .tile .meta small{color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.08em}
 .tile .meta h3{font-size:1.15rem;margin-top:3px}
-.tile .view{position:absolute;top:14px;right:14px;background:var(--accent);color:var(--accent-ink);font-size:.75rem;font-weight:600;padding:5px 11px;border-radius:20px;opacity:0;transform:translateY(-6px);transition:all .25s}
+.tile .view{position:absolute;top:14px;right:14px;background:var(--accent);color:var(--accent-ink);font-size:.75rem;font-weight:600;padding:5px 11px;border-radius:20px;opacity:0;transform:translateY(-6px);transition:opacity .25s ease-out,transform .25s ease-out}
 .tile:hover .view,.tile:focus-visible .view{opacity:1;transform:none}
 
 /* process */
@@ -177,7 +177,7 @@ dialog[open]{animation:pop var(--dur) var(--ease-in)}
 
 .toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,100px);background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:12px;font-size:.9rem;transition:transform .35s var(--ease-in);z-index:90}
 .toast.show{transform:translate(-50%,0)}
-.to-top{position:fixed;right:22px;bottom:22px;width:48px;height:48px;border-radius:14px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;box-shadow:var(--shadow);opacity:0;pointer-events:none;transform:translateY(10px);transition:all .3s;z-index:30}
+.to-top{position:fixed;right:22px;bottom:22px;width:48px;height:48px;border-radius:14px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;box-shadow:var(--shadow);opacity:0;pointer-events:none;transform:translateY(10px);transition:opacity .3s ease-out,transform .3s ease-out;z-index:30}
 .to-top.show{opacity:1;pointer-events:auto;transform:none}
 .progress{position:fixed;top:0;left:0;height:3px;background:var(--accent);width:0;z-index:60}
 
@@ -475,7 +475,7 @@ body.game-mode .idle-buddy{left:16px;right:auto;flex-direction:row;bottom:calc(e
 .nav a,.cats button{transform-origin:left center}
 .g-mode-fab.t-squash img{animation:t-icon .3s ease-out}
 @media (hover:hover) and (pointer:fine){
-  .nav a,.cats button,.g-mode-fab,.g-mode-fab img,.logo{transition:color .2s,transform .2s,translate .2s,scale .2s,rotate .2s}
+  .nav a,.cats button,.g-mode-fab,.g-mode-fab img,.logo{transition:color .2s,transform .24s ease-out,translate .24s ease-out,scale .24s ease-out,rotate .24s ease-out}
   .nav a:hover,.cats button:hover{scale:1.05}
   .g-mode-fab:hover{translate:0 -2px;scale:1.04}
   .g-mode-fab:hover img{rotate:-8deg;scale:1.1}
