@@ -360,7 +360,10 @@ let patrolJs=null;
 function openPatrol(){if(!feature("paintPatrol"))return;
   patrolJs=patrolJs||new Promise((ok,no)=>{const s=document.createElement("script");s.src="js/patrol.js";s.onload=ok;s.onerror=no;document.head.appendChild(s)});
   patrolJs.then(()=>window.Patrol.open()).catch(()=>{patrolJs=null})}
-if(feature("paintPatrol")&&new URLSearchParams(location.search).get("play")==="patrol")setTimeout(openPatrol,600);
+{const play=q.get("play");   // desktop "Play with Ekky's art" cards: ?game&play=color|stars|patrol
+  if(play==="patrol"&&feature("paintPatrol"))setTimeout(openPatrol,600);
+  else if(play==="color")setTimeout(()=>go("color"),600);
+  else if(play==="stars"&&feature("starCatcher"))setTimeout(startArcade,600)}
 // A hidden tab pauses the round; it resumes only once the tab is visible again (r1a bug: it used to resume while hidden).
 let pausedByHide=false;
 document.addEventListener("visibilitychange",()=>{if(!A)return;if(document.hidden){if(A.run){A.run=false;pausedByHide=true}}
