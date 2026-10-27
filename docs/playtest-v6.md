@@ -57,3 +57,16 @@ Then a side-by-side look against the owner's reference screenshot.
 | 7 | **Small places on a small island.** The village is 358 px wide, so Doodle corner and Star Catcher are just 46 to 48 px, and the framed pieces about 40 px. Fine for round 1. Explore (V4) should zoom to 2x, so the art is seen at a size that does it justice. | Showcase; feeds V4. | DEV | (V4) |
 
 **Not verified here:** touch feel on a real phone (tapping a moving 44 px walker), and the client sceneries of V5. None appear in this build's village data (`folk` and `walkers` hold only original pieces). If V5 is merged, it isn't visible yet.
+
+## Re-run on `main` 830e9ec
+
+Same results as `6576ff0`; the build only adds the V5 client-scenery path behind its switch, which is off.
+- First frame: 192 ms at 4x CPU. Frame rate: 59.4 fps, 95th percentile 16.8 ms.
+- Places: all 6 in view and tappable.
+- Animations: the same budget.
+- Tester: 3 artworks in 21.7 s.
+- Reduced motion: still. Errors: 0.
+
+Villagers are still 6 of 10 from Monster World Doodles.
+
+**GO for V4.** The top 3 issues stay #1 variety, #2 cloud over the art, #3 labels on the characters.
