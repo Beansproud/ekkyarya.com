@@ -238,3 +238,11 @@ function confetti(){if(reduce)return;const cols=["#FFB400","#FF6B6B","#7ED9B0","
     document.body.appendChild(c);setTimeout(()=>c.remove(),4000)}}
 
 document.getElementById("year").textContent=new Date().getFullYear();
+
+// One shared touch response: the tapped object squashes and springs back (drawings and villagers wiggle). Touch only, once per tap.
+(()=>{const mq=matchMedia("(prefers-reduced-motion: reduce)");
+  const TAP="button,a,[data-i],.g-feat,.g-tile,.v-place,.v-walker,.v-folk,.c-st,.c-sw,.tile,.feat",WIG=".tile,.feat,.g-tile,.g-feat,.v-walker,.v-folk";
+  document.addEventListener("pointerdown",e=>{if(e.pointerType!=="touch"||mq.matches)return;
+    const el=e.target.closest&&e.target.closest(TAP);if(!el||el.classList.contains("t-squash")||el.classList.contains("t-wiggle"))return;
+    const c=el.matches(WIG)?"t-wiggle":"t-squash";el.classList.add(c);
+    el.addEventListener("animationend",()=>el.classList.remove(c),{once:true})},{passive:true})})();

@@ -712,3 +712,12 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 #g-start .g-start-head .g-logo{grid-row:1;align-self:center}
 #g-start .g-start-head .g-tagline{grid-column:1/-1;margin:6px 0 0;max-width:none}
 #c-edit .c-tool:disabled,.c-tool:disabled{opacity:.4;cursor:default}
+
+/* Developer 3: touch */
+/* Touch response, added by js/site.js on pointerdown (touch only, once, removed on animationend). Uses the individual
+   scale and rotate properties so a tile's own tilt in transform is untouched. */
+@keyframes t-squash{0%{scale:1}40%{scale:.92}100%{scale:1}}
+@keyframes t-wiggle{0%{rotate:0deg}30%{rotate:-3deg}70%{rotate:3deg}100%{rotate:0deg}}
+.t-squash{animation:t-squash .18s ease-out}
+.t-wiggle{animation:t-wiggle .18s ease-out}
+@media (prefers-reduced-motion:reduce){.t-squash,.t-wiggle{animation:none}}
