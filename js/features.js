@@ -18,6 +18,8 @@ const FEATURES = {
   pagePlugHero: true,    // Plug Hero Mascot coloring page (assets/color/plug-hero/), Ekky original; the scarf and shoes stay as his dark ink
   pageLittlePlanet: true, // Little Planet coloring page (assets/color/little-planet/), Ekky original
   pageHands: true,       // Tangled Hands coloring page (assets/color/hands/), Ekky original
+  pageNoodles: true,     // Noodle Bath coloring page (assets/color/noodles/), Ekky original
+  pageShark: false,      // Big Catch coloring page (assets/color/shark/), Ekky original; off: the shark keeps pre-filled grey shading in the lines
   artDownload: true,     // lightbox Download: a copy of at most 1600 px with a subtle mark, never on fan art (owner: yes)
   sound: true,           // sound effects and the sound toggle
   handLettering: false,  // S3: headings with data-hand="<word>" show Ekky's lettering (assets/hand/<word>.png, listed in
