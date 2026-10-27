@@ -9,7 +9,7 @@ const LEVELS=[
   {id:"color",   icon:"pen-hand",     key:"level.2"},
   {id:"art",     icon:"palette",      key:"level.3"},
   {id:"process", icon:"ghost",        key:"level.4"},
-  {id:"hire",    icon:"monster-head", key:"town.hire"},
+  {id:"hire",    icon:"monster-head", from:"hidden-monster", key:"town.hire"},
 ];
 const RARITY=["#B8D5FF","#7ED9B0","#C9A7FF","#FFB400"];   // cosmetic frame colors only
 // Things you made, kept on this device: colorings (js/color.js), best Star Catcher run, settings. Sound is off by default on the web.
@@ -26,7 +26,9 @@ G.querySelectorAll("[data-t]").forEach(el=>el.textContent=t(el.dataset.t));
 G.querySelectorAll("[data-t-aria]").forEach(el=>el.setAttribute("aria-label",t(el.dataset.tAria)));
 
 /* ---- mode switching ---- */
-const phone=matchMedia("(max-width:760px)");
+// a phone held sideways is wider than 760 px: keep it in game mode (touch screen, short viewport), or turning the
+// phone for Paint Patrol would drop the visitor onto the classic site
+const phone=matchMedia("(max-width:760px), (pointer:coarse) and (max-height:520px)");
 const pref=()=>{try{return localStorage.getItem("ekkyMode")}catch{return null}};
 const q=new URLSearchParams(location.search);
 const deep=["color","challenge","card"].some(k=>q.has(k));   // any deep link opens game mode, on desktop too (B12)
@@ -72,12 +74,12 @@ $("gFeatured").addEventListener("click",e=>{const d=e.target.closest(".g-feat-dl
    featuredPick(4) real pieces on every visit. Never locked, no "next" glow, no boss. ---- */
 // place id -> what it opens (index in LEVELS, or Star Catcher), its label key, and a feature switch if it has one
 const PLACES=[
-  {id:"home",        key:"town.home",    icon:"assets/sprites/home.png",      open:()=>openLevel(0)},
-  {id:"studio",      key:"town.studio",  icon:"assets/sprites/studio.png",    open:()=>openLevel(1)},
-  {id:"gallery",     key:"town.gallery", icon:"assets/sprites/toybox.png",    open:()=>openLevel(2)},
-  {id:"doodle",      key:"town.workshop",icon:"assets/ui/ghost.png",          open:()=>openLevel(3)},
-  {id:"observatory", key:"town.launch",  icon:"assets/ui/astronaut.png",      open:()=>startArcade(), feature:"starCatcher"},
-  {id:"hire",        key:"town.hire",    icon:"assets/sprites/gate.png",      open:()=>openHire(), hire:true},
+  {id:"home",        key:"town.home",    icon:"assets/sprites/home.png",      from:"little-planet", open:p=>openLevel(0,p)},
+  {id:"studio",      key:"town.studio",  icon:"assets/sprites/studio.png",    from:"giraffe", open:p=>openLevel(1,p)},
+  {id:"gallery",     key:"town.gallery", icon:"assets/sprites/toybox.png",    from:"toybox", open:p=>openLevel(2,p)},
+  {id:"doodle",      key:"town.workshop",icon:"assets/ui/ghost.png",          from:"doodles", open:p=>openLevel(3,p)},
+  {id:"observatory", key:"town.launch",  icon:"assets/ui/astronaut.png",      from:"nft-3", open:()=>startArcade(), feature:"starCatcher"},
+  {id:"hire",        key:"town.hire",    icon:"assets/sprites/gate.png",      open:p=>openHire("",p), hire:true},
 ];
 const pct=(v,of)=>(v/of*100).toFixed(3)+"%";
 function renderMap(){
@@ -87,62 +89,74 @@ function renderMap(){
   W.style.height="";W.className="g-map-wrap v-map";W.style.aspectRatio=`${V.w}/${V.h}`;
   // the whole village fits between the header and the tab bar: the width follows the height left on screen
   W.style.width=`min(100%, calc((100dvh - 300px) * ${(V.w/V.h).toFixed(4)}))`;
-  W.innerHTML=`<img class="v-ground" src="assets/village/village.png" alt="" decoding="async" fetchpriority="high">`+
+  W.innerHTML=`<div class="v-zoom" id="gMapZoom"><img class="v-ground" src="assets/village/village.png" alt="" decoding="async" fetchpriority="high">`+
     V.frames.map((f,k)=>{const p=art[k];if(!p)return "";const deg=(Math.atan(f.slope)*180/Math.PI).toFixed(2);
       return `<img class="v-frame" src="${thumbOf(p)}" alt="" decoding="async" style="left:${pct(f.x,V.w)};top:${pct(f.y,V.h)};width:${pct(f.w,V.w)};height:${pct(f.h,V.h)};transform:skewY(${deg}deg)">`}).join("")+
     places.map(p=>{const b=V.places[p.id].box,l=V.places[p.id].label;
       return `<button class="v-place${p.hire?" hire":""}" data-place="${p.id}" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}" aria-label="${esc(t(p.key))}"></button>
       <span class="v-label${p.hire?" hire":""}" aria-hidden="true" style="left:${pct(l[0],V.w)};top:${pct(l[1],V.h)}">${esc(t(p.key))}</span>`}).join("");
-  W.insertAdjacentHTML("beforeend",villageLife(V));
+  $("gMapZoom").insertAdjacentHTML("beforeend",villageLife(V)+"</div>");
+  W.insertAdjacentHTML("beforeend",`<div class="v-zoomctl"><button class="g-round" data-zoom="1" aria-label="${esc(tt("town.zoomIn","Zoom in"))}">${ico("i-plus")}</button><button class="g-round" data-zoom="-1" aria-label="${esc(tt("town.zoomOut","Zoom out"))}"><b aria-hidden="true">&minus;</b></button></div>`);
+  zoomTo(1,0,0);
   $("gMapList").innerHTML=places.map(p=>`<li><button class="v-row${p.hire?" hire":""}" data-place="${p.id}"><img src="${p.icon}" alt="" loading="lazy">${esc(t(p.key))}</button></li>`).join("");
 }
 /* ---- Village life (B42 V3), inside the ambience budget (decision 10, docs/motion.md): walkers, two clouds, the
    gate's lantern, the noodle bath's steam and the water shimmer. All CSS animations on transform and opacity, so the
    off-screen pause and reduced motion (villagers stand still) apply; day or night is set once, on load. ---- */
-const TILE=36,TILE_S=1.6,END_PAUSE=2,CORNER_PAUSE=.8;   // 1 tile (36 image px) per 1.6 s; pauses at the ends and corners
-function walkCss(w,k,V){
-  const fwd=w.route,pts=fwd.concat(fwd.slice(0,-1).reverse()),steps=[];let t=0;
-  for(let i=0;i<pts.length;i++){const end=i===0||i===fwd.length-1;
-    steps.push([t,pts[i]]);t+=end?END_PAUSE:CORNER_PAUSE;steps.push([t,pts[i]]);
-    if(i<pts.length-1)t+=Math.hypot(pts[i+1][0]-pts[i][0],pts[i+1][1]-pts[i][1])/TILE*TILE_S}
-  const at=(x,y)=>`transform:translate(${pct(x,V.w)},${pct(y,V.h)})`,off=v=>(v/t*100).toFixed(3)+"%";
-  const face=(a,b)=>w.face===0?1:Math.sign(b[0]-a[0]||1)*w.face;
-  let move="",turn="";
-  for(const [time,p] of steps)move+=`${off(time)}{${at(p[0],p[1])}}`;
-  for(let i=0;i<pts.length-1;i++){turn+=`${off(steps[2*i+1][0])}{transform:scaleX(${face(pts[i],pts[i+1])})}`}
-  return {dur:t.toFixed(2),start:at(fwd[0][0],fwd[0][1]),face0:face(pts[0],pts[1]),
-    css:`@keyframes vw${k}{${move}100%{${at(pts[0][0],pts[0][1])}}}@keyframes vf${k}{0%{transform:scaleX(${face(pts[0],pts[1])})}${turn}}`}
-}
+   // 1 tile (36 image px) per 1.6 s; pauses at the ends and corners
 function villageLife(V){
+  // quiet pass (B43, G1): nothing moves on its own; villagers stand at the start of their path, facing it
   const night=(h=>h<6||h>=19)(new Date().getHours());
   $("gMapWrap").classList.toggle("night",night);
-  let css="",html=`<img class="v-shimmer" src="assets/village/shimmer.png" alt="" decoding="async">`+
-    "";
-  if(V.lantern)html+=`<i class="v-lantern" style="left:${pct(V.lantern[0],V.w)};top:${pct(V.lantern[1],V.h)}"></i>`;
-  (V.smoke||[]).forEach(s=>html+=`<i class="v-smoke" style="left:${pct(s[0],V.w)};top:${pct(s[1],V.h)}"></i>`);
+  let html="";
   const card=piece=>{const p=PROJECTS.find(q=>q.id===piece||q.slug===piece);return p&&creative(p)?p:null};
-  for(const [name,f] of Object.entries(V.folk||{})){const p=card(f.piece);if(!p)continue;const b=f.box;
-    html+=`<button class="v-folk" data-piece="${PROJECTS.indexOf(p)}" data-sprite="assets/sprites/${name}.png" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}" aria-label="${esc(t("town.seeArt")+": "+ptitle(p))}"></button>`}
+  const btn=(cls,p,sprite,style,inner="")=>`<button class="${cls}" data-piece="${PROJECTS.indexOf(p)}" data-sprite="${esc(sprite)}" style="${style}" aria-label="${esc(t("town.seeArt")+": "+ptitle(p))}">${inner}</button>`;
+  const box=b=>`left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}`;
+  for(const [name,f] of Object.entries(V.folk||{})){const p=card(f.piece);if(p)html+=btn("v-folk",p,`assets/sprites/${name}.png`,box(f.box))}
   // V5: client scenery, only with the clientScenery switch; each opens its piece, whose card shows the client tag
   if(feature("clientScenery"))(V.scenery||[]).forEach(c=>{const p=PROJECTS.find(q=>q.slug===c.piece);
-    if(!p||p.kind!=="client"||!hasRole(p,"village"))return;const b=c.box;
-    html+=`<button class="v-folk v-scenery" data-piece="${PROJECTS.indexOf(p)}" data-sprite="${esc(c.src)}" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}" aria-label="${esc(t("town.seeArt")+": "+ptitle(p))}"><img src="${esc(c.src)}" alt=""></button>`});
-  const perPiece={};   // at most 8 walkers, and at most 2 from one piece (UX review)
-  (V.walkers||[]).filter(w=>(perPiece[w.piece]=(perPiece[w.piece]||0)+1)<=2).slice(0,8).forEach((w,k)=>{const p=card(w.piece);if(!p)return;const c=walkCss(w,k,V);css+=c.css;
-    const delay=`-${(Math.random()*c.dur).toFixed(2)}s`;
-    html+=`<div class="v-walk" style="${c.start};animation:vw${k} ${c.dur}s linear ${delay} infinite"><button class="v-walker" data-piece="${PROJECTS.indexOf(p)}" data-sprite="${w.src}" aria-label="${esc(t("town.seeArt")+": "+ptitle(p))}"><img src="${w.src}" alt="" decoding="async" style="height:${(w.h/V.w*100).toFixed(2)}cqw;transform:scaleX(${c.face0});animation:vf${k} ${c.dur}s steps(1,end) ${delay} infinite"></button></div>`});
-  let st=$("vWalkCss");if(!st){st=document.createElement("style");st.id="vWalkCss";document.head.appendChild(st)}st.textContent=css;
+    if(p&&p.kind==="client"&&hasRole(p,"village"))html+=btn("v-folk v-scenery",p,c.src,box(c.box),`<img src="${esc(c.src)}" alt="">`)});
+  const perPiece={};   // at most 8 villagers, and at most 2 from one piece (UX review)
+  (V.walkers||[]).filter(w=>(perPiece[w.piece]=(perPiece[w.piece]||0)+1)<=2).slice(0,8).forEach(w=>{const p=card(w.piece);if(!p)return;
+    const [a,b]=w.route,face=w.face===0?1:Math.sign(b[0]-a[0]||1)*w.face;
+    html+=`<div class="v-walk" style="transform:translate(${pct(a[0],V.w)},${pct(a[1],V.h)})">`+
+      btn("v-walker",p,w.src,"",`<img src="${w.src}" alt="" decoding="async" style="height:${(w.h/V.w*100).toFixed(2)}cqw;transform:scaleX(${face})">`)+`</div>`});
   return html}
+
+/* ---- Zoom (G1): pinch or drag with a finger, or the +/- buttons; 1x to 2x. A place is still one tap: a touch
+   that moved more than 8 px is a pan, not a tap. Nothing animates; the view follows the finger. ---- */
+const Z={s:1,x:0,y:0,pts:new Map(),moved:false,start:null};
+function zoomTo(s,x,y){const W=$("gMapWrap"),L=$("gMapZoom");if(!L)return;
+  Z.s=Math.max(1,Math.min(2,s));const w=W.clientWidth,h=W.clientHeight;
+  Z.x=Math.min(0,Math.max(w-w*Z.s,x));Z.y=Math.min(0,Math.max(h-h*Z.s,y));
+  L.style.transform=Z.s===1?"":`translate(${Z.x}px,${Z.y}px) scale(${Z.s})`;W.classList.toggle("zoomed",Z.s>1)}
+function zoomAt(k,cx,cy){const r=$("gMapWrap").getBoundingClientRect(),px=cx-r.left,py=cy-r.top,ns=Math.max(1,Math.min(2,Z.s*k)),f=ns/Z.s;
+  zoomTo(ns,px-(px-Z.x)*f,py-(py-Z.y)*f)}
+(()=>{const W=$("gMapWrap");
+  W.addEventListener("pointerdown",e=>{if(e.target.closest(".v-zoomctl"))return;if(e.isPrimary){Z.pts.clear();Z.pinch=null}Z.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(Z.pts.size===1){Z.moved=false;Z.start={x:e.clientX,y:e.clientY,zx:Z.x,zy:Z.y}}
+    else if(Z.pts.size===2){const [a,b]=[...Z.pts.values()];Z.pinch={d:Math.hypot(a.x-b.x,a.y-b.y),s:Z.s};Z.moved=true}});
+  W.addEventListener("pointermove",e=>{if(!Z.pts.has(e.pointerId))return;Z.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(Z.pts.size===2&&Z.pinch){const [a,b]=[...Z.pts.values()],d=Math.hypot(a.x-b.x,a.y-b.y);zoomAt(Z.pinch.s*d/Z.pinch.d/Z.s,(a.x+b.x)/2,(a.y+b.y)/2)}
+    else if(Z.pts.size===1&&Z.start&&Z.s>1){const dx=e.clientX-Z.start.x,dy=e.clientY-Z.start.y;
+      if(Math.hypot(dx,dy)>8)Z.moved=true;if(Z.moved)zoomTo(Z.s,Z.start.zx+dx,Z.start.zy+dy)}});
+  const up=e=>{Z.pts.delete(e.pointerId);if(Z.pts.size<2)Z.pinch=null;if(!Z.pts.size)Z.start=null};
+  W.addEventListener("pointerup",up);W.addEventListener("pointercancel",up);
+  // a pan or pinch is not a tap on whatever was under the finger
+  W.addEventListener("click",e=>{if(Z.moved&&!e.target.closest(".v-zoomctl")){e.stopPropagation();e.preventDefault();Z.moved=false}},true);
+  W.addEventListener("click",e=>{const b=e.target.closest("[data-zoom]");if(!b)return;e.stopPropagation();buzz(8);
+    const r=W.getBoundingClientRect();zoomAt(+b.dataset.zoom>0?2:.5,r.left+r.width/2,r.top+r.height/2)},true);
+  W.addEventListener("wheel",e=>{if(!e.ctrlKey)return;e.preventDefault();zoomAt(e.deltaY<0?1.1:1/1.1,e.clientX,e.clientY)},{passive:false});
+  addEventListener("resize",()=>zoomTo(1,0,0))})();
+
 function openVillager(b){const k=+b.dataset.piece,p=PROJECTS[k];if(!p)return;
   openSheet(`<h2 id="gSheetTitle"><img class="h-ico" src="${esc(b.dataset.sprite)}" alt="">${esc(ptitle(p))}</h2>
     <div class="g-vcard"><button class="g-villager-art" data-see="${k}" aria-label="${esc(t("town.seeArt")+": "+ptitle(p))}"><img src="${thumbOf(p)}" alt="" loading="lazy"></button>
     ${plabel(p)?`<p><span class="tag">${esc(plabel(p))}</span></p>`:""}<p>${esc(pdesc(p))}</p><p><button class="g-btn" data-see="${k}">${ico("i-eye")} ${esc(t("town.seeArt"))}</button></p></div>`+hireChip())}
 $("gMapWrap").addEventListener("click",e=>{const v=e.target.closest(".v-folk,.v-walker");if(v){buzz(10);sfx("tap");return openVillager(v)}
   const b=e.target.closest(".v-place");if(!b)return;buzz(15);sfx("tap");
-  // the place lifts and its label glows once (300 ms), then it opens (B42: "I'm going there")
-  const l=b.nextElementSibling;if(!reduce&&l){l.classList.remove("go");void l.offsetWidth;l.classList.add("go")}
-  setTimeout(()=>PLACES.find(p=>p.id===b.dataset.place).open(),reduce?0:300)});
-$("gMapList").addEventListener("click",e=>{const b=e.target.closest("[data-place]");if(b){buzz(10);sfx("tap");PLACES.find(p=>p.id===b.dataset.place).open()}});
+  const pl=PLACES.find(p=>p.id===b.dataset.place);pl.open(pl)});
+$("gMapList").addEventListener("click",e=>{const b=e.target.closest("[data-place]");if(b){buzz(10);sfx("tap");const pl=PLACES.find(p=>p.id===b.dataset.place);pl.open(pl)}});
 // The list view replaces the island on the same screen (each place once, 48 px rows); the same link switches back.
 $("gMapListBtn").onclick=()=>{const l=$("gMapList"),open=l.hidden,b=$("gMapListBtn");l.hidden=!open;$("gMapWrap").hidden=open;
   b.setAttribute("aria-expanded",open);b.textContent=open?tt("town.showVillage","Show the village"):t("town.list");$("g-map").scrollTop=0;
@@ -160,25 +174,27 @@ sheet.firstElementChild.addEventListener("touchend",e=>{if(sy!==null&&e.changedT
 // Every sheet ends with a Hire button (B07); the HUD chip above the sheet's backdrop stays tappable too.
 const hireChip=()=>`<p class="g-sheet-hire"><button class="g-hire" data-hire aria-label="${esc(t("hire.chip.aria"))}"><img src="assets/ui/monster-head.png" alt=""><span>${esc(t("sheet.hire"))}</span></button></p>`;
 const head=l=>`<h2 id="gSheetTitle">${uiImg(l.icon,"h-ico")}${esc(t(l.key))}</h2>`;
-function openLevel(i){const l=LEVELS[i];
+// "Made from: <piece>" on a sheet opened from a village place (G1): the place's art opens in one tap
+function madeFrom(pl){const p=pl&&pl.from&&PROJECTS.find(q=>q.slug===pl.from);if(!p)return "";
+  return `<p class="g-made">${esc(tt("town.madeFrom","Made from:"))} <button class="g-link" data-see="${PROJECTS.indexOf(p)}">${esc(ptitle(p))}</button></p>`}
+function openLevel(i,pl){const l=LEVELS[i];
   if(l.id==="color")return go("color");
   if(l.id==="art")return go("art");
   if(l.id==="hire")return openHire();
   if(l.id==="about"){const three=featuredSix(3).map(p=>({p,k:PROJECTS.indexOf(p)}));
     const facts=["about.fact.from","about.fact.lang","about.fact.hours","about.fact.price","about.workedWith"].map(k=>t(k)).filter(v=>v&&!v.startsWith("about."));
     openSheet(head(l)+`<p>${esc(t("about.body"))}</p>${facts.length?`<ul class="g-facts">${facts.map(f=>`<li>${esc(f)}</li>`).join("")}</ul>`:""}<h3 class="g-sheet-h3">${esc(t("about.pieces"))}</h3>
-      <div class="g-three">${three.map(({p,k})=>`<button class="g-feat" data-i="${k}" aria-label="${esc(ptitle(p))}"><img src="${thumbOf(p)}" alt="" loading="lazy"><b>${esc(ptitle(p))}</b></button>`).join("")}</div>`+hireChip())}
+      <div class="g-three">${three.map(({p,k})=>`<button class="g-feat" data-i="${k}" aria-label="${esc(ptitle(p))}"><img src="${thumbOf(p)}" alt="" loading="lazy"><b>${esc(ptitle(p))}</b></button>`).join("")}</div>`+madeFrom(pl)+hireChip())}
   if(l.id==="process"){openSheet(head(l)+`<p>${esc(t("process.intro"))}</p>`+
     [["Brief & chat","We talk about your idea, audience and the feeling it should give."],["Sketches","Rough concepts so we pick a direction early."],["Color & polish","Line, color and texture, with room for revisions."],["Delivery","Final files for print, web and social."]]
-     .map(([h,d],k)=>`<div class="g-quest" data-k="${k}"><span class="chk">${ico("i-check")}</span><div><b>${esc(tt(`process.step${k+1}`,h))}</b><p>${esc(tt(`process.step${k+1}.body`,d))}</p></div></div>`).join("")+hireChip());
-    // the steps tick one after another, slowly, so the order of the process reads (B39)
-    setTimeout(()=>$("gSheetBody").querySelectorAll(".g-quest").forEach(q=>setTimeout(()=>q.classList.add("ok"),reduce?0:500+q.dataset.k*600)),300)}
+     .map(([h,d],k)=>`<div class="g-quest" data-k="${k}"><span class="chk">${ico("i-check")}</span><div><b>${esc(tt(`process.step${k+1}`,h))}</b><p>${esc(tt(`process.step${k+1}.body`,d))}</p></div></div>`).join("")+madeFrom(pl)+hireChip());
+    $("gSheetBody").querySelectorAll(".g-quest").forEach(q=>q.classList.add("ok"))}   // quiet pass: the steps show ticked, no sequence
 }
 $("gSheetBody").addEventListener("click",e=>{const f=e.target.closest(".g-feat");if(f){show(+f.dataset.i)}
   const s=e.target.closest("[data-see]");if(s){buzz(10);show(+s.dataset.see)}});
 
 /* ---- Final Quest: the Hire sheet (B07, B17). Opens over the current screen; closing returns there. ---- */
-function openHire(prefill){const l=LEVELS[4];
+function openHire(prefill,pl){const l=LEVELS[4];
   // Quick actions lead with the business email; every other channel shows only when CONFIG has it (B15).
   const links=[["instagram","hire.instagram"],["linkedin","hire.linkedin"],["behance","hire.behance"]].filter(([k])=>CONFIG.links[k]);
   const quick=`<div class="g-quick">
@@ -195,7 +211,7 @@ function openHire(prefill){const l=LEVELS[4];
       <label>${esc(t("hire.form.type"))}<select name="type">${types.map(o=>`<option>${esc(o)}</option>`).join("")}</select></label>
       <label>${esc(t("hire.form.msg"))}<textarea name="message" required minlength="10" placeholder="${esc(t("hire.form.msg.ph"))}">${esc(prefill||"")}</textarea><span class="err"></span></label>
       <button class="g-btn" type="submit" style="width:100%">${ico("i-send")} ${esc(t("hire.form.send"))}</button>
-    </form>`);
+    </form>`+madeFrom(pl));
   const c=$("gCopyMail");if(c)c.onclick=async()=>{try{await navigator.clipboard.writeText(CONFIG.email);say(t("hire.copied"),"i-check")}catch{say(CONFIG.email)}};
 }
 $("gSheetBody").addEventListener("submit",e=>{e.preventDefault();const f=e.target;let ok=true;
@@ -313,6 +329,16 @@ function endArcade(){const a=A;a.run=false;lastScore=a.score;const rec=(st.best|
   sfx(rec?"legend":"level");if(rec&&typeof confetti==="function")confetti()}
 function quitArcade(){cancelAnimationFrame(raf);A=null;pausedByHide=false;$("gArcade").classList.remove("open");G.classList.remove("playing");$("gCount").innerHTML=""}
 let lastScore=0;
+// G3: Share on the result, next to Download. It shares the same stars card (Share.renderCard) through the phone's
+// share sheet; where that can't take a file it falls back to the Download path (Share.downloadStars).
+async function shareStars(){if(typeof Share==="undefined")return;
+  try{const c=await Share.renderCard("stars",{score:lastScore}),blob=await new Promise(ok=>c.toBlob(ok,"image/png"));
+    const file=new File([blob],`ekkyarya-stars-${lastScore}.png`,{type:"image/png"});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text:tt("stars.shareText","I caught {n} points in Ekky's Star Catcher.",{n:lastScore}).replace("{n}",lastScore)});return}
+  }catch(e){if(e&&e.name==="AbortError")return}
+  Share.downloadStars(lastScore)}
+if(cv&&feature("shareCards")&&!$("gResShare")){$("gAgain").insertAdjacentHTML("afterend",`<button class="g-btn alt sm" id="gResShare">${ico("i-share")} <span>${esc(t("reveal.share"))}</span></button>`);
+  $("gResShare").onclick=()=>{buzz(10);shareStars()}}
 if(cv){$("gResDl").onclick=()=>typeof Share!=="undefined"&&Share.downloadStars(lastScore);$("gArcadeX").onclick=quitArcade;$("gResBack").onclick=()=>{quitArcade();go("start")};$("gAgain").onclick=startArcade}
 G.addEventListener("click",e=>{if(e.target.closest("[data-arcade]")){sfx("tap");startArcade()}
   if(e.target.closest("[data-patrol]")){sfx("tap");openPatrol()}});

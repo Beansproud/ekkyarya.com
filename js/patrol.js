@@ -7,7 +7,7 @@ const G=document.getElementById("game"),reduce=matchMedia("(prefers-reduced-moti
 const {sfx,buzz,esc}=window.Game;
 const PP={worldH:540,ground:470,heroH:110,run:200,gravity:1800,jumpHeights:1.6,paintRate:4,paintSpeed:650,bombRecharge:12,
   waveEvery:[3,5],maxOnScreen:5,hits:{normal:3,big:6},friendMeter:40,attackEvery:[2.5,3.5],telegraph:.8,
-  stageScreens:7,screenW:960,knockback:120,invulnerable:.8,powerTime:6,dropChance:.25};
+  stageScreens:12,screenW:960,knockback:120,invulnerable:.8,powerTime:6,dropChance:.25};
 const DOODLES=[["virus","assets/ui/virus.png",58,0],["blob","assets/sprites/blob.png",70,0],["skull","assets/sprites/skull.png",56,0],
   ["orange-monster","assets/sprites/orange-monster.png",72,0],["pickle","assets/sprites/pickle.png",92,1],["dog","assets/sprites/dog.png",100,1],
   ["doodle-cat","assets/sprites/doodle-cat.png",62,0],["waver","assets/sprites/waver.png",96,1],["ufo","assets/sprites/ufo.png",70,0,1]];
@@ -139,9 +139,14 @@ function step(dt){const h=S.hero;S.t+=dt;
     if(f.calm&&f.st>1.8&&!S.ended)end()}
   const bp=Math.round(S.bomb/PP.bombRecharge*20);if(bp!==S.bombShown){S.bombShown=bp;el.querySelector(".pp-bomb i").style.height=bp*5+"%";el.querySelector(".pp-bomb").classList.toggle("ready",bp===20)}}
 function calm(){const f=S.friend;f.calm=true;f.st=0;f.waves=[];sfx("legend");burst(S.cam+S.viewW-f.w*.5,PP.ground-200,30)}
+// Every character names its piece (G2): the stage's cast, one tap each to its artwork
+const CAST=[["little-planet"],["virus-and-war"],["doodles"],["monster"]];
+function cast(){const ps=CAST.map(([slug])=>PROJECTS.find(q=>q.slug===slug)).filter(p=>p&&creative(p));
+  return `<p class="pp-cast">${esc(tt("patrol.end.cast","Everyone here comes from:"))} ${ps.map(p=>`<button class="g-link" data-pp="see" data-k="${PROJECTS.indexOf(p)}">${esc(ptitle(p))}</button>`).join(", ")}</p>`}
 function end(){S.ended=true;S.run=false;const p=PROJECTS.find(q=>q.slug==="coexistence"),k=PROJECTS.indexOf(p);
   const c=el.querySelector(".pp-end");c.innerHTML=`<img class="pp-art" src="${esc(p?typeof thumbOf==="function"?thumbOf(p):"assets/work/coexistence.jpg":"")}" alt="">
     <h2>${esc(p?ptitle(p):"")}</h2><p>${esc(p?pdesc(p):"")}</p>
+    ${cast()}
     <div class="pp-row"><button class="g-btn" data-pp="see" data-k="${k}">${esc(tt("patrol.end.see","See it in the portfolio"))}</button>
     <button class="g-hire" data-hire><img src="assets/ui/monster-head.png" alt=""><span>${esc(t("hire.chip"))}</span></button></div>
     <div class="pp-row"><button class="g-btn alt sm" data-pp="again">${esc(tt("patrol.end.again","Play again"))}</button><button class="g-btn alt sm" data-pp="other">${esc(tt("patrol.end.other","Something else"))}</button></div>`;

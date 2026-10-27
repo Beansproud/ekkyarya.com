@@ -145,7 +145,7 @@ body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family
 .g-result.show{display:flex;animation:overIn var(--dur) var(--ease-in)}
 .g-result h2{font-size:2.6rem;color:#FFB400;text-shadow:0 5px 0 #2B1342;animation:resFade var(--dur-slow) var(--ease-in) both}
 @keyframes resFade{from{opacity:0;transform:translateY(10px)}}
-.g-result .score{font-size:4rem;font-weight:700;line-height:1;display:inline-flex;align-items:center;gap:12px}
+.g-result .score{font-size:4rem;font-weight:700;line-height:1;display:inline-flex;align-items:center;gap:12px;color:#fff}
 .g-result .score .ico{width:.8em;height:.8em;vertical-align:0}
 .g-result p{font-family:Poppins;color:#cbbfe3}
 .g-flash{position:absolute;inset:0;background:#FF6B6B;opacity:0;pointer-events:none;z-index:2}
@@ -548,3 +548,78 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 .v-cloud,.v-shimmer,.v-smoke{display:none}
 /* the turn-your-phone hint turns twice, then rests */
 .pp-turn img{animation-iteration-count:2}
+
+/* G1: the village zooms (1x to 2x) with a finger or the +/- buttons; nothing animates, the view follows the finger */
+.v-map{overflow:hidden;touch-action:pan-y;border-radius:18px}
+.v-map.zoomed{touch-action:none}
+.v-zoom{position:absolute;inset:0;transform-origin:0 0;container-type:inline-size}
+.v-walk{transition:none}
+/* Director (sprint h0): the two smallest places get 8 px more to tap, without moving anything */
+.v-place::after{content:"";position:absolute;inset:-8px}
+.v-zoomctl{position:absolute;right:6px;bottom:6px;z-index:4;display:flex;flex-direction:column;gap:6px}
+.v-zoomctl .g-round{width:44px;height:44px;display:grid;place-items:center;font-size:1.3rem}
+.g-made{margin:14px 0 0;font-size:.9rem;color:inherit;opacity:.85}
+.g-made .g-link{min-height:44px;padding:0 4px;font-weight:700;color:#5b2fb0;text-decoration:underline}
+/* ===== S1, the sketchbook look: start screen and HUD (Developer B) =====
+   The start screen is a page of Ekky's sketchbook: off-white paper with a faint grain (tokens from css/site.css),
+   the six drawings taped on at a fixed 1 to 2 degree tilt, flat paper tiles, ink text. Nothing moves.
+   The other screens keep the night sky for now; the HUD follows whichever page it sits on. */
+body.game-mode #game.at-start{background:var(--paper,#FBF7EE) var(--grain);color:#2B1342}
+#game.at-start .g-player b{color:#2B1342}
+#game.at-start .g-sky,#game.at-start .g-planet-bg{display:none}
+#game.at-start .g-hud{background:none}
+#game.at-start .g-player small{color:#645F70}
+#game.at-start .g-avatar{background:#FFFDF8;border:1.5px solid #2B1342;border-radius:50%}
+#game.at-start .g-round{background:#FFFDF8;border:1.5px solid #E4DCCB;color:#2B1342}
+#game.at-start .g-hud .g-hire{border-radius:6px;box-shadow:0 3px 0 #9d2c2c}
+#g-start .g-tagline{color:#2B1342;text-shadow:none}
+#g-start .g-row-title{color:#2B1342}
+#g-start .g-hint{color:#645F70}
+#g-start .g-hint .ico{color:#2B1342}
+#g-start .g-featured{gap:16px 14px;padding-top:6px}
+#g-start .g-feat-cell{--tilt:-1.5deg;transform:rotate(var(--tilt))}   /* the per-piece angle is set by js/site.js (tiltOf) */
+#g-start .g-feat-cell::before{content:"";position:absolute;top:-7px;left:50%;width:40px;height:13px;margin-left:-20px;background:var(--tape,rgba(255,180,0,.35));
+  transform:rotate(calc(var(--tilt) * -2));z-index:2;pointer-events:none}
+#g-start .g-featured .g-feat{background:#FFFDF8;border-radius:2px;padding:6px 6px 0;box-shadow:var(--paper-shadow,0 2px 6px rgba(0,0,0,.12))}
+#g-start .g-featured .g-feat img{border-radius:1px}
+#g-start .g-featured .g-feat b{color:#2B1342;padding:4px 2px 5px}
+#g-start .g-feat-dl i{border-radius:50%;background:#FFFDF8;border:1.5px solid #2B1342;color:#2B1342;box-shadow:none}
+#g-start .g-tile,#g-start .g-tile.catch,#g-start .g-tile.explore{border-radius:6px;border:1.5px solid #2B1342;box-shadow:0 3px 0 #2B1342}
+#g-start .g-tile:active{transform:translateY(2px);box-shadow:0 1px 0 #2B1342}
+#g-start .g-start-foot .g-classic{background:#FFFDF8;color:#2B1342;border:1.5px solid #2B1342;border-radius:6px}
+#g-start .g-start-foot .lang-switch{border-radius:6px;box-shadow:inset 0 0 0 1.5px #2B1342}
+#g-start .g-start-foot .lang-switch button{background:#FFFDF8;color:#2B1342}
+#g-start .g-start-foot .lang-switch button[aria-pressed="true"]{background:#FFB400}
+#g-start .g-logo{filter:none}
+
+/* ===== S2, fewer layers: one bar (Developer B) =====
+   Owner (21:16): "menu bar strictly only 3". The top HUD is gone; the bottom tab bar is the one bar, on every screen,
+   the start screen included: Art, Map (Ekky's face), Mine. Hire Ekky is one small chip pinned top right on every
+   screen, above sheets, still (no motion, no glow); games keep their own Hire on the result screen.
+   Sound, EN/ID and "Just the art" also live in Mine. */
+.g-screen{padding-top:calc(env(safe-area-inset-top) + 68px);padding-bottom:calc(env(safe-area-inset-bottom) + 104px)}
+#game .g-start{padding-top:calc(env(safe-area-inset-top) + 16px);padding-bottom:calc(env(safe-area-inset-bottom) + 100px)}
+#g-start .g-start-head{display:grid;grid-template-columns:auto 1fr;column-gap:12px;align-items:start}
+#g-start .g-start-head>div{display:contents}
+#g-start .g-start-head .g-logo{grid-row:1/3}
+#g-start .g-start-title{min-height:44px;display:flex;align-items:center;padding-right:150px;margin:0}   /* the pinned Hire chip sits beside the title */
+#game.at-start .g-tabs{transform:none}
+.g-start-title{font-size:1.25rem;font-weight:700;line-height:1.1;color:#2B1342;margin:0 0 2px}
+.g-tabs{z-index:11;background:#FFFDF8;border:1.5px solid #2B1342;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.12)}
+.g-tabs button{color:#645F70;min-width:44px;touch-action:manipulation}
+.g-tabs button.active{color:#2B1342}
+.g-tabs .g-ind{background:#2B1342}
+.g-ico img,.g-tabs button:not(.active) .g-ico img{filter:none}
+.g-tabs button:not(.active) .g-ico{opacity:1}
+.g-face{border:3px solid #FFFDF8;box-shadow:0 0 0 1.5px #2B1342}
+.g-tabs button.center.active .g-face{box-shadow:0 0 0 2.5px #2B1342}
+#game .g-hire-pin{position:absolute;z-index:11;top:calc(env(safe-area-inset-top) + 12px);right:calc(env(safe-area-inset-right) + 16px);
+  height:44px;min-height:44px;padding:0 12px 0 5px;border-radius:6px;border:1.5px solid #2B1342;font-size:.9rem;box-shadow:0 2px 0 #2B1342;transition:none}
+#game .g-hire-pin img{width:32px;height:32px;border-radius:6px}
+#game .g-hire-pin:active{transform:translateY(1px);box-shadow:0 1px 0 #2B1342}
+#game.playing .g-hire-pin{visibility:hidden}
+.g-sheet,#game:has(.c-over.open) .g-sheet{top:0}
+.g-sheet-in{padding-bottom:calc(env(safe-area-inset-bottom) + 104px);max-height:calc(100% - env(safe-area-inset-top) - 68px)}
+.pp-cast{font-size:.85rem}
+.pp-cast .g-link{min-height:44px;padding:0 4px;color:#FFB400;text-decoration:underline}
+@media (orientation:landscape){.pp-end>p:not(.pp-cast){display:none}.pp-end .pp-art{max-height:22vh}.pp-end{gap:4px}.pp-cast{margin:0;line-height:1.1}}
