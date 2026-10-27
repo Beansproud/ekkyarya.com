@@ -113,9 +113,7 @@ function villageLife(V){
   const night=(h=>h<6||h>=19)(new Date().getHours());
   $("gMapWrap").classList.toggle("night",night);
   let css="",html=`<img class="v-shimmer" src="assets/village/shimmer.png" alt="" decoding="async">`+
-    // clouds drift through the sky behind the floating islands, so they never cross a face
-    `<div class="v-sky"><div class="v-cloudrow" style="top:${pct(V.h*.06,V.h)}"><i class="v-cloud" style="animation-duration:84s;animation-delay:-30s"></i></div>`+
-    `<div class="v-cloudrow" style="top:${pct(V.h*.62,V.h)}"><i class="v-cloud small" style="animation-duration:72s;animation-delay:-58s"></i></div></div>`;
+    "";
   if(V.lantern)html+=`<i class="v-lantern" style="left:${pct(V.lantern[0],V.w)};top:${pct(V.lantern[1],V.h)}"></i>`;
   (V.smoke||[]).forEach(s=>html+=`<i class="v-smoke" style="left:${pct(s[0],V.w)};top:${pct(s[1],V.h)}"></i>`);
   const card=piece=>{const p=PROJECTS.find(q=>q.id===piece||q.slug===piece);return p&&creative(p)?p:null};
