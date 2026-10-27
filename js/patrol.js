@@ -161,7 +161,7 @@ async function card(){const CW=1080,CH=1920,TOP=220,BOT=300,c=document.createEle
   x.fillStyle="#fff";x.font="600 40px Fredoka, sans-serif";x.fillText(t("credit.full"),CW/2,CH-BOT-36);
   return new Promise(ok=>c.toBlob(ok,"image/png"))}
 async function shareCard(){const blob=await card();if(!blob)return;const file=new File([blob],"ekkyarya-paint-patrol.png",{type:"image/png"}),url=siteBase();
-  try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text:tt("patrol.shareText","I calmed the green monster in Ekky's Paint Patrol.")+" "+url,url});return}}
+  try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text:tt("patrol.shareText","I painted a whole street in Ekky's Paint Patrol. Your turn!")+" "+url,url});return}}
   catch(e){if(e&&e.name==="AbortError")return}
   saveCard(blob)}
 async function saveCard(blob){blob=blob||await card();if(blob&&typeof Share!=="undefined"&&Share.save)Share.save(blob,"ekkyarya-paint-patrol.png")}
@@ -169,9 +169,9 @@ async function saveCard(blob){blob=blob||await card();if(blob&&typeof Share!=="u
 // Every character names its piece (G2): the stage's cast, one tap each to its artwork
 const CAST=[["little-planet"],["virus-and-war"],["doodles"],["monster"]];
 function cast(){const ps=CAST.map(([slug])=>PROJECTS.find(q=>q.slug===slug)).filter(p=>p&&creative(p));
-  return `<p class="pp-cast">${esc(tt("patrol.end.cast","Everyone here comes from:"))} ${ps.map(p=>`<button class="g-link" data-pp="see" data-k="${PROJECTS.indexOf(p)}">${esc(ptitle(p))}</button>`).join(", ")}</p>`}
+  return `<p class="pp-cast">${esc(tt("patrol.end.cast","Everyone here comes from:"))} ${ps.map((p,i)=>`<button class="g-link" data-pp="see" data-k="${PROJECTS.indexOf(p)}">${esc(ptitle(p))}</button>${i<ps.length-1?",":""}`).join(" ")}</p>`}
 function end(){S.ended=true;S.run=false;const p=PROJECTS.find(q=>q.slug==="coexistence"),k=PROJECTS.indexOf(p);
-  const c=el.querySelector(".pp-end");c.innerHTML=`<img class="pp-art" src="${esc(p?typeof thumbOf==="function"?thumbOf(p):"assets/work/coexistence.jpg":"")}" alt="">
+  const c=el.querySelector(".pp-end");c.innerHTML=`<p class="pp-done">${esc(tt("patrol.end.title","Street painted. Even the big guy calmed down."))}</p><img class="pp-art" src="${esc(p?typeof thumbOf==="function"?thumbOf(p):"assets/work/coexistence.jpg":"")}" alt="">
     <h2>${esc(p?ptitle(p):"")}</h2><p>${esc(p?pdesc(p):"")}</p>
     ${cast()}
     <div class="pp-row"><button class="g-btn" data-pp="see" data-k="${k}">${esc(tt("patrol.end.see","See it in the portfolio"))}</button>
