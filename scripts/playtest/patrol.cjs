@@ -30,19 +30,24 @@ const watch = p => p.evaluate(() => { const W = window.__pt = { kinds: {}, knock
     const f = S.friend; if (f && f.on && W.friendAt == null) W.friendAt = +t.toFixed(1);
     if (f && f.state === "lift" && liftAt == null) liftAt = t; if (f && f.state === "slam" && liftAt != null) { W.tele.push(+(t - liftAt).toFixed(2)); liftAt = null }
     if (S.ended && W.endAt == null) W.endAt = +t.toFixed(1) }, 100) });
-const casual = p => p.evaluate(() => { window.__bot = setInterval(() => { const S = window.Patrol.state; if (!S || !S.run) return; const h = S.hero;
-  S.keys.arrowright = true;
-  const near = S.en.some(n => !n.friend && Math.abs(n.x - h.x) < 120) || (S.friend && S.friend.waves.some(w => Math.abs(w.x - h.x) < 90));
-  if (near && h.y >= 469) dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowUp" })) }, 120) });
+// a casual player with the real keyboard: holds right, presses Space when a doodle or a shock wave is close ahead
+async function casual(p, seconds) {
+  await p.keyboard.down("ArrowRight"); const t0 = Date.now();
+  while (Date.now() - t0 < seconds * 1000) {
+    const s = await p.evaluate(() => { const S = window.Patrol.state; if (!S) return { gone: true }; const h = S.hero;
+      return { ended: S.ended, jump: h.y >= 469 && (S.en.some(n => !n.friend && n.x > h.x - 20 && n.x - h.x < 150) || !!(S.friend && S.friend.waves.some(w => w.x > h.x - 20 && w.x - h.x < 110))) } });
+    if (s.gone || s.ended) break; if (s.jump) await p.keyboard.press("Space"); await p.waitForTimeout(80);
+  }
+  await p.keyboard.up("ArrowRight");
+}
 (async () => {
   const s = await serve(SITE), b = await chromium.launch(), R = {};
   for (const mode of ["casual", "drag", "idle"]) {
     const { ctx, p, errs, entry } = await page(b, s.url, LAND); R.entry = entry || "Patrol.open() (no entry button found)";
     await watch(p);
-    if (mode === "casual") await casual(p);
+    if (mode === "casual") await casual(p, 180);
     if (mode === "drag") { await p.mouse.move(150, 300); await p.mouse.down(); await p.mouse.move(210, 300, { steps: 4 }) }
-    const limit = mode === "idle" ? 60 : 150;
-    await p.waitForFunction(() => window.__pt.endAt != null, { timeout: limit * 1000, polling: 500 }).catch(() => {});
+    if (mode !== "casual") await p.waitForFunction(() => window.__pt.endAt != null, { timeout: (mode === "idle" ? 60 : 180) * 1000, polling: 500 }).catch(() => {});
     const W = await p.evaluate(() => ({ ...window.__pt, heroX: window.Patrol.state && Math.round(window.Patrol.state.hero.x), stageL: window.Patrol.state && window.Patrol.state.L }));
     R[mode] = { endsAfterS: W.endAt, bigFriendAtS: W.friendAt, knockbacks: W.knocks, kindsFirst30s: Object.keys(W.kinds), telegraphS: W.tele.slice(0, 6), heroX: W.heroX, stageL: W.stageL, errors: errs };
     if (mode === "casual" && W.endAt != null) { await p.waitForTimeout(1800); await p.screenshot({ path: path.join(OUT, "patrol-end.png") });
@@ -50,7 +55,7 @@ const casual = p => p.evaluate(() => { window.__bot = setInterval(() => { const 
     if (mode === "casual") await p.screenshot({ path: path.join(OUT, "patrol-casual.png") });
     await ctx.close();
   }
-  { const { ctx, p } = await page(b, s.url, LAND, { cpu: 4 }); await casual(p); await p.waitForTimeout(3000);
+  { const { ctx, p } = await page(b, s.url, LAND, { cpu: 4 }); casual(p, 12).catch(() => {}); await p.waitForTimeout(3000);
     R.fps4x = await p.evaluate(() => new Promise(res => { const ts = []; const f = t => { ts.push(t); if (ts.length < 241) requestAnimationFrame(f); else { const d = ts.slice(1).map((x, i) => x - ts[i]).sort((a, b) => a - b);
       res({ meanFps: +(1000 / (d.reduce((a, b) => a + b) / d.length)).toFixed(1), p95ms: +d[Math.floor(d.length * .95)].toFixed(1), over50ms: d.filter(x => x > 50).length }) } }; requestAnimationFrame(f) }));
     await ctx.close() }
