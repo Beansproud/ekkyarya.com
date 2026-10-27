@@ -19,7 +19,7 @@ async function renderCard(kind,data){
   let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;x.fillStyle="#fff";
   for(let i=0;i<90;i++){x.globalAlpha=.25+rnd()*.6;const s=1.5+rnd()*3.5;x.fillRect(rnd()*W,rnd()*H,s,s)}x.globalAlpha=1;
   // the picture in a white frame
-  const maxH=1000;let pw=880,ph=pw*data.aspect;if(ph>maxH){ph=maxH;pw=ph/data.aspect}
+  const maxH=900;let pw=880,ph=pw*data.aspect;if(ph>maxH){ph=maxH;pw=ph/data.aspect}
   const pad=26,fx=(W-pw)/2-pad,fy=FREE_TOP+30,fw=pw+pad*2,fh=ph+pad*2;
   x.fillStyle="#b77e00";round(x,fx,fy+14,fw,fh,36);x.fill();x.fillStyle="#fff";round(x,fx,fy,fw,fh,36);x.fill();
   x.save();round(x,fx+pad,fy+pad,pw,ph,16);x.clip();data.draw(x,fx+pad,fy+pad,pw);x.restore();
@@ -27,9 +27,9 @@ async function renderCard(kind,data){
   if(data.name){x.fillStyle="#FFB400";x.font="700 64px Fredoka, sans-serif";x.fillText(t("card.colored",{name:data.name}),W/2,y);y+=66}
   x.fillStyle="#e6defa";x.font="400 38px Poppins, sans-serif";x.fillText(data.page==="scratch"?"A Doodle Scene of Ekky's characters":`Ekky's ${data.title}`,W/2,y);
   // call to action and the credit, both above the free bottom 300 px
-  const cy=H-FREE_BOTTOM-150;x.font="700 44px Fredoka, sans-serif";const label=t("card.cta"),lw=x.measureText(label).width+90;
+  const cy=Math.min(y+120,H-FREE_BOTTOM-120);x.font="700 44px Fredoka, sans-serif";const label=t("card.cta"),lw=x.measureText(label).width+90;
   x.fillStyle="#FFB400";round(x,(W-lw)/2,cy-62,lw,88,44);x.fill();x.fillStyle="#2B1342";x.fillText(label,W/2,cy-4);
-  x.fillStyle="#fff";x.font="600 40px Fredoka, sans-serif";x.fillText(t("credit.full"),W/2,H-FREE_BOTTOM-30);
+  x.fillStyle="#fff";x.font="600 40px Fredoka, sans-serif";x.fillText(t("credit.full"),W/2,H-FREE_BOTTOM-36);
   return c}
 function round(x,X,Y,w,h,r){x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+w,Y,X+w,Y+h,r);x.arcTo(X+w,Y+h,X,Y+h,r);x.arcTo(X,Y+h,X,Y,r);x.arcTo(X,Y,X+w,Y,r);x.closePath()}
 
