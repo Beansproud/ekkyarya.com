@@ -439,3 +439,11 @@ input:focus,select:focus,textarea:focus{box-shadow:none;border-color:var(--ink)}
 .about-photo[hidden]{display:none}
 .about-photo{grid-column:1;max-width:260px;transform:rotate(-1.5deg);background:var(--card);padding:8px 8px 28px;box-shadow:var(--paper-shadow)}
 .about-photo img{width:100%;height:auto;display:block}
+
+/* ===== S4, real-phone polish =====
+   Every element toggled with `hidden` stays hidden, whatever display a class gives it; no double-tap zoom on controls;
+   every control at least 44 x 44 px. */
+[hidden]{display:none!important}
+a,button,input,select,textarea,label,[role=switch],[role=button]{touch-action:manipulation}
+.mail a{display:inline-flex;align-items:center;min-height:44px}
+.copy{min-height:44px;min-width:44px;display:inline-flex;align-items:center}
