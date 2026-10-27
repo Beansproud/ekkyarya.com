@@ -10,7 +10,7 @@ Approved: two games that play like real games and stay a portfolio. Ekky on his 
 2. **Genre only, in the product.** The franchise names appear in this document only inside the owner's quote and the hard rules. They never appear in user-facing text, code, file names, comments, page metadata or commit messages. Stage names, area names and character lines (MG8) are reviewed by UX for this.
 3. **No boss-fight theme** (owner: "its a joke you can ignore or dont add bossfight theme to this", reported by the Director). "Boss" is only a design word in this brief: no on-screen text, file name or `COPY` string says "boss" or "boss fight" (checked: none in `COPY.en` or `COPY.id`). The big characters are "grumpy friends to calm down with paint". The RPG piece is not a stage character at all.
 4. **The guide bird stays silent.** A glowing companion that calls out to the player is a signature of the series the owner named. The Blue Bird only flies ahead quietly after Ekky stands still for 6 s; it never speaks, chimes or flashes for attention.
-5. **The fire spirit from "RPG" is not cut or animated** until the owner confirms it is Ekky's own design (open question). At the Lair camp, only the orc, the mouse knight and the armored giant rest by the fire.
+5. **The fire spirit from "RPG" is Ekky's own design** (owner, 2026-10-27: "fire spirit is his own design"). It is cut and used like the rest of the party: at the Lair camp the orc, the mouse knight, the fire spirit and the armored giant rest by the fire. It never speaks or chimes (same rule as the guide bird).
 6. **Owner answers:** "use ekky as the hero, landscape is fine" is verified by the integrator. "yes paint and befriend is ok, sound effects only", "no png files, cut them from the images" and the no-boss-fight answer are **reported by the Director**; the brief follows them as the defaults until the integrator verifies them.
 7. **One cut-out pipeline.** `scripts/sprites.py` and the B21 sticker cut-outs share one list, kept in `docs/roles.md`; a cut made for a sticker is reused as a sprite and the other way round.
 8. **Scope:** the vertical slice (MG1 to MG4, about 16 h) runs after the round-1 P1 tickets. MG5 to MG10 start only on a "go" from the MG4 playtest **and** the UX lead's acceptance of the slice.
@@ -109,7 +109,7 @@ Seven **main places** carry an action. Each is a labeled button visible on the f
 | Plaza fountain | Tangled Hands: the knot of hands as the plaza statue | Tangled Hands |
 | Village sign | Type Is Art in Motion: the lettering as the village's name board | Type Is Art in Motion |
 | Robot workshop | Secret Android: the robot reveal | Secret Android |
-| Camp by the fire | RPG: the orc, the mouse knight and the armored giant resting (no fire spirit until confirmed; no fight) | RPG |
+| Camp by the fire | RPG: the orc, the mouse knight, the fire spirit and the armored giant resting (no fight) | RPG |
 | Cliff lookout | Viking vs Dragon Kid: the two kids on the cliff edge, watching the sea (not fighting) | Viking vs Dragon Kid |
 | Night trail | The Blue Bird: the hiker with binoculars, the tall grass; the glowing bird circles above her | The Blue Bird |
 | Tiger rock | Year of the Tiger 2022: the tiger asleep in the sun, the paper plane caught on a branch | Year of the Tiger 2022 |
@@ -201,7 +201,7 @@ Key:
 | `summertime` | Buried kid: V-scene (beach). Crab: V-walk on the beach, PP stage-3 enemy, St. Palm trees: island trees everywhere. Sea and beach: PP stage-3 backdrop, shore band |
 | `beansproud-vs-puff` | Viking kid, dragon kid: V-scene (cliff), V-walk, PP stage-4 allies, St. Cliffs and mountains: island edge, PP far layer. Whole piece: Col |
 | `virus-and-war` | Running kid: V-walk, PP. Helmet kid with the paint blaster: V-scene (bonfire hill), PP ally power-up, St. Viruses (done): SC hazard, PP enemies. Burning globe, red cloud sky: PP sky band |
-| `rpg` | Armored giant, orc, mouse knight: V-scene (camp), Q Lair camp, V-walk (orc, knight), St. Skeleton warriors: camp props. Grass field: island ground detail. Fire spirit: on hold |
+| `rpg` | Armored giant, orc, mouse knight: V-scene (camp), Q Lair camp, V-walk (orc, knight), St. Skeleton warriors: camp props. Grass field: island ground detail. Fire spirit (Ekky's own design, owner): V-scene (camp), Q Lair camp, St |
 | `shark` | Shark: V-scene (lake), PP stage-3 grumpy friend, St. Fishing kid, wooden pier: V-scene (lake). Water splash: lake detail. Whole piece: Col |
 | `giraffe` | Giraffe with the kid: V-place (paint studio), V-walk, Q ride, St. Wooden fence, trees, grass patch: studio props, island hedges. Whole piece: Col (first page) |
 | `noodles` | Walking ramen bowl with the kid: V-scene (noodle bath), V-walk, St. Chopsticks, egg: props. Whole piece: Col |
@@ -317,7 +317,7 @@ The glowing bird from "The Blue Bird" follows Ekky. After he stands still for 6 
 | **Ekky's House** | A Day in the Life (the four panels become four rooms) | Walk through his day. The phone on the table opens the island map (a plain frame in his palette) |
 | **The Cliffs** | Viking vs Dragon Kid, Merdeka 77 | The two kids duel in slow motion. The cyclist from Merdeka 77 is a mail courier who rides you to the cliff top |
 | **Monster Quarter** | Monster in My Room, Monster Snack Bar, Monster World Doodles | The green monster's house, the snack bar counter, doodle monsters wandering about |
-| **Hidden Lair** (a small 3-room dungeon) | Hidden Monster, Tangled Hands, RPG | The two kids with the lantern. The mimic chest (it bites, then laughs). A "tangled hands" knot puzzle: rotate 4 tiles to untangle it and open a shortcut (the long way round is always open too). In the last room, the orc, the mouse knight and the armored giant from RPG rest by a fire (no fire spirit until confirmed, UX review point 5) |
+| **Hidden Lair** (a small 3-room dungeon) | Hidden Monster, Tangled Hands, RPG | The two kids with the lantern. The mimic chest (it bites, then laughs). A "tangled hands" knot puzzle: rotate 4 tiles to untangle it and open a shortcut (the long way round is always open too). In the last room, the whole RPG party (the orc, the mouse knight, the fire spirit and the armored giant) rests by a fire |
 | **Observatory** | Astronaut (NFT #3), Radio Explorer (NFT #9), Secret Android | The astronaut stargazing. The radio explorer gives hints over the radio. The Secret Android robot opens up in his workshop |
 | **Sky** | The Blue Bird, Year of the Tiger 2022, Virus and War, Plug Hero Mascot, Buried at the Beach | The hiker from The Blue Bird stargazing on a rock, with her glowing bird. The tiger lies in the sun by the gate. The helmet kid from Virus and War waves (Ekky's ally in Paint Patrol, a link to Game A). Plug Hero winds himself up by the beach where the Buried at the Beach kid is stuck in the sand |
 
@@ -352,7 +352,7 @@ The glowing bird from "The Blue Bird" follows Ekky. After he stands still for 6 
 | `old-bus` | Stage 2 background, **vehicle** | Bus Stop |
 | `plug-hero` | Dash power-up | Sky / beach |
 | `road-trip` | Background car | Fast travel |
-| `rpg` | | Lair camp (orc, mouse knight and the giant, peaceful, by the fire; no fire spirit until confirmed) |
+| `rpg` | | Lair camp (the whole party, peaceful, by the fire) |
 | `shark` | Boss 3 (shark) | The Lake |
 | `summertime` | Stage 3 sand, crab | Beach by the Sky area |
 | `toybox` | | Pushable crates |
@@ -471,5 +471,5 @@ Order: MG1 → MG2 → MG3 → **MG4 (go or no-go)** → MG5 and MG6 in parallel
 | 3 | Heroes | **Answered:** "use ekky as the hero". Ekky is the hero of both games. |
 | 4 | Phone orientation for Paint Patrol | **Answered:** "landscape is fine". Landscape, with a "Play anyway" portrait fallback. |
 | 5 | Should the games have their own short music loops, or stay with sound effects only? | **Reported by the Director:** "sound effects only" (not yet verified). No music loops. Sound is off by default on the web. |
-| 7 | Is the fire spirit in "RPG" Ekky's own design? | It stays out of both games until confirmed (UX review point 5). |
+| 7 | Is the fire spirit in "RPG" Ekky's own design? | **Answered:** "fire spirit is his own design". It is used like the rest of the party. | closed |
 | 6 | "endi onok bossfight" | **Answered:** "its a joke you can ignore or dont add bossfight theme to this". The RPG piece gets no boss-fight theme: it is not a boss in Paint Patrol, and in the Quest its party camps peacefully. No on-screen text in either game says "boss" or "boss fight" (see hard rule 4). |

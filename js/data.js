@@ -3,7 +3,10 @@
 // An empty value means "not known yet": the button or link for it stays hidden (B15). Never put a placeholder here.
 const CONFIG = {
   name: "Ekky Arya",
-  site: "https://ekkyarya.com/",              // official site: share and download credits, base of share links (D10)
+  // Owner: "no need deploy to ekkyarya.com in this case". The new site keeps its own host, so siteUrl stays empty:
+  // share links and the host printed on cards use siteBase() (location.origin, e.g. the GitHub Pages URL).
+  siteUrl: "",
+  website: "https://ekkyarya.com/",           // Ekky's existing website: credit line and watermark, linked as "Ekky's website"
   email: "ekkyarya87@gmail.com",              // business email: Hire Ekky, Final Quest, quick actions
   emailPersonal: "ekkyaryasm@gmail.com",      // personal/inquiries; not shown in round 1 (one clear address is easier to act on)
   whatsapp: "",                               // owner to send; the WhatsApp button stays hidden until then
@@ -117,8 +120,14 @@ const CAT_NAME_ID={illustration:"Ilustrasi Proyek",web:"Desain Web & UI",brandin
 function hireTarget() {
   if (CONFIG.email) return { kind: "email", href: "mailto:" + CONFIG.email };
   for (const k of CONFIG.hireFallback) { const href = CONFIG[k] || CONFIG.links[k]; if (href) return { kind: k, href }; }
-  return { kind: "site", href: CONFIG.site };
+  return { kind: "site", href: CONFIG.website };
 }
+// Base URL of this site for share links, and its host for the "Your turn" line on cards.
+function siteBase() {
+  if (CONFIG.siteUrl) return CONFIG.siteUrl;
+  return typeof location !== "undefined" && /^https?:/.test(location.protocol) ? location.origin + location.pathname.replace(/[^/]*$/, "") : "";
+}
+const siteHost = () => { try { return new URL(siteBase()).host; } catch (e) { return "ekkyarya.com"; } };
 const COPY = {
   en: {
     // Start screen (D11)
@@ -209,6 +218,7 @@ const COPY = {
     "hire.linkedin": "Ekky on LinkedIn",
     "hire.behance": "Ekky on Behance",
     "hire.site": "Contact page on ekkyarya.com",
+    "hire.website": "Ekky's website",
     "hire.copy": "Copy email",
     "hire.copied": "Email copied",
     "hire.formTitle": "Or send a quick note",
@@ -239,7 +249,7 @@ const COPY = {
     "share.creditFull": "Illustrated by Ekky Arya · ekkyarya.com",
     "share.colored": "Colored by {name}",
     "share.made": "Made by {name}",
-    "share.cta": "Your turn: ekkyarya.com",
+    "share.cta": "Your turn: {host}",
     "share.textColor": "I colored a drawing by Ekky Arya. Your turn: {url}",
     "share.textScene": "I made a scene out of Ekky Arya's doodles. Make yours: {url}",
     "share.textChallenge": "{name} caught {n} stars in Ekky's Star Catcher. Can you beat that? {url}",
@@ -293,8 +303,10 @@ const COPY = {
     "share.color": "I colored a drawing by Ekky Arya. Your turn: {url}",
     "credit.full": "Illustrated by Ekky Arya · ekkyarya.com",
     "card.colored": "Colored by {name}",
-    "card.cta": "Your turn: ekkyarya.com",
+    "card.cta": "Your turn: {host}",
     "card.title": "Ekky's {title}",
+    "card.headline": "I colored Ekky's {title}",
+    "card.headline.scene": "My scene, made of Ekky's doodles",
     "card.scene": "A Doodle Scene of Ekky's characters",
     "arrive.color": "{name} colored Ekky's {title}",
     "arrive.color.anon": "A friend colored Ekky's {title}",
@@ -395,6 +407,7 @@ const COPY = {
     "hire.linkedin": "Ekky di LinkedIn",
     "hire.behance": "Ekky di Behance",
     "hire.site": "Halaman kontak di ekkyarya.com",
+    "hire.website": "Situs Ekky",
     "hire.copy": "Salin email",
     "hire.copied": "Email disalin",
     "hire.formTitle": "Atau kirim pesan singkat",
@@ -423,7 +436,7 @@ const COPY = {
     "share.creditFull": "Ilustrasi oleh Ekky Arya · ekkyarya.com",
     "share.colored": "Diwarnai oleh {name}",
     "share.made": "Dibuat oleh {name}",
-    "share.cta": "Giliranmu: ekkyarya.com",
+    "share.cta": "Giliranmu: {host}",
     "share.textColor": "Aku mewarnai gambar karya Ekky Arya. Sekarang giliranmu: {url}",
     "share.textScene": "Aku bikin adegan dari coretan Ekky Arya. Bikin punyamu: {url}",
     "share.textChallenge": "{name} menangkap {n} bintang di Star Catcher Ekky. Bisa kalahkan? {url}",
@@ -473,8 +486,10 @@ const COPY = {
     "share.color": "Aku mewarnai gambar karya Ekky Arya. Sekarang giliranmu: {url}",
     "credit.full": "Ilustrasi oleh Ekky Arya · ekkyarya.com",
     "card.colored": "Diwarnai oleh {name}",
-    "card.cta": "Giliranmu: ekkyarya.com",
+    "card.cta": "Giliranmu: {host}",
     "card.title": "{title} karya Ekky",
+    "card.headline": "Aku mewarnai {title} karya Ekky",
+    "card.headline.scene": "Adeganku, dari coretan Ekky",
     "card.scene": "Adegan coretan dari karakter-karakter Ekky",
     "arrive.color": "{name} mewarnai {title} karya Ekky",
     "arrive.color.anon": "Seorang teman mewarnai {title} karya Ekky",
