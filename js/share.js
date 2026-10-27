@@ -72,11 +72,44 @@ async function renderVideo(data){
 
 /* ---- files: ekkyarya-coloring-<slug>.png, ekkyarya-scene-<date>.png (B40) ---- */
 const fileName=(data,ext)=>data.page==="scratch"?`ekkyarya-scene-${new Date().toISOString().slice(0,10)}.${ext}`:`ekkyarya-coloring-${data.art||data.page}.${ext}`;
-function save(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
+// A plain <a download> silently does nothing on iPhones (it lands in Files, not Photos, or nowhere in an in-app
+// browser), in in-app browsers (Instagram, WhatsApp, TikTok...), in the Android app's WebView and inside a sandboxed
+// frame. There save() opens the phone's share sheet ("Save image") or, failing that, shows the picture itself so the
+// visitor can press and hold it. It returns "saved" only when the browser really downloads the file.
+const touch=()=>matchMedia("(pointer:coarse)").matches;
+const iOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+const inApp=/\bwv\b|FBAN|FBAV|Instagram|Line\/|WhatsApp|Telegram|TikTok|musical_ly|Snapchat|Twitter|GSA\//i.test(navigator.userAgent)||!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+const framed=(()=>{try{return window.top!==window}catch{return true}})();
+const shareFile=async file=>{if(!(navigator.canShare&&navigator.canShare({files:[file]})))return "no";
+  try{await navigator.share({files:[file],title:"Ekky Arya"});return "shared"}catch(e){return e&&e.name==="AbortError"?"cancel":"no"}};
+async function save(blob,name){const file=new File([blob],name,{type:blob.type});
+  if(touch()){const r=await shareFile(file);if(r!=="no")return r}
+  if(!iOS&&!inApp&&!framed){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);return "saved"}
+  holdToSave(file);return "shown"}
+let dlg=null;
+function holdToSave(file){
+  if(!dlg){document.body.insertAdjacentHTML("beforeend",`<dialog class="save-dlg" id="saveDlg" aria-labelledby="saveDlgT"><div class="save-in">
+    <h3 id="saveDlgT"></h3><div class="save-media"></div><p class="save-hint"></p>
+    <div class="save-row"><button class="btn" id="saveDlgShare" hidden><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg> <span></span></button>
+    <button class="btn ghost" id="saveDlgX"></button></div></div></dialog>`);
+    dlg=document.getElementById("saveDlg");document.getElementById("saveDlgX").onclick=()=>dlg.close();
+    dlg.addEventListener("click",e=>{if(e.target===dlg)dlg.close()});
+    dlg.addEventListener("close",()=>{const m=dlg.querySelector(".save-media img,.save-media video");if(m)URL.revokeObjectURL(m.src)})}
+  const video=file.type.startsWith("video/"),src=URL.createObjectURL(file);
+  dlg.querySelector("#saveDlgT").textContent=tt("dl.title","Your picture");
+  dlg.querySelector(".save-media").innerHTML=video?`<video src="${src}" controls playsinline loop muted></video>`:`<img src="${src}" alt="${esc(file.name)}">`;
+  dlg.querySelector(".save-hint").textContent=touch()?tt(video?"dl.holdVideo":"dl.hold",video?"Tap Save to phone, then choose Save video.":"Press and hold the picture, then choose Save."):tt("dl.holdDesk","Right-click the picture and choose Save image as.");
+  const b=dlg.querySelector("#saveDlgShare"),can=!!(navigator.canShare&&navigator.canShare({files:[file]}));
+  b.hidden=!can;b.querySelector("span").textContent=tt("dl.toPhone","Save to phone");
+  b.onclick=async()=>{if(b.disabled)return;b.disabled=true;const r=await shareFile(file);b.disabled=false;if(r==="shared")dlg.close()};
+  dlg.querySelector("#saveDlgX").textContent=tt("ui.close","Close");
+  if(!dlg.open)dlg.showModal()}
+const esc=v=>String(v).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const pngOf=card=>new Promise(r=>{try{card.toBlob(r,"image/png")}catch{r(null)}});
-async function download(data){const blob=await pngOf(await renderCard("coloring",data));if(blob){save(blob,fileName(data,"png"));say(t("dl.saved"),"i-check")}else say(t("share.copied"))}
+async function download(data){const blob=await pngOf(await renderCard("coloring",data));if(!blob)return say(tt("dl.failed","Downloading didn't work here. Try again in another browser."));
+  if(await save(blob,fileName(data,"png"))==="saved")say(t("dl.saved"),"i-check")}
 async function downloadStars(score){const blob=await pngOf(await renderCard("stars",{score}));
-  if(blob){save(blob,`ekkyarya-stars-${score}.png`);say(t("dl.saved"),"i-check")}}
+  if(blob&&await save(blob,`ekkyarya-stars-${score}.png`)==="saved")say(t("dl.saved"),"i-check")}
 // Lightbox Download (B40, FEATURES.artDownload): a copy of at most 1600 px on the long side with a subtle mark of Ekky's
 // website in the corner (about 3% of the width, 60% opacity). Never fan art; client pieces keep their tag in the lightbox.
 async function downloadArt(p){
@@ -87,9 +120,9 @@ async function downloadArt(p){
     x.font=`600 ${fs}px Fredoka, Poppins, sans-serif`;x.textAlign="right";x.textBaseline="bottom";x.globalAlpha=.6;
     x.lineWidth=Math.max(2,fs/8);x.strokeStyle="#2B1342";x.strokeText(mark,w-fs*.6,h-fs*.5);x.fillStyle="#fff";x.fillText(mark,w-fs*.6,h-fs*.5);
     const blob=await new Promise(r=>c.toBlob(r,"image/jpeg",.9));if(!blob)throw new Error("no blob");
-    save(blob,`ekkyarya-${p.slug}.jpg`);
+    const how=await save(blob,`ekkyarya-${p.slug}.jpg`);if(how==="cancel")return;
     let seen=false;try{seen=localStorage.getItem("ekkyDlNote")==="1";localStorage.setItem("ekkyDlNote","1")}catch{}
-    say(seen?t("dl.saved"):t("lb.downloadNote"),"i-check")}
+    if(!seen)say(t("lb.downloadNote"),"i-check");else if(how==="saved")say(t("dl.saved"),"i-check")}
   catch{say(tt("dl.failed","Downloading didn't work here. Please try again on the website."))}}
 // Phones: the system share sheet with the file and the link. Desktops: save the file and copy the link.
 async function send(file,blob,data,url,savedMsg){const text=t(data.page==="scratch"?"share.textScene":"share.textColor",{url});
@@ -97,8 +130,8 @@ async function send(file,blob,data,url,savedMsg){const text=t(data.page==="scrat
     if(file&&navigator.canShare&&navigator.canShare({files:[file]}))return await navigator.share({files:[file],text,title:"Ekky Arya"});
     if(navigator.share&&matchMedia("(pointer:coarse)").matches){await navigator.share({text,url});if(blob)save(blob,file.name);return}
   }catch(e){if(e&&e.name==="AbortError")return}
-  if(blob)save(blob,file.name);let copied=false;try{await navigator.clipboard.writeText(url);copied=true}catch{}
-  say(blob&&copied?savedMsg:copied?t("share.copied"):url)}
+  const how=blob?await save(blob,file.name):"";let copied=false;try{await navigator.clipboard.writeText(url);copied=true}catch{}
+  say(how==="saved"&&copied?savedMsg:copied?t("share.copied"):url)}
 
 /* ---- preview: the card, an optional "Sign it" first name, Share, Download, and Share as video ---- */
 document.getElementById("game").insertAdjacentHTML("beforeend",`<div class="c-over s-over" id="gShare" role="dialog" aria-modal="true" aria-label="${t("share.go")}">

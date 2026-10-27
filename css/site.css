@@ -333,3 +333,14 @@ footer a .ico{vertical-align:-.12em}
 .marquee .track{animation-play-state:paused}
 .marquee.in-view .track{animation-play-state:running}
 .loader.done.quick{transition:opacity .3s,visibility .3s}   /* a friend's link: no delay, so the coloring shows as soon as it is drawn */
+
+/* Save dialog (js/share.js holdToSave): shown where a plain download can't work (iPhone, in-app browsers, the app, frames) */
+.save-dlg{max-width:min(440px,92vw)}
+.save-in{padding:20px;display:grid;gap:14px;justify-items:center;text-align:center}
+.save-in h3{margin:0;font-family:Fredoka;color:var(--ink)}
+.save-media{width:100%;display:grid;place-items:center}
+.save-media img,.save-media video{display:block;max-width:100%;max-height:58vh;max-height:58dvh;border-radius:14px;box-shadow:var(--shadow);-webkit-touch-callout:default;user-select:auto}
+.save-hint{margin:0;color:var(--muted)}
+.save-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.save-row .btn{min-height:44px}
+.save-row .btn[disabled]{opacity:.6}
