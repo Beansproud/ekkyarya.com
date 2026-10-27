@@ -652,7 +652,7 @@ body.game-mode #game:not(:has(#g-map.active)){background:var(--paper,#FBF8F1) va
 #game .g-start{gap:10px}
 #g-start .g-featured{gap:12px 10px;padding-top:4px}
 #g-start .g-featured .g-feat{padding:5px 5px 0}
-#g-start .g-featured .g-feat b{padding:3px 1px 4px;font-size:.72rem}
+#g-start .g-featured .g-feat b{padding:3px 1px 4px;font-size:.75rem}
 #g-start .g-tile,#g-start .g-tile.catch{height:52px;min-height:52px;flex-direction:row;gap:8px}
 #g-start .g-start-foot .g-classic,#g-start .g-start-foot .lang-switch{height:44px;min-height:44px}
 @media (max-width:380px){#game .g-start{padding-left:12px;padding-right:12px}#g-start .g-featured{column-gap:6px}#g-start .g-featured .g-feat{padding:3px 3px 0}}
