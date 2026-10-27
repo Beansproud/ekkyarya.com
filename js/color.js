@@ -55,7 +55,11 @@ G.insertAdjacentHTML("beforeend",`<div class="c-over" id="gColor" role="dialog" 
       <button class="c-tool" id="cPeekBtn">${ico("i-eye")}<span>${esc(t("color.peek"))}</span></button>
       ${feature("stickers")?`<button class="c-tool" id="cStickBtn" aria-expanded="false">${ico("i-plus")}<span>${esc(t("color.stickers"))}</span></button>`:""}</div>
     <div class="c-tray" id="cTray" hidden></div>
-    <input type="color" id="cAny" class="c-any-input" tabindex="-1" aria-hidden="true">
+    <div class="c-wheel" id="cWheel" role="dialog" aria-label="${esc(t("color.any"))}" hidden>
+      <div class="c-wheel-top"><i class="c-wheel-pre" id="cWPre"></i><b>${esc(t("color.any"))}</b></div>
+      ${[["h",tt("wheel.hue","Hue")],["s",tt("wheel.sat","Strength")],["l",tt("wheel.light","Light")]].map(([k,n])=>`<div class="c-strip" data-k="${k}" role="slider" tabindex="0" aria-label="${esc(n)}" aria-valuemin="0" aria-valuemax="100"><canvas></canvas><i class="c-knob"></i></div>`).join("")}
+      <div class="c-wheel-row"><button class="g-btn alt sm" id="cWNo">${esc(tt("wheel.cancel","Cancel"))}</button><button class="g-btn sm" id="cWYes">${esc(tt("wheel.add","Use this color"))}</button></div>
+    </div>
   </section>
   <section class="c-view c-reveal" id="cReveal">
     <button class="g-x" id="cClose" aria-label="${tt("ui.close","Close")}">${ico("i-close")}</button>
@@ -76,7 +80,7 @@ G.insertAdjacentHTML("beforeend",`<div class="c-over" id="gColor" role="dialog" 
   </section>
 </div>`);
 const over=$("gColor");
-function view(name){over.classList.add("open");over.querySelectorAll(".c-view").forEach(v=>v.classList.toggle("active",v.id===name))}
+function view(name){if(typeof wheel!=="undefined")wheel.hidden=true;over.classList.add("open");over.querySelectorAll(".c-view").forEach(v=>v.classList.toggle("active",v.id===name))}
 function close(){over.classList.remove("open");cur=null}
 
 /* ---- picker ---- */
@@ -171,11 +175,36 @@ function renderColors(){const cols=cur.pd.meta.colors;
     cur.custom.map((c,i)=>`<button class="c-sw${color===13+i?" on":""}" data-v="${13+i}" style="--c:${c}" role="radio" aria-checked="${color===13+i}" aria-label="Your color ${i+1}"></button>`).join("")+
     (feature("anyColor")?`<button class="c-sw c-any" data-any aria-label="${esc(t("color.any"))}">${ico("i-plus")}</button>`:"")}
 $("cColors").addEventListener("click",e=>{const b=e.target.closest(".c-sw");if(!b)return;Game.buzz(6);
-  if(b.dataset.any!==undefined){$("cAny").value=colorOf(cur,color);$("cAny").click();return}
+  if(b.dataset.any!==undefined){openWheel();return}
   color=+b.dataset.v;renderColors()});
-$("cAny").addEventListener("change",e=>{const c=e.target.value.toUpperCase();let i=cur.custom.indexOf(c);
+function addCustom(c){let i=cur.custom.indexOf(c);
   if(i<0){if(cur.custom.length<MAX_CUSTOM){cur.custom.push(c);i=cur.custom.length-1}else{i=MAX_CUSTOM-1;cur.custom[i]=c;paint(cur,cv)}}
-  color=13+i;renderColors();save()});
+  color=13+i;renderColors();save()}
+/* ---- our own color sheet: hue, strength and light strips drawn on canvases (a hidden <input type=color> cannot be opened by script on iOS Safari or in-app browsers) ---- */
+const hsl={h:0,s:100,l:50},wheel=$("cWheel");
+function hex2hsl(x){const n=parseInt(x.slice(1),16),r=(n>>16&255)/255,g=(n>>8&255)/255,b=(n&255)/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn,l=(mx+mn)/2;
+  let h=0;if(d){h=mx===r?((g-b)/d+6)%6:mx===g?(b-r)/d+2:(r-g)/d+4;h*=60}
+  return {h:Math.round(h),s:Math.round(d?d/(1-Math.abs(2*l-1))*100:0),l:Math.round(l*100)}}
+function hsl2hex({h,s,l}){s/=100;l/=100;const a=s*Math.min(l,1-l),f=n=>{const k=(n+h/30)%12;return Math.round(255*(l-a*Math.max(-1,Math.min(k-3,9-k,1))))};
+  return "#"+[f(0),f(8),f(4)].map(v=>v.toString(16).padStart(2,"0")).join("").toUpperCase()}
+function drawStrips(){wheel.querySelectorAll(".c-strip").forEach(el=>{const k=el.dataset.k,c=el.firstChild,w=el.clientWidth||300,h=el.clientHeight||44;if(c.width!==w)c.width=w;if(c.height!==h)c.height=h;
+  const x=c.getContext("2d"),g=x.createLinearGradient(0,0,w,0),q=(hh,ss,ll)=>`hsl(${hh},${ss}%,${ll}%)`;
+  if(k==="h")for(let i=0;i<=6;i++)g.addColorStop(i/6,q(i*60,100,50));
+  else if(k==="s"){g.addColorStop(0,q(hsl.h,0,hsl.l));g.addColorStop(1,q(hsl.h,100,hsl.l))}
+  else{g.addColorStop(0,q(hsl.h,hsl.s,0));g.addColorStop(.5,q(hsl.h,hsl.s,50));g.addColorStop(1,q(hsl.h,hsl.s,100))}
+  x.fillStyle=g;x.fillRect(0,0,w,h);
+  const v=k==="h"?hsl.h/360*100:hsl[k];el.querySelector(".c-knob").style.left=v+"%";el.setAttribute("aria-valuenow",Math.round(v));el.setAttribute("aria-valuetext",hsl2hex(hsl))});
+  $("cWPre").style.background=hsl2hex(hsl)}
+function setStrip(k,p){p=Math.max(0,Math.min(1,p));if(k==="h")hsl.h=Math.round(p*360);else hsl[k]=Math.round(p*100);drawStrips()}
+wheel.querySelectorAll(".c-strip").forEach(el=>{const k=el.dataset.k,at=e=>{const r=el.getBoundingClientRect();setStrip(k,(e.clientX-r.left)/r.width)};
+  el.addEventListener("pointerdown",e=>{el.setPointerCapture(e.pointerId);at(e);e.preventDefault()});
+  el.addEventListener("pointermove",e=>{if(el.hasPointerCapture(e.pointerId))at(e)});
+  el.addEventListener("keydown",e=>{const d={ArrowLeft:-1,ArrowDown:-1,ArrowRight:1,ArrowUp:1}[e.key];if(!d)return;e.preventDefault();const m=k==="h"?360:100;setStrip(k,((k==="h"?hsl.h:hsl[k])+d*(m/50))/m)})});
+function openWheel(){Object.assign(hsl,hex2hsl(colorOf(cur,color)));if(hsl.s<20||hsl.l<15||hsl.l>85)Object.assign(hsl,{s:Math.max(hsl.s,60),l:50});wheel.hidden=false;drawStrips();wheel.querySelector(".c-strip").focus({preventScroll:true})}
+function closeWheel(){wheel.hidden=true;const b=$("cColors").querySelector(".c-any");if(b)b.focus({preventScroll:true})}
+$("cWNo").addEventListener("click",closeWheel);
+$("cWYes").addEventListener("click",()=>{addCustom(hsl2hex(hsl));closeWheel()});
+wheel.addEventListener("keydown",e=>{if(e.key==="Escape"){e.stopPropagation();closeWheel()}});
 function pagePoint(e){const r=cv.getBoundingClientRect();return [Math.floor((e.clientX-r.left)/r.width*cur.pd.meta.w),Math.floor((e.clientY-r.top)/r.height*cur.pd.meta.h)]}
 stage.addEventListener("pointerdown",e=>{if(!cur||e.target.closest(".c-st"))return;
   const [x,y]=pagePoint(e);if(x<0||y<0||x>=cur.pd.meta.w||y>=cur.pd.meta.h)return;const r=cur.pd.ids[y*cur.pd.meta.w+x];if(!r||cur.fills[r]===color)return;
