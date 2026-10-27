@@ -262,6 +262,9 @@ document.getElementById("year").textContent=new Date().getFullYear();
   const TAP="button,a,[data-i],.g-feat,.g-tile,.v-place,.v-walker,.v-folk,.c-st,.c-sw,.tile,.feat,.g-hint>span",
     WIG=".tile,.feat,.g-feat,.g-card,.g-mine-item,.v-walker,.v-folk",BURST=".g-feat,.g-card,.g-mine-item,.tile,.feat,.g-hire,.g-tile,.play-card",
     DOODLES=["cat","palette","planet","pen-hand","ghost"].map(n=>`assets/ui/${n}.png`);
+  // warm the doodles so the first burst does not decode images mid-animation
+  const warm=()=>DOODLES.forEach(u=>{const i=new Image();i.src=u;i.decode&&i.decode().catch(()=>{})});
+  window.requestIdleCallback?requestIdleCallback(warm,{timeout:2500}):setTimeout(warm,1200);
   const play=(el,c)=>{el.classList.add(c);const done=()=>el.classList.remove(c);
     el.addEventListener("animationend",e=>{if(e.target===el)done()},{once:true});setTimeout(done,600)};
   function burst(x,y,big){if(document.querySelectorAll(".t-burst").length>(big?24:10))return;
@@ -286,3 +289,12 @@ document.getElementById("year").textContent=new Date().getFullYear();
 // Language switched in place: redraw what the desktop page built with t() at load (the text in the markup is applyText()).
 addEventListener("ekky:lang",()=>{renderGrid();setFilter(setFilter.cur||"all",true);renderCats();renderStrip();typedWord();applyTheme();splitHeads();
   if(lb.open)show(cur)});
+
+// The tab marker slides with translate, not left: game.js still writes style.left, and it is mirrored into --ix (the first
+// placement is instant, so the dot never slides in from the edge on load).
+(()=>{const tabs=document.querySelector(".g-tabs");if(!tabs)return;
+  const sync=i=>{const l=i.style.left;if(l&&i.style.getPropertyValue("--ix")!==l)i.style.setProperty("--ix",l)};
+  const hook=()=>{const i=tabs.querySelector(".g-ind");if(!i||i._ix)return;i._ix=1;i.style.transition="none";sync(i);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{i.style.transition=""}));
+    new MutationObserver(()=>sync(i)).observe(i,{attributes:true,attributeFilter:["style"]})};
+  hook();new MutationObserver(hook).observe(tabs,{childList:true})})();
