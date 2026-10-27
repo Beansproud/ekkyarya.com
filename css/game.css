@@ -580,3 +580,25 @@ body.game-mode #game.at-start{background:var(--paper,#FBF7EE) var(--grain);color
 #g-start .g-start-foot .lang-switch button{background:#FFFDF8;color:#2B1342}
 #g-start .g-start-foot .lang-switch button[aria-pressed="true"]{background:#FFB400}
 #g-start .g-logo{filter:none}
+
+/* ===== S2, fewer layers: one bar (Developer B) =====
+   UX decision: the top HUD is gone; the bottom tab bar is the one bar on every screen, the start screen included:
+   Art, Map (Ekky's face), Mine and Hire Ekky (coral, on the right). Sound, EN/ID and "Just the art" live in Mine.
+   Sheets open under the bar, so Hire stays one tap away above them. */
+.g-screen{padding-top:calc(env(safe-area-inset-top) + 16px);padding-bottom:calc(env(safe-area-inset-bottom) + 104px)}
+#game .g-start{padding-top:calc(env(safe-area-inset-top) + 16px);padding-bottom:calc(env(safe-area-inset-bottom) + 100px)}
+#game.at-start .g-tabs{transform:none}
+.g-start-title{font-size:1.25rem;font-weight:700;line-height:1.1;color:#2B1342;margin:0 0 2px}
+.g-tabs{grid-template-columns:repeat(4,1fr);z-index:11;background:#FFFDF8;border:1.5px solid #2B1342;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.12);padding:0 4px;gap:2px}
+.g-tabs button{color:#645F70;min-width:44px;touch-action:manipulation}
+.g-tabs button.active{color:#2B1342}
+.g-tabs .g-ind{background:#2B1342}
+.g-ico img,.g-tabs button:not(.active) .g-ico img{filter:none}
+.g-tabs button:not(.active) .g-ico{opacity:1}
+.g-face{border:3px solid #FFFDF8;box-shadow:0 0 0 1.5px #2B1342}
+.g-tabs button.center.active .g-face{box-shadow:0 0 0 2.5px #2B1342}
+.g-tabs .g-tab-hire{color:#2B1342;background:#FF6B6B;border-radius:6px;margin:8px 0;height:auto;padding-bottom:6px;justify-content:center;gap:2px}
+.g-tabs .g-tab-hire .g-ico{width:28px;height:28px}
+.g-tabs .g-tab-hire .g-ico img{border-radius:8px}
+.g-sheet,#game:has(.c-over.open) .g-sheet{top:0}
+.g-sheet-in{padding-bottom:calc(env(safe-area-inset-bottom) + 104px)}

@@ -307,23 +307,16 @@
   <div class="g-sky" id="gSky"></div>
   <div class="g-planet-bg"></div>
 
-  <header class="g-hud">
-    <div class="g-avatar"><img src="assets/ui/ekky.png" alt=""></div>
-    <div class="g-player"><b data-t="map.title"></b><small data-t="hud.role"></small></div>
-    <button class="g-round" id="gSnd" data-feature="sound" data-t-aria="mine.sound" aria-pressed="false"><svg class="ico on" aria-hidden="true"><use href="#i-sound"/></svg><svg class="ico off" aria-hidden="true"><use href="#i-mute"/></svg></button>
-    <button class="g-hire" data-hire data-t-aria="hire.chip.aria"><img src="assets/ui/monster-head.png" alt=""><span data-t="hire.chip"></span></button>
-  </header>
 
   <section class="g-screen g-start active" id="g-start">
     <div class="g-start-head"><img class="g-logo" src="assets/logo.png" alt="Ekky Arya" onerror="this.outerHTML='<div class=&quot;g-logo-text&quot;>EKKY<br>ARYA</div>'">
-      <p class="g-tagline" data-t="start.tagline"></p></div>
+      <div><h1 class="g-start-title" data-t="map.title"></h1><p class="g-tagline" data-t="start.tagline"></p></div></div>
     <div class="g-row-head"><h2 class="g-row-title" data-t="start.featured"></h2><p class="g-hint"><span><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span data-tt="start.hint.view|View"></span></span><span data-feature="artDownload"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg><span data-tt="start.hint.save|Save"></span></span></p></div>
     <div class="g-featured" id="gFeatured"></div>
     <div class="g-tiles">
       <button class="g-tile" data-go="color"><img src="assets/ui/pen-hand.png" alt=""><span data-t="start.color"></span></button>
       <button class="g-tile catch" data-arcade data-feature="starCatcher"><img src="assets/ui/helmet.png" alt=""><span data-t="start.catch"></span></button>
       <button class="g-tile patrol" data-patrol data-feature="paintPatrol"><img src="assets/sprites/hero-desk.png" alt=""><span data-tt="start.patrol|Paint Patrol"></span></button>
-      <button class="g-tile explore" data-go="map"><img src="assets/ui/planet.png" alt=""><span data-t="start.explore"></span></button>
     </div>
     <div class="g-start-foot"><button class="g-classic" data-classic data-t="start.classic"></button><div class="lang-switch" role="group" data-t-aria="lang.label"><button data-lang="en">EN</button><button data-lang="id">ID</button></div></div>
   </section>
@@ -359,6 +352,7 @@
     <button data-tab="art"><span class="g-ico"><img src="assets/ui/palette.png" alt=""></span><span data-t="tab.art"></span></button>
     <button data-tab="map" class="center"><img class="g-face" src="assets/face.png" alt=""><small data-tt="tab.map|Map"></small></button>
     <button data-tab="mine"><span class="g-ico g-ico-line"><svg class="ico" aria-hidden="true"><use href="#i-frame"/></svg></span><span data-t="tab.mine"></span></button>
+    <button data-tab="hire" class="g-tab-hire" data-t-aria="hire.chip.aria"><span class="g-ico"><img src="assets/ui/monster-head.png" alt=""></span><span data-t="hire.chip"></span></button>
   </nav>
 
   <div class="g-sheet" id="gSheet"><div class="g-sheet-in" role="dialog" aria-modal="true" aria-labelledby="gSheetTitle"><div class="g-grab"></div><button class="g-x" id="gSheetX" data-tta="ui.close|Close"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button><div id="gSheetBody"></div></div></div>
