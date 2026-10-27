@@ -87,15 +87,13 @@ def paste(img, name, foot, h, flip=False, shadow=True):
 
 
 # name, height, facing, route (image pixels, on the paths and bridges drawn above)
-WALKERS = [
-    ("dog", 70, -1, [(300, 462), (226, 438)]),
-    ("pickle", 60, -1, [(318, 514), (262, 552)]),
+WALKERS = [   # at most 2 from one piece (UX review): a client meets several pieces within 30 s
+    ("car", 52, -1, [(300, 462), (226, 438)]),
+    ("dog", 70, -1, [(318, 514), (262, 552)]),
     ("plug-hero", 66, -1, [(432, 482), (500, 472)]),
-    ("waver", 64, 1, [(386, 640), (396, 688), (398, 712)]),
-    ("doodle-cat", 44, 1, [(360, 236), (360, 270), (360, 318)]),
+    ("orange-monster", 44, 1, [(360, 236), (360, 270), (360, 318)]),
     ("crab", 30, 0, [(292, 752), (328, 734)]),
 ]
-
 
 # V5, client scenery (switch clientScenery, off): (sprite name, piece slug, foot, height). Each is a separate image over
 # the village, never baked into village.png, so the switch removes it completely. Stays empty until the owner confirms
@@ -149,7 +147,6 @@ def build():
     # main places: each Ekky cut-out stands on its spot (back to front, so nearer ones overlap farther ones)
     folk = {}   # still villagers and scenery (V3): tapping one opens its artwork card
     folk["ufo"] = paste(img, "ufo", (214, 196), 56, shadow=False)
-    folk["croc"] = paste(img, "croc", (548, 652), 48, shadow=False)
     places["observatory"] = paste(img, "astronaut", (338, 222), 96)
     paste(img, "radio-explorer", (404, 228), 70)
     places["gallery"] = [420, 300, 645, 510]

@@ -123,7 +123,8 @@ function villageLife(V){
   if(feature("clientScenery"))(V.scenery||[]).forEach(c=>{const p=PROJECTS.find(q=>q.slug===c.piece);
     if(!p||p.kind!=="client"||!hasRole(p,"village"))return;const b=c.box;
     html+=`<button class="v-folk v-scenery" data-piece="${PROJECTS.indexOf(p)}" data-sprite="${esc(c.src)}" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}" aria-label="${esc(t("town.seeArt")+": "+ptitle(p))}"><img src="${esc(c.src)}" alt=""></button>`});
-  (V.walkers||[]).slice(0,8).forEach((w,k)=>{const p=card(w.piece);if(!p)return;const c=walkCss(w,k,V);css+=c.css;
+  const perPiece={};   // at most 8 walkers, and at most 2 from one piece (UX review)
+  (V.walkers||[]).filter(w=>(perPiece[w.piece]=(perPiece[w.piece]||0)+1)<=2).slice(0,8).forEach((w,k)=>{const p=card(w.piece);if(!p)return;const c=walkCss(w,k,V);css+=c.css;
     const delay=`-${(Math.random()*c.dur).toFixed(2)}s`;
     html+=`<div class="v-walk" style="${c.start};animation:vw${k} ${c.dur}s linear ${delay} infinite"><button class="v-walker" data-piece="${PROJECTS.indexOf(p)}" data-sprite="${w.src}" aria-label="${esc(t("town.seeArt")+": "+ptitle(p))}"><img src="${w.src}" alt="" decoding="async" style="height:${(w.h/V.w*100).toFixed(2)}cqw;transform:scaleX(${c.face0});animation:vf${k} ${c.dur}s steps(1,end) ${delay} infinite"></button></div>`});
   let st=$("vWalkCss");if(!st){st=document.createElement("style");st.id="vWalkCss";document.head.appendChild(st)}st.textContent=css;
