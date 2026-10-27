@@ -31,7 +31,7 @@ async function arrive(){const q=new URLSearchParams(location.search);if(!q.has("
   try{const known=id==="scratch"?feature("doodleScene"):Color.pages().some(p=>p.id===id);if(!known)throw new Error("bad link");
     const pd=await Color.pageData(id),{fills,custom}=decFills(q.get("f")||"",pd.meta.regions),st=decStickers(q.get("s")||"");
     await Color.showArrival(id,fills,custom,st,from);
-    document.getElementById("loader")?.classList.add("done")}catch{}   // the friend's coloring is drawn: drop the loader now
+    document.getElementById("loader")?.classList.add("done","quick")}catch{}   // the friend's coloring is drawn: drop the loader now, quickly
   clean()}
 arrive();
 return {colorUrl,encFills,decFills,encStickers,decStickers,cleanName};
