@@ -287,8 +287,10 @@ document.getElementById("year").textContent=new Date().getFullYear();
     if(el.matches(BURST))burst(e.clientX,e.clientY)},{passive:true})})();
 
 // Language switched in place: redraw what the desktop page built with t() at load (the text in the markup is applyText()).
-addEventListener("ekky:lang",()=>{renderGrid();setFilter(setFilter.cur||"all",true);renderCats();renderStrip();typedWord();applyTheme();splitHeads();
-  if(lb.open)show(cur)});
+addEventListener("ekky:lang",()=>{const redraw=()=>{renderGrid();setFilter(setFilter.cur||"all",true);renderCats();renderStrip();typedWord();applyTheme();splitHeads();
+    if(lb.open)show(cur)};
+  // game mode hides this page: redraw it when the phone is idle, not in the frame that switches the language
+  if(document.body.classList.contains("game-mode")&&window.requestIdleCallback)requestIdleCallback(redraw,{timeout:3000});else redraw()});
 
 // The tab marker slides with translate, not left: game.js still writes style.left, and it is mirrored into --ix (the first
 // placement is instant, so the dot never slides in from the edge on load).

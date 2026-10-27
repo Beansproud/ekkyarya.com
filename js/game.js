@@ -53,8 +53,9 @@ function go(to,fromPop){
   G.querySelectorAll(".g-screen").forEach(s=>s.classList.toggle("active",s.id==="g-"+to));
   G.querySelectorAll(".g-tabs button").forEach(b=>b.classList.toggle("active",b.dataset.tab===to));
   if(to==="mine")renderMine();
-  if(to==="art"&&!artDone){artDone=true;renderArt()}
-  if(to==="map")renderMap();
+  if(to==="start"&&dirty.start){dirty.start=false;renderStart()}
+  if(to==="art"&&(!artDone||dirty.art)){artDone=true;dirty.art=false;renderArt()}
+  if(to==="map"){if(!mapBuilt||dirty.map){mapBuilt=true;dirty.map=false;renderMap()}else refreshWall()}
   requestAnimationFrame(moveInd);
 }
 try{history.replaceState({s:"start"},"")}catch(e){}
@@ -114,6 +115,8 @@ function renderMap(){
   Z.base=null;Z.s=1;zoomTo(1,0,0);
   $("gMapList").innerHTML=places.map(p=>`<li><button class="v-row${p.hire?" hire":""}" data-place="${p.id}"><img src="${p.icon}" alt="" loading="lazy">${esc(t(p.key))}</button></li>`).join("");
 }
+// a revisit hangs four new pieces on the gallery walls without rebuilding the village
+function refreshWall(){const art=featuredSix(4);$("gMapWrap").querySelectorAll(".v-frame").forEach((im,k)=>{const p=art[k];if(p)im.src=thumbOf(p)})}
 /* ---- Village life (B42 V3), inside the ambience budget (decision 10, docs/motion.md): walkers, two clouds, the
    gate's lantern, the noodle bath's steam and the water shimmer. All CSS animations on transform and opacity, so the
    off-screen pause and reduced motion (villagers stand still) apply; day or night is set once, on load. ---- */
@@ -376,7 +379,7 @@ document.addEventListener("visibilitychange",()=>{if(!A)return;if(document.hidde
   else if(pausedByHide){pausedByHide=false;setTimeout(()=>{if(A&&!document.hidden&&A.t>0)A.run=true},600)}});
 
 // A friend's link draws their coloring first; the start thumbnails and the Art cards load after it (share playtest).
-let artDone=false;
+let artDone=false,mapBuilt=false;const dirty={start:false,art:false,map:false};   // screens are built once and kept; a language switch redraws only the one in view
 // The village (village.png and its sprites, about 1 MB) is built when the map opens (go("map")), not at load, so the
 // start screen's drawings come first on a slow phone (S5, Developer B).
 /* ---- Language switched in place (js/site.js dispatches "ekky:lang" at the dim point): redraw what was built with t() ---- */
@@ -384,14 +387,20 @@ let sheetRe=null;
 const remember=f=>(...a)=>{sheetRe=()=>f(...a);return f(...a)};   // the sheet's opener, so a language switch can draw it again
 openVillager=remember(openVillager);openLevel=remember(openLevel);openHire=remember(openHire);
 addEventListener("ekky:lang",()=>{
-  renderStart();renderMine();if(artDone)renderArt();
+  renderMine();
   const rs=$("gResShare");if(rs)rs.querySelector("span").textContent=t("reveal.share");
-  const sv={s:Z.s,x:Z.x,y:Z.y};renderMap();if(sv.s>1){widen(true);zoomTo(sv.s,sv.x,sv.y)}
+  if(screen==="start")renderStart();else dirty.start=true;
+  if(artDone){if(screen==="art")renderArt();else dirty.art=true}
+  if(mapBuilt){if(screen==="map"){const sv={s:Z.s,x:Z.x,y:Z.y};renderMap();if(sv.s>1){widen(true);zoomTo(sv.s,sv.x,sv.y)}}else dirty.map=true}
   const l=$("gMapList"),b=$("gMapListBtn");if(!l.hidden)b.textContent=tt("town.showVillage","Show the village");
   if(sheet.classList.contains("open")&&sheetRe){
     const body=sheet.firstElementChild,top=body.scrollTop,from=sheetFrom,f=$("gForm"),v=f&&[f.name.value,f.type.selectedIndex,f.message.value];
     sheetRe();body.scrollTop=top;sheetFrom=from;
     const g=$("gForm");if(g&&v){g.name.value=v[0];g.type.selectedIndex=v[1];g.message.value=v[2]}}});
+// Build Art and the village once the start screen has settled, off the tap: the first visit then only shows them.
+addEventListener("load",()=>setTimeout(()=>{if(!document.body.classList.contains("game-mode"))return;
+  const idle=window.requestIdleCallback||(f=>setTimeout(f,50));
+  idle(()=>{if(!artDone){artDone=true;renderArt()}idle(()=>{if(!mapBuilt&&window.VILLAGE){mapBuilt=true;renderMap()}},{timeout:3000})},{timeout:3000})},2500));
 function renderAll(){if(deep)setTimeout(renderStart,2500);else renderStart();renderMine();setTimeout(moveInd,60)}
 // Shared with js/color.js, js/share.js and js/links.js.
 window.Game={go,openHire,openSheet,closeSheet,sfx,buzz,save,get st(){return st},esc,contactReady,screen:()=>screen};

@@ -831,3 +831,6 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 .c-stage canvas.c-fadein{position:absolute;display:block;opacity:0;pointer-events:none;transition:opacity .25s linear}   /* the new color of a fill: opacity only, committed to the picture when it ends */
 .c-bin{transition:transform .25s cubic-bezier(.34,1.56,.64,1)}   /* transform only (the red "hot" color now switches at once) */
 @media (prefers-reduced-motion:reduce){.c-stage canvas.c-fadein{transition:none}}
+
+/* the Art grid draws and lays out only the cards near the screen (smoother tab switch and scroll) */
+#gCards .g-card{content-visibility:auto;contain-intrinsic-height:auto 230px}
