@@ -23,10 +23,6 @@ GRASS, GRASS_L, GRASS_R = (168, 219, 160), (111, 179, 122), (78, 142, 92)
 SAND = (255, 227, 168)
 CLIFF, CLIFF_DARK = (201, 138, 74), (150, 96, 52)
 ROCK, ROCK_LIT, ROCK_DARK = (122, 74, 64), (163, 104, 84), (92, 52, 50)
-SOIL_L, SOIL_R, SOIL_L_DARK, SOIL_R_DARK, SOIL_EDGE = (240, 168, 72), (206, 128, 50), (222, 146, 58), (184, 110, 42), (170, 100, 40)
-SHARD_LIT, SHARD_DARK, SHARD_LINE = (178, 176, 186), (128, 126, 140), (98, 96, 112)
-GRASS_FACE, GRASS_FACE2 = (150, 208, 140), (180, 226, 168)
-BUSH_LIT, BUSH_DARK, BUSH_TOP = (126, 196, 110), (86, 156, 86), (160, 220, 130)
 STONE, PEBBLE = (176, 156, 178), (150, 96, 52)
 GRASS_DEEP, GRASS_SPECK, GRASS_LIGHT = (126, 196, 120), (214, 240, 196), (200, 238, 184)
 FLOWERS = [(255, 143, 177), (255, 255, 255), (255, 210, 90), (195, 139, 255)]
@@ -61,81 +57,112 @@ def scaled(pts, cx, cy, k, dy=0):
     return [(cx + (x - cx) * k, cy + (y - cy) * k + dy) for x, y in pts]
 
 
-def facet(d, pts, light, dark, axis=None):
-    """A low-poly shape: two faces split down the middle, the left lit and the right in shade."""
-    cx = sum(x for x, _ in pts) / len(pts)
-    top = min(pts, key=lambda p: p[1])
-    bot = max(pts, key=lambda p: p[1])
-    d.polygon(P(pts), fill=dark)
-    left = [p for p in pts if p[0] <= cx]
-    d.polygon(P([top] + sorted(left, key=lambda p: p[1]) + [bot]), fill=light)
-
-
-def island(base, cx, cy, hw, hh, depth, seed=1, shards=3, deco=10):
-    """A low-poly floating island: a square grass slab on thick soil, grey rock shards underneath,
-    small shards floating around it, and low-poly bushes and stones on top (plain shapes)."""
+def island(base, cx, cy, hw, hh, depth, seed=1, k=.97, tips=((-.45, .32), (0, .48), (.42, .3))):
+    """A floating island: a grass top over a soil band, and a rock underside that tapers into points.
+    tips: (x offset as a share of the width, depth as a share of the width) for each hanging point."""
+    import math
     import random
-    rnd = random.Random(seed * 31)
+    rnd = random.Random(seed * 101)
     d = ImageDraw.Draw(base)
-    L, B, R, T = (cx - hw, cy), (cx, cy + hh), (cx + hw, cy), (cx, cy - hh)
-    dn = lambda p, k=depth: (p[0], p[1] + k)
-    # rock shards under the two front edges, each split into a lit and a shaded face
-    for edge, n in (((L, B), shards), ((B, R), shards)):
-        (x0, y0), (x1, y1) = dn(edge[0]), dn(edge[1])
-        for j in range(n):
-            t0, t1 = j / n, (j + 1) / n
-            a = (x0 + (x1 - x0) * t0, y0 + (y1 - y0) * t0)
-            b = (x0 + (x1 - x0) * t1, y0 + (y1 - y0) * t1)
-            mx, my = (a[0] + b[0]) / 2, (a[1] + b[1]) / 2
-            tip = (mx + rnd.uniform(-.15, .15) * hw / n, my + hw * rnd.uniform(.28, .5) * (1.2 - abs(.5 - (t0 + t1) / 2)))
-            d.polygon(P([a, (mx, my - 2), tip]), fill=SHARD_LIT, outline=SHARD_LINE)
-            d.polygon(P([(mx, my - 2), b, tip]), fill=SHARD_DARK, outline=SHARD_LINE)
-    # soil sides (left lit, right shaded), with a darker band at the bottom
-    d.polygon(P([L, B, dn(B), dn(L)]), fill=SOIL_L)
-    d.polygon(P([B, R, dn(R), dn(B)]), fill=SOIL_R)
-    d.polygon(P([dn(L, depth * .7), dn(B, depth * .7), dn(B), dn(L)]), fill=SOIL_L_DARK)
-    d.polygon(P([dn(B, depth * .7), dn(R, depth * .7), dn(R), dn(B)]), fill=SOIL_R_DARK)
-    for (p0, p1) in ((L, B), (B, R)):   # the turf's thickness over the soil
-        d.polygon(P([p0, p1, dn(p1, 5), dn(p0, 5)]), fill=GRASS_R)
-    d.line(P([dn(L), dn(B), dn(R)]), fill=INK, width=2 * S)
-    d.line(P([L, dn(L)]), fill=INK, width=2 * S)
-    d.line(P([R, dn(R)]), fill=INK, width=2 * S)
-    d.line(P([B, dn(B)]), fill=SOIL_EDGE, width=2 * S)
-    # grass top in four low-poly faces around the center
-    c = (cx + rnd.uniform(-.1, .1) * hw, cy + rnd.uniform(-.1, .1) * hh)
-    for (p0, p1), col in (((T, L), GRASS), ((L, B), GRASS_FACE), ((B, R), GRASS), ((R, T), GRASS_FACE2)):
-        d.polygon(P([c, p0, p1]), fill=col)
-    d.line(P([L, B, R]), fill=INK, width=2 * S)
-    d.line(P([L, T, R]), fill=GRASS_L, width=2 * S)
-    # low-poly bushes and stones on top (kept away from the middle, where the places stand)
-    spots = []
-    for _ in range(deco * 6):
-        if len(spots) >= deco:
+    top = blob(cx, cy, hw * k, hh * .9, seed, wobble=.11)
+    rx = hw * k
+    # the front half of the outline, left to right, at the bottom of the soil band
+    left = min(range(len(top)), key=lambda i: top[i][0])
+    right = max(range(len(top)), key=lambda i: top[i][0])
+    front, i = [], left
+    while True:   # points with angles from pi down to 0 run through the front (larger y)
+        front.append((top[i][0], top[i][1] + depth))
+        if i == right:
             break
-        u, v = rnd.uniform(-1, 1), rnd.uniform(-1, 1)
-        if abs(u) + abs(v) > .9 or abs(u) + abs(v) < .55:
-            continue
-        x, y = cx + (u - v) * hw / 2, cy + (u + v) * hh / 2
-        if all(abs(x - a) + abs(y - b) > 34 for a, b in spots):
-            spots.append((x, y))
-    for x, y in sorted(spots, key=lambda p: p[1]):
-        if rnd.random() < .7:   # bush: a faceted rounded block
-            w, h = rnd.uniform(12, 18), rnd.uniform(18, 28)
-            pts = [(x - w, y - 2), (x - w * .8, y - h * .7), (x - w * .2, y - h), (x + w * .5, y - h * .85), (x + w, y - h * .4), (x + w * .9, y), (x, y + 3)]
-            facet(d, pts, BUSH_LIT, BUSH_DARK)
-            d.polygon(P([(x - w * .2, y - h), (x + w * .5, y - h * .85), (x + w * .1, y - h * .55), (x - w * .5, y - h * .6)]), fill=BUSH_TOP)
-        else:   # stone: a faceted grey rock
-            w, h = rnd.uniform(10, 15), rnd.uniform(9, 14)
-            pts = [(x - w, y), (x - w * .5, y - h), (x + w * .4, y - h * .9), (x + w, y - h * .2), (x + w * .6, y + 2)]
-            facet(d, pts, SHARD_LIT, SHARD_DARK)
-    # small shards floating around the island
-    for _ in range(3):
-        side = rnd.choice((-1, 1))
-        x = cx + side * rnd.uniform(.75, 1.05) * hw
-        y = cy + hh + depth + rnd.uniform(.05, .35) * hw
-        r = rnd.uniform(5, 9)
-        pts = [(x, y - r * 1.2), (x + r, y - r * .2), (x + r * .2, y + r * 1.6), (x - r * .8, y)]
-        facet(d, pts, SHARD_LIT, SHARD_DARK)
+        i = (i - 1) % len(top)
+    if front[len(front) // 2][1] < cy:   # walked the back edge: go the other way round
+        front, i = [], left
+        while True:
+            front.append((top[i][0], top[i][1] + depth))
+            if i == right:
+                break
+            i = (i + 1) % len(top)
+    # rock underside: from the right end, down to each point and back up between them, to the left end
+    under = []
+    pts = sorted(tips, key=lambda t: -t[0])
+    bot = cy + hh * .9 + depth
+    for j, (ox, dep) in enumerate(pts):
+        x = cx + ox * rx
+        if j:
+            px = cx + pts[j - 1][0] * rx
+            under.append(((x + px) / 2, bot + rx * .18))           # the valley between two points
+        under.append((x + rx * .1, bot + rx * dep * .55))        # shoulder
+        under.append((x, bot + rx * dep))                         # the point
+        under.append((x - rx * .1, bot + rx * dep * .55))
+    rock = front + under
+    d.polygon(P(rock), fill=ROCK)
+
+    def clipped(poly, paint):
+        """Paint on a layer and keep only what falls inside poly (texture stays inside its shape)."""
+        layer = Image.new("RGBA", base.size)
+        paint(ImageDraw.Draw(layer))
+        m = Image.new("L", base.size, 0)
+        ImageDraw.Draw(m).polygon(P(poly), fill=255)
+        layer.putalpha(Image.fromarray(np.minimum(np.array(layer.getchannel("A")), np.array(m))))
+        base.alpha_composite(layer)
+
+    def rock_texture(ld):
+        for ox, dep in pts:   # each point: a lit face on the left, a shaded face on the right
+            x = cx + ox * rx
+            ld.polygon(P([(x - rx * .1, bot + rx * dep * .55), (x, bot + rx * dep), (x - rx * .02, bot + rx * dep * .4), (x - rx * .16, bot)]), fill=ROCK_LIT)
+            ld.polygon(P([(x + rx * .02, bot + rx * dep * .3), (x, bot + rx * dep), (x + rx * .1, bot + rx * dep * .55), (x + rx * .14, bot)]), fill=ROCK_DARK)
+        for j in range(5):   # strata: wavy layers across the rock
+            y0 = bot + 8 + j * rx * .07
+            line = [(x, y0 + 3 * math.sin(x / 18 + j * 1.7 + seed)) for x in range(int(cx - rx * 1.2), int(cx + rx * 1.2), 6)]
+            ld.line(P(line), fill=ROCK_DARK + (200,), width=2 * S)
+        for _ in range(int(rx / 18)):   # cracks
+            x, y = cx + rnd.uniform(-.8, .8) * rx, bot + rnd.uniform(.05, .4) * rx
+            ld.line(P([(x, y), (x + rnd.uniform(-6, 6), y + 7), (x + rnd.uniform(-8, 8), y + 15)]), fill=INK + (150,), width=S + 2)
+        for _ in range(int(rx / 22)):   # stones set in the rock
+            x, y, r = cx + rnd.uniform(-.8, .8) * rx, bot + rnd.uniform(.05, .35) * rx, rnd.uniform(3, 6)
+            ld.ellipse(P([(x - r, y - r * .7), (x + r, y + r * .7)]), fill=STONE, outline=INK + (180,), width=S)
+    clipped(rock, rock_texture)
+    d.polygon(P(rock), outline=INK, width=2 * S)
+
+    for kk in range(depth, 0, -2):   # soil band under the grass, with a darker lower half
+        d.polygon(P(scaled(top, cx, cy, 1.0, kk)), fill=CLIFF_DARK if kk > depth * .6 else CLIFF)
+    soil = scaled(top, cx, cy, 1.0, depth)
+
+    def soil_texture(ld):
+        for x, y in front[::2]:   # pebbles along the band
+            if rnd.random() < .6:
+                yy = y - depth * rnd.uniform(.3, .8)
+                ld.ellipse(P([(x - 2, yy - 1.5), (x + 2, yy + 1.5)]), fill=PEBBLE)
+    clipped([(x, y - depth) for x, y in front] + front[::-1], soil_texture)
+    d.line(P(front), fill=INK, width=2 * S)
+    d.polygon(P(scaled(top, cx, cy, 1.0, 6)), fill=GRASS_R)   # the turf's own thickness
+    # the grass lip hangs over the soil in small drips
+    for x, y in front[1:-1:3]:
+        r = rnd.uniform(3, 6)
+        d.ellipse(P([(x - r, y - depth + 2), (x + r, y - depth + 2 + r * 2.2)]), fill=GRASS_R)
+    d.polygon(P(top), fill=GRASS)
+
+    def grass_texture(ld):
+        for _ in range(int(rx / 14)):   # darker patches
+            x, y = cx + rnd.uniform(-.9, .9) * rx, cy + rnd.uniform(-.8, .8) * hh
+            a, b = rnd.uniform(.08, .2) * rx, rnd.uniform(.04, .1) * rx
+            ld.ellipse(P([(x - a, y - b), (x + a, y + b)]), fill=GRASS_DEEP + (120,))
+        for _ in range(int(rx * .5)):   # light specks
+            x, y = cx + rnd.uniform(-1, 1) * rx, cy + rnd.uniform(-1, 1) * hh
+            ld.ellipse(P([(x - 1.2, y - .8), (x + 1.2, y + .8)]), fill=GRASS_SPECK)
+        for _ in range(int(rx / 5)):   # grass tufts
+            x, y = cx + rnd.uniform(-.95, .95) * rx, cy + rnd.uniform(-.9, .9) * hh
+            for dx in (-2.5, 0, 2.5):
+                ld.line(P([(x + dx * .4, y), (x + dx, y - 5 - abs(dx))]), fill=GRASS_L, width=S + 1)
+        for _ in range(int(rx / 10)):   # little flowers
+            x, y = cx + rnd.uniform(-.9, .9) * rx, cy + rnd.uniform(-.85, .85) * hh
+            c = rnd.choice(FLOWERS)
+            ld.ellipse(P([(x - 2.4, y - 1.8), (x + 2.4, y + 1.8)]), fill=c)
+            ld.ellipse(P([(x - .9, y - .7), (x + .9, y + .7)]), fill=(255, 225, 120))
+    clipped(top, grass_texture)
+    d.line(P(top + [top[0]]), fill=GRASS_L, width=3 * S)
+    back = [p for p in top if p[1] < cy]   # a soft light along the back edge
+    d.line(P(sorted(back)), fill=GRASS_LIGHT, width=2 * S)
 
 
 def path(d, pts, w=16):
@@ -201,12 +228,9 @@ def galaxy(base):
     col = Image.new("RGB", (W, H), (98, 58, 170))   # color and alpha are blurred apart, so the edges never go dark
     al = Image.new("L", (W, H), 0)
     cd, ad = ImageDraw.Draw(col), ImageDraw.Draw(al)
-    # the glow follows the diamond of the square slabs, not a round disc: a diamond haze plus patches at its corners
-    ad.polygon([(360, 170), (590, 480), (360, 840), (130, 480)], fill=120)
-    cd.polygon([(360, 170), (590, 480), (360, 840), (130, 480)], fill=(110, 66, 190))
-    for (x, y, rx, ry, c) in [(360, 210, 90, 60, (255, 143, 177, 170)), (560, 470, 70, 90, (214, 96, 190, 190)),
-                              (160, 470, 70, 90, (132, 84, 222, 200)), (380, 790, 90, 60, (86, 136, 220, 170)),
-                              (250, 320, 90, 70, (240, 130, 210, 140)), (480, 650, 100, 80, (150, 90, 230, 170))]:
+    for (x, y, rx, ry, c) in [(360, 480, 215, 300, (120, 72, 200, 235)), (285, 350, 120, 110, (214, 96, 190, 190)),
+                              (450, 600, 130, 120, (132, 84, 222, 210)), (410, 280, 100, 80, (255, 143, 177, 150)),
+                              (290, 620, 100, 90, (86, 136, 220, 150)), (480, 430, 90, 90, (240, 130, 210, 150))]:
         box = (x - rx, y - ry, x + rx, y + ry)
         cd.ellipse(box, fill=c[:3])
         ad.ellipse(box, fill=c[3])
@@ -254,9 +278,9 @@ def build():
     # the calm sea: one soft diamond, with a lighter band
     # islands: main, the observatory islet (top) and the gate islet (bottom)
     galaxy(base)
-    island(base, 360, 205, 140, 70, 26, seed=2, shards=2, deco=6)
-    island(base, 360, 480, 310, 155, 40, seed=1, shards=4, deco=18)
-    island(base, 400, 755, 150, 75, 26, seed=3, shards=2, deco=6)
+    island(base, 360, 205, 140, 70, 18, seed=2, tips=((-.3, .4), (.25, .5)))
+    island(base, 360, 480, 310, 155, 26, seed=1, k=.9)
+    island(base, 400, 755, 150, 75, 18, seed=3, tips=((-.35, .45), (.05, .6), (.4, .38)))
     d = ImageDraw.Draw(base)
     bridge(d, (360, 268), (360, 332), 5)
     bridge(d, (384, 628), (396, 688), 5)
