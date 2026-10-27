@@ -99,13 +99,17 @@ async function runConfig(browser,url,scheme,lang){
   await T('color: reload keeps fills + undo',async(p)=>{await boot(p);const id=await openColor(p);const hs=await fill(p,2);await p.tap('#cBack');await sleep(800);
     await p.reload();await must(p,'#g-start.active','reload failed',8000);await sleep(500);await openColor(p,id);const h=await hash(p);
     if(h!==hs[2])throw new Error('fills not kept after reload');await p.tap('#cUndo');await sleep(400);if(await hash(p)===h)throw new Error('Undo does nothing after reopen')});
-  await T('color: "+" custom picker adds swatch',async p=>{await boot(p);await openColor(p);const n0=await p.$$eval('#cColors .c-sw',e=>e.length);
-    if(!await vis(p,'#cColors .c-any',500))throw new Error('no "+" swatch');
-    await p.evaluate(()=>{window.__anyClicks=0;document.getElementById('cAny').addEventListener('click',()=>window.__anyClicks++)});await p.tap('#cColors .c-any');await sleep(300);
-    const st=await p.evaluate(()=>{const i=document.getElementById('cAny'),r=i.getBoundingClientRect(),c=getComputedStyle(i);return {n:window.__anyClicks,ok:r.width>0&&r.height>0&&c.display!=='none'&&c.visibility!=='hidden'}});
-    if(!st.n)throw new Error('tapping "+" did not open the colour input');if(!st.ok)throw new Error('colour input is display:none / zero size: iOS Safari will not open it');
-    await p.evaluate(()=>{const i=document.getElementById('cAny');i.value='#12ab34';i.dispatchEvent(new Event('input',{bubbles:true}));i.dispatchEvent(new Event('change',{bubbles:true}))});await sleep(400);
-    const n1=await p.$$eval('#cColors .c-sw',e=>e.length);if(n1<=n0)throw new Error('swatch count '+n0+'->'+n1+' after choosing a colour')});
+  await T('color: "+" color sheet adds swatch',async p=>{await boot(p);await openColor(p);const n0=await p.$$eval('#cColors .c-sw',e=>e.length);
+    if(!await vis(p,'#cColors .c-any',500))throw new Error('no "+" swatch');await p.tap('#cColors .c-any');await must(p,'#cWheel','"+" did not open the color sheet');await sleep(400);
+    const pre=()=>p.$eval('#cWPre',e=>getComputedStyle(e).backgroundColor);const p0=await pre();
+    for(const k of ['h','s','l']){const r=await p.$eval(`#cWheel [data-k="${k}"]`,e=>{const b=e.getBoundingClientRect();return [b.left,b.top,b.width,b.height]});
+      await p.touchscreen.tap(r[0]+r[2]*(k==='h'?.7:.45),r[1]+r[3]/2);await sleep(150)}
+    if(await pre()===p0)throw new Error('tapping the hue/strength/light strips did not change the preview');
+    await audit(p,'color sheet');
+    await p.tap('#cWYes');await sleep(500);if(await p.isVisible('#cWheel'))throw new Error('sheet stayed open after "Use this color"');
+    const n1=await p.$$eval('#cColors .c-sw',e=>e.length);if(n1<=n0)throw new Error('swatch count '+n0+'->'+n1+' after "Use this color"');
+    if(!await p.$eval('#cColors .c-sw.on',e=>+e.dataset.v>=13))throw new Error('new swatch not selected');
+    await p.tap('#cColors .c-any');await must(p,'#cWheel','sheet did not reopen');await p.tap('#cWNo');await sleep(400);if(await p.isVisible('#cWheel'))throw new Error('Cancel did not close the sheet')});
   await T('color: stickers add',async p=>{await boot(p);await openColor(p);await p.tap('#cStickBtn');await must(p,'#cTray [data-n]','sticker tray empty');
     const n0=await p.$$eval('#cStickers .c-st',e=>e.length);await p.tap('#cTray [data-n]');await sleep(400);const n1=await p.$$eval('#cStickers .c-st',e=>e.length);if(n1<=n0)throw new Error('sticker not added')});
   await T('color: Done / reveal / Download / Share',async p=>{await boot(p);await openColor(p);await fill(p,1);await audit(p,'color editor');
@@ -122,6 +126,25 @@ async function runConfig(browser,url,scheme,lang){
     await p.tap('#cStickBtn');await must(p,'#cTray [data-n]','no stickers on scratch page');const n0=await p.$$eval('#cStickers .c-st',e=>e.length);await p.tap('#cTray [data-n]');await sleep(400);
     if((await p.$$eval('#cStickers .c-st',e=>e.length))<=n0)throw new Error('sticker not placed on scratch page');
     await p.tap('#cUndo');await sleep(400);await p.tap('#cUndo');await sleep(400);if(await p.$$eval('#cStickers .c-st',e=>e.length)>n0&&await hash(p)===h1)throw new Error('undo changed nothing on scratch page')});
+
+  await T('doodle: sticker drag, drop on bin, undo',async p=>{await boot(p);await p.tap('[data-go=color]');await must(p,'#cPages .c-scratch','no Doodle Scene entry');await p.tap('#cPages .c-scratch');await must(p,'#cEdit #cCanvas','scratch editor did not open',8000);await sleep(800);
+    await p.tap('#cStickBtn');await must(p,'#cTray [data-n]','no stickers');await p.tap('#cTray [data-n]');await sleep(500);
+    const pos=()=>p.$eval('#cStickers .c-st:last-child',e=>{const b=e.getBoundingClientRect();return [b.left+b.width/2,b.top+b.height/2]});
+    const cnt=()=>p.$$eval('#cStickers .c-st',e=>e.length);const n1=await cnt();if(!n1)throw new Error('sticker not added');
+    const [x0,y0]=await pos();const st=await p.$eval('#cStage',e=>{const b=e.getBoundingClientRect();return [b.left,b.top,b.width,b.height]});
+    const tx=Math.min(st[0]+st[2]*.75,x0+90),ty=Math.min(st[1]+st[3]*.6,y0+90);
+    await p.mouse.move(x0,y0);await p.mouse.down();for(let i=1;i<=10;i++)await p.mouse.move(x0+(tx-x0)*i/10,y0+(ty-y0)*i/10);await p.mouse.up();await sleep(400);
+    const [x1,y1]=await pos();if(Math.hypot(x1-x0,y1-y0)<20)throw new Error('dragging the sticker did not move it');
+    await p.tap('#cUndo');await sleep(400);const n2=await cnt();const back=n2?await pos():null;if(n2===n1&&back&&Math.hypot(back[0]-x1,back[1]-y1)<5)throw new Error('undo after a sticker drag changed nothing');
+    // drop on the bin removes it
+    await p.tap('#cStickBtn').catch(()=>{});if(!await cnt()){await p.tap('#cUndo');await sleep(300)}
+    if(!await p.isVisible('#cTray')){await p.tap('#cStickBtn')}await p.tap('#cTray [data-n]');await sleep(500);const n3=await cnt();const [x2,y2]=await pos();
+    await p.mouse.move(x2,y2);await p.mouse.down();await p.mouse.move(x2+6,y2+6);await p.mouse.move(x2+14,y2+10);await sleep(500);
+    const bin=await p.$eval('#cBin',e=>{const b=e.getBoundingClientRect();return [b.left+b.width/2,b.top+b.height/2]});
+    for(let i=1;i<=10;i++)await p.mouse.move(x2+(bin[0]-x2)*i/10,y2+(bin[1]-y2)*i/10);await sleep(300);
+    if(!await p.$eval('#cBin',e=>e.classList.contains('hot')))throw new Error('bin did not light up under the dragged sticker');await p.mouse.up();await sleep(500);
+    if(await cnt()>=n3)throw new Error('dropping a sticker on the bin did not delete it');
+    await p.tap('#cUndo');await sleep(400);if(await cnt()<n3)throw new Error('undo did not bring the deleted sticker back')});
 
   // --- Catch stars ---
   await T('stars: play, result, Share, Download',async p=>{await boot(p);await p.tap('#g-start [data-arcade]');await must(p,'#gArcade.open','arcade did not open',5000);await sleep(5000);
