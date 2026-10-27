@@ -13,3 +13,4 @@ The integrator writes this file. Each entry has the time (UTC), the owner's exac
 | 10-27 12:54 | "make it better by his feedback and repair your copywriting become cincise simple full of simple joles" | UX | integrator, transcript | Copy rewrite with light jokes |
 | 10-27 13:01 | "make a joke around uncanny valley too" | UX | integrator, transcript | Five uncanny-valley lines |
 | 10-27 20:53 | "start again i give you 6 hours to do everything autonomously between ux sirector game ditectoe and 2 game developers" | Integrator | direct | This sprint (`docs/sprint-6h.md`) |
+| 10-27 21:16 | "menu bar strictly only 3" (with a screenshot of the 4-item bar: Art, Map, Mine, Hire Ekky) | Integrator | direct | The tab bar has exactly 3 items (Art, Map in the centre, Mine). Hire Ekky leaves the bar and stays one tap away as a small chip in the top corner of every screen. This overrides the UX S2 decision for a 4th tab. |
