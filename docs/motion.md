@@ -67,7 +67,7 @@ step "jelly", mouse parallax, magnetic buttons, 3D tilt, and the click sparkle b
 | Result | title fades up, 1 s | the round is over, here is your score |
 | Village places | still; a tapped place's label lifts 4 px and glows once (300 ms), then the place opens | "I'm going there" |
 | Village walkers (V3) | 5 of Ekky's characters (at most 2 from one piece: the Road Trip car, Plug Hero, the crab and two doodles) walk their path, 1 tile (36 px) per 1.6 s, pause 2 s at each end and 0.8 s at corners, and turn to face where they go | the village is lived in; tap one to see the artwork it comes from |
-| Village clouds | two clouds cross over the island, 72 and 84 s, only over the drawn village | the background loop of the village |
+| Village clouds | two faint clouds drift through the sky behind the floating islands, 72 and 84 s | the background loop of the village; they never cross a face |
 | Gate lantern | soft glow, one pulse every 6 s | points to "Work with Ekky" |
 | Noodle Bath steam | one puff every 6 s | the bath is warm (the only smoke: the snack bar could not be cut cleanly) |
 | Water | lightens by at most 10 % over 10 s | the sea is water, not paint |
