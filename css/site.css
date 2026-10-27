@@ -462,3 +462,16 @@ html.pre-game body>:not(#game):not(dialog):not(.loader):not(script){display:none
 .play-card h3{font-size:1.2rem;color:var(--ink)}
 .play-card p{margin-top:6px;font-size:.9rem;color:var(--ink-soft)}
 .play-card:hover,.play-card:focus-visible{transform:rotate(var(--tilt,-1deg))}
+
+/* Desktop reactions, same style as the game: nav links grow from their left edge, the Play button's icon tilts on touch and
+   hover. Touch squash, wiggle and burst for the work tiles come from js/site.js; nothing here loops. */
+.nav a,.cats button{transform-origin:left center}
+.g-mode-fab.t-squash img{animation:t-icon .3s ease-out}
+@media (hover:hover) and (pointer:fine){
+  .nav a,.cats button,.g-mode-fab,.g-mode-fab img,.logo{transition:color .2s,transform .2s,translate .2s,scale .2s,rotate .2s}
+  .nav a:hover,.cats button:hover{scale:1.05}
+  .g-mode-fab:hover{translate:0 -2px;scale:1.04}
+  .g-mode-fab:hover img{rotate:-8deg;scale:1.1}
+}
+@media (prefers-reduced-motion:reduce){.g-mode-fab.t-squash img{animation:none}
+  .nav a:hover,.cats button:hover,.g-mode-fab:hover,.g-mode-fab:hover img{scale:none;translate:none;rotate:none}}
