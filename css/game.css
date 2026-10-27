@@ -145,7 +145,7 @@ body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family
 .g-result.show{display:flex;animation:overIn var(--dur) var(--ease-in)}
 .g-result h2{font-size:2.6rem;color:#FFB400;text-shadow:0 5px 0 #2B1342;animation:resFade var(--dur-slow) var(--ease-in) both}
 @keyframes resFade{from{opacity:0;transform:translateY(10px)}}
-.g-result .score{font-size:4rem;font-weight:700;line-height:1;display:inline-flex;align-items:center;gap:12px}
+.g-result .score{font-size:4rem;font-weight:700;line-height:1;display:inline-flex;align-items:center;gap:12px;color:#fff}
 .g-result .score .ico{width:.8em;height:.8em;vertical-align:0}
 .g-result p{font-family:Poppins;color:#cbbfe3}
 .g-flash{position:absolute;inset:0;background:#FF6B6B;opacity:0;pointer-events:none;z-index:2}
@@ -549,6 +549,17 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 /* the turn-your-phone hint turns twice, then rests */
 .pp-turn img{animation-iteration-count:2}
 
+/* G1: the village zooms (1x to 2x) with a finger or the +/- buttons; nothing animates, the view follows the finger */
+.v-map{overflow:hidden;touch-action:pan-y;border-radius:18px}
+.v-map.zoomed{touch-action:none}
+.v-zoom{position:absolute;inset:0;transform-origin:0 0;container-type:inline-size}
+.v-walk{transition:none}
+/* Director (sprint h0): the two smallest places get 8 px more to tap, without moving anything */
+.v-place::after{content:"";position:absolute;inset:-8px}
+.v-zoomctl{position:absolute;right:6px;bottom:6px;z-index:4;display:flex;flex-direction:column;gap:6px}
+.v-zoomctl .g-round{width:44px;height:44px;display:grid;place-items:center;font-size:1.3rem}
+.g-made{margin:14px 0 0;font-size:.9rem;color:inherit;opacity:.85}
+.g-made .g-link{min-height:44px;padding:0 4px;font-weight:700;color:#5b2fb0;text-decoration:underline}
 /* ===== S1, the sketchbook look: start screen and HUD (Developer B) =====
    The start screen is a page of Ekky's sketchbook: off-white paper with a faint grain (tokens from css/site.css),
    the six drawings taped on at a fixed 1 to 2 degree tilt, flat paper tiles, ink text. Nothing moves.
