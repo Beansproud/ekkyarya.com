@@ -160,6 +160,7 @@ const COPY = {
     "town.explore": "Explore the island",
     "town.list": "Show places as a list",
     "town.seeArt": "See the artwork",
+    "town.showVillage": "Show the village",
     // Who is Ekky? and About (B26)
     "about.title": "About Ekky",
     "about.body": "Ekky is a character illustrator from Indonesia. He fills worlds with characters: kids on adventures, monsters on their lunch break, little planets with someone working late. His work is bright, bold and a bit silly, and he likes it when one drawing tells a whole story.",
@@ -396,6 +397,7 @@ const COPY = {
     "town.explore": "Jelajahi pulau",
     "town.list": "Daftar tempat",
     "town.seeArt": "Lihat karyanya",
+    "town.showVillage": "Lihat desa",
     "about.title": "Tentang Ekky",
     "about.body": "Ekky adalah ilustrator karakter asal Indonesia. Dunianya penuh karakter: anak-anak yang berpetualang, monster yang sedang istirahat makan siang, planet kecil dengan seseorang yang lembur. Karyanya cerah, berani, dan sedikit konyol, dan ia paling senang kalau satu gambar bisa bercerita utuh.",
     "about.fact.from": "Ilustrator karakter asal Indonesia",
