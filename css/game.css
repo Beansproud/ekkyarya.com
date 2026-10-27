@@ -698,3 +698,8 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
    in dark mode got the dark site tokens (dark paper) under the ink-colored text, and the title, tagline and headings
    vanished (owner screenshot, iPhone, 21:46). The classic site keeps its own dark mode. */
 #game{--paper:#FBF8F1;--paper-2:#F6F1E6;--paper-line:#E4DCCB;--tape:rgba(255,180,0,.35);--card:#FFFDF8;--line:#E4DCCB;--bg:#FBF8F1;--side:#F6F1E6;color-scheme:light}
+
+/* 44 px hit areas (sprint h1): same look, bigger target */
+#gMapListBtn,.g-vcard .g-btn,.g-villager-art{min-height:44px;min-width:44px}
+.v-map .v-label{pointer-events:auto}
+.v-label::after{content:"";position:absolute;left:50%;top:50%;width:max(100%,44px);height:44px;transform:translate(-50%,-50%)}

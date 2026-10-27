@@ -79,6 +79,7 @@ const PLACES=[
   {id:"gallery",     key:"town.gallery", icon:"assets/sprites/toybox.png",    from:"toybox", open:p=>openLevel(2,p)},
   {id:"doodle",      key:"town.workshop",icon:"assets/ui/ghost.png",          from:"doodles", open:p=>openLevel(3,p)},
   {id:"observatory", key:"town.launch",  icon:"assets/ui/astronaut.png",      from:"nft-3", open:()=>startArcade(), feature:"starCatcher"},
+  {id:"patrol",      key:"town.patrol", icon:"assets/sprites/hero-desk-s.png", box:[395,415,465,485], label:[430,489], open:()=>openPatrol(), feature:"paintPatrol"},
   {id:"hire",        key:"town.hire",    icon:"assets/sprites/gate.png",      open:p=>openHire("",p), hire:true},
 ];
 const pct=(v,of)=>(v/of*100).toFixed(3)+"%";
@@ -92,9 +93,9 @@ function renderMap(){
   W.innerHTML=`<div class="v-zoom" id="gMapZoom"><img class="v-ground" src="assets/village/village.png" alt="" decoding="async" fetchpriority="high">`+
     V.frames.map((f,k)=>{const p=art[k];if(!p)return "";const deg=(Math.atan(f.slope)*180/Math.PI).toFixed(2);
       return `<img class="v-frame" src="${thumbOf(p)}" alt="" decoding="async" style="left:${pct(f.x,V.w)};top:${pct(f.y,V.h)};width:${pct(f.w,V.w)};height:${pct(f.h,V.h)};transform:skewY(${deg}deg)">`}).join("")+
-    places.map(p=>{const b=V.places[p.id].box,l=V.places[p.id].label;
+    places.map(p=>{const b=(V.places[p.id]||p).box,l=(V.places[p.id]||p).label;
       return `<button class="v-place${p.hire?" hire":""}" data-place="${p.id}" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}" aria-label="${esc(t(p.key))}"></button>
-      <span class="v-label${p.hire?" hire":""}" aria-hidden="true" style="left:${pct(l[0],V.w)};top:${pct(l[1],V.h)}">${esc(t(p.key))}</span>`}).join("");
+      <span class="v-label${p.hire?" hire":""}" data-place="${p.id}" aria-hidden="true" style="left:${pct(l[0],V.w)};top:${pct(l[1],V.h)}">${esc(t(p.key))}</span>`}).join("");
   $("gMapZoom").insertAdjacentHTML("beforeend",villageLife(V)+"</div>");
   W.insertAdjacentHTML("beforeend",`<div class="v-zoomctl"><button class="g-round" data-zoom="1" aria-label="${esc(tt("town.zoomIn","Zoom in"))}">${ico("i-plus")}</button><button class="g-round" data-zoom="-1" aria-label="${esc(tt("town.zoomOut","Zoom out"))}"><b aria-hidden="true">&minus;</b></button></div>`);
   Z.base=null;Z.s=1;zoomTo(1,0,0);
@@ -165,7 +166,7 @@ function openVillager(b){const k=+b.dataset.piece,p=PROJECTS[k];if(!p)return;
     <div class="g-vcard"><button class="g-villager-art" data-see="${k}" aria-label="${esc(t("town.seeArt")+": "+ptitle(p))}"><img src="${thumbOf(p)}" alt="" loading="lazy"></button>
     ${plabel(p)?`<p><span class="tag">${esc(plabel(p))}</span></p>`:""}<p>${esc(pdesc(p))}</p><p><button class="g-btn" data-see="${k}">${ico("i-eye")} ${esc(t("town.seeArt"))}</button></p></div>`+hireChip())}
 $("gMapWrap").addEventListener("click",e=>{const v=e.target.closest(".v-folk,.v-walker");if(v){buzz(10);sfx("tap");return openVillager(v)}
-  const b=e.target.closest(".v-place");if(!b)return;buzz(15);sfx("tap");
+  const b=e.target.closest(".v-place,.v-label");if(!b)return;buzz(15);sfx("tap");
   const pl=PLACES.find(p=>p.id===b.dataset.place);pl.open(pl)});
 $("gMapList").addEventListener("click",e=>{const b=e.target.closest("[data-place]");if(b){buzz(10);sfx("tap");const pl=PLACES.find(p=>p.id===b.dataset.place);pl.open(pl)}});
 // The list view replaces the island on the same screen (each place once, 48 px rows); the same link switches back.
