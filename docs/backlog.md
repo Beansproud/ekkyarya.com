@@ -6,16 +6,26 @@ Author: Game Director. Gate G1. This file merges `docs/game-brief.md` ("brief #n
 
 ## Owner direction (2026-10-27)
 
-1. **"Make the games actually very simple."** Every game is understood in one look and played with one finger, with no rules to learn. Round 1 therefore drops the whole meta-game: coins, packs, rarity drops, XP, player levels, trophies and lives. See D0.
-2. **"Use De-Gamification: flexibility to play your way."** See the principles below and D0c.
-3. **No locked features.** Every visitor gets every feature, with no login, no coins and no unlocking. Round 1 is static and has no login at all (project rule). If a login ever comes, it only keeps your colorings across devices; it never unlocks anything. See D0b.
-4. **Owner answer (2026-10-27): "no trophies, no lives, nothing ever locked."** This settles D0b, D0c, D1 and D2, and closes owner questions 12 and 13.
-5. **Owner answer (2026-10-27): "Ekky has the rights to all NFT".** NFT #3 (Astronaut) and NFT #9 (Radio Explorer) are his own work, `own: true`. They can be icons, stickers and share-card art. This closes the rights half of owner question 3; larger files are still wanted.
-6. **Owner answer (2026-10-27): "the glasses guy is Ekky."** The glasses guy from `hero.png` (Little Planet) is the one Ekky avatar everywhere. The blue-haired `face.png` is one of his characters (the Secret Android boy), not him. This closes owner question 1.
-7. **Owner answer (2026-10-27): "everything is owned by Ekky."** Every piece whose ownership was unclear is his own work, `own: true`: Morumelons, Oasis, Web Illustration, My Sports Club, Save Early Buy Future, Plug Hero, Thinker & Doer, Type Is Art, Android, Kemerdekaan, RPG, Toybox, and the NFTs. They may be icons, stickers, coloring pages and share-card art.
+Each item quotes the owner's own words exactly as typed, with emoji left out, and names the session log they are in.
+
+1. **Owner, typed in the Game Director session: "make the games actually very simple pleace".** Every game is understood in one look and played with one finger, with no rules to learn. Round 1 therefore drops the whole meta-game: coins, packs, rarity drops, XP, player levels, trophies and lives. See D0.
+2. **Owner, typed in the Game Director session: "use De-Gamification - Flexibility to Play Your Way - theory".** Also: "but user can creatively use this website" (see principle 6 and D17). See the principles below and D0c.
+3. **Owner, typed in the Game Director session: "user who login is alredy have all theor features etc".** Read as: no locked features. Every visitor gets every feature, with no login, no coins and no unlocking. Round 1 is static and has no login at all (project rule). If a login ever comes, it only keeps your colorings across devices; it never unlocks anything. See D0b.
+4. **Owner, typed in the Game Director session: "no trophies, no lives, nothing ever locked".** This settles D0b, D0c, D1 and D2, and closes owner questions 12 and 13.
+5. **Owner, typed in the Game Director session: "yes ekky have right to all NFT".** NFT #3 (Astronaut) and NFT #9 (Radio Explorer) are his own work, `own: true`. They can be icons, stickers and share-card art. This closes the rights half of owner question 3; larger files are still wanted.
+6. **Owner, typed in the Game Director session: "the glasses guy is ekky".** The glasses guy from `hero.png` (Little Planet) is Ekky. He is the avatar in the HUD, the map token, the game FAB, Level 1 ("Who is Ekky?") and the desktop hero wave. **Unchanged:** the middle tab button and the favicon keep the blue-haired `face.png`, because the owner asked for those earlier. Whether they should switch too is owner question 1b (default: leave them as they are).
+7. **Owner, typed in the Game Director session: "everything is own by ekky"** (also in the UX session: "everything is own by ekky. do whatever you can at its finest we will limit later"). Every piece whose ownership was unclear is his own work, `own: true`: Morumelons, Oasis, Web Illustration, My Sports Club, Save Early Buy Future, Plug Hero, Thinker & Doer, Type Is Art, Android, Kemerdekaan, RPG, Toybox, and the NFTs. They may be icons, stickers, coloring pages and share-card art.
    **The project's hard rule still holds and is not changed by this answer:** the fan-art pieces (`one-piece-fan-art`, `rocket-groot-fan-art`, `spider-verse-fan-art`, `adventure-time-fan-art`, `godzilla-kong-fan-art`, `game-pattern`, `dnd`) show characters owned by others, and the client pieces (`indomaret`, `bca-flazz-card`, `pop-mie`, `ancol-logo`, `msi`, `tea-break-website`) carry clients' brands. They stay portfolio-only. Only the integrator can change that rule (owner question 14).
-8. **Owner direction (2026-10-27): "Don't limit yourself at the moment, do whatever you can, and we limit after."** The two-day cap is lifted. Every ticket in this file is round-1 scope, ranked P1 to P3. When the owner and the UX lead limit scope later, the cut line runs along that ranking: P3 goes first, then P2. The project's hard rules (static, no backend, no login, the asset rule, no emoji) still apply.
-9. **Owner answer (2026-10-27): "He is Indonesian, speaks Bahasa and English."** The hiring facts show **"Based in Indonesia · Works in English and Bahasa Indonesia"** in desktop About, game level 1 ("Who is Ekky?") and the Final Quest sheet. The site's own text stays English (project rule).
+8. **Owner, typed in the Game Director session: "dont limit yourself at the moment do whatever you can and we limit after".** The two-day cap is lifted. Every ticket in this file is round-1 scope, ranked P1 to P3. When the owner and the UX lead limit scope later, the cut line runs along that ranking: P3 goes first, then P2. The project's hard rules (static, no backend, no login, the asset rule, no emoji) still apply.
+9. **Owner, typed in the Game Director session: "he is indonesian speak bahasa and english".** The hiring facts show **"Based in Indonesia · Works in English and Bahasa Indonesia"** in desktop About, game level 1 ("Who is Ekky?") and the Final Quest sheet. The site's own text stays English (project rule).
+10. **Owner answers, typed in the Game Director session**, numbered as the owner sent them (emoji left out). The owner's numbers likely follow another session's question list, so UX and the integrator should check the mapping:
+    - "2. Evening to night, starting price $25." Read as: availability is evenings and nights (Indonesia time), and projects start at $25. Final Quest and About can show "Projects from $25". UX words the availability line.
+    - "3. Sequis, Intiland, Viar, pbTaxand, Honshu, Suapi, Bima (endi onok popmie wkk)" Read as: the clients to name in the "Worked with" row. The note is Javanese for roughly "where's Pop Mie, haha". **Unclear:** does it mean Pop Mie was never a client (a pitch or personal piece)? Until confirmed, `pop-mie` stays in the hard-rule client list.
+    - "4. NFT own project." The NFTs are his own project: `own: true`, consistent with answer 5 above.
+    - "5. endi onok bossfight." Roughly "where's the boss fight?". Read as: the audit's new title "Boss Fight" for `rpg` is wrong, since there is no boss fight in the piece. Default: keep today's title "RPG" until UX proposes another.
+    - "6. self project." **Unclear which piece this answers.** Most likely "Save Early, Buy Future" (the audit asked "client or personal"). Under answer 7 it is `own: true` either way. Only its label ("Client: ..." or none) waits on the mapping.
+    - "7. yes to all Morumelon pieces." Read as: every Morumelons piece is his own and may be used (icons, stickers, coloring, share cards), with the "Client: Morumelons" tag kept.
+11. **Owner, typed in the UX session (confirmed by the integrator): "or make config for it".**: every optional feature gets an on/off switch, so scope can be limited later without code changes. See B38.
 
 ## Design principles: de-gamification, play your way
 
@@ -68,12 +78,13 @@ The game is three simple things plus one button: **Color** (tap a shape to fill 
 | B17 | Final Quest quick sheet | DEV, UX | S | 1.5 | P1 |
 | B18 | Text sizes and tap targets | DEV | S | 2 | P1 |
 | B21 | Stickers and the Doodle Scene (creative mode) | DEV | M | 3 | P1 |
+| B38 | Feature switches (`FEATURES` in `js/data.js`) | DEV | S | 1.5 | P1 (owner: "or make config for it") |
 | B19 | Round-1 playtest and scorecard run | DIRECTOR | S | (DIRECTOR) | P1, last |
-| | **DEV total, P1** | | | **24.5** | |
+| | **DEV total, P1** | | | **26** | |
 
-**Budget.** P1 is about 24.5 h of DEV work. P2 and P3 add about 25 h more, so the whole backlog is about 50 h (6 to 7 working days for one developer). There is no cap for now (owner direction 8). If a cut is needed later, the Director's suggested first cut is: all of P3, then B18, the desktop strip in B08 and the name field in B11.
+**Budget.** P1 is about 26 h of DEV work. P2 and P3 add about 25 h more, so the whole backlog is about 50 h (6 to 7 working days for one developer). There is no cap for now (owner direction 8). If a cut is needed later, the Director's suggested first cut is: all of P3, then B18, the desktop strip in B08 and the name field in B11.
 
-**Build order:** P1 first: B03 → B05 → B06 → B07 → B08 → B09 → B10 → B11 → B12 → B21 → B13 → B16 → B17 → B15 → B18. Then P2 and P3 in table order. UX works B04, B14 and B26 in parallel. B19 runs after P1 and again at the end.
+**Build order:** P1 first: B03 → B38 → B05 → B06 → B07 → B08 → B09 → B10 → B11 → B12 → B21 → B13 → B16 → B17 → B15 → B18. Then P2 and P3 in table order. UX works B04, B14 and B26 in parallel. B19 runs after P1 and again at the end.
 
 ---
 
@@ -81,12 +92,12 @@ The game is three simple things plus one button: **Color** (tap a shape to fill 
 
 Format for each: **Proposed (audit)** is what gets built if UX approves as written. **Director alternative** is there so UX can decide fast. Where the audit takes no position, the proposal comes from the brief or the owner.
 
-### D0. Simple games: no meta-game in round 1 (owner direction)
+### D0. Simple games: no meta-game in round 1 (owner direction 1)
 - **Proposed:** remove coins, the coin counter, packs and pack opening, rarity drop rates, XP, player levels, the "Lv" badge and the floating coin stars. The Cards tab becomes **Art**: every piece is visible with its title, description and tag, tap to view, "Hire Ekky" in the viewer. Rarity frames stay purely cosmetic (no foil, no "Not in your deck"). No trophies (D2).
 - **Why:** the owner asked for very simple games. A visitor who has to learn coins, packs and drop rates spends time on rules instead of on Ekky's art. It also takes away the brief's balance work (pricing, pity, completion cost), and the audit's "art never behind coins" holds by design.
 - **Director note:** pack opening was the best moment in today's game (brief). Its feel (tap, flip, reveal) can live on in the coloring reveal and the share-card slide-up, with no reward attached.
 
-### D0c. De-gamification (Owner decided)
+### D0c. De-gamification (Owner decided: owner directions 2 and 4)
 - **Decided:** apply the five principles above. Concretely, for round 1:
   - **no trophies at all**; the Trophies tab becomes **"Mine"** (your creations and your best Star Catcher run: things you made, not rewards), see D2;
   - **no lives** in Star Catcher, see D1;
@@ -95,23 +106,23 @@ Format for each: **Proposed (audit)** is what gets built if UX approves as writt
   - a "Just show me the art" path on the start screen.
 - **Why:** points and badges pull attention away from the art and toward the meta-game. A hiring client and a casual visitor both came for Ekky's drawings, and free choice keeps them there longer than a checklist does.
 
-### D17. Creative freedom (owner direction)
+### D17. Creative freedom (owner: "but user can creatively use this website")
 - **Decided by the owner, scope proposed by the Director:**
   - **Colors:** "Ekky's colors" stays the default row, plus an **"Any color"** swatch that opens the system color picker. The brief's "no free picker" rule is dropped: the result is the visitor's, not a copy of Ekky's.
-  - **Stickers in round 1:** Ekky's own doodles (cat, palette, book, robot, cassette, microphone, planet, the glasses-guy Ekky head, the blue-haired boy from `face.png` (his character), the NFT astronaut and radio explorer, plus every T1 cut-out). Drag, pinch to scale and rotate, drag to the bin. Up to 12 per picture. Moved up from "later" into round 1 (B21).
+  - **Stickers in round 1:** Ekky's own doodles (cat, palette, book, robot, cassette, microphone, planet, the glasses-guy Ekky head, the blue-haired face from `face.png`, the NFT astronaut and radio explorer, plus every T1 cut-out). Drag, pinch to scale and rotate, drag to the bin. Up to 12 per picture. Moved up from "later" into round 1 (B21).
   - **Blank page:** "Start from scratch" opens a plain paper background where the visitor only uses stickers and colors. This is a **Doodle Scene** made of Ekky's characters (B21).
   - **Also in scope (P2):** brush with pressure, and more pages (B29, B20).
 - **Why:** creating something of your own is the strongest intrinsic reward (D0c) and the best share: every result is different, and every result is made of Ekky's art and carries his credit.
 - **Guard:** stickers and backgrounds come only from `shareable()` art (B03). No photo upload and no free text on the picture in round 1, so nobody can publish other people's characters or words under Ekky's name.
 
-### D0b. No login, nothing ever locked (Owner decided)
+### D0b. No login, nothing ever locked (Owner decided: owner directions 3 and 4)
 - **Decided:** no login in round 1 (project rule). Every visitor can use every feature from the first second: coloring, Star Catcher, all the art, sharing, Hire. Map levels are never locked. What you made (colorings, scenes, best score) lives in `localStorage` only.
 - **Later:** if a login comes in a later round, it only syncs colorings and scenes between devices. It never gates a feature.
 
-### D1. Lives in Star Catcher (Owner decided)
+### D1. Lives in Star Catcher (Owner decided: "no lives")
 - **Decided: no lives.** A virus hit costs 2 points and a short shake, never the round. Every round lasts the full 30 s, and there is no game-over screen. The audit's hearts and the brief's cat are both dropped, so no lives icon is needed.
 
-### D2. Trophies (Owner decided)
+### D2. Trophies (Owner decided: "no trophies")
 - **Decided: no trophies and no achievements**, in round 1 or later. No trophy toasts, badges or progress bars.
 - The former Trophies tab becomes **"Mine"**: your colorings (re-open, re-share), your best Star Catcher run, the sound and vibration toggles, and a small "Reset" link. It shows things you made, never rewards.
 - **Still for UX to decide:** the "Mine" tab icon. Director suggestion: the palette doodle. The audit's trophy cup is not needed.
@@ -154,7 +165,7 @@ Format for each: **Proposed (audit)** is what gets built if UX approves as writt
 - **Director alternative, simpler and play-your-way:** four equal tiles, each with an Ekky icon and a two-word label: **Color**, **Catch stars**, **Explore**, **See the art**. Plus the "Hire Ekky" HUD chip, and "Just show me the art" (the classic site) as a full-width link. *Why:* "Play" doesn't say what you play. Under D0c, no choice is pushed as the main one, but every choice is one tap. **UX decides.** B08 builds whichever UX picks.
 
 ### D12. Icon map
-- **Proposed (audit section 3, which the Developer is already following in T1):** Ekky avatar (Map tab center, HUD, map token, game FAB, Level 1, desktop hero wave): **the glasses guy's head from `hero.png`, owner decided.** Skill Tree: pen hand. Art Collection and the Art tab: palette. Doodle to Done: yellow ghost. Final Quest: monster head. Send: line "send" icon. Star Catcher button: astronaut helmet crop from NFT #3. Star Catcher items: star shape (+1), palette (+3), glowing star shape (+5), teal virus (hazard). General controls: one inline-SVG line set.
+- **Proposed (audit section 3, which the Developer is already following in T1):** Ekky avatar (HUD, map token, game FAB, Level 1, desktop hero wave): **the glasses guy's head from `hero.png`** (owner: "the glasses guy is ekky"). The middle tab button and the favicon keep `face.png` (owner's earlier request). Skill Tree: pen hand. Art Collection and the Art tab: palette. Doodle to Done: yellow ghost. Final Quest: monster head. Send: line "send" icon. Star Catcher button: astronaut helmet crop from NFT #3. Star Catcher items: star shape (+1), palette (+3), glowing star shape (+5), teal virus (hazard). General controls: one inline-SVG line set.
 - **Settled by the owner's NFT answer:** the astronaut helmet crop is the Star Catcher button. The Director's star-shape alternative is withdrawn.
 - **Not needed any more** (owner decisions D0, D1, D2): hearts, the trophy cup, the map pin, and the pack, Legendary Pull and Completionist icons.
 
@@ -184,7 +195,7 @@ Owner DEV · Size M · **Done: merged into `main`** · From: plan T0
 Owner DEV (UX picks crops) · Size L · **In progress on `dev/assets`**, following audit section 3 · Depends: B01 · From: plan T1, brief #2, audit #5, #7, #16
 - **Goal:** every emoji and generic glyph replaced per D12, with cut-out transparent PNGs in `assets/ui/`, one inline-SVG line-icon set, a star shape and a sparkle shape. **Every Ekky doodle cut-out doubles as a sticker** for B21 (D17). Re-crop `cat-social.png` and `cat-web.png`.
 - **Note from this backlog:** with D0, D1 and D2, T1 can skip hearts, the trophy cup, the map pin, and the pack, coin, Legendary Pull and Completionist icons.
-- **Acceptance:** the G2 emoji scan of `www/` returns 0. A UX contact sheet shows each icon readable at 32 px on `#2B1642` and on white. Nothing in `assets/ui/` is cut from fan or client art. One single avatar file, the glasses guy's head crop from `hero.png`, is used everywhere "Ekky" appears. `face.png` is not used as Ekky anywhere (it may appear only as a character sticker).
+- **Acceptance:** the G2 emoji scan of `www/` returns 0. A UX contact sheet shows each icon readable at 32 px on `#2B1642` and on white. Nothing in `assets/ui/` is cut from fan or client art. The glasses guy's head crop from `hero.png` is the Ekky avatar in the HUD, map token, FAB, Level 1 and hero wave. The middle tab button and the favicon still use `face.png`.
 
 ### B03. Art metadata and the share guard
 Owner DEV · Size S (1 h) · P1 · Depends: B01 · From: brief #1, audit #6
@@ -337,8 +348,19 @@ Owner DEV · Size M (3 h) · P1 · Depends: B10, B02, B03 · From: owner directi
   - The tray contains no fan or client art (`shareable()` check).
   - Pinch works with two fingers, and every control is at least 44 x 44 px.
 
+### B38. Feature switches
+Owner DEV · Size S (1.5 h) · P1, build right after B03 · Depends: B01 · From: the owner ("or make config for it", UX session) and the owner's "we limit later"
+- **Goal:** a `FEATURES` object in `js/data.js`, next to `CONFIG`, with one `true`/`false` switch per optional feature:
+  - `starCatcher`, `coloring`, `stickers`, `doodleScene`, `anyColor`, `shareCards`, `coloringLinks`, `challengeLinks`, `cardGift`, `recommend`, `myGallery`, `brush`, `holoCards`, `pwa`, `linkPreviews`;
+  - the game mode itself, `gameMode`, which lets the owner fall back to the classic site only.
+
+  Every entry point (start-screen tile, map node, header button, tray, share button, link router) checks its switch. A switched-off feature leaves no empty slot, dead button or broken link. A deep link to a disabled feature opens the start screen.
+
+  "Hire Ekky", the art, the lightbox and the contact details are **not** switchable: they are the portfolio.
+- **Acceptance:** for each switch, setting it to `false` and reloading hides every entry point to that feature on the phone and desktop, with no console error. The capture set shows no gap. A sample deep link for that feature opens the start screen. With every switch off, the game still offers the art and "Hire Ekky". With `gameMode: false`, phones get the classic site.
+
 ### B19. Round-1 playtest and scorecard run
-Owner DIRECTOR · Size S · P1, runs after P1 and again at the end · Depends: B03 to B18
+Owner DIRECTOR · Size S · P1, runs after P1 and again at the end · Depends: B03 to B18, B21, B26, B38
 - **Goal:** a timed first-60-seconds run from a fresh profile, share taps, deep-link time, Hire from each screen, any dead moment longer than 10 s, Star Catcher averages, a **"simple" test**: 3 first-time testers each start coloring and Star Catcher without any help, and a **"play your way" test**: each tester is asked to do only what they feel like. Note which paths they pick, whether any felt forced, and whether anyone hit a wall, a lock or a fail screen (target: none), and a **"make it yours" test**: each tester makes one coloring or scene. Count how many different-looking results come out, and how many testers wanted to share theirs.
 - **Acceptance:** `docs/playtest-r1.md` gives pass or fail with numbers for each scorecard row and for the simple test. Each fail becomes a ticket.
 
@@ -355,7 +377,7 @@ In build order. Each acceptance test gets expanded when the developer picks the 
 | B23 | P2 | Card gift share (own art only) | DEV | S | B11 | brief #18 (F) | Test: Share shows on own pieces only. The friend's link opens that piece. |
 | B24 | P2 | "I recommend Ekky" sticker | DEV, UX | S | B11 | brief #19 | 4 preset reasons, no free text. Test: 2 taps to the preview, 1 to share. |
 | B25 | P2 | Other deep links and the desktop phone frame | DEV | S | B12 | brief #9 (rest), brief issue 16 | Test: each sample link opens its screen in under 2 s. Desktop shows a centered 430 px frame. |
-| B26 | P2 | Hiring facts, "Worked with", client-work row | UX, OWNER | S | owner questions 7 and 8 (location and languages answered) | audit #17, #18, audit section 2 | Location and languages can ship now. Test: "Based in Indonesia · Works in English and Bahasa Indonesia" shows in desktop About, level 1 and Final Quest; the remaining facts follow when owner questions 7 and 8 are answered. |
+| B26 | P1 | Hiring facts, "Worked with", client-work row | UX, DEV | S | owner answers 9 and 10 | audit #17, #18, audit section 2 | All facts can ship now: "Based in Indonesia · Works in English and Bahasa Indonesia", "Projects from $25", the availability line (UX wording of "evening to night") and "Worked with Sequis, Intiland, Viar, pbTaxand, Honshu, Suapi and Bima". Test: all of them show in desktop About, level 1 and the Final Quest sheet. |
 | B28 | P2 | "My gallery" share card (replaces the brief's Player Card) | DEV | M | B11 | brief #17, D0c | Shows the player's colorings next to Ekky's originals: what they made, with no stats or levels. Test: "Share my gallery" makes one card with up to 4 colorings and the credit line. |
 | B29 | P2 | Coloring v2: reveal slider, zoom, eraser, brush with pressure | DEV | M | B10 | brief #6, #22 | Test: two-finger zoom works. A stylus changes the brush width. |
 | B30 | P2 | Doodle to Done with a real process | UX, OWNER, DEV | S | owner question 10 | audit #24 | Test: the sketch and the final of the same piece show. |
@@ -377,14 +399,15 @@ Asked through the integrator. The safe default applies until an answer comes in.
 
 | # | Question | Safe default | Blocks |
 |---|---|---|---|
-| 1 | Which avatar is really you? | **Answered:** the glasses guy in `hero.png`. | closed |
-| 2 | Which pieces are your own? | **Answered:** everything is Ekky's own. All pieces outside the hard-rule list are `own: true`. **Still open (small):** are "Beansproud" and "Puff" character names (for the title)? Default: the audit's title "Viking vs Dragon Kid". | B03, B04 |
+| 1 | Which avatar is really you? | **Answered** (owner, Game Director session): "the glasses guy is ekky". | closed |
+| 1b | Should the middle tab button and the favicon switch from the blue-haired face to the glasses guy? | Leave them as they are (the owner asked for the blue-haired face there earlier). | B02 |
+| 2 | Which pieces are your own? | **Answered:** everything is Ekky's own. All pieces outside the hard-rule list are `own: true`. **Still open (small):** are "Beansproud" and "Puff" character names (for the title)? Default: the audit's title "Viking vs Dragon Kid". The owner's "endi onok bossfight" rejects the title "Boss Fight" for `rpg`; it stays "RPG" until UX proposes another. Which piece is "self project" (answer 10)? Default: Save Early, Buy Future with no client tag. | B03, B04 |
 | 3 | NFT #3 and #9: rights, and larger files | **Rights answered:** Ekky has the rights to all NFTs, so both are `own: true`. **Still open:** can you send them at 1000 px or more? Until then they show at their current 256 px (no upscaling on share cards; the sticker crop uses the native size). | B02, B34 |
 | 4 | What domain do share links use: `ekkyarya.com` or the GitHub Pages URL for now? | `CONFIG.siteUrl` stays empty, so links use the current page URL. In the Android app, links use the Pages URL. | B11, B12 |
 | 5 | Real email, WhatsApp, Instagram, Dribbble and Behance. | Placeholders stay hidden (B15). No public launch until answered. | B15, B17 |
 | 6 | Can you send line layers (transparent PNG, 2000 px) for Road Trip, Little Planet, Giraffe and Plug Hero? Is it OK to extract your own lines from the JPG by darkness threshold? | Per D8 as UX approves: Road Trip from a layer if it arrives in time, otherwise Giraffe by threshold. | B09, B20 |
-| 7 | Reply time, availability and a starting price (or "quote only"). | No promised reply time; "Ask for a quote". | B17, B26 |
-| 8 | May we name your clients in a "Worked with" row? | No row. The tags only use names already in today's titles. | B26 |
+| 7 | Reply time, availability and a starting price | **Answered:** "Evening to night, starting price $25." **Still open (small):** a reply time (for example "replies within 2 working days")? Default: none promised. | B17, B26 |
+| 8 | May we name your clients in a "Worked with" row? | **Answered:** "Sequis, Intiland, Viar, pbTaxand, Honshu, Suapi, Bima". The row shows these names as text (no client logos as icons). **Still open:** is Pop Mie a client at all ("endi onok popmie")? Should Indomaret, BCA, MSI and Ancol, which are in the portfolio, also be named in the row? Default: the 7 named clients only. | B26 |
 | 9 | Location and languages | **Answered:** Indonesian, works in English and Bahasa Indonesia. **Still open (small):** which city or time zone (Indonesia has three: WIB GMT+7, WITA GMT+8, WIT GMT+9)? Default: "Based in Indonesia" with no time zone. | B26 |
 | 10 | Sketch files of one lead piece. | Text-only process steps. | B30 |
 | 11 | An SVG logo, a Type Is Art still, and doodle cut-outs. | Today's files. Any crop that fails at 32 px becomes a simple palette shape. | B02, B34 |
@@ -406,7 +429,7 @@ Integrator question: a QR code on share cards needs an encoder (a new package or
 | 4 Cut the clutter | B05 | | 4 Art within 10 s | B08 |
 | 5 Page pipeline | B09 | | 5 Emoji | B02 |
 | 6 Coloring screen | B10, B21 (P1), B29 | | 6 Fan and client tags | B03 |
-| 7 Share renderer | B11 | | 7 One avatar | B02 (owner: the glasses guy) |
+| 7 Share renderer | B11 | | 7 One avatar | B02 (owner: "the glasses guy is ekky"; tab and favicon unchanged, owner question 1b) |
 | 8 Share service | B11 | | 8 Titles, descriptions | B04 (UX-1) |
 | 9 Deep links | B12, B25 | | 9 Order, rarity | B04 (D4, D5) |
 | 10 Link encoding | B12 | | 10 Contrast | B16 |
