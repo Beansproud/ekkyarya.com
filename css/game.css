@@ -621,8 +621,9 @@ body.game-mode #game.at-start{background:var(--paper,#FBF7EE) var(--grain);color
 .g-sheet,#game:has(.c-over.open) .g-sheet{top:0}
 .g-sheet-in{padding-bottom:calc(env(safe-area-inset-bottom) + 104px);max-height:calc(100% - env(safe-area-inset-top) - 68px)}
 .pp-cast{font-size:.85rem}
-.pp-cast .g-link{min-height:44px;padding:0 4px;color:#FFB400;text-decoration:underline}
-@media (orientation:landscape){.pp-end>p:not(.pp-cast){display:none}.pp-end .pp-art{max-height:22vh}.pp-end{gap:4px}.pp-cast{margin:0;line-height:1.1}}
+.pp-cast .g-link{min-height:44px;padding:0 2px;color:#FFB400;text-decoration:underline}
+.pp-done{font-family:Fredoka,sans-serif;font-weight:700;font-size:1.05rem;color:#fff!important;margin:0}
+@media (orientation:landscape){.pp-end>p:not(.pp-cast):not(.pp-done){display:none}.pp-end .pp-art{max-height:18vh}.pp-end{gap:4px}.pp-cast{margin:0;line-height:1.1}}
 
 /* ===== Developer A: village zoom nits (UX): labels keep their 1x size when the map is zoomed ===== */
 .v-map .v-label{transform:translate(-50%,0) scale(var(--zs,1));transform-origin:50% 0}
