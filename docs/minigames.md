@@ -84,7 +84,7 @@ Ride through Ekky's illustrations as **Ekky himself** on his desk chair, paint e
 ### Hero
 **Ekky** (owner: "use ekky as the hero"). Ekky is the glasses guy from Little Planet (owner, Game Director session: "the glasses guy is ekky"; confirmed in the integrator session: "yes to all").
 - **No redrawing:** the only full-body drawing of him is Little Planet, where he sits at his desk on a chair holding a stylus. So by default, **Ekky rides his desk chair**, cut out exactly as drawn. The chair glides along the ground (run), hops (jump), and the paint comes from his stylus.
-- If Ekky sends a standing or running pose of himself (owner question 1 below), that drawing replaces the chair, with no other change.
+- The owner confirmed there are no separate PNG files ("no png files, cut them from the images"), so **the chair version is final**.
 - `CONFIG.games.hero` points to the sprite file, so it can be swapped later without code changes.
 
 ---
@@ -174,12 +174,11 @@ Never used: the 8 fan-art pieces and the 9 client pieces on `main` (`CONFIG.reus
 
 ## Art production: from drawings to sprites
 
-Ekky's pieces are flat, finished illustrations, not sprite sheets. Two routes, best first:
+Ekky's pieces are flat, finished illustrations, not sprite sheets. The owner's answer, typed in the Game Director session: **"no png files, cut them from the images"**. So every sprite is cut from the published images:
 
-1. **Ekky's layered files** (owner question 1 below). Characters exported separately as transparent PNGs, about 1000 px tall. This is the cleanest result.
-2. **Cut-outs from the published images**, extending `scripts/ui-assets.py` into `scripts/sprites.py` (Pillow + numpy, already in use; no new packages):
+- **Cut-outs from the published images**, extending `scripts/ui-assets.py` into `scripts/sprites.py` (Pillow + numpy, already in use; no new packages):
    - Pieces on plain backgrounds (Plug Hero, Giraffe Ride, Big Catch, Road Trip, Merdeka 77, Little Planet, Noodle Bath, the NFT pieces) cut cleanly by background removal.
-   - Pieces with busy backgrounds (Coexistence, Monster Snack Bar, Broken-Down Bus, Hidden Monster, Virus and War, RPG) need a hand-drawn polygon mask per character, stored in the script as coordinates and reviewed on the contact sheet like the T1 icons.
+   - Pieces with busy backgrounds (Coexistence, Monster Snack Bar, Broken-Down Bus, Hidden Monster, Virus and War, RPG) need a polygon mask per character, placed along Ekky's own outline (the mask only selects pixels; the drawing itself is never changed), stored in the script as coordinates and reviewed on the contact sheet like the T1 icons.
    - Backgrounds are split into 2 to 3 parallax layers (sky, far, near) by cropping horizontal bands. Where a character covers the scene, a soft blur fills the gap behind it. **Nothing is redrawn:** every sprite is Ekky's own drawing exactly as he made it, only cut out and moved. No character is redrawn, traced, extended or imitated, and nothing comes from any existing game.
 
 **Animation without new drawings: "paper puppet" motion.** Each sprite is one still cut-out, moved by code, like a paper cut-out theatre. It suits Ekky's thick-outlined style and needs no extra frames. Following the owner's "slow but make sense":
@@ -275,7 +274,7 @@ Order: MG1 → MG2 → MG3 → **MG4 (go or no-go)** → MG5 and MG6 in parallel
 
 | # | Question | Safe default |
 |---|---|---|
-| 1 | Can Ekky export the main characters as separate transparent PNGs (layered files)? Priority: **Ekky himself standing or running** (a full-body pose; today there is only the seated one in Little Planet), the Blue Bird bird, the Virus and War helmet kid, the green monster, the tiger, the shark, the RPG giant. | Ekky rides his desk chair, cut from Little Planet. The other characters are cut from the published images (route 2); quality may be rougher on busy pieces. |
+| 1 | Layered character files? | **Answered:** "no png files, cut them from the images". Every sprite is cut from the published images with `scripts/sprites.py`, and Ekky rides his chair (Little Planet). |
 | 2 | Is it OK that the helmet kid's blaster fires paint, and that enemies are "colored in and befriended" rather than defeated? | **Answered:** "yes paint and befriend is ok". |
 | 3 | Heroes | **Answered:** "use ekky as the hero". Ekky is the hero of both games. |
 | 4 | Phone orientation for Paint Patrol | **Answered:** "landscape is fine". Landscape, with a "Play anyway" portrait fallback. |
