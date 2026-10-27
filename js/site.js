@@ -48,6 +48,16 @@ function heroArt(){if(document.body.classList.contains("game-mode"))return;const
 setTimeout(heroArt,0);document.addEventListener("click",e=>{if(e.target.closest("[data-classic]"))setTimeout(heroArt,0)});
 /* ===== Feature switches: entry points of a switched-off feature disappear (js/features.js) ===== */
 document.querySelectorAll("[data-feature]").forEach(el=>{if(!feature(el.dataset.feature))el.remove()});
+// S3: Ekky's hand lettering and his photo, each behind a switch that stays off until the files arrive. Only files listed
+// in assets/hand/index.json are ever requested (no 404s, no broken images). A word may have an Indonesian version,
+// "<word>-id.png"; the English lettering shows only in English. The heading keeps its text as the accessible name.
+if(feature("handLettering")||feature("aboutPhoto"))fetch("assets/hand/index.json").then(r=>r.ok?r.json():[]).catch(()=>[]).then(have=>{
+  if(!Array.isArray(have))return;
+  if(feature("handLettering"))document.querySelectorAll("[data-hand]").forEach(el=>{
+    const w=el.dataset.hand,f=have.includes(w+"-"+LANG+".png")?w+"-"+LANG+".png":LANG==="en"&&have.includes(w+".png")?w+".png":"";
+    if(f){el.style.backgroundImage=`url("assets/hand/${f}")`;el.classList.add("has-hand")}});
+  const fig=document.querySelector(".about-photo");
+  if(fig&&feature("aboutPhoto")&&have.includes("ekky.jpg")){fig.querySelector("img").src="assets/hand/ekky.jpg";fig.querySelector("img").alt=t("about.title");fig.hidden=false}});
 
 /* ===== Procedural placeholder art ===== */
 function rng(seed){return()=>((seed=Math.imul(seed^seed>>>15,seed|1)+0x6D2B79F5|0,(seed^seed>>>13)>>>0)%1e4)/1e4}
