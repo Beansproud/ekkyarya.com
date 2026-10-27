@@ -332,7 +332,8 @@ let lastScore=0;
 async function shareStars(){if(typeof Share==="undefined")return;
   try{const c=await Share.renderCard("stars",{score:lastScore}),blob=await new Promise(ok=>c.toBlob(ok,"image/png"));
     const file=new File([blob],`ekkyarya-stars-${lastScore}.png`,{type:"image/png"});
-    if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text:tt("stars.shareText","I caught {n} points in Ekky's Star Catcher.",{n:lastScore}).replace("{n}",lastScore)});return}
+    if(navigator.canShare&&navigator.canShare({files:[file]})){const url=siteBase();   // a friend can open the game from the share
+      await navigator.share({files:[file],text:tt("stars.shareText","I caught {n} points in Ekky's Star Catcher.",{n:lastScore}).replace("{n}",lastScore)+" "+url,url});return}
   }catch(e){if(e&&e.name==="AbortError")return}
   Share.downloadStars(lastScore)}
 if(cv&&feature("shareCards")&&!$("gResShare")){$("gAgain").insertAdjacentHTML("afterend",`<button class="g-btn alt sm" id="gResShare">${ico("i-share")} <span>${esc(t("reveal.share"))}</span></button>`);
