@@ -270,7 +270,6 @@ body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family
 .c-sw.on::before{box-shadow:0 0 0 3px #120a1f,0 0 0 6px #FFB400}
 .c-any::before{background:conic-gradient(#FF6B6B,#FFB400,#7ED9B0,#B8D5FF,#C9A7FF,#FF6B6B)}
 .c-any .ico{position:absolute;width:18px;height:18px;color:#2B1342}
-.c-any-input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;bottom:0;left:0}
 .c-tools{display:flex;gap:8px;flex:none}
 .c-tool{flex:1;min-height:48px;border-radius:14px;background:#2f1f47;border:2px solid #3e2a5c;color:#fff;display:flex;align-items:center;justify-content:center;gap:6px;font-family:Fredoka;font-weight:600;font-size:.95rem}
 .c-tool .ico{width:22px;height:22px;vertical-align:0}
@@ -688,3 +687,14 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 .t-squash{animation:t-squash .18s ease-out}
 .t-wiggle{animation:t-wiggle .18s ease-out}
 @media (prefers-reduced-motion:reduce){.t-squash,.t-wiggle{animation:none}}
+.c-wheel{position:absolute;left:0;right:0;bottom:0;z-index:5;background:#2a1a40;color:#FFF;border-radius:18px 18px 0 0;padding:14px 16px calc(14px + env(safe-area-inset-bottom));box-shadow:0 -6px 24px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:10px}
+.c-wheel[hidden]{display:none}
+.c-wheel-top{display:flex;align-items:center;gap:12px;min-height:44px}
+.c-wheel-pre{width:44px;height:44px;border-radius:50%;box-shadow:inset 0 0 0 2px rgba(255,255,255,.5)}
+.c-strip{position:relative;height:44px;border-radius:22px;touch-action:none;cursor:pointer;outline-offset:3px}
+.c-strip canvas{display:block;width:100%;height:100%;border-radius:22px;box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}
+.c-knob{position:absolute;top:2px;width:8px;height:40px;margin-left:-4px;border-radius:4px;background:#FFF;box-shadow:0 0 0 2px #120a1f;pointer-events:none}
+.c-wheel-row{display:flex;gap:10px;justify-content:flex-end}
+.c-wheel-row .g-btn{min-height:44px}
+.c-top b{color:#FFF}   /* the page title in the top bar inherited the ink color: dark on dark */
+.c-pair figcaption{color:#E7DDF5}   /* "Yours" / "Ekky" captions were dark on the dark reveal page */
