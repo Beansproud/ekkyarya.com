@@ -11,18 +11,18 @@ const LEVELS=[
 const ACH=[
   {id:"start",    ic:"face",               t:"Press Start",     d:"Begin the adventure"},
   {id:"hello",    ic:"face",               t:"Nice to Meet You", d:"Finish level 1"},
-  {id:"coins10",  ic:"s-coin",             t:"Coin Keeper",      d:"Collect 10 coins"},
+  {id:"coins10",  ic:"s-star",             t:"Coin Keeper",      d:"Collect 10 coins"},
   {id:"cards3",   ic:"palette",            t:"Art Collector",    d:"Inspect 3 artworks"},
-  {id:"explorer", ic:"map-pin",            t:"World Explorer",   d:"Visit every level"},
+  {id:"explorer", ic:"s-star",             t:"World Explorer",   d:"Visit every level"},
   {id:"quest",    ic:"monster-head-check", t:"Quest Complete",   d:"Send Ekky a message"},
-  {id:"pack",     ic:"toybox",             t:"Pack Opener",      d:"Open your first art pack"},
-  {id:"legend",   ic:"blue-bird",          t:"Legendary Pull",   d:"Pull a legendary card"},
-  {id:"arcade",   ic:"trophy",             t:"Arcade Star",      d:"Score 40 in Star Catcher"},
-  {id:"complete", ic:"chest",              t:"Completionist",    d:"Collect every card (watch out, it bites)"},
+  {id:"pack",     ic:"s-star",             t:"Pack Opener",      d:"Open your first art pack"},
+  {id:"legend",   ic:"s-star",             t:"Legendary Pull",   d:"Pull a legendary card"},
+  {id:"arcade",   ic:"s-star",             t:"Arcade Star",      d:"Score 40 in Star Catcher"},
+  {id:"complete", ic:"s-star",             t:"Completionist",    d:"Collect every card (watch out, it bites)"},
 ];
 // a trophy icon is either a palette shape from the SVG set (s-*) or a cut-out from assets/ui/
 const achIc=a=>a.ic.startsWith("s-")?ico(a.ic,"ico"):uiImg(a.ic,"");
-const COIN=ico("s-coin");
+const STAR=ico("s-star");
 const RARITY=[["Common","#B8D5FF"],["Rare","#7ED9B0"],["Epic","#C9A7FF"],["Legendary","#FFB400"]];
 const blank={xp:0,coins:0,visited:[],seen:[],got:[],ach:[],vib:true,snd:true,freePack:true,best:0,newAch:0};
 let st;try{st=Object.assign({},blank,JSON.parse(localStorage.getItem("ekkyGame")||"{}"))}catch{st={...blank}}
@@ -187,7 +187,7 @@ function badge(){const el=$("gAchBadge");el.textContent=st.newAch||"";el.classLi
 
 /* ---- card packs ---- */
 function packCost(){return st.freePack?0:10}
-function packLabel(){$("gPackBtn").innerHTML=uiImg("toybox")+(st.freePack?" Open free pack":` Open pack · 10${COIN}`)}
+function packLabel(){$("gPackBtn").innerHTML=st.freePack?"Open free pack":`Open pack · 10${STAR}`}
 $("gPackBtn").onclick=()=>{const b=$("gPackBtn");if(st.coins<packCost()){b.classList.remove("shake");void b.offsetWidth;b.classList.add("shake");buzz([20,30,20]);sfx("hit");say("Catch more stars in Star Catcher!");return}
   st.coins-=packCost();st.freePack=false;save();hud();packLabel();openPack()};
 function roll(){const r=Math.random(),tier=r<.05?3:r<.17?2:r<.45?1:0;
@@ -216,7 +216,7 @@ function startArcade(){$("gArcade").classList.add("open");$("gResult").classList
   A={W,H,score:0,lives:3,t:30,items:[],parts:[],texts:[],px:W/2,tx:W/2,spawn:0,shake:0,run:false,stars:Array.from({length:50},()=>({x:Math.random()*W,y:Math.random()*H,s:Math.random()*2+.5,v:20+Math.random()*60}))};
   hudA();cancelAnimationFrame(raf);let last=performance.now();const loop=now=>{const dt=Math.min(.05,(now-last)/1000);last=now;step(dt);draw();raf=requestAnimationFrame(loop)};raf=requestAnimationFrame(loop);
   let n=3;const cd=$("gCount");const tick=()=>{if(!A)return;if(n>0){cd.innerHTML=`<span>${n}</span>`;sfx("count");n--;setTimeout(tick,800)}else{cd.innerHTML=`<span>GO!</span>`;sfx("go");A.run=true;setTimeout(()=>cd.innerHTML="",800)}};tick()}
-function hudA(){$("gScore").innerHTML=COIN+A.score;$("gLives").innerHTML=[0,1,2].map(k=>ico("s-heart",k<A.lives?"ico":"ico lost")).join("");$("gLives").setAttribute("aria-label",A.lives+" lives");$("gTime").style.width=A.t/30*100+"%"}
+function hudA(){$("gScore").innerHTML=STAR+A.score;$("gLives").textContent=A.lives+(A.lives===1?" life":" lives");$("gTime").style.width=A.t/30*100+"%"}
 // sprite, value, size: star shape +1, palette +3, glowing star +5, teal virus = hazard
 const KINDS=[["star",1,36],["palette",3,40],["glow",5,48],["virus",-1,40]];
 function svgSprite(id){const sym=document.getElementById(id),i=new Image();
@@ -259,7 +259,7 @@ function aim(e){if(!A)return;const r=cv.getBoundingClientRect(),x=(e.touches?e.t
 cv.addEventListener("pointerdown",aim);cv.addEventListener("pointermove",aim);cv.addEventListener("touchmove",e=>{aim(e);e.preventDefault()},{passive:false});
 function endArcade(){const a=A;a.run=false;const best=Math.max(st.best||0,a.score),rec=a.score>(st.best||0)&&a.score>0;st.best=best;st.coins+=a.score;save();hud();
   if(a.score>=40)unlock("arcade");if(st.coins>=10)unlock("coins10");
-  $("gResTitle").textContent=a.lives<=0?"Ouch!":rec?"New record!":"Time's up!";$("gResScore").innerHTML=COIN+a.score;
+  $("gResTitle").textContent=a.lives<=0?"Ouch!":rec?"New record!":"Time's up!";$("gResScore").innerHTML=STAR+a.score;
   $("gResText").textContent=`+${a.score} coins · best ${best}`;$("gResult").classList.add("show");sfx(rec?"legend":"level");if(rec&&typeof confetti==="function")confetti();addXp(Math.min(50,a.score))}
 function quitArcade(){cancelAnimationFrame(raf);A=null;$("gArcade").classList.remove("open");$("gCount").innerHTML="";packLabel()}
 $("gArcadeX").onclick=quitArcade;$("gResBack").onclick=()=>{quitArcade();go("map")};$("gAgain").onclick=startArcade;

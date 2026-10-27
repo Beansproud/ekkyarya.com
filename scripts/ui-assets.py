@@ -219,15 +219,10 @@ ICONS = {
     "palette":      dict(src="assets/hero.png", box=(388, 58, 486, 156), seed=(430, 100), mode="alpha", size=96),
     "planet":       dict(src="assets/hero.png", box=(428, 186, 526, 252), seed=(475, 220), mode="alpha", size=96),
     "cat":          dict(src="assets/hero.png", box=(232, 8, 324, 100), seed=(278, 60), mode="alpha", size=96),
-    "map-pin":      dict(src="assets/hero.png", box=(362, 398, 430, 478), seed=(392, 450), mode="outline", dark=110, open=6, size=96),
     "ghost":        dict(src="assets/work/doodles.jpg", box=(925, 362, 1252, 632), seed=(1100, 395), mode="outline", dark=100, close=2, open=3, size=96),
     "monster-head": dict(src="assets/work/monster.jpg", box=(610, 0, 1000, 390), mode="badge", size=128),
-    "toybox":       dict(src="assets/work/toybox.jpg", box=(150, 50, 860, 650), seed=(500, 300), mode="color", bg=(235, 220, 160), tol=34, stroke=(INK, 6), size=96),
     "helmet":       dict(src="assets/work/nft-3.jpg", box=(30, 6, 226, 202), mode="badge", size=96),
     "virus":        dict(src="assets/work/virus-and-war.jpg", box=(440, 355, 582, 487), seed=(490, 410), mode="outline", dark=110, open=3, size=96),
-    "blue-bird":    dict(src="assets/work/blue-bird.jpg", box=(1080, 600, 1345, 952), seed=(1270, 720), mode="outline", dark=125, wall_blue=45, stroke=((236, 248, 255), 5), glow=((120, 210, 255), 14), size=96),
-    "chest":        dict(src="assets/work/hidden-monster.jpg", box=(640, 1170, 970, 1450), seed=(800, 1300), mode="outline", dark=45, size=96),
-    "trophy":       dict(src="assets/work/day-in-life.jpg", box=(548, 585, 668, 694), seed=(600, 620), mode="outline", dark=90, erase=[(545, 682), (578, 682), (578, 700), (545, 700)], erase2=[(623, 682), (670, 682), (670, 700), (623, 700)], size=96),
 }
 
 
