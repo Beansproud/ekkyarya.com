@@ -35,7 +35,7 @@ The other owner directions still hold:
    Neither franchise name appears in the user-facing text, the code or the page metadata.
 2. **Only Ekky's own art.** Every sprite, background, prop and boss comes from a piece with `kind: "original"` that passes `shareable()`. Fan-art and client pieces never appear in the games. Simple shapes in his palette (plan rule 4) fill the gaps: tiles, paint blobs, the ground line, UI frames.
 3. **No death, no game over, no lives, no score chase, no locks.** Getting hit has a short, readable consequence (knockback, a paint splash, half a second of slowdown) and is never punished. Every stage and every island area is open from the first second.
-4. **Friendly, not violent.** The hero fires **paint**, not bullets. A painted enemy turns from grey-outlined to full color, smiles and wanders off as a friend. A boss isn't defeated: it is "colored in", calms down, and its artwork opens. This fits the site (color with Ekky), keeps it all-ages, and suits a client looking at a portfolio.
+4. **Friendly, not violent.** The hero fires **paint**, not bullets. A painted enemy turns from grey-outlined to full color, smiles and wanders off as a friend. A boss isn't defeated: it is "colored in", calms down, and its artwork opens. On screen, bosses are never called "boss" and nothing is framed as a "boss fight" (owner: "dont add bossfight theme"); they are big, grumpy characters to calm down with paint. "Boss" in this brief is only a design term. This fits the site (color with Ekky), keeps it all-ages, and suits a client looking at a portfolio.
 5. **Portfolio first.** Every character, place and boss names the artwork it comes from. One tap opens that piece in the lightbox, with its title, description and "Want art like this? Hire Ekky". The Hire Ekky chip stays visible whenever the game is paused, on every stage end and on every Quest dialog.
 
 ---
@@ -78,7 +78,7 @@ Ride through Ekky's illustrations as **Ekky himself** on his desk chair, paint e
 | 1 | **Rush Hour** | Coexistence (the bus-stop street, the gargoyle commuter cheering from the bench) | Viruses from Virus and War; small doodles from Monster World Doodles | **The green one-eyed monster** from Monster in My Room (swings his hammer in slow, readable arcs; paint him to calm him down) |
 | 2 | **Breakdown Road** | Broken-Down Bus (desert road, clouds, the city on the horizon); the Road Trip car honks past in the background | Monster Snack Bar monsters; Morumelons characters | **The tiger** from Year of the Tiger 2022 (leaps from the 2022 letters; a pounce is telegraphed by 0.8 s of crouching) |
 | 3 | **Beach Day** | Buried at the Beach (sand) and Afloat (water, with the floating boy drifting by as a friend) | The crab from Buried at the Beach; the fish from Afloat | **The shark** from Big Catch (jumps out of the water in arcs; the fishing kid from the same piece cheers from the pier) |
-| 4 | **Snack Bar Riot** | Monster Snack Bar (counter, fries, crowd); the Hidden Monster gate as the final door | Mixed doodles and Monster Snack Bar monsters; the Viking kid and the Dragon kid from "Viking vs Dragon Kid" join as allies who paint alongside you | **The armored giant** from "RPG" (the orc, mouse knight and fire spirit from the same piece are freed and cheer). The owner's "endi onok bossfight" may mean the owner wants a boss fight, or that the RPG piece has none; this use doesn't depend on the piece's title. See owner question 6. |
+| 4 | **Snack Bar Riot** | Monster Snack Bar (counter, fries, crowd); the Hidden Monster gate as the final door | Mixed doodles and Monster Snack Bar monsters; the Viking kid and the Dragon kid from "Viking vs Dragon Kid" join as allies who paint alongside you | **The big purple monster** behind the Monster Snack Bar counter (it gets grumpy about the riot; paint it to calm it down, and the snack bar crowd cheers) |
 | Credits | **Parade** | The Character Crowd Banner scrolls past as a crowd of every friend you made, with the "Type Is Art in Motion" lettering as the title | Everyone you painted dances | none |
 
 ### Hero
@@ -160,7 +160,7 @@ The glowing bird from "The Blue Bird" follows Ekky and flies slowly toward the n
 | `old-bus` | Stage 2 background, **vehicle** | Bus Stop |
 | `plug-hero` | Dash power-up | Sky / beach |
 | `road-trip` | Background car | Fast travel |
-| `rpg` | Boss 4 (armored giant), freed party | Lair camp |
+| `rpg` | | Lair camp (the whole party, peaceful, by the fire) |
 | `shark` | Boss 3 (shark) | The Lake |
 | `summertime` | Stage 3 sand, crab | Beach by the Sky area |
 | `toybox` | | Pushable crates |
@@ -279,4 +279,4 @@ Order: MG1 → MG2 → MG3 → **MG4 (go or no-go)** → MG5 and MG6 in parallel
 | 3 | Heroes | **Answered:** "use ekky as the hero". Ekky is the hero of both games. |
 | 4 | Phone orientation for Paint Patrol | **Answered:** "landscape is fine". Landscape, with a "Play anyway" portrait fallback. |
 | 5 | Should the games have their own short music loops, or stay with sound effects only? | **Answered:** "sound effects only". No music loops. Sound is off by default on the web. |
-| 6 | "endi onok bossfight": did you mean you want a boss fight, or that the RPG piece has no boss fight in it? | The RPG giant is boss 4 in Paint Patrol either way. The piece's title is the UX lead's call. |
+| 6 | "endi onok bossfight" | **Answered:** "its a joke you can ignore or dont add bossfight theme to this". The RPG piece gets no boss-fight theme: it is not a boss in Paint Patrol, and in the Quest its party camps peacefully. No on-screen text in either game says "boss" or "boss fight" (see hard rule 4). |
