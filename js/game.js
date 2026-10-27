@@ -130,8 +130,8 @@ function villageLife(V){
   return html}
 function openVillager(b){const k=+b.dataset.piece,p=PROJECTS[k];if(!p)return;
   openSheet(`<h2 id="gSheetTitle"><img class="h-ico" src="${esc(b.dataset.sprite)}" alt="">${esc(ptitle(p))}</h2>
-    <button class="g-villager-art" data-see="${k}" aria-label="${esc(t("town.seeArt")+": "+ptitle(p))}"><img src="${thumbOf(p)}" alt="" loading="lazy"></button>
-    ${plabel(p)?`<p><span class="tag">${esc(plabel(p))}</span></p>`:""}<p>${esc(pdesc(p))}</p><p><button class="g-btn" data-see="${k}">${ico("i-eye")} ${esc(t("town.seeArt"))}</button></p>`+hireChip())}
+    <div class="g-vcard"><button class="g-villager-art" data-see="${k}" aria-label="${esc(t("town.seeArt")+": "+ptitle(p))}"><img src="${thumbOf(p)}" alt="" loading="lazy"></button>
+    ${plabel(p)?`<p><span class="tag">${esc(plabel(p))}</span></p>`:""}<p>${esc(pdesc(p))}</p><p><button class="g-btn" data-see="${k}">${ico("i-eye")} ${esc(t("town.seeArt"))}</button></p></div>`+hireChip())}
 $("gMapWrap").addEventListener("click",e=>{const v=e.target.closest(".v-folk,.v-walker");if(v){buzz(10);sfx("tap");return openVillager(v)}
   const b=e.target.closest(".v-place");if(!b)return;buzz(15);sfx("tap");
   // the place lifts and its label glows once (300 ms), then it opens (B42: "I'm going there")
