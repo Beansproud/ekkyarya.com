@@ -4,7 +4,7 @@
 // "drag" (the real touch stick on the left half), and "idle" (never touches; does the stage end on its own?).
 // Reports time to the end screen, knockbacks, characters seen in the first 30 s, the telegraph before every swing,
 // fps at 4x CPU, the end screen (Coexistence, lightbox, Hire), the portrait card and errors.
-const { chromium, serve, PHONE, cpu } = require("./lib.cjs");
+const { chromium, serve, PHONE, cpu } = require("./lib.cjs");   // opens with ?game&ff=paintPatrol&play=patrol
 const fs = require("fs"), path = require("path");
 const SITE = path.resolve(process.argv[2] || "."), OUT = path.resolve(process.argv[3] || "/tmp/playtest");
 fs.mkdirSync(OUT, { recursive: true });
@@ -15,7 +15,7 @@ async function page(b, base, dev, opts = {}) {
   await p.route("**/js/features.js", async r => { const res = await r.fetch(); r.fulfill({ response: res, body: (await res.text()).replace(/paintPatrol:\s*false/, "paintPatrol: true") }) });
   if (opts.cpu) await cpu(ctx, p, opts.cpu);
   // ?ff=paintPatrol turns the switch on for this visit only; &play=patrol opens the game (js/features.js, js/game.js)
-  await p.goto(base + "?ff=paintPatrol&play=patrol"); await p.waitForTimeout(2500);
+  await p.goto(base + "?game&ff=paintPatrol&play=patrol"); await p.waitForTimeout(2500);
   const entry = await p.evaluate(() => document.querySelector('[data-go="patrol"]') ? "start tile present" : "no start tile");
   if (opts.anyway) await p.evaluate(() => { const b = document.querySelector('[data-pp="anyway"]'); b && !b.closest("[hidden]") && b.click() });
   await p.waitForFunction(() => window.Patrol && window.Patrol.state && window.Patrol.state.started, { timeout: 15000 }).catch(() => {});
@@ -46,7 +46,9 @@ async function casual(p, seconds) {
     const { ctx, p, errs, entry } = await page(b, s.url, LAND); R.entry = entry || "Patrol.open() (no entry button found)";
     await watch(p);
     if (mode === "casual") await casual(p, 180);
-    if (mode === "drag") { await p.mouse.move(150, 300); await p.mouse.down(); await p.mouse.move(210, 300, { steps: 4 }) }
+    if (mode === "drag") { const c = await ctx.newCDPSession(p);   // a real held touch on the left half (the thumb stick), never jumping
+      await c.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: 150, y: 300, id: 1 }] });
+      for (let i = 1; i <= 6; i++) { await c.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: 150 + i * 10, y: 300, id: 1 }] }); await p.waitForTimeout(30) } }
     if (mode !== "casual") await p.waitForFunction(() => window.__pt.endAt != null, { timeout: (mode === "idle" ? 60 : 180) * 1000, polling: 500 }).catch(() => {});
     const W = await p.evaluate(() => ({ ...window.__pt, heroX: window.Patrol.state && Math.round(window.Patrol.state.hero.x), stageL: window.Patrol.state && window.Patrol.state.L }));
     R[mode] = { endsAfterS: W.endAt, bigFriendAtS: W.friendAt, knockbacks: W.knocks, kindsFirst30s: Object.keys(W.kinds), telegraphS: W.tele.slice(0, 6), heroX: W.heroX, stageL: W.stageL, errors: errs };
