@@ -52,6 +52,7 @@ Author: Game Director. Gate G1. This file merges `docs/game-brief.md` ("brief #n
 | "May visitors download his portfolio pieces?" | **Yes.** `FEATURES.artDownload = true`: a Download button in the lightbox, a smaller copy (at most 1600 px on the long side) with a subtle "ekkyarya.com" watermark, never on fan art (B40). |
 12. **Owner contact details (2026-10-27, typed to the integrator):** "Ekky Arya (Character Illustrator)", official site https://ekkyarya.com/, Dribbble https://dribbble.com/shots/6634499-Flat-Guy-Illustration (a single shot, not the profile). Applied in `js/data.js`: `CONFIG.site` (share and download credits, base of share links, D10), `CONFIG.links.dribbble`, role line "Character Illustrator" / "Ilustrator Karakter" (`start.role`), "Character illustrator and graphic designer" where there is room. Email, WhatsApp, Instagram and Behance are empty strings: their buttons stay hidden, never linked to a placeholder. Until the email arrives, Hire Ekky uses `hireTarget()`: the Dribbble link, then the site.
 13. **Owner contact details, complete (2026-10-27, typed to the integrator).** Business email ekkyarya87@gmail.com (primary: Hire Ekky, Final Quest, quick actions); personal/inquiries ekkyaryasm@gmail.com (stored as `CONFIG.emailPersonal`, not shown: one address is clearer for a client); Instagram https://www.instagram.com/ekkyarya/ (@ekkyarya); Behance "ekkyarya Portfolio" (URL assumed https://www.behance.net/ekkyarya, to confirm); LinkedIn https://id.linkedin.com/in/ekkyarya (new button); contact page https://ekkyarya.com/contact/. Hire Ekky now leads with the business email (`hireTarget()`); without one it falls back to the contact page, then Instagram. Dribbble is still a single shot. WhatsApp is still empty and hidden.
+14. **Owner direction (2026-10-27, 08:23 UTC, typed in the Director's session): "make some of minigames that work like real games portofolio / game like metal slug *re-use all of his aset / game like zelda but isomorphic *re-use all of his aset".** Approved by the UX lead as `docs/minigames.md`: "Paint Patrol" (a run-and-gun side-scroller where you paint and befriend) and "Little Planet Quest" (an isometric island adventure). Genre only: no name, character, sprite, item, sound, logo, HUD look or level layout from any existing game, anywhere in the product. Built only from the 29 `kind: "original"` pieces (the `game` role). Tickets MG1 to MG10 below, after P1.
 
 ## UX lead decisions (summary)
 
@@ -449,7 +450,8 @@ Owner DEV · Size S (1 h) · **R1 must-have, P1** · Depends: B03 · From: owner
   const FEATURES = {
     gameMode: true, starCatcher: true, coloring: true, stickers: true, doodleScene: true, anyColor: true,
     shareCards: true, coloringLinks: true, challengeLinks: true, cardGift: true, recommend: true,
-    myGallery: true, brush: true, holoCards: true, pwa: true, linkPreviews: true
+    myGallery: true, brush: true, holoCards: true, pwa: true, linkPreviews: true,
+    artDownload: true, paintPatrol: true, planetQuest: true
   };
   ```
   Every optional feature checks its switch before it renders its button, tile, tab, route or service worker. A switch that is off hides the feature completely: no greyed-out button, no lock (owner: "nothing ever locked"). A feature not built yet keeps its switch, ready for its ticket. Not switchable: Hire Ekky, the art (portfolio and lightbox) and the contact details. With `gameMode: false` the site is the classic portfolio only. (Switch list from the Director, approved.)
@@ -500,6 +502,27 @@ Owner DIRECTOR · Size S · R1 must-have, last · Depends: B03 to B18
 - **Acceptance:** `docs/playtest-r1.md` gives pass or fail with numbers for each scorecard row and for the simple test. Each fail becomes a ticket.
 
 ---
+
+## Mini-games (after the round-1 P1 tickets)
+
+Approved brief: `docs/minigames.md` (read its "UX lead review" first). Owner direction 14. The vertical slice (MG1 to MG4, about 16 h) runs right after the P1 tickets (B38, B41, B26, B39, B40). MG5 to MG10 (about 30 to 40 h) start only on a "go" from the MG4 playtest **and** the UX lead's acceptance of the slice.
+
+| ID | Ticket | Owner | Size | Depends | Gate |
+|---|---|---|---|---|---|
+| MG1 | Shared mini engine (canvas, input, camera, puppet animator, pause) | DEV | L (4 to 6 h) | B38, B39 | slice |
+| MG2 | Sprite pipeline and the first 12 cut-outs (one list with B21 stickers, `docs/roles.md`) | DEV, UX review | L (6 h) | MG1 | slice; UX approves the contact sheet |
+| MG3 | Paint Patrol vertical slice: stage 1 "Rush Hour" | DEV | L (6 h) | MG1, MG2 | slice |
+| MG4 | Director playtest of the slice, and UX acceptance | DIRECTOR, UX | S | MG3 | **go / no-go** |
+| MG5 | Paint Patrol stages 2 to 4, the bus, bosses 2 to 4, credits | DEV | L (8 to 10 h) | MG4 go | |
+| MG6 | Isometric engine: tiles, depth sort, tap-to-walk, HTML dialog | DEV | L (6 to 8 h) | MG1 | |
+| MG7 | Little Planet Quest island content (12 areas) | DEV, UX lines | L (8 to 10 h) | MG2, MG6, MG4 go | |
+| MG8 | Character lines and stage and area names, EN and ID | UX | M | MG3, MG7 | no franchise names |
+| MG9 | Entry tiles, `paintPatrol` / `planetQuest` switches, deep links, lazy loading | DEV | S (2 h) | MG3 | |
+| MG10 | Director playtest of both games, and UX acceptance | DIRECTOR, UX | S | MG5, MG7 | |
+
+**UX acceptance for every MG ticket (hiring-client view):** within 30 s of opening a game, a client sees at least 5 of Ekky's characters at full size; every character and boss names its artwork and opens it in one tap; Hire Ekky is one tap from every pause, stage end and dialog; nothing can be lost, failed or locked; menus and reveals follow the B39 motion tokens; `npm run check` finds no fan or client art in `assets/sprites/` and no franchise name anywhere in `index.html`, `css/`, `js/` or `assets/`.
+
+**Entry points (UX decision):** the start screen keeps three equal tiles (D11); "Games" becomes a fourth tile that opens a small picker with Star Catcher, Paint Patrol and Little Planet Quest, each with one line and a thumbnail of its hero. Desktop: a "Play Ekky's games" link in the hero next to "Try the game".
 
 ## Later tickets
 
