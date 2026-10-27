@@ -362,3 +362,10 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 #g-mine::after{content:"";display:block;height:calc(env(safe-area-inset-bottom) + 100px)}
 /* hidden Art cards: nothing animates off-screen (B42) */
 .g-screen:not(.active) .g-card,.g-screen:not(.active) .g-card *{animation:none!important}
+/* share preview: one primary Share, then Download and video as quiet links (r1c) */
+.s-primary{min-width:240px;max-width:none!important}
+.s-secondary{gap:18px;margin-top:10px}
+.s-secondary .g-link,.s-video{display:inline-flex;align-items:center;gap:6px;min-height:44px;font-size:.95rem;color:#e6defa}
+.s-video{margin:0 auto}
+/* skeleton shimmer runs a few times while an image loads, never endlessly */
+.g-card .art,.art{animation-iteration-count:3!important}

@@ -244,9 +244,11 @@ function draw(){const a=A;if(!a)return;const sx=(Math.random()-.5)*a.shake,sy=(M
   ctx.restore()}
 function aim(e){if(!A)return;const r=cv.getBoundingClientRect(),x=(e.touches?e.touches[0].clientX:e.clientX)-r.left;A.tx=Math.max(40,Math.min(A.W-40,x))}
 if(cv){cv.addEventListener("pointerdown",aim);cv.addEventListener("pointermove",aim);cv.addEventListener("touchmove",e=>{aim(e);e.preventDefault()},{passive:false})}
-function endArcade(){const a=A;a.run=false;lastScore=a.score;const rec=a.score>(st.best||0);st.best=Math.max(st.best||0,a.score);save();
+// "New best!" only when there was a best to beat (the first round is just "Time's up!")
+function endArcade(){const a=A;a.run=false;lastScore=a.score;const rec=(st.best||0)>0&&a.score>st.best;st.best=Math.max(st.best||0,a.score);save();
   $("gResTitle").textContent=rec?t("stars.record"):t("stars.end");$("gResScore").innerHTML=ico("s-star")+a.score;
-  $("gResText").textContent=t("stars.result",{n:a.score,best:st.best});$("gResult").classList.add("show");G.classList.remove("playing");
+  // the score counts points (a palette is 3, a glowing star 5, a virus minus 2), so the line says points, not stars
+  $("gResText").textContent=tt("stars.resultPoints","{n} points. Your best: {best} points.",{n:a.score,best:st.best});$("gResult").classList.add("show");G.classList.remove("playing");
   sfx(rec?"legend":"level");if(rec&&typeof confetti==="function")confetti()}
 function quitArcade(){cancelAnimationFrame(raf);A=null;pausedByHide=false;$("gArcade").classList.remove("open");G.classList.remove("playing");$("gCount").innerHTML=""}
 let lastScore=0;

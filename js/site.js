@@ -15,6 +15,9 @@ addEventListener("beforeinstallprompt",e=>{if(!feature("pwa"))return;e.preventDe
   document.querySelectorAll("[data-install],[data-install-row]").forEach(b=>b.hidden=false)});
 document.addEventListener("click",async e=>{if(!e.target.closest("[data-install]")||!installEvt)return;installEvt.prompt();
   try{await installEvt.userChoice}catch{}installEvt=null;document.querySelectorAll("[data-install],[data-install-row]").forEach(b=>b.hidden=true)});
+/* ===== The classic hero image (300 KB) loads only when the classic site is showing, never under game mode ===== */
+function heroArt(){if(document.body.classList.contains("game-mode"))return;const i=document.querySelector(".hero-art[data-src]");if(i){i.src=i.dataset.src;i.removeAttribute("data-src")}}
+setTimeout(heroArt,0);document.addEventListener("click",e=>{if(e.target.closest("[data-classic]"))setTimeout(heroArt,0)});
 /* ===== Feature switches: entry points of a switched-off feature disappear (js/features.js) ===== */
 document.querySelectorAll("[data-feature]").forEach(el=>{if(!feature(el.dataset.feature))el.remove()});
 

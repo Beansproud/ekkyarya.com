@@ -134,7 +134,9 @@ function paintRegion(s,cv,r,fade){const {meta,start,idx,line,ids}=s.pd;const x=c
   for(let yy=0;yy<h;yy++)for(let xx=0;xx<w;xx++){const c=rgb[s.fills[ids[(y0+yy)*meta.w+x0+xx]]],o=(yy*w+xx)*4;d[o]=c[0];d[o+1]=c[1];d[o+2]=c[2];d[o+3]=255}
   const box=document.createElement("canvas");box.width=w;box.height=h;const bx=box.getContext("2d");bx.putImageData(img,0,0);if(line)bx.drawImage(line,x0,y0,w,h,0,0,w,h);
   if(!fade||reduce){x.drawImage(box,x0,y0);return}
-  const t0=performance.now();(function step(now){const k=Math.min(1,(now-t0)/250);x.globalAlpha=k<1?.35:1;x.drawImage(box,x0,y0);x.globalAlpha=1;if(k<1)requestAnimationFrame(step)})(t0)}
+  // a true 250 ms fade, by time not by frame: the old picture of the box, with the new one on top at the elapsed share
+  const old=document.createElement("canvas");old.width=w;old.height=h;old.getContext("2d").drawImage(cv,x0,y0,w,h,0,0,w,h);
+  const t0=performance.now();(function step(now){const k=Math.min(1,(now-t0)/250);x.drawImage(old,x0,y0);x.globalAlpha=k;x.drawImage(box,x0,y0);x.globalAlpha=1;if(k<1)requestAnimationFrame(step)})(t0)}
 // Draw the whole picture (fills, lines, stickers) into a box on any canvas: thumbnails, reveal, share card, arrival.
 // t (0..1) plays the picture as a timeline for the share video: the fills sweep in (to 0.8), then the stickers pop in.
 function compose(s,ctx,X,Y,W,t=1){const {meta,rank}=s.pd,H=W*meta.h/meta.w,c=document.createElement("canvas");

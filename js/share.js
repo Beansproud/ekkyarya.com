@@ -105,9 +105,9 @@ document.getElementById("game").insertAdjacentHTML("beforeend",`<div class="c-ov
   <section class="c-view active"><button class="g-x" id="sX" aria-label="${tt("ui.close","Close")}"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button>
     <div class="s-preview"><canvas id="sCard"></canvas></div>
     <label class="s-sign">${t("share.sign")}<input id="sName" maxlength="16" autocomplete="given-name" placeholder="${t("share.sign.ph")}"></label>
-    <div class="s-row"><button class="g-btn" id="sGo"><svg class="ico" aria-hidden="true"><use href="#i-share"/></svg> ${t("share.go")}</button>
-      <button class="g-btn alt" id="sDl"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg> ${t("dl.button")}</button></div>
-    <button class="g-btn pink s-video" id="sVideo" hidden><svg class="ico" aria-hidden="true"><use href="#i-play"/></svg> <span>${tt("share.video","Share as video")}</span></button>
+    <div class="s-row"><button class="g-btn s-primary" id="sGo"><svg class="ico" aria-hidden="true"><use href="#i-share"/></svg> ${t("share.go")}</button></div>
+    <div class="s-row s-secondary"><button class="g-link" id="sDl"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg> ${t("dl.button")}</button></div>
+    <button class="g-link s-video" id="sVideo" hidden><svg class="ico" aria-hidden="true"><use href="#i-play"/></svg> <span>${tt("share.video","Share as video")}</span></button>
     <div class="c-actions"><button class="g-hire" data-hire aria-label="${t("hire.chip.aria")}"><img src="assets/ui/monster-head.png" alt=""><span>${t("hire.chip")}</span></button></div>
   </section></div>`);
 let cur=null,timer=0;
