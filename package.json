@@ -5,6 +5,7 @@
   "description": "Ekky Arya portfolio website and mobile app",
   "scripts": {
     "build": "node scripts/build.mjs",
+    "check": "node scripts/check.mjs",
     "cap:sync": "npm run build && npx cap sync",
     "android": "npm run cap:sync && npx cap open android"
   },
