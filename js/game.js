@@ -119,6 +119,10 @@ function villageLife(V){
   const card=piece=>{const p=PROJECTS.find(q=>q.id===piece||q.slug===piece);return p&&creative(p)?p:null};
   for(const [name,f] of Object.entries(V.folk||{})){const p=card(f.piece);if(!p)continue;const b=f.box;
     html+=`<button class="v-folk" data-piece="${PROJECTS.indexOf(p)}" data-sprite="assets/sprites/${name}.png" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}" aria-label="${esc(t("town.seeArt")+": "+ptitle(p))}"></button>`}
+  // V5: client scenery, only with the clientScenery switch; each opens its piece, whose card shows the client tag
+  if(feature("clientScenery"))(V.scenery||[]).forEach(c=>{const p=PROJECTS.find(q=>q.slug===c.piece);
+    if(!p||p.kind!=="client"||!hasRole(p,"village"))return;const b=c.box;
+    html+=`<button class="v-folk v-scenery" data-piece="${PROJECTS.indexOf(p)}" data-sprite="${esc(c.src)}" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}" aria-label="${esc(t("town.seeArt")+": "+ptitle(p))}"><img src="${esc(c.src)}" alt=""></button>`});
   (V.walkers||[]).slice(0,8).forEach((w,k)=>{const p=card(w.piece);if(!p)return;const c=walkCss(w,k,V);css+=c.css;
     const delay=`-${(Math.random()*c.dur).toFixed(2)}s`;
     html+=`<div class="v-walk" style="${c.start};animation:vw${k} ${c.dur}s linear ${delay} infinite"><button class="v-walker" data-piece="${PROJECTS.indexOf(p)}" data-sprite="${w.src}" aria-label="${esc(t("town.seeArt")+": "+ptitle(p))}"><img src="${w.src}" alt="" decoding="async" style="height:${(w.h/V.w*100).toFixed(2)}cqw;transform:scaleX(${c.face0});animation:vf${k} ${c.dur}s steps(1,end) ${delay} infinite"></button></div>`});
@@ -127,7 +131,7 @@ function villageLife(V){
 function openVillager(b){const k=+b.dataset.piece,p=PROJECTS[k];if(!p)return;
   openSheet(`<h2 id="gSheetTitle"><img class="h-ico" src="${esc(b.dataset.sprite)}" alt="">${esc(ptitle(p))}</h2>
     <button class="g-villager-art" data-see="${k}" aria-label="${esc(t("town.seeArt")+": "+ptitle(p))}"><img src="${thumbOf(p)}" alt="" loading="lazy"></button>
-    <p>${esc(pdesc(p))}</p><p><button class="g-btn" data-see="${k}">${ico("i-eye")} ${esc(t("town.seeArt"))}</button></p>`+hireChip())}
+    ${plabel(p)?`<p><span class="tag">${esc(plabel(p))}</span></p>`:""}<p>${esc(pdesc(p))}</p><p><button class="g-btn" data-see="${k}">${ico("i-eye")} ${esc(t("town.seeArt"))}</button></p>`+hireChip())}
 $("gMapWrap").addEventListener("click",e=>{const v=e.target.closest(".v-folk,.v-walker");if(v){buzz(10);sfx("tap");return openVillager(v)}
   const b=e.target.closest(".v-place");if(!b)return;buzz(15);sfx("tap");
   // the place lifts and its label glows once (300 ms), then it opens (B42: "I'm going there")

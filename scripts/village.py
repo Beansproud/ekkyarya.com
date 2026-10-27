@@ -97,6 +97,13 @@ WALKERS = [
 ]
 
 
+# V5, client scenery (switch clientScenery, off): (sprite name, piece slug, foot, height). Each is a separate image over
+# the village, never baked into village.png, so the switch removes it completely. Stays empty until the owner confirms
+# client reuse to the Developer directly; then the cut-outs go in scripts/sprites.py (characters and props only, never
+# a logo, wordmark, storefront sign or campaign lettering, per docs/roles.md).
+CLIENT_SCENERY = []
+
+
 def build():
     os.makedirs(OUT, exist_ok=True)
     base = Image.new("RGBA", (W * S, H * S))
@@ -171,10 +178,14 @@ def build():
     # label anchors (bottom center of each place) and the buttons' hit boxes, in image pixels
     for f in frames:
         f["x"], f["y"] = round(f["x"] - ox, 1), round(f["y"] - oy, 1)
-    out = dict(w=img.width, h=img.height, frames=frames, places={}, folk={}, walkers=[])
+    out = dict(w=img.width, h=img.height, frames=frames, places={}, folk={}, walkers=[], scenery=[])
     sprites = json.load(open(os.path.join(ROOT, "assets", "sprites", "index.json")))
     for k, b in folk.items():
         out["folk"][k] = dict(piece=sprites[k]["piece"], box=[b[0] - ox, b[1] - oy, b[2] - ox, b[3] - oy])
+    for name, piece, (fx, fy), h in CLIENT_SCENERY:
+        sp = sprites[name]
+        w = round(sp["w"] * h / sp["h"])
+        out["scenery"].append(dict(name=name, piece=piece, src=sp["file"], box=[fx - w / 2 - ox, fy - h - oy, fx + w / 2 - ox, fy - oy]))
     # the gate's lantern (in the Hidden Monster cut-out at 105, 216 of 255 x 320), for its 6 s pulse
     g = places["hire"]
     out["lantern"] = [round(g[0] + 105 * (g[2] - g[0]) / 255 - ox, 1), round(g[1] + 216 * (g[3] - g[1]) / 320 - oy, 1)]

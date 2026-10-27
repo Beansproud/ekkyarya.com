@@ -77,6 +77,13 @@ the mouse knight's head, which stands in front of it). Tried and dropped because
 shark (the kid and the splash overlap it) and the Monster Snack Bar monsters and fries (too tangled to cut as drawn).
 Contact sheet: `docs/village-sprites.png` (`python3 scripts/sprites.py --sheet`).
 
+Client scenery (V5) is built behind the `clientScenery` switch (`js/features.js`, off). The path is ready: entries in
+`CLIENT_SCENERY` (`scripts/village.py`) become separate images over the village (never baked into `village.png`), are
+drawn only when the switch is on and the piece is a client piece with the `village` role, and open a card that shows
+the piece's tag ("Client: X"). The list is empty and no client cut-out exists in the repo: the project rule keeps
+client pieces in the portfolio list until the owner confirms the change to the Developer directly. Then the cuts follow
+the element lists in `docs/roles.md` (characters and props only, never a logo, wordmark, sign or campaign lettering).
+
 `python3 scripts/village.py` composes the first frame `assets/village/village.png` from those cut-outs on plain ground
 shapes in Ekky's palette (sea, islands, paths, plank bridges, the gallery block), and writes the place and frame
 positions to `village.json` / `village.js`.
