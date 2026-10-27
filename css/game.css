@@ -134,7 +134,7 @@ body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family
 #gArcade{padding:0;background:#120a1f}
 #gCanvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
 .g-ahud{position:absolute;top:calc(env(safe-area-inset-top) + 14px);left:14px;right:66px;display:flex;gap:10px;align-items:center;z-index:2;pointer-events:none}
-.g-ahud .pill{background:#2f1f47cc;border:2px solid #3e2a5c;border-radius:16px;padding:6px 12px;font-weight:700;display:inline-flex;align-items:center;gap:6px;font-size:1.05rem}
+.g-ahud .pill{color:#fff;background:#2f1f47cc;border:2px solid #3e2a5c;border-radius:16px;padding:6px 12px;font-weight:700;display:inline-flex;align-items:center;gap:6px;font-size:1.05rem}
 .g-ahud .ico{width:20px;height:20px;vertical-align:0}
 .g-time{flex:1;height:12px;border-radius:8px;background:#2f1f47;overflow:hidden;border:2px solid #3e2a5c}
 .g-time i{display:block;height:100%;background:linear-gradient(90deg,#7ED9B0,#FFB400,#FF6B6B);width:100%}
