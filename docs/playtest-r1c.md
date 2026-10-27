@@ -78,3 +78,24 @@ Author: Game Director. Date: 2026-10-27.
 | 6 | **Switch on Road Trip** as soon as Ekky approves its lines (owner question 6). | Doubles the coloring content. | OWNER, then a 1-line switch | S |
 
 **Not tested here:** pinch and rotate of stickers on a real touch screen (the emulator only drags), and "Share as video" (behind `shareVideo`). Check both on a real phone before launch.
+
+---
+
+## Addendum: slow-4G re-time after the r1c fixes (`main` c68b7ce)
+
+Emulated slow 4G (150 ms latency, 1.6 Mbit/s down) on the iPhone 13 viewport. Friend link `?color=giraffe&f=…&from=Rina`. 5 runs, plus 3 runs measuring the loader at half opacity.
+
+| Moment | Before the fixes (713c99b) | Now (c68b7ce) | Target |
+|---|---|---|---|
+| Arrival drawn (`#cArrive` active) | about 4.5 s (4.2 to 9.4) | **2.60 to 2.68 s** in all 5 runs | |
+| Loader below 50 % opacity (the coloring shows through) | about 5.0 s | **3.00 to 3.07 s** | under 3 s |
+| Loader fully gone | about 5.2 s | 3.26 to 3.33 s | |
+| Fast connection: arrival / loader gone | 0.6 / 1.2 s | 0.33 to 0.92 / 0.95 to 1.65 s | under 2 s |
+
+**Result:**
+- The preload works: the arrival is drawn about 1.9 s sooner, reliably (no slow outlier in 5 runs).
+- What remains is the loader's own fade, 0.2 s delay plus 0.6 s (`css/site.css:213`). The friend sees the coloring about 0.4 s after it is drawn, which misses the 3 s target by about 70 ms.
+
+**Fix (S, DEV):** when `js/links.js` drops the loader on an arrival, skip the delay and fade faster. For example, add a class `quick` with `transition:opacity .3s,visibility .3s` and no delay. The loader then crosses 50 % at about 2.75 s on slow 4G. The normal start keeps its calm 0.6 s fade.
+
+Verdict unchanged: **GO for V1.**
