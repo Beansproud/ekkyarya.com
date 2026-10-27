@@ -664,3 +664,12 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 #g-mine .lang-switch{border-radius:6px;box-shadow:inset 0 0 0 1.5px #2B1342;background:#FFFDF8}
 #g-mine .lang-switch button{background:#FFFDF8;color:#2B1342}
 #g-mine .lang-switch button[aria-pressed="true"]{background:#FFB400}
+/* start: the art stays the hero (UX: drawings at least 100 px at 360 x 640) with the tab bar showing; tighter gaps */
+#game .g-start{gap:10px}
+#g-start .g-featured{gap:12px 10px;padding-top:4px}
+#g-start .g-featured .g-feat{padding:5px 5px 0}
+#g-start .g-featured .g-feat b{padding:3px 1px 4px;font-size:.72rem}
+#g-start .g-tile,#g-start .g-tile.catch{height:52px;min-height:52px;flex-direction:row;gap:8px}
+#g-start .g-start-foot .g-classic,#g-start .g-start-foot .lang-switch{height:44px;min-height:44px}
+@media (max-width:380px){#game .g-start{padding-left:12px;padding-right:12px}#g-start .g-featured{column-gap:6px}#g-start .g-featured .g-feat{padding:3px 3px 0}}
+#game .g-start{padding-bottom:calc(env(safe-area-inset-bottom) + 120px)}   /* the bar (72 + 12) plus the Map face that rises 30 px above it */
