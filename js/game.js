@@ -27,7 +27,7 @@ G.querySelectorAll("[data-t-aria]").forEach(el=>el.setAttribute("aria-label",t(e
 
 /* ---- mode switching ---- */
 // a phone held sideways is wider than 760 px: keep it in game mode (touch screen, short viewport), or turning the
-// phone for Paint Patrol would drop the visitor onto the classic site
+// phone for a game would drop the visitor onto the classic site
 const phone=matchMedia("(max-width:760px), (pointer:coarse) and (max-height:520px)");
 const pref=()=>{try{return localStorage.getItem("ekkyMode")}catch{return null}};
 const q=new URLSearchParams(location.search);
@@ -45,9 +45,10 @@ $("gSky").innerHTML=Array.from({length:60},()=>{const s=1+Math.random()*3;
 
 /* ---- screens and tabs ---- */
 let screen="start";
-function go(to){
+function go(to,fromPop){
   if(to==="color")return typeof Color!=="undefined"?Color.openPicker():null;
   if(to==="hire")return openHire();
+  if(!fromPop&&to!==screen){try{history.pushState({s:to},"")}catch(e){}}   // Back returns to the previous screen
   screen=to;G.classList.toggle("at-start",to==="start");G.classList.toggle("at-paper",to==="art"||to==="mine");   // S1: Art and Mine on paper
   G.querySelectorAll(".g-screen").forEach(s=>s.classList.toggle("active",s.id==="g-"+to));
   G.querySelectorAll(".g-tabs button").forEach(b=>b.classList.toggle("active",b.dataset.tab===to));
@@ -56,6 +57,8 @@ function go(to){
   if(to==="map")renderMap();
   requestAnimationFrame(moveInd);
 }
+try{history.replaceState({s:"start"},"")}catch(e){}
+addEventListener("popstate",e=>{const to=e.state&&e.state.s;if(to&&to!==screen&&document.body.classList.contains("game-mode"))go(to,true)});
 G.querySelector(".g-tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(b){buzz(10);go(b.dataset.tab)}});
 G.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(g){buzz(10);sfx("tap");go(g.dataset.go)}
   if(e.target.closest("[data-hire]")){buzz(10);openHire()}});
@@ -79,7 +82,6 @@ const PLACES=[
   {id:"gallery",     key:"town.gallery", icon:"assets/sprites/toybox.png",    from:"toybox", open:p=>openLevel(2,p)},
   {id:"doodle",      key:"town.workshop",icon:"assets/ui/ghost.png",          from:"doodles", open:p=>openLevel(3,p)},
   {id:"observatory", key:"town.launch",  icon:"assets/ui/astronaut.png",      from:"nft-3", open:()=>startArcade(), feature:"starCatcher"},
-  {id:"patrol",      key:"town.patrol", icon:"assets/sprites/hero-desk-s.png", box:[395,415,465,485], label:[430,489], open:()=>openPatrol(), feature:"paintPatrol"},
   {id:"hire",        key:"town.hire",    icon:"assets/sprites/gate.png",      open:p=>openHire("",p), hire:true},
 ];
 const pct=(v,of)=>(v/of*100).toFixed(3)+"%";
@@ -93,7 +95,7 @@ function renderMap(){
   W.innerHTML=`<div class="v-zoom" id="gMapZoom"><img class="v-ground" src="assets/village/village.png" alt="" decoding="async" fetchpriority="high">`+
     V.frames.map((f,k)=>{const p=art[k];if(!p)return "";const deg=(Math.atan(f.slope)*180/Math.PI).toFixed(2);
       return `<img class="v-frame" src="${thumbOf(p)}" alt="" decoding="async" style="left:${pct(f.x,V.w)};top:${pct(f.y,V.h)};width:${pct(f.w,V.w)};height:${pct(f.h,V.h)};transform:skewY(${deg}deg)">`}).join("")+
-    places.map(p=>{const b=(V.places[p.id]||p).box,l=(V.places[p.id]||p).label;
+    places.map(p=>{const b=V.places[p.id].box,l=V.places[p.id].label;
       return `<button class="v-place${p.hire?" hire":""}" data-place="${p.id}" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}" aria-label="${esc(t(p.key))}"></button>
       <span class="v-label${p.hire?" hire":""}" data-place="${p.id}" aria-hidden="true" style="left:${pct(l[0],V.w)};top:${pct(l[1],V.h)}">${esc(t(p.key))}</span>`}).join("");
   $("gMapZoom").insertAdjacentHTML("beforeend",villageLife(V)+"</div>");
@@ -353,16 +355,9 @@ async function shareStars(){if(typeof Share==="undefined")return;
 if(cv&&feature("shareCards")&&!$("gResShare")){$("gAgain").insertAdjacentHTML("afterend",`<button class="g-btn alt sm" id="gResShare">${ico("i-share")} <span>${esc(t("reveal.share"))}</span></button>`);
   $("gResShare").onclick=()=>{buzz(10);shareStars()}}
 if(cv){$("gResDl").onclick=()=>typeof Share!=="undefined"&&Share.downloadStars(lastScore);$("gArcadeX").onclick=quitArcade;$("gResBack").onclick=()=>{quitArcade();go("start")};$("gAgain").onclick=startArcade}
-G.addEventListener("click",e=>{if(e.target.closest("[data-arcade]")){sfx("tap");startArcade()}
-  if(e.target.closest("[data-patrol]")){sfx("tap");openPatrol()}});
-// Paint Patrol (MG3) loads on first open, so the portfolio's first load does not change (MG9).
-let patrolJs=null;
-function openPatrol(){if(!feature("paintPatrol"))return;
-  patrolJs=patrolJs||new Promise((ok,no)=>{const s=document.createElement("script");s.src="js/patrol.js";s.onload=ok;s.onerror=no;document.head.appendChild(s)});
-  patrolJs.then(()=>window.Patrol.open()).catch(()=>{patrolJs=null})}
-{const play=q.get("play");   // desktop "Play with Ekky's art" cards: ?game&play=color|stars|patrol
-  if(play==="patrol"&&feature("paintPatrol"))setTimeout(openPatrol,600);
-  else if(play==="color")setTimeout(()=>go("color"),600);
+G.addEventListener("click",e=>{if(e.target.closest("[data-arcade]")){sfx("tap");startArcade()}});
+{const play=q.get("play");   // desktop "Play with Ekky's art" cards: ?game&play=color|stars
+  if(play==="color")setTimeout(()=>go("color"),600);
   else if(play==="stars"&&feature("starCatcher"))setTimeout(startArcade,600)}
 // A hidden tab pauses the round; it resumes only once the tab is visible again (r1a bug: it used to resume while hidden).
 let pausedByHide=false;
@@ -373,9 +368,22 @@ document.addEventListener("visibilitychange",()=>{if(!A)return;if(document.hidde
 let artDone=false;
 // The village (village.png and its sprites, about 1 MB) is built when the map opens (go("map")), not at load, so the
 // start screen's drawings come first on a slow phone (S5, Developer B).
+/* ---- Language switched in place (js/site.js dispatches "ekky:lang" at the dim point): redraw what was built with t() ---- */
+let sheetRe=null;
+const remember=f=>(...a)=>{sheetRe=()=>f(...a);return f(...a)};   // the sheet's opener, so a language switch can draw it again
+openVillager=remember(openVillager);openLevel=remember(openLevel);openHire=remember(openHire);
+addEventListener("ekky:lang",()=>{
+  renderStart();renderMine();if(artDone)renderArt();
+  const rs=$("gResShare");if(rs)rs.querySelector("span").textContent=t("reveal.share");
+  const sv={s:Z.s,x:Z.x,y:Z.y};renderMap();if(sv.s>1){widen(true);zoomTo(sv.s,sv.x,sv.y)}
+  const l=$("gMapList"),b=$("gMapListBtn");if(!l.hidden)b.textContent=tt("town.showVillage","Show the village");
+  if(sheet.classList.contains("open")&&sheetRe){
+    const body=sheet.firstElementChild,top=body.scrollTop,from=sheetFrom,f=$("gForm"),v=f&&[f.name.value,f.type.selectedIndex,f.message.value];
+    sheetRe();body.scrollTop=top;sheetFrom=from;
+    const g=$("gForm");if(g&&v){g.name.value=v[0];g.type.selectedIndex=v[1];g.message.value=v[2]}}});
 function renderAll(){if(deep)setTimeout(renderStart,2500);else renderStart();renderMine();setTimeout(moveInd,60)}
 // Shared with js/color.js, js/share.js and js/links.js.
-window.Game={go,openHire,openPatrol,openSheet,closeSheet,sfx,buzz,save,get st(){return st},esc,contactReady,screen:()=>screen};
+window.Game={go,openHire,openSheet,closeSheet,sfx,buzz,save,get st(){return st},esc,contactReady,screen:()=>screen};
 window.openHire=openHire;
 setMode();
 })();

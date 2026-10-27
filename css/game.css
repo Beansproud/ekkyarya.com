@@ -493,36 +493,9 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 .v-row:active{transform:scale(.98)}
 .v-row:focus-visible{outline:3px solid #FFB400;outline-offset:2px}
 
-/* Paint Patrol (MG3): the canvas fills the screen; HUD, cards and the end screen are HTML */
-.g-tile.patrol{background:#C38BFF;box-shadow:0 6px 0 #7a4fb0,0 10px 20px rgba(0,0,0,.3)}
 .pp{padding:0;background:#120a1f;touch-action:none}
 #game.playing .g-sky{visibility:hidden}   /* the sky's 60 twinkles stop behind a full-screen game */
 #game.playing .g-sky i{animation-play-state:paused}
-.pp-cv{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
-.pp-hud{position:absolute;top:calc(env(safe-area-inset-top) + 10px);right:calc(env(safe-area-inset-right) + 12px);display:flex;gap:10px;align-items:center;z-index:2}
-.pp-pause{width:48px;height:48px;border-radius:14px;background:#2f1f47;color:#fff;font:700 1rem Fredoka,sans-serif}
-.pp-bomb{position:relative;width:48px;height:48px;border-radius:14px;background:#2f1f47;overflow:hidden;opacity:.6}
-.pp-bomb.ready{opacity:1;box-shadow:0 0 0 3px #FFB400}
-.pp-bomb img{position:relative;z-index:1;width:36px;height:36px;margin:6px}
-.pp-bomb i{position:absolute;left:0;right:0;bottom:0;background:#FFB40055}
-.pp-meter{position:absolute;top:calc(env(safe-area-inset-top) + 24px);left:50%;width:min(40vw,260px);height:12px;transform:translateX(-50%);border-radius:8px;background:#2f1f47;border:2px solid #fff3dc;overflow:hidden;z-index:2}
-.pp-meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,#FFB400,#FF6B6B,#7ED9B0,#68A0DB,#C38BFF)}
-.pp-meter[hidden]{display:none}
-.pp-hint{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom) + 20px);transform:translateX(-50%);margin:0;padding:8px 14px;border-radius:12px;background:#241638e6;color:#fff;font:600 .9rem Poppins,sans-serif;text-align:center;opacity:0;pointer-events:none;z-index:2}
-.pp-hint.show{animation:ppHint 4.5s var(--ease-in) both}
-@keyframes ppHint{0%{opacity:0}12%{opacity:1}80%{opacity:1}100%{opacity:0}}
-.pp-card{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;background:#120a1fe6;text-align:center;color:#fff}
-.pp-card[hidden]{display:none}
-.pp-card h2{font-size:1.6rem;margin:0;color:#FFB400}
-.pp-card p{font-family:Poppins;color:#cbbfe3;margin:0;max-width:420px}
-.pp-turn img{width:110px;animation:ppTurn 3s var(--ease-move) infinite}
-@keyframes ppTurn{0%,20%{transform:rotate(0)}50%,70%{transform:rotate(90deg)}100%{transform:rotate(0)}}
-.pp-end{background:#120a1ff2;overflow-y:auto;justify-content:flex-start}
-.pp-end.in{animation:overIn var(--dur-slow) var(--ease-in) both}
-.pp-art{max-height:42vh;flex:none;max-width:min(90vw,520px);border-radius:14px;object-fit:contain}
-.pp-row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center}
-@media (prefers-reduced-motion:reduce){.pp-hint.show{animation:none;opacity:1}.pp-turn img{animation:none}}
-@media (orientation:landscape){.pp-end{justify-content:center;gap:8px}.pp-art{max-height:34vh}.pp-end h2{font-size:1.3rem}.pp-end p{font-size:.9rem}}
 [data-install-row][hidden],[data-install][hidden]{display:none!important}
 #game button,#game a,dialog button{touch-action:manipulation}
 
@@ -546,7 +519,6 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 .v-walk,.v-walk *,.v-cloud,.v-shimmer,.v-lantern,.v-smoke,[class*="v-smoke"],[class*="v-lantern"]{animation:none!important}
 .v-cloud,.v-shimmer,.v-smoke{display:none}
 /* the turn-your-phone hint turns twice, then rests */
-.pp-turn img{animation-iteration-count:2}
 
 /* G1: the village zooms (1x to 2x) with a finger or the +/- buttons; nothing animates, the view follows the finger */
 .v-map{overflow:hidden;touch-action:pan-y;border-radius:18px}
@@ -628,20 +600,16 @@ body.game-mode #game.at-start{background:var(--paper,#FBF7EE) var(--grain);color
 #g-start .g-start-foot .g-classic,#g-start .g-start-foot .lang-switch{height:44px;min-height:44px}
 @media (max-width:380px){#game .g-start{padding-left:12px;padding-right:12px}#g-start .g-featured{column-gap:6px}#g-start .g-featured .g-feat{padding:3px 3px 0}}
 #game .g-start{padding-bottom:calc(env(safe-area-inset-bottom) + 120px)}   /* the bar (72 + 12) plus the Map face that rises 30 px above it */
-/* S2 part 2 (UX, 18 controls on start): two tiles side by side, Color and Paint Patrol, icon beside the label;
+/* S2 part 2 (UX, 18 controls on start): two tiles side by side, Color and Catch stars, icon beside the label;
    Catch stars lives on the Map and in Mine, "Just the art" and EN/ID in Mine */
 #g-start .g-tiles{grid-auto-flow:column;grid-auto-columns:1fr}
-#g-start .g-tile,#g-start .g-tile.patrol{height:56px;min-height:56px;flex-direction:row;gap:8px;border-radius:6px;border:1.5px solid #2B1342;box-shadow:0 3px 0 #2B1342;color:#2B1342}
-#g-start .g-tile.patrol{background:#7ED9B0}
+#g-start .g-tile{height:56px;min-height:56px;flex-direction:row;gap:8px;border-radius:6px;border:1.5px solid #2B1342;box-shadow:0 3px 0 #2B1342;color:#2B1342}
+#g-start .g-tile[data-arcade]{background:#7ED9B0}
 #g-start .g-tile img{width:32px;height:32px;object-fit:contain}
 #g-mine .g-stars-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
 #g-mine .g-stars-head h3{margin:0}
 #g-mine .g-stars-head .g-btn{min-height:44px;padding:4px 14px 4px 8px;font-size:.95rem;border-radius:6px;border:1.5px solid #2B1342;box-shadow:0 3px 0 #2B1342}
 #g-mine .g-stars-head .g-btn img{width:28px;height:28px;object-fit:contain}
-.pp-cast{font-size:.85rem}
-.pp-cast .g-link{min-height:44px;padding:0 2px;color:#FFB400;text-decoration:underline}
-.pp-done{font-family:Fredoka,sans-serif;font-weight:700;font-size:1.05rem;color:#fff!important;margin:0}
-@media (orientation:landscape){.pp-end>p:not(.pp-cast):not(.pp-done){display:none}.pp-end .pp-art{max-height:18vh}.pp-end{gap:4px}.pp-cast{margin:0;line-height:1.1}}
 
 /* ===== Developer A: village zoom nits (UX): labels keep their 1x size when the map is zoomed ===== */
 .v-map .v-label{transform:translate(-50%,0) scale(var(--zs,1));transform-origin:50% 0}
@@ -704,13 +672,54 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 .v-label::after{content:"";position:absolute;left:50%;top:50%;width:max(100%,44px);height:44px;transform:translate(-50%,-50%)}
 /* Developer 2 */
 .c-page:not(.c-scratch) b{color:#FFF}   /* the page name sat dark-on-dark under the picture (inherited the ink color) */
-#gPatrol:has(.pp-end:not([hidden])) .pp-hint{display:none}   /* the hint ran behind the end-screen buttons */
 
 /* Start header: logo and "Try Ekky" share the first row; the tagline runs full width under them, on the same left edge
    as "Fresh from the sketchbook" (owner: "this part a bit off"). */
 #g-start .g-start-head .g-logo{grid-row:1;align-self:center}
 #g-start .g-start-head .g-tagline{grid-column:1/-1;margin:6px 0 0;max-width:none}
 #c-edit .c-tool:disabled,.c-tool:disabled{opacity:.4;cursor:default}
+
+/* Map face in the tab bar: whole face, centered, 6px inset; a 4px paper ring separates the circle from the bar line; the circle
+   outline and the bar border are both 1.5px ink; the label sits on the same baseline as its neighbours. */
+.g-face{box-sizing:border-box;padding:6px;object-fit:contain;object-position:center;border:4px solid #FFFDF8;box-shadow:0 0 0 1.5px #2B1342;background-clip:padding-box;background-color:#D3FFD8}
+.g-tabs button.center{justify-content:flex-end;padding-bottom:11px}
+.g-tabs button.center small{text-align:center;width:100%}
+.g-tabs button.center.active .g-face{box-shadow:0 0 0 1.5px #2B1342,0 0 0 4px #FFB400}
+
+/* Tab bar: the marker slides in 250 ms, the newly active icon pops once, the label goes bold; each icon has its own touch
+   reaction (palette spins, frame squeezes, Map face nods and its ring flashes amber). Finite, never looping. */
+.g-tabs .g-ind{transition:left .25s var(--ease-in),width .25s var(--ease-in),opacity .25s}
+@keyframes t-pop{0%{translate:0 0;scale:1}45%{translate:0 -4px;scale:1.15}100%{translate:0 0;scale:1}}
+@keyframes t-spin{0%{rotate:0deg}40%{rotate:-15deg}100%{rotate:0deg}}
+@keyframes t-squeeze{0%{scale:1}35%{scale:.8 1.1}70%{scale:1.08 .94}100%{scale:1}}
+@keyframes t-ring{0%,100%{box-shadow:0 0 0 1.5px #2B1342}35%{box-shadow:0 0 0 1.5px #2B1342,0 0 0 5px #FFB400}}
+.g-tabs button.active .g-ico{animation:t-pop .3s ease-out}
+.g-tabs button.active:not(.center) span:last-child,.g-tabs button.center.active small{font-weight:700}
+.g-tabs button[data-tab=art].t-bounce .g-ico{animation:t-spin .35s ease-out}
+.g-tabs button[data-tab=mine].t-bounce .g-ico{animation:t-squeeze .35s ease-out}
+.g-face.t-nod{animation:t-nod .35s ease-out,t-ring .35s ease-out}
+@media (prefers-reduced-motion:reduce){.g-tabs button.active .g-ico,.g-tabs button.t-bounce .g-ico,.g-face.t-nod{animation:none}
+  .g-tabs .g-ind{transition:none}.g-tabs button:hover .g-ico,.g-tabs button.center:hover .g-face{translate:none}}
+
+/* Developer 3: touch */
+/* Touch response, added by js/site.js on pointerdown (touch only, once, removed on animationend). Uses the individual
+   scale and rotate properties so a tile's own tilt in transform is untouched. */
+@keyframes t-squash{0%{scale:1}40%{scale:.92}100%{scale:1}}
+@keyframes t-wiggle{0%{rotate:0deg}30%{rotate:-3deg}70%{rotate:3deg}100%{rotate:0deg}}
+.t-squash{animation:t-squash .18s ease-out}
+.t-wiggle{animation:t-wiggle .18s ease-out}
+@media (prefers-reduced-motion:reduce){.t-squash,.t-wiggle{animation:none}}
+
+/* Home (owner bug: no way back to start, and iPhones have no Back button): a back chevron plus the small logo, 44 px
+   tall, top-left on every game screen; the start screen already shows the logo */
+#game .g-home{position:absolute;z-index:15;top:calc(env(safe-area-inset-top) + 12px);left:calc(env(safe-area-inset-left) + var(--gut,16px));min-width:44px;height:44px;padding:0 8px 0 4px;border-radius:6px;display:flex;align-items:center;gap:2px;background:#FFFDF8;color:#2B1342;border:1.5px solid #2B1342;box-shadow:0 2px 0 #2B1342;transition:none}
+#game .g-home .ico{width:20px;height:20px;flex:none}
+#game .g-home img{height:30px;width:auto;max-width:44px;object-fit:contain}
+#game .g-home img+span{display:none}
+#game .g-home span{font-size:.55rem;line-height:.9;font-weight:700;text-align:center}
+#game .g-home:active{transform:translateY(1px);box-shadow:0 1px 0 #2B1342}
+#game.at-start .g-home,#game.playing .g-home{display:none}
+#game:has(.c-over.open) .c-top{padding-left:88px}
 .c-wheel{position:absolute;left:0;right:0;bottom:0;z-index:5;background:#2a1a40;color:#FFF;border-radius:18px 18px 0 0;padding:14px 16px calc(14px + env(safe-area-inset-bottom));box-shadow:0 -6px 24px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:10px}
 .c-wheel[hidden]{display:none}
 .c-wheel-top{display:flex;align-items:center;gap:12px;min-height:44px}
@@ -722,6 +731,32 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 .c-wheel-row .g-btn{min-height:44px}
 .c-top b{color:#FFF}   /* the page title in the top bar inherited the ink color: dark on dark */
 .c-pair figcaption{color:#E7DDF5}   /* "Yours" / "Ekky" captions were dark on the dark reveal page */
+/* Touch reactions, added by js/site.js on pointerdown (touch only, once, removed on animationend) and hover reactions on
+   mouse devices. Everything uses the individual scale, rotate and translate properties, so a tile's own tilt and a
+   walker's own placement in transform are untouched. Nothing runs untouched and nothing loops. */
+@keyframes t-squash{0%{scale:1}30%{scale:.9}70%{scale:1.06}100%{scale:1}}
+@keyframes t-wiggle{0%{rotate:0deg;translate:0 0}20%{rotate:-4deg;translate:0 -5px}40%{rotate:4deg;translate:0 -6px}60%{rotate:-3deg;translate:0 -4px}80%{rotate:2deg;translate:0 -1px}100%{rotate:0deg;translate:0 0}}
+@keyframes t-bounce{0%{translate:0 0;scale:1}35%{translate:0 -8px;scale:.94}70%{translate:0 1px;scale:1.05}100%{translate:0 0;scale:1}}
+@keyframes t-nod{0%{rotate:0deg}30%{rotate:10deg}60%{rotate:-6deg}100%{rotate:0deg}}
+@keyframes t-burst{0%{opacity:1;scale:.4;translate:-50% -50%}100%{opacity:0;scale:1;translate:calc(-50% + var(--dx)) calc(-50% + var(--dy));rotate:var(--r)}}
+@keyframes t-bob{0%,100%{translate:0 0}40%{translate:0 -5px}}
+.t-squash{animation:t-squash .3s ease-out}
+.t-wiggle{animation:t-wiggle .36s ease-out}
+.t-bounce{animation:t-bounce .3s ease-out}
+.t-nod{animation:t-nod .35s ease-out}
+.t-burst{position:fixed;z-index:99999;width:28px;height:28px;object-fit:contain;pointer-events:none;animation:t-burst .5s ease-out forwards}
+@media (hover:hover) and (pointer:fine){
+  .btn,.g-btn,.g-tile,.play-card,.g-hire,.filters button,.socials a,.g-feat-dl,.g-link,.c-sw,.c-st,.c-tool{transition:translate .2s,scale .2s,rotate .2s}
+  .btn:hover,.g-btn:hover,.g-tile:hover,.play-card:hover,.filters button:hover,.socials a:hover,.g-feat-dl:hover,.g-link:hover,.c-sw:hover,.c-st:hover,.c-tool:hover{translate:0 -2px;scale:1.04}
+  .tile,.feat,.g-feat,.g-card,.g-mine-item{transition:translate .2s,scale .2s,rotate .2s,box-shadow .3s}
+  .tile:hover,.feat:hover,.g-feat:hover,.g-card:hover,.g-mine-item:hover{translate:0 -4px;scale:1.04;rotate:calc(var(--tilt,0deg) * -1)}
+  .g-hire:hover{animation:t-wiggle .36s ease-out}
+  .g-tabs .g-ico,.g-face{transition:translate .2s,transform .35s var(--ease-in),box-shadow .3s}
+  .g-tabs button:hover .g-ico,.g-tabs button.center:hover .g-face{translate:0 -2px}
+  .v-place:hover,.v-walker:hover,.v-folk:hover{animation:t-bob .3s ease-out}
+}
+@media (prefers-reduced-motion:reduce){.t-squash,.t-wiggle,.t-bounce,.t-nod,.t-burst{animation:none}.t-burst{display:none}
+  .btn:hover,.g-btn:hover,.g-tile:hover,.play-card:hover,.tile:hover,.feat:hover,.g-feat:hover,.g-card:hover,.g-mine-item:hover,.g-hire:hover,.v-place:hover,.v-walker:hover,.v-folk:hover{animation:none;translate:none;scale:none;rotate:none}}
 .c-ripple{position:absolute;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;background:var(--c);opacity:.45;pointer-events:none;transform:scale(.3);animation:cRipple .3s ease-out forwards;z-index:3}
 @keyframes cRipple{to{transform:scale(4);opacity:0}}
 .c-sw.pop::before{animation:cPop .3s ease-out}

@@ -5,7 +5,7 @@
 const Color=(()=>{
 const G=document.getElementById("game");
 // A page with a switch stays hidden until FEATURES turns it on (Road Trip waits for Ekky's OK on the lines).
-const PAGES=[{id:"giraffe",slug:"giraffe"},{id:"road-trip",slug:"road-trip",flag:"pageRoadTrip"},{id:"monster",slug:"monster",flag:"pageMonster"}];
+const PAGES=[{id:"giraffe",slug:"giraffe"},{id:"road-trip",slug:"road-trip",flag:"pageRoadTrip"},{id:"monster",slug:"monster",flag:"pageMonster"},{id:"little-planet",slug:"little-planet",flag:"pageLittlePlanet"},{id:"hands",slug:"hands",flag:"pageHands"},{id:"day-in-life",slug:"day-in-life"},{id:"doodles",slug:"doodles"},{id:"plug-hero",slug:"plug-hero",flag:"pagePlugHero"}];
 // The Doodle Scene: a plain paper page with one region (the background) and Ekky's palette.
 const SCRATCH={id:"scratch",slug:null,title:"Doodle Scene",w:800,h:1000,regions:1,
   colors:["#FFFFFF","#FFF4D6","#FFE08A","#FFB400","#FF6B6B","#F4C2D7","#C9A7FF","#9C91BD","#B8D5FF","#7ED9B0","#3E7C6A","#2B1342"]};
@@ -33,6 +33,7 @@ const pages=()=>PAGES.filter(p=>okSlug(p.slug)&&(!p.flag||feature(p.flag)));
 const stickers=()=>feature("stickers")?STICKERS.filter(s=>okSlug(s.from)):[];
 const stickerImg={};
 const imgOf=n=>{if(!stickerImg[n]){const s=STICKERS.find(x=>x.n===n);if(!s)return null;stickerImg[n]=new Image();stickerImg[n].src=s.src}return stickerImg[n]};
+const nm=(k,en,n)=>tt(k,en).replace("{n}",n);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const $=id=>document.getElementById(id);
 
@@ -50,7 +51,7 @@ G.insertAdjacentHTML("beforeend",`<div class="c-over" id="gColor" role="dialog" 
       <button class="g-btn sm" id="cDone">${esc(t("color.done"))}</button></div>
     <div class="c-stage-wrap"><div class="c-stage" id="cStage"><canvas id="cCanvas"></canvas><img class="c-peek" id="cPeek" alt=""><div class="c-stickers" id="cStickers"></div>
       <div class="c-bin" id="cBin">${ico("i-trash")}<span>${esc(t("color.bin"))}</span></div><p class="c-hint" id="cHint"></p></div></div>
-    <div class="c-colors" id="cColors" role="radiogroup" aria-label="Colors"></div>
+    <div class="c-colors" id="cColors" role="radiogroup" aria-label="${esc(tt("color.colors","Colors"))}"></div>
     <div class="c-tools"><button class="c-tool" id="cUndo">${ico("i-undo")}<span>${esc(t("color.undo"))}</span></button>
       <button class="c-tool" id="cPeekBtn">${ico("i-eye")}<span>${esc(t("color.peek"))}</span></button>
       ${feature("stickers")?`<button class="c-tool" id="cStickBtn" aria-expanded="false">${ico("i-plus")}<span>${esc(t("color.stickers"))}</span></button>`:""}</div>
@@ -171,8 +172,8 @@ function sizeStage(){if(!cur)return;const wrap=stage.parentElement,{w,h}=cur.pd.
   const sc=Math.min(aw/w,ah/h);stage.style.width=w*sc+"px";stage.style.height=h*sc+"px"}
 addEventListener("resize",sizeStage);
 function renderColors(){const cols=cur.pd.meta.colors;
-  $("cColors").innerHTML=cols.map((c,i)=>`<button class="c-sw${color===i+1?" on":""}" data-v="${i+1}" style="--c:${c}" role="radio" aria-checked="${color===i+1}" aria-label="Color ${i+1}"></button>`).join("")+
-    cur.custom.map((c,i)=>`<button class="c-sw${color===13+i?" on":""}" data-v="${13+i}" style="--c:${c}" role="radio" aria-checked="${color===13+i}" aria-label="Your color ${i+1}"></button>`).join("")+
+  $("cColors").innerHTML=cols.map((c,i)=>`<button class="c-sw${color===i+1?" on":""}" data-v="${i+1}" style="--c:${c}" role="radio" aria-checked="${color===i+1}" aria-label="${esc(nm("color.swatch","Color {n}",i+1))}"></button>`).join("")+
+    cur.custom.map((c,i)=>`<button class="c-sw${color===13+i?" on":""}" data-v="${13+i}" style="--c:${c}" role="radio" aria-checked="${color===13+i}" aria-label="${esc(nm("color.mine","Your color {n}",i+1))}"></button>`).join("")+
     (feature("anyColor")?`<button class="c-sw c-any" data-any aria-label="${esc(t("color.any"))}">${ico("i-plus")}</button>`:"")}
 $("cColors").addEventListener("click",e=>{const b=e.target.closest(".c-sw");if(!b)return;Game.buzz(6);
   if(b.dataset.any!==undefined){openWheel();return}
@@ -228,7 +229,7 @@ $("cDone").onclick=()=>{save(true);reveal()};
 /* ---- stickers: tap one in the tray to add it; drag to move, pinch to scale and rotate, drag onto the bin to remove ---- */
 if($("cStickBtn")){
   $("cStickBtn").onclick=()=>{const tr=$("cTray"),open=tr.hidden;tr.hidden=!open;$("cStickBtn").setAttribute("aria-expanded",open);
-    if(open)tr.innerHTML=stickers().map(s=>`<button class="c-tray-st" data-n="${s.n}" aria-label="Sticker ${s.n}"><img src="${s.src}" alt=""></button>`).join("")};
+    if(open)tr.innerHTML=stickers().map(s=>`<button class="c-tray-st" data-n="${s.n}" aria-label="${esc(nm("color.sticker","Sticker {n}",s.n))}"><img src="${s.src}" alt=""></button>`).join("")};
   $("cTray").addEventListener("click",e=>{const b=e.target.closest("[data-n]");if(!b||!cur)return;
     if(cur.stickers.length>=MAX_STICKERS)return say(t("color.full"));
     cur.undo.push(["st",cur.stickers.map(x=>({...x}))]);
@@ -281,9 +282,33 @@ async function showArrival(id,fills,custom,stks,from){let pd;try{pd=await pageDa
   const c=$("cArriveCanvas");c.width=560;c.height=Math.round(560*pd.meta.h/pd.meta.w);
   await Promise.all(s.stickers.map(x=>{const im=imgOf(x.n);return im.complete?0:new Promise(r=>{im.onload=im.onerror=r})}));
   compose(s,c.getContext("2d"),0,0,560);
-  $("cArriveTitle").textContent=id==="scratch"?(from?t("arrive.scene",{name:from}):t("arrive.sceneAnon")):from?t("arrive.color",{name:from,title}):t("arrive.color.anon",{title});
+  arriveRe=()=>{const title=id==="scratch"?t("color.scratch"):ptitle(pr);
+    $("cArriveTitle").textContent=id==="scratch"?(from?t("arrive.scene",{name:from}):t("arrive.sceneAnon")):from?t("arrive.color",{name:from,title}):t("arrive.color.anon",{title})};arriveRe();
   $("cArriveColor").onclick=()=>open(id);view("cArrive");return true}
 $("cArriveX").onclick=close;$("cArriveExplore").onclick=()=>{close();Game.go("map")};
+
+/* ---- language switched in place ("ekky:lang", js/site.js): the overlay markup above was built once with t(), so its words are set again here ---- */
+let arriveRe=null;
+const LBL=[["#cPick .g-title","color.title"],["#cPick .g-sub","color.intro"],["#gColor [data-hire]","hire.chip.aria","aria"],
+  ["#cPick .g-hire span","sheet.hire"],["#cEdit .g-hire span","hire.chip"],["#cReveal .g-hire span","hire.chip"],["#cArrive .g-hire span","hire.chip"],
+  ["#cPickX","ui.close","aria","Close"],["#cClose","ui.close","aria","Close"],["#cArriveX","ui.close","aria","Close"],["#cBack","ui.back","aria","Back"],
+  ["#cDone","color.done"],["#cBin span","color.bin"],["#cColors","color.colors","aria","Colors"],["#cUndo span","color.undo"],["#cPeekBtn span","color.peek"],["#cStickBtn span","color.stickers"],
+  ["#cWheel","color.any","aria"],["#cWheel .c-wheel-top b","color.any"],['#cWheel [data-k="h"]',"wheel.hue","aria","Hue"],['#cWheel [data-k="s"]',"wheel.sat","aria","Strength"],
+  ['#cWheel [data-k="l"]',"wheel.light","aria","Light"],["#cWNo","wheel.cancel","text","Cancel"],["#cWYes","wheel.add","text","Use this color"],
+  ["#cReveal figure:first-child figcaption","reveal.yours"],["#cEkkyFig figcaption","reveal.ekky"],["#cShare","reveal.share"],["#cDl","dl.button"],["#cAgain","reveal.again"],
+  ["#cAnother","reveal.another"],["#cArriveColor","arrive.mine"],["#cArriveExplore","arrive.explore"]];
+function relang(){
+  LBL.forEach(([sel,k,kind,en])=>{const w=en?tt(k,en):t(k);over.querySelectorAll(sel).forEach(el=>{
+    if(kind==="aria")return el.setAttribute("aria-label",w);
+    const n=[...el.childNodes].reverse().find(x=>x.nodeType===3&&x.textContent.trim());
+    if(n)n.textContent=(/^\s/.test(n.textContent)?" ":"")+w;else if(!el.children.length)el.textContent=w})});
+  over.setAttribute("aria-label",t("color.title"));
+  if($("cPick").classList.contains("active"))openPicker();
+  if(cur){const pr=bySlug(cur.pd.meta.slug);cur.title=cur.pd.id==="scratch"?t("color.scratch"):pr?ptitle(pr):cur.pd.meta.title;$("cTitle").textContent=cur.title;
+    $("cRevTitle").textContent=cur.pd.id==="scratch"?t("color.scratch"):t("reveal.title");renderColors();
+    if(!$("cTray").hidden)$("cTray").innerHTML=stickers().map(s=>`<button class="c-tray-st" data-n="${s.n}" aria-label="${esc(nm("color.sticker","Sticker {n}",s.n))}"><img src="${s.src}" alt=""></button>`).join("")}
+  if(arriveRe&&$("cArrive").classList.contains("active"))arriveRe()}
+addEventListener("ekky:lang",relang);
 
 return {openPicker,open,close,showArrival,pages,stickers,PAGES,STICKERS,SCRATCH,get state(){return cur},compose,pageData,makeState};
 })();

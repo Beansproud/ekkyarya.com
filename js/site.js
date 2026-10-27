@@ -1,13 +1,24 @@
 // Desktop portfolio: gallery, lightbox, menus, theme, contact form and motion. Its globals (catImg, ico, uiImg, artOf, show, say, confetti, reduce) are used by js/game.js.
 document.documentElement.lang=LANG;   // B41: the page language follows the visitor (js/data.js picks it)
 // Text in the markup: data-t="key" sets the text, data-t-aria="key" the accessible name, data-tt="key|English" uses tt().
-document.querySelectorAll("[data-t]").forEach(el=>el.textContent=t(el.dataset.t));
-document.querySelectorAll("[data-t-aria]").forEach(el=>el.setAttribute("aria-label",t(el.dataset.tAria)));
-document.querySelectorAll("[data-tt]").forEach(el=>{const [k,en]=el.dataset.tt.split("|");el.textContent=tt(k,en)});
-document.querySelectorAll("[data-tta]").forEach(el=>{const [k,en]=el.dataset.tta.split("|");el.setAttribute("aria-label",tt(k,en))});
+function applyText(){
+  document.querySelectorAll("[data-t]").forEach(el=>el.textContent=t(el.dataset.t));
+  document.querySelectorAll("[data-t-aria]").forEach(el=>el.setAttribute("aria-label",t(el.dataset.tAria)));
+  document.querySelectorAll("[data-tt]").forEach(el=>{const [k,en]=el.dataset.tt.split("|");el.textContent=tt(k,en)});
+  document.querySelectorAll("[data-tta]").forEach(el=>{const [k,en]=el.dataset.tta.split("|");el.setAttribute("aria-label",tt(k,en))});
+}
+applyText();
 // EN / ID switch (B41): remembers the choice (setLang in js/data.js) and redraws the page in that language.
-document.querySelectorAll("[data-lang]").forEach(b=>{b.setAttribute("aria-pressed",b.dataset.lang===LANG);
-  b.addEventListener("click",()=>{if(b.dataset.lang===LANG)return;setLang(b.dataset.lang);location.reload()})});
+const langBtns=document.querySelectorAll("[data-lang]");
+const syncLang=()=>{document.documentElement.lang=LANG;langBtns.forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===LANG))};
+syncLang();
+// Switches in place, no reload: a short dim, the text and every screen redrawn at the dim point ("ekky:lang"), then back.
+function switchLang(l){if(l===LANG)return;setLang(l);syncLang();
+  const swap=()=>{applyText();dispatchEvent(new Event("ekky:lang"))};
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches)return swap();
+  const el=document.body;el.style.transition="opacity .1s";el.style.opacity=".4";
+  setTimeout(()=>{swap();el.style.opacity="1";setTimeout(()=>{el.style.transition="";el.style.opacity=""},120)},110)}
+langBtns.forEach(b=>b.addEventListener("click",()=>switchLang(b.dataset.lang)));
 /* ===== Install the app (B40, FEATURES.pwa). Where the browser offers it (beforeinstallprompt, Chrome), the button opens
    the browser's own install prompt. Everywhere else (iPhone, an in-app browser, Chrome before it decides to offer it) the
    button used to do nothing; now it shows how to add Try Ekky to the home screen. Hidden once running as the app. ===== */
@@ -97,14 +108,16 @@ const tiltAttr=p=>` style="--tilt:${tiltOf(p)}"`;
 
 /* ===== Gallery ===== */
 const grid=document.getElementById("grid");
-grid.innerHTML=PROJECTS.map((p,i)=>`<button class="tile reveal" data-cat="${p.cat}" data-i="${i}"${tiltAttr(p)}>
-  <span class="tile-cat">${catImg(p.cat,"")}</span><div class="art">${artOf(p)}</div><span class="view">View</span>
-  <div class="meta"><small>${catName(p.cat)}</small><h3>${ptitle(p)}</h3>${tagOf(p)}</div></button>`).join("");
+const renderGrid=()=>{grid.innerHTML=PROJECTS.map((p,i)=>`<button class="tile reveal" data-cat="${p.cat}" data-i="${i}"${tiltAttr(p)}>
+  <span class="tile-cat">${catImg(p.cat,"")}</span><div class="art">${artOf(p)}</div><span class="view">${tt("tile.view","View")}</span>
+  <div class="meta"><small>${catName(p.cat)}</small><h3>${ptitle(p)}</h3>${tagOf(p)}</div></button>`).join("")};
+renderGrid();
 
 // sidebar category names follow the language (catName); the icon goes in front
-document.querySelectorAll("#sideCats [data-filter]").forEach(b=>{const n=catName(b.dataset.filter);if(n)b.textContent=n});
-document.querySelectorAll("#filters [data-filter],#sideCats [data-filter]").forEach(b=>b.insertAdjacentHTML("afterbegin",catImg(b.dataset.filter)));
-document.querySelectorAll(".card[data-jump] > .ico").forEach(i=>i.innerHTML=catImg(i.parentElement.dataset.jump,""));
+function renderCats(){document.querySelectorAll("#sideCats [data-filter]").forEach(b=>{const n=catName(b.dataset.filter);if(n)b.textContent=n});
+  document.querySelectorAll("#filters [data-filter],#sideCats [data-filter]").forEach(b=>b.insertAdjacentHTML("afterbegin",catImg(b.dataset.filter)));
+  document.querySelectorAll(".card[data-jump] > .ico").forEach(i=>i.innerHTML=catImg(i.parentElement.dataset.jump,""))}
+renderCats();
 let shown=12;
 function setFilter(f,keep){
   if(!keep)shown=12;setFilter.cur=f;let n=0;
@@ -122,8 +135,9 @@ document.querySelectorAll("#sideCats button,[data-jump]").forEach(b=>b.addEventL
 }));
 
 /* ===== Selected work: the featured six under the hero (B08) ===== */
-document.getElementById("featStrip").innerHTML=featuredSix().map(p=>({p,i:PROJECTS.indexOf(p)}))
+const renderStrip=()=>document.getElementById("featStrip").innerHTML=featuredSix().map(p=>({p,i:PROJECTS.indexOf(p)}))
   .map(({p,i})=>`<button class="feat" data-i="${i}"${tiltAttr(p)}><img src="${thumbOf(p)}" alt="" loading="lazy" decoding="async"><span>${ptitle(p)}</span></button>`).join("");
+renderStrip();
 document.getElementById("featStrip").addEventListener("click",e=>{const b=e.target.closest(".feat");if(b)show(+b.dataset.i)});
 // the phone start screen's six (rendered by js/game.js): the same per-piece tilt on each taped cell
 const gFeat=document.getElementById("gFeatured");
@@ -156,6 +170,8 @@ lb.addEventListener("click",e=>{if(e.target===lb)lb.close()});
 lb.addEventListener("keydown",e=>{if(e.key==="ArrowRight")step(1);if(e.key==="ArrowLeft")step(-1)});
 
 /* ===== Typed words ===== */
+const typedWord=()=>{const el=document.getElementById("typed");if(el)el.textContent=t("hero.words").split("|")[0]};
+typedWord();
 (function(){const words=t("hero.words").split("|"),el=document.getElementById("typed");if(!el)return;el.textContent=words[0];
   return; // quiet pass (B43): one still word, no typing loop
   let w=0,c=words[0].length,del=true;
@@ -216,10 +232,11 @@ const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches, fine=matchM
 addEventListener("load",()=>setTimeout(()=>document.getElementById("loader").classList.add("done"),700));
 setTimeout(()=>document.getElementById("loader").classList.add("done"),3000);
 // split headings into letters
-document.querySelectorAll(".split").forEach(el=>{
+function splitHeads(){document.querySelectorAll(".split").forEach(el=>{
   el.setAttribute("aria-label",el.textContent);
   el.innerHTML=[...el.textContent].map((c,i)=>c===" "?" ":`<span class="ch" aria-hidden="true" style="transition-delay:${i*40}ms">${c}</span>`).join("");
-});
+})}
+splitHeads();
 // starfield + shooting stars
 const stars=document.getElementById("stars");
 stars.innerHTML=Array.from({length:40},()=>{const sz=2+Math.random()*4;
@@ -238,3 +255,27 @@ function confetti(){if(reduce)return;const cols=["#FFB400","#FF6B6B","#7ED9B0","
     document.body.appendChild(c);setTimeout(()=>c.remove(),4000)}}
 
 document.getElementById("year").textContent=new Date().getFullYear();
+
+// One shared touch response, touch only and once per tap: buttons and tiles squash and bounce, drawings and villagers wiggle
+// and lift, tab-bar items bounce (the Map face nods), and the drawings, Hire and the play tiles pop a few of Ekky's doodles.
+(()=>{const mq=matchMedia("(prefers-reduced-motion: reduce)");
+  const TAP="button,a,[data-i],.g-feat,.g-tile,.v-place,.v-walker,.v-folk,.c-st,.c-sw,.tile,.feat,.g-hint>span",
+    WIG=".tile,.feat,.g-feat,.g-card,.g-mine-item,.v-walker,.v-folk",BURST=".g-feat,.g-card,.g-mine-item,.tile,.feat,.g-hire,.g-tile,.play-card",
+    DOODLES=["cat","palette","planet","pen-hand","ghost"].map(n=>`assets/ui/${n}.png`);
+  const play=(el,c)=>{el.classList.add(c);const done=()=>el.classList.remove(c);
+    el.addEventListener("animationend",e=>{if(e.target===el)done()},{once:true});setTimeout(done,600)};
+  function burst(x,y){if(document.querySelectorAll(".t-burst").length>10)return;
+    for(let i=0;i<5;i++){const a=(i/5)*6.283+Math.random()*.9,d=34+Math.random()*26,im=new Image();
+      im.className="t-burst";im.alt="";im.src=DOODLES[(Math.random()*DOODLES.length)|0];
+      im.style.cssText=`left:${x}px;top:${y}px;--dx:${Math.cos(a)*d}px;--dy:${Math.sin(a)*d-14}px;--r:${(Math.random()-.5)*60}deg`;
+      document.body.appendChild(im);setTimeout(()=>im.remove(),560)}}
+  document.addEventListener("pointerdown",e=>{if(e.pointerType!=="touch"||mq.matches||!e.target.closest)return;
+    const el=e.target.closest(TAP);if(!el||/\bt-(squash|wiggle|bounce)\b/.test(el.className))return;
+    const tab=el.matches(".g-tabs button");
+    play(el,tab?"t-bounce":el.matches(WIG)?"t-wiggle":"t-squash");
+    if(tab&&el.classList.contains("center")){const f=el.querySelector(".g-face");if(f)play(f,"t-nod")}
+    if(el.matches(BURST))burst(e.clientX,e.clientY)},{passive:true})})();
+
+// Language switched in place: redraw what the desktop page built with t() at load (the text in the markup is applyText()).
+addEventListener("ekky:lang",()=>{renderGrid();setFilter(setFilter.cur||"all",true);renderCats();renderStrip();typedWord();applyTheme();splitHeads();
+  if(lb.open)show(cur)});

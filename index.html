@@ -263,7 +263,6 @@
     <div class="play-grid">
       <a class="play-card" href="?game&amp;play=color" style="--tilt:-1.5deg"><img src="assets/ui/pen-hand.png" alt="" width="72" height="72" loading="lazy"><h3 data-t="play.color">Color</h3><p data-t="play.color.d">Pick a color and see it on Ekky's art.</p></a>
       <a class="play-card" href="?game&amp;play=stars" style="--tilt:1deg"><img src="assets/ui/helmet.png" alt="" width="72" height="72" loading="lazy"><h3 data-t="play.stars">Catch stars</h3><p data-t="play.stars.d">Catch as many falling stars as you can.</p></a>
-      <a class="play-card" href="?game&amp;play=patrol" style="--tilt:-1deg"><img src="assets/sprites/hero-desk-s.png" alt="" width="72" height="72" loading="lazy"><h3 data-t="play.patrol">Paint Patrol</h3><p data-t="play.patrol.d">Help Ekky patrol the town and paint it back.</p></a>
     </div>
   </section>
 
@@ -313,12 +312,13 @@
 </footer>
 
 <!-- ===================== GAME MODE (phones) ===================== -->
-<button class="g-mode-fab" id="gFab" aria-label="Switch to game mode"><img src="assets/ui/face.png" alt="" loading="lazy"><span>Play</span></button>
+<button class="g-mode-fab" id="gFab" data-tta="fab.aria|Switch to game mode" aria-label="Switch to game mode"><img src="assets/ui/face.png" alt="" loading="lazy"><span data-tt="fab.play|Play">Play</span></button>
 <div id="game" class="at-start" aria-label="Ekky Arya, game mode">
   <div class="g-sky" id="gSky"></div>
   <div class="g-planet-bg"></div>
 
 
+  <button class="g-home" data-go="start" data-t-aria="home.aria"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg><img src="assets/logo.png" alt="" fetchpriority="low" onerror="this.remove()"><span aria-hidden="true">EKKY<br>ARYA</span></button>
   <button class="g-hire g-hire-pin" data-hire data-t-aria="hire.chip.aria"><img src="assets/ui/monster-head.png" alt="" fetchpriority="low"><span data-t="hire.chip"></span></button>
   <section class="g-screen g-start active" id="g-start">
     <div class="g-start-head"><img class="g-logo" src="assets/logo.png" alt="Ekky Arya" fetchpriority="low" onerror="this.outerHTML='<div class=&quot;g-logo-text&quot;>EKKY<br>ARYA</div>'">
@@ -327,7 +327,7 @@
     <div class="g-featured" id="gFeatured"></div>
     <div class="g-tiles">
       <button class="g-tile" data-go="color"><img src="assets/ui/pen-hand.png" alt="" fetchpriority="low"><span data-t="start.color" data-hand="color"></span></button>
-      <button class="g-tile patrol" data-patrol data-feature="paintPatrol"><img src="assets/sprites/hero-desk-s.png" alt="" fetchpriority="low"><span data-tt="start.patrol|Paint Patrol"></span></button>
+      <button class="g-tile" data-arcade data-feature="starCatcher"><img src="assets/ui/helmet.png" alt="" fetchpriority="low"><span data-t="start.catch"></span></button>
     </div>
   </section>
 
