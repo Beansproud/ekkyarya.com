@@ -135,7 +135,7 @@ lb.addEventListener("keydown",e=>{if(e.key==="ArrowRight")step(1);if(e.key==="Ar
 
 /* ===== Typed words ===== */
 (function(){const words=t("hero.words").split("|"),el=document.getElementById("typed");el.textContent=words[0];
-  if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  return; // quiet pass (B43): one still word, no typing loop
   let w=0,c=words[0].length,del=true;
   (function tick(){const word=words[w];
     if(del){c--;if(c===0){del=false;w=(w+1)%words.length}}

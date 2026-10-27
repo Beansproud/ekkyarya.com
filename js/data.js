@@ -382,6 +382,18 @@ const COPY = {
     "process.step3.body": "Now it looks like a real drawing.",
     "process.step4": "Done",
     "process.step4.body": "Files for print and web. High five.",
+    "services.title": "What I draw",
+    "services.illustration": "Characters, scenes, spot art.",
+    "services.web": "Websites with friendly faces.",
+    "services.branding": "Mascots and packaging people remember.",
+    "services.social": "Posts and stickers that stop the thumb.",
+    "services.view": "See them",
+    "about.tools": "Procreate, Illustrator, Figma, and a lot of coffee.",
+    "ui.more": "Show more",
+    "form.email": "Your email",
+    "form.other": "Something else",
+    "form.note": "Opens your email app.",
+    "footer.line": "Ekky Arya. Made with too many doodles.",
     "tag.fanNote": "Fan art. Characters belong to their owners."
   },
   id: {
@@ -620,6 +632,18 @@ const COPY = {
     "process.step3.body": "Baru kelihatan seperti gambar beneran.",
     "process.step4": "Selesai",
     "process.step4.body": "File untuk cetak dan web. Tos!",
+    "services.title": "Yang aku gambar",
+    "services.illustration": "Karakter, adegan, ilustrasi kecil.",
+    "services.web": "Website dengan wajah ramah.",
+    "services.branding": "Maskot dan kemasan yang gampang diingat.",
+    "services.social": "Postingan dan stiker yang bikin jempol berhenti.",
+    "services.view": "Lihat",
+    "about.tools": "Procreate, Illustrator, Figma, dan banyak kopi.",
+    "ui.more": "Lihat lagi",
+    "form.email": "Email kamu",
+    "form.other": "Lainnya",
+    "form.note": "Membuka aplikasi email-mu.",
+    "footer.line": "Ekky Arya. Dibuat dengan coretan kebanyakan.",
     "tag.fanNote": "Fan art. Karakternya milik pemiliknya masing-masing."
   }
 };

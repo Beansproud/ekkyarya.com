@@ -345,3 +345,17 @@ footer a .ico{vertical-align:-.12em}
 .save-row .btn{min-height:44px}
 .save-row .btn[disabled]{opacity:.6}
 .save-row [hidden]{display:none!important}
+
+/* Quiet pass (B43, Ekky: "too jam-packed", "trying too hard"). Nothing moves on its own: the art is just shown.
+   Kept: hover and press feedback, the lightbox and dialog fade. Everything decorative stands still. */
+.hero h1 .wave,.hero-art,.stars i,.chip,.tile:not(.hide),.logo .y{animation:none!important}
+.typed .caret{display:none}
+.marquee{display:none}
+.confetti{display:none!important}
+dialog[open]{animation:fadeIn var(--dur) var(--ease-in)}
+.lb-art img.ok{animation:fadeIn var(--dur) var(--ease-in)}
+@keyframes fadeIn{from{opacity:0}}
+/* quiet pass: sections are simply there, no fade-up or letter-by-letter titles; no eyebrow above every heading */
+.reveal{opacity:1!important;transform:none!important;transition:none!important}
+.split .ch{opacity:1!important;transform:none!important}
+.about .tools{color:var(--muted);margin-top:10px}
