@@ -784,3 +784,8 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 .c-sw.pop::before{animation:cPop .3s ease-out}
 @keyframes cPop{40%{transform:scale(1.18)}}
 @media (prefers-reduced-motion:reduce){.c-ripple{display:none}.c-sw.pop::before{animation:none}}
+/* Doodle Scene: a sticker lifts while it is held, and pops when it lands or is added */
+.c-st.drag{scale:1.1;filter:drop-shadow(0 8px 8px rgba(0,0,0,.3))}
+.c-st.pop{animation:cStPop .3s ease-out}
+@keyframes cStPop{0%{scale:.7}60%{scale:1.14}100%{scale:1}}
+@media (prefers-reduced-motion:reduce){.c-st.pop{animation:none}}
