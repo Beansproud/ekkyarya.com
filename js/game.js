@@ -244,12 +244,13 @@ function draw(){const a=A;if(!a)return;const sx=(Math.random()-.5)*a.shake,sy=(M
   ctx.restore()}
 function aim(e){if(!A)return;const r=cv.getBoundingClientRect(),x=(e.touches?e.touches[0].clientX:e.clientX)-r.left;A.tx=Math.max(40,Math.min(A.W-40,x))}
 if(cv){cv.addEventListener("pointerdown",aim);cv.addEventListener("pointermove",aim);cv.addEventListener("touchmove",e=>{aim(e);e.preventDefault()},{passive:false})}
-function endArcade(){const a=A;a.run=false;const rec=a.score>(st.best||0);st.best=Math.max(st.best||0,a.score);save();
+function endArcade(){const a=A;a.run=false;lastScore=a.score;const rec=a.score>(st.best||0);st.best=Math.max(st.best||0,a.score);save();
   $("gResTitle").textContent=rec?t("stars.record"):t("stars.end");$("gResScore").innerHTML=ico("s-star")+a.score;
   $("gResText").textContent=t("stars.result",{n:a.score,best:st.best});$("gResult").classList.add("show");G.classList.remove("playing");
   sfx(rec?"legend":"level");if(rec&&typeof confetti==="function")confetti()}
 function quitArcade(){cancelAnimationFrame(raf);A=null;pausedByHide=false;$("gArcade").classList.remove("open");G.classList.remove("playing");$("gCount").innerHTML=""}
-if(cv){$("gArcadeX").onclick=quitArcade;$("gResBack").onclick=()=>{quitArcade();go("start")};$("gAgain").onclick=startArcade}
+let lastScore=0;
+if(cv){$("gResDl").onclick=()=>typeof Share!=="undefined"&&Share.downloadStars(lastScore);$("gArcadeX").onclick=quitArcade;$("gResBack").onclick=()=>{quitArcade();go("start")};$("gAgain").onclick=startArcade}
 G.addEventListener("click",e=>{if(e.target.closest("[data-arcade]")){sfx("tap");startArcade()}});
 // A hidden tab pauses the round; it resumes only once the tab is visible again (r1a bug: it used to resume while hidden).
 let pausedByHide=false;

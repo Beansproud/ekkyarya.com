@@ -8,6 +8,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-192.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#2B1342">
 <meta name="description" content="Ekky Arya: illustrator and graphic designer making lively, playful illustrations, characters and brands.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -292,6 +293,7 @@
 
 <footer>
   <span>© <span id="year"></span> Ekky Arya. Made with lots of doodles.</span>
+  <button class="btn ghost app-install" data-install data-feature="pwa" hidden data-t="app.install"></button>
   <a href="#home">Back to top <svg class="ico" aria-hidden="true"><use href="#i-up"/></svg></a>
 </footer>
 
@@ -339,6 +341,7 @@
     <div class="g-panel">
       <div class="g-row" data-feature="sound"><span data-t="mine.sound"></span><button class="g-switch" id="gSndSwitch" role="switch" aria-checked="false" data-t-aria="mine.sound"></button></div>
       <div class="g-row"><span data-t="mine.vibration"></span><button class="g-switch on" id="gVib" role="switch" aria-checked="true" data-t-aria="mine.vibration"></button></div>
+      <div class="g-row" data-feature="pwa" data-install-row hidden><span data-t="app.install"></span><button class="g-btn sm alt" data-install data-tta="app.install|Install the app"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg></button></div>
       <div class="g-row"><span data-t="lang.label"></span><div class="lang-switch" role="group" data-t-aria="lang.label"><button data-lang="en">EN</button><button data-lang="id">ID</button></div></div>
       <div class="g-row"><span data-t="start.classic"></span><button class="g-btn sm alt" data-classic aria-label="Open"><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></button></div>
       <div class="g-row"><button class="g-link g-reset" id="gReset" data-t="mine.reset"></button></div>
@@ -364,6 +367,7 @@
       <div class="score" id="gResScore">0</div>
       <p id="gResText"></p>
       <button class="g-btn" id="gAgain"><svg class="ico" aria-hidden="true"><use href="#i-replay"/></svg> <span data-t="stars.again"></span></button>
+      <button class="g-btn alt sm" id="gResDl"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg> <span data-t="dl.button"></span></button>
       <button class="g-btn alt sm" id="gResBack" data-t="stars.other"></button>
       <button class="g-hire" data-hire data-t-aria="hire.chip.aria"><img src="assets/ui/monster-head.png" alt=""><span data-t="hire.chip"></span></button>
     </div>
@@ -375,7 +379,8 @@
   <div class="lb-art" id="lbArt"></div>
   <div class="lb-body">
     <div><small id="lbCat" class="lb-cat"></small><h3 id="lbTitle"></h3><span class="tag" id="lbTag" hidden></span><p id="lbDesc" class="lb-desc"></p>
-      <button class="btn lb-hire" id="lbHire" aria-label="Hire Ekky, send a message"></button></div>
+      <div class="lb-actions"><button class="btn lb-hire" id="lbHire" data-t-aria="hire.chip.aria"></button>
+        <button class="btn ghost lb-dl" id="lbDl" data-feature="artDownload" hidden><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg> <span data-t="lb.download"></span></button></div></div>
     <div class="lb-nav"><button id="lbPrev" data-tta="lb.prev|Previous piece"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg></button><button id="lbNext" data-tta="lb.next|Next piece"><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></button></div>
   </div>
 </dialog>

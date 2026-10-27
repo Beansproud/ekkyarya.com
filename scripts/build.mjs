@@ -4,6 +4,7 @@ import { cpSync, rmSync, mkdirSync } from "node:fs";
 rmSync("www", { recursive: true, force: true });
 mkdirSync("www");
 cpSync("index.html", "www/index.html");
+for (const f of ["manifest.webmanifest", "sw.js", "favicon.ico"]) cpSync(f, `www/${f}`);
 for (const dir of ["css", "js", "assets"]) cpSync(dir, `www/${dir}`, { recursive: true });
 console.log("Built www/");
 // B15: warn while the contact details are still placeholders (the site must not go public like this).

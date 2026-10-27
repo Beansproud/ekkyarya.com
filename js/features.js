@@ -11,7 +11,8 @@ const FEATURES = {
   shareVideo: true,      // "Share as video": the coloring plays back as a 5 s clip, recorded in the browser (no library)
   challengeLinks: true,  // Star Catcher challenge links (later ticket B22)
   holoCards: true,       // holo foil on tilt (later ticket B36)
-  pwa: true,             // install and offline (later ticket B37)
+  pwa: true,             // "Install the app" (manifest + sw.js); the full offline work is B37
+  artDownload: true,     // lightbox Download: a copy of at most 1600 px with a subtle mark, never on fan art (owner: yes)
   sound: true,           // sound effects and the sound toggle
 };
 const feature = name => FEATURES[name] === true;

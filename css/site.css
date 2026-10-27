@@ -321,3 +321,5 @@ footer a .ico{vertical-align:-.12em}
 .lang-switch{display:inline-flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;width:max-content}
 .lang-switch button{min-width:44px;min-height:44px;font-family:Fredoka;font-weight:600;font-size:.9rem;color:var(--muted);background:var(--card)}
 .lang-switch button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.lb-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.lb-actions .lb-hire{margin-top:0}
+.lb-dl[hidden],.app-install[hidden]{display:none}

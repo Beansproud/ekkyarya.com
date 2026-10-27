@@ -36,10 +36,25 @@ function paintCard(x,data,time=Infinity){const done=time===Infinity;
   const cy=Math.min(y+120,H-FREE_BOTTOM-120);x.font="700 44px Fredoka, sans-serif";const label=t("card.cta",{host:siteHost()}),lw=x.measureText(label).width+90;
   x.fillStyle="#FFB400";round(x,(W-lw)/2,cy-62,lw,88,44);x.fill();x.fillStyle="#2B1342";x.fillText(label,W/2,cy-4);
   x.fillStyle="#fff";x.font="600 40px Fredoka, sans-serif";x.fillText(t("credit.full"),W/2,H-FREE_BOTTOM-36);x.globalAlpha=1}
+// Star Catcher result card (B40): Ekky on his little planet (from Little Planet, an original), the score, the credit.
+const loadImg=src=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=src});
+async function paintStars(x,data){
+  const g=x.createRadialGradient(W/2,0,100,W/2,H*.4,H);g.addColorStop(0,"#40236a");g.addColorStop(.55,"#1f1135");g.addColorStop(1,"#120a1f");x.fillStyle=g;x.fillRect(0,0,W,H);
+  let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;x.fillStyle="#fff";
+  for(let i=0;i<90;i++){x.globalAlpha=.25+rnd()*.6;const s=1.5+rnd()*3.5;x.fillRect(rnd()*W,rnd()*H,s,s)}x.globalAlpha=1;
+  if(creative(PROJECTS.find(p=>p.slug==="little-planet"))){try{const im=await loadImg("assets/hero.png"),w=560,h=w*im.height/im.width;x.drawImage(im,(W-w)/2,FREE_TOP+20,w,h)}catch{}}
+  x.textAlign="center";const y=FREE_TOP+20+809+40;
+  x.fillStyle="#FFB400";x.font="700 84px Fredoka, sans-serif";fit(x,t("stars.score",{n:data.score}),W-120);x.fillText(t("stars.score",{n:data.score}),W/2,y);
+  x.fillStyle="#e6defa";x.font="400 40px Poppins, sans-serif";x.fillText(t("stars.title"),W/2,y+64);
+  const cy=H-FREE_BOTTOM-120;x.font="700 44px Fredoka, sans-serif";const label=t("card.cta",{host:siteHost()}),lw=x.measureText(label).width+90;
+  x.fillStyle="#FFB400";round(x,(W-lw)/2,cy-62,lw,88,44);x.fill();x.fillStyle="#2B1342";x.fillText(label,W/2,cy-4);
+  x.fillStyle="#fff";x.font="600 40px Fredoka, sans-serif";x.fillText(t("credit.full"),W/2,H-FREE_BOTTOM-36)}
 async function renderCard(kind,data){
-  if(kind!=="coloring")throw new Error(`unknown card "${kind}"`);
-  check(data);if(!data.draw)throw new Error("nothing to draw");await fonts();
-  const c=document.createElement("canvas");c.width=W;c.height=H;paintCard(c.getContext("2d"),data);return c}
+  if(kind!=="coloring"&&kind!=="stars")throw new Error(`unknown card "${kind}"`);
+  await fonts();const c=document.createElement("canvas");c.width=W;c.height=H;
+  if(kind==="stars"){await paintStars(c.getContext("2d"),data);return c}
+  check(data);if(!data.draw)throw new Error("nothing to draw");
+  paintCard(c.getContext("2d"),data);return c}
 
 /* ---- video: the card's timeline, recorded at 720 x 1280 and 30 fps (MP4 where the browser can, else WebM) ---- */
 const videoType=()=>{if(typeof MediaRecorder==="undefined"||!HTMLCanvasElement.prototype.captureStream)return "";
@@ -60,6 +75,22 @@ const fileName=(data,ext)=>data.page==="scratch"?`ekkyarya-scene-${new Date().to
 function save(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
 const pngOf=card=>new Promise(r=>{try{card.toBlob(r,"image/png")}catch{r(null)}});
 async function download(data){const blob=await pngOf(await renderCard("coloring",data));if(blob){save(blob,fileName(data,"png"));say(t("dl.saved"),"i-check")}else say(t("share.copied"))}
+async function downloadStars(score){const blob=await pngOf(await renderCard("stars",{score}));
+  if(blob){save(blob,`ekkyarya-stars-${score}.png`);say(t("dl.saved"),"i-check")}}
+// Lightbox Download (B40, FEATURES.artDownload): a copy of at most 1600 px on the long side with a subtle mark of Ekky's
+// website in the corner (about 3% of the width, 60% opacity). Never fan art; client pieces keep their tag in the lightbox.
+async function downloadArt(p){
+  if(!p||p.kind==="fan"||!feature("artDownload"))return;
+  try{const im=await loadImg(p.full),sc=Math.min(1,1600/Math.max(im.naturalWidth,im.naturalHeight)),w=Math.round(im.naturalWidth*sc),h=Math.round(im.naturalHeight*sc);
+    const c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d");x.drawImage(im,0,0,w,h);
+    const mark=(()=>{try{return new URL(CONFIG.website).host.replace(/^www\./,"")}catch{return "ekkyarya.com"}})(),fs=Math.max(12,Math.round(w*.03));
+    x.font=`600 ${fs}px Fredoka, Poppins, sans-serif`;x.textAlign="right";x.textBaseline="bottom";x.globalAlpha=.6;
+    x.lineWidth=Math.max(2,fs/8);x.strokeStyle="#2B1342";x.strokeText(mark,w-fs*.6,h-fs*.5);x.fillStyle="#fff";x.fillText(mark,w-fs*.6,h-fs*.5);
+    const blob=await new Promise(r=>c.toBlob(r,"image/jpeg",.9));if(!blob)throw new Error("no blob");
+    save(blob,`ekkyarya-${p.slug}.jpg`);
+    let seen=false;try{seen=localStorage.getItem("ekkyDlNote")==="1";localStorage.setItem("ekkyDlNote","1")}catch{}
+    say(seen?t("dl.saved"):t("lb.downloadNote"),"i-check")}
+  catch{say(tt("dl.failed","Downloading didn't work here. Please try again on the website."))}}
 // Phones: the system share sheet with the file and the link. Desktops: save the file and copy the link.
 async function send(file,blob,data,url,savedMsg){const text=t(data.page==="scratch"?"share.textScene":"share.textColor",{url});
   try{
@@ -92,5 +123,5 @@ $("sDl").onclick=()=>{remember();download(withName())};
 $("sVideo").onclick=async()=>{const b=$("sVideo");if(b.disabled)return;remember();b.disabled=true;const label=b.querySelector("span");label.textContent=tt("share.video.making","Making your video...");
   try{const d=withName(),v=await renderVideo(d),name=fileName(d,v.ext);await send(new File([v.blob],name,{type:v.blob.type}),v.blob,d,cur.link(d.name),tt("share.video.saved","Video saved, link copied"))}
   catch{say(t("share.copied"))}finally{b.disabled=false;label.textContent=tt("share.video","Share as video")}};
-return {renderCard,renderVideo,paintCard,openPreview,download,canVideo};
+return {renderCard,renderVideo,paintCard,openPreview,download,downloadArt,downloadStars,canVideo};
 })();

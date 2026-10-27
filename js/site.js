@@ -8,6 +8,13 @@ document.querySelectorAll("[data-tta]").forEach(el=>{const [k,en]=el.dataset.tta
 // EN / ID switch (B41): remembers the choice (setLang in js/data.js) and redraws the page in that language.
 document.querySelectorAll("[data-lang]").forEach(b=>{b.setAttribute("aria-pressed",b.dataset.lang===LANG);
   b.addEventListener("click",()=>{if(b.dataset.lang===LANG)return;setLang(b.dataset.lang);location.reload()})});
+/* ===== Install the app (B40, FEATURES.pwa): only where the browser offers it ===== */
+if(feature("pwa")&&"serviceWorker" in navigator&&/^https?:/.test(location.protocol))addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+let installEvt=null;
+addEventListener("beforeinstallprompt",e=>{if(!feature("pwa"))return;e.preventDefault();installEvt=e;
+  document.querySelectorAll("[data-install],[data-install-row]").forEach(b=>b.hidden=false)});
+document.addEventListener("click",async e=>{if(!e.target.closest("[data-install]")||!installEvt)return;installEvt.prompt();
+  try{await installEvt.userChoice}catch{}installEvt=null;document.querySelectorAll("[data-install],[data-install-row]").forEach(b=>b.hidden=true)});
 /* ===== Feature switches: entry points of a switched-off feature disappear (js/features.js) ===== */
 document.querySelectorAll("[data-feature]").forEach(el=>{if(!feature(el.dataset.feature))el.remove()});
 
@@ -76,12 +83,14 @@ function show(i){cur=i;const p=PROJECTS[i];
   document.getElementById("lbDesc").textContent=pdesc(p)||"";
   const tag=document.getElementById("lbTag");tag.textContent=plabel(p);tag.hidden=!p.label;
   document.getElementById("lbHire").textContent=t("lb.hire");
+  const dl=document.getElementById("lbDl");if(dl)dl.hidden=p.kind==="fan";
   if(!lb.open)lb.showModal();}
 function step(d){const v=visible(),k=v.indexOf(cur);show(v[(k+d+v.length)%v.length])}
 grid.addEventListener("click",e=>{const t=e.target.closest(".tile");if(t)show(+t.dataset.i)});
 document.getElementById("lbPrev").onclick=()=>step(-1);
 document.getElementById("lbNext").onclick=()=>step(1);
 document.getElementById("lbClose").onclick=()=>lb.close();
+if(document.getElementById("lbDl"))document.getElementById("lbDl").onclick=()=>typeof Share!=="undefined"&&Share.downloadArt(PROJECTS[cur]);
 // Hire from the lightbox: prefill "I saw <title>". Game mode opens its Final Quest sheet over the lightbox's screen.
 document.getElementById("lbHire").onclick=()=>{const note=t("lb.prefill",{title:ptitle(PROJECTS[cur])});lb.close();
   if(document.body.classList.contains("game-mode")&&window.openHire)return openHire(note);
