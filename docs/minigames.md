@@ -16,7 +16,7 @@ Read as two minigames that play like real games and work as a portfolio:
 - **A run-and-gun side-scroller**, the genre Metal Slug made famous.
 - **A top-down adventure in an isometric view**, the genre Zelda made famous ("isomorphic" is read as isometric).
 
-Both are built **only from Ekky's own artwork**, and every one of his 33 original pieces has a role in at least one of the games (see the role table). This also follows the owner's direction "make sure all art work has its role".
+Both are built **only from Ekky's own artwork**, and every one of his 29 original pieces (`kind: "original"` on `main`, 251fd97) has a role in at least one of the games (see the role table). This also follows the owner's direction "make sure all art work has its role".
 
 The other owner directions still hold:
 - simple (understood in one look);
@@ -106,10 +106,10 @@ The bird from "The Blue Bird" flies slowly toward the nearest place you haven't 
 - **No combat, no health, no locks.** Every area is reachable from the start.
 - **Optional little tasks**, which never gate anything. Seven characters have each lost a small doodle, scattered on the island: the book, cassette, microphone, robot, planet, palette and cat cut-outs from `assets/`. Bring it back and they do a short happy animation and say a thank-you line. That is the whole reward.
 - **Painting the world** (ties to Color with Ekky): a few objects start as grey line art (a bridge, a fountain, the observatory dome). Tapping them with the pen-hand paints them in his colors over 1.2 s. It only changes looks, and there is always another way around.
-- **The Sketchbook** (top right, `i-frame` icon) lists every artwork you have met, as thumbnails. It has no counter, no percentage and no "x of 33". Each thumbnail opens the lightbox.
+- **The Sketchbook** (top right, `i-frame` icon) lists every artwork you have met, as thumbnails. It has no counter, no percentage and no "x of 29". Each thumbnail opens the lightbox.
 - **The artist:** in the hub, Ekky sits at his desk on the Little Planet. Talking to him gives three choices: "Tell me about you" (the hiring facts from B26), "Hire Ekky" (the Final Quest sheet) and "Show me everything" (the classic portfolio).
 
-### The island (about 28 x 28 tiles)
+### The island (about 28 x 28 tiles, 11 areas)
 | Area | Built from | Who you meet and what happens |
 |---|---|---|
 | **Hub: Little Planet** | Little Planet (the moon, the desk, the floating doodles) | Ekky the artist (avatar per owner question 1), the hiring facts, Hire Ekky |
@@ -117,9 +117,8 @@ The bird from "The Blue Bird" flies slowly toward the nearest place you haven't 
 | **Noodle Bath House** | Noodle Bath | The kid in the bowl. The bowl walks on its noodle legs to a new spot every minute |
 | **The Lake** | Afloat, Big Catch | The floating boy drifts in circles. The fishing kid is on the pier; the shark jumps at the end of his line |
 | **Bus Stop** | Coexistence, Broken-Down Bus, Road Trip | The commuters on the bench. The broken-down bus with its passengers. The Road Trip car is a fast-travel ride to any area |
-| **Desert Oasis** | Oasis for Fizzy Tube | The party around the soda maker. The grey fountain to paint |
-| **Market Street** | Morumelons, Save Early Buy Future, Thinker & Doer, Toybox Packaging | Morumelons characters run the stalls. The Save Early poster wall. Thinker & Doer lettering as the shop signs. Toybox boxes as crates you can push |
-| **Ekky's House** | A Day in the Life (the four panels become four rooms), My Sports Club App | Walk through his day. The phone on the table opens the island map (in the style of his app UI) |
+| **Market Street** | Morumelons, Toybox Packaging, Type Is Art in Motion | Morumelons characters run the stalls. Toybox boxes as crates you can push. The Type Is Art lettering as the street sign. The grey fountain to paint |
+| **Ekky's House** | A Day in the Life (the four panels become four rooms) | Walk through his day. The phone on the table opens the island map (a plain frame in his palette) |
 | **The Cliffs** | Viking vs Dragon Kid, Merdeka 77 | The two kids duel in slow motion. The cyclist from Merdeka 77 is a mail courier who rides you to the cliff top |
 | **Monster Quarter** | Monster in My Room, Monster Snack Bar, Monster World Doodles | The green monster's house, the snack bar counter, doodle monsters wandering about |
 | **Hidden Lair** (a small 3-room dungeon) | Hidden Monster, Tangled Hands, RPG | The two kids with the lantern. The mimic chest (it bites, then laughs). A "tangled hands" knot puzzle: rotate 4 tiles to untangle it and open a shortcut (the long way round is always open too). In the last room, the RPG party camps by a fire |
@@ -151,25 +150,21 @@ The bird from "The Blue Bird" flies slowly toward the nearest place you haven't 
 | `monster-crowd` | Stage 2 enemies, stage 4 background | Monster Quarter |
 | `monster` | Boss 1 (green monster) | Monster Quarter house |
 | `morumelons` | Stage 2 enemies | Market stalls |
-| `my-sports-club` | | The island-map phone UI |
 | `nft-3` | Shield power-up | Observatory astronaut |
 | `nft-9` | | Radio hints |
 | `noodles` | | Noodle Bath House |
-| `oasis` | | Desert Oasis |
 | `old-bus` | Stage 2 background, **vehicle** | Bus Stop |
 | `plug-hero` | Dash power-up | Sky / beach |
 | `road-trip` | Background car | Fast travel |
 | `rpg` | Boss 4 (armored giant), freed party | Lair camp |
-| `save-early-buy-future` | | Market poster wall |
 | `shark` | Boss 3 (shark) | The Lake |
 | `summertime` | Stage 3 sand, crab | Beach by the Sky area |
-| `thinker-doer` | | Shop signs |
 | `toybox` | | Pushable crates |
-| `type-is-art` | Credits title | Island title card |
+| `type-is-art` | Credits title | Island title card, Market street sign |
 | `virus-and-war` | **Hero**, enemies | Cameo (links to Game A) |
 | `web-illustration` | Credits parade | |
 
-Never used: the 7 fan-art pieces and the 6 client pieces (`CONFIG.reuse`). If the owner switches `client: true` later, client pieces still stay out of the games. Brand logos don't belong in a game world.
+Never used: the 8 fan-art pieces and the 9 client pieces on `main` (`CONFIG.reuse`; that now includes Oasis, My Sports Club, Save Early Buy Future and Thinker & Doer as client, and Pop Mie as fan). If the owner switches `client: true` later, client pieces still stay out of the games. Brand logos don't belong in a game world.
 
 ---
 
@@ -181,7 +176,7 @@ Ekky's pieces are flat, finished illustrations, not sprite sheets. Two routes, b
 2. **Cut-outs from the published images**, extending `scripts/ui-assets.py` into `scripts/sprites.py` (Pillow + numpy, already in use; no new packages):
    - Pieces on plain backgrounds (Plug Hero, Giraffe Ride, Big Catch, Road Trip, Merdeka 77, Little Planet, Noodle Bath, the NFT pieces) cut cleanly by background removal.
    - Pieces with busy backgrounds (Coexistence, Monster Snack Bar, Broken-Down Bus, Hidden Monster, Virus and War, RPG) need a hand-drawn polygon mask per character, stored in the script as coordinates and reviewed on the contact sheet like the T1 icons.
-   - Backgrounds are split into 2 to 3 parallax layers (sky, far, near) by cropping horizontal bands. Where a character covers the scene, a soft blur fills the gap behind it.
+   - Backgrounds are split into 2 to 3 parallax layers (sky, far, near) by cropping horizontal bands. Where a character covers the scene, a soft blur fills the gap behind it. **Nothing is redrawn:** every sprite is Ekky's own drawing exactly as he made it, only cut out and moved. No character is redrawn, traced, extended or imitated, and nothing comes from any existing game.
 
 **Animation without new drawings: "paper puppet" motion.** Each sprite is one still cut-out, moved by code, like a paper cut-out theatre. It suits Ekky's thick-outlined style and needs no extra frames. Following the owner's "slow but make sense":
 | Action | Motion | Duration | What it tells the player |
@@ -235,7 +230,7 @@ Ekky's pieces are flat, finished illustrations, not sprite sheets. Two routes, b
 | MG4 | Director playtest of the slice | DIRECTOR | S | MG3 | A short report: fun, simple, motion feel (too fast / too bouncy / meaningless), ranked fixes. Go or no-go for MG5. |
 | MG5 | Paint Patrol stages 2 to 4, bus vehicle, bosses 2 to 4, credits | DEV | L (8 to 10 h) | MG4 go | Each stage is selectable from the start and runs 60 to 120 s. The bus can be boarded and left at any time. Each boss telegraphs every attack for at least 0.8 s. |
 | MG6 | Isometric engine: tiles, depth sort, tap-to-walk, dialog | DEV | L (6 to 8 h) | MG1 | On the phone, tapping any reachable tile walks the hero there along a path. Sprites draw in the right order behind and in front of each other. Dialog text is HTML and readable. |
-| MG7 | Little Planet Quest island content | DEV, UX (lines) | L (8 to 10 h) | MG2, MG6 | All 12 areas exist and are reachable from the start. Every character opens its artwork. The 7 lost-doodle tasks work and gate nothing. The artist in the hub offers Hire Ekky. |
+| MG7 | Little Planet Quest island content | DEV, UX (lines) | L (8 to 10 h) | MG2, MG6 | All 11 areas exist and are reachable from the start. Every character opens its artwork. The 7 lost-doodle tasks work and gate nothing. The artist in the hub offers Hire Ekky. |
 | MG8 | Character lines and stage names | UX | M | MG3, MG7 | One short line per character, in English, from the piece's description. Stage and area names approved. No franchise names anywhere. |
 | MG9 | Entry tiles, switches, deep links, lazy loading | DEV | S (2 h) | MG3 | With `paintPatrol` or `planetQuest` off, its tile, link and route are gone. With both on, the portfolio's first load size is unchanged (± 1 KB). The deep links open the right stage or area. |
 | MG10 | Director playtest of both games | DIRECTOR | S | MG5, MG7 | The report covers fun, simple, play-your-way, motion feel and "did a tester open at least 3 artworks?". Ranked fixes. |
