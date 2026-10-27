@@ -41,8 +41,10 @@ async function casual(p, seconds) {
   await p.keyboard.up("ArrowRight");
 }
 (async () => {
-  const s = await serve(SITE), b = await chromium.launch(), R = {};
+  const s = await serve(SITE), R = {};
+  let b = null;
   for (const mode of ["casual", "drag", "idle"]) {
+    if (b) await b.close(); b = await chromium.launch();   // a fresh browser per player: runs that share one were flaky
     const { ctx, p, errs, entry } = await page(b, s.url, LAND); R.entry = entry || "Patrol.open() (no entry button found)";
     await watch(p);
     if (mode === "casual") await casual(p, 180);
@@ -57,6 +59,7 @@ async function casual(p, seconds) {
     if (mode === "casual") await p.screenshot({ path: path.join(OUT, "patrol-casual.png") });
     await ctx.close();
   }
+  await b.close(); b = await chromium.launch();
   { const { ctx, p } = await page(b, s.url, LAND, { cpu: 4 }); casual(p, 12).catch(() => {}); await p.waitForTimeout(3000);
     R.fps4x = await p.evaluate(() => new Promise(res => { const ts = []; const f = t => { ts.push(t); if (ts.length < 241) requestAnimationFrame(f); else { const d = ts.slice(1).map((x, i) => x - ts[i]).sort((a, b) => a - b);
       res({ meanFps: +(1000 / (d.reduce((a, b) => a + b) / d.length)).toFixed(1), p95ms: +d[Math.floor(d.length * .95)].toFixed(1), over50ms: d.filter(x => x > 50).length }) } }; requestAnimationFrame(f) }));
