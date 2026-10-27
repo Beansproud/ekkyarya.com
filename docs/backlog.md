@@ -102,7 +102,7 @@ CONFIG.reuseBlock = [];   // slugs to keep out later, e.g. ["morumelons"]
 Every ticket below is checked against these five rules. They come from the owner's direction and outrank the brief wherever they clash.
 
 1. **Intrinsic, not extrinsic.** The reward is the activity itself and the thing you made: your coloring, your best run, Ekky's art. Round 1 has no points-for-points, no badges and no progress bars to grind.
-2. **Every path is optional, and none is "correct".** Color, Catch, Look and Hire are equal choices from the start screen, in any order. You can skip the game entirely: "Just show me the art" opens the classic portfolio in one tap, and nothing is lost.
+2. **Every path is optional, and none is "correct".** Color, Catch, Look and Hire are equal choices from the start screen, in any order. You can skip the game entirely: "Just show me the art" opens the classic portfolio in one tap, and nothing is lost. On the phone the Art tab is that one tap (it is on every screen), so the button itself lives in Mine (S2, 21:45).
 3. **No forced order, no gates, no tutorials.** Map levels are never locked, and no "next level" pressure (no glow nagging you to the next node). Each hint shows once and is never blocking.
 4. **No punishment.** No game-over screen, no lives lost and no "Ouch!". Mistakes are undone with one tap. A round of Star Catcher always lasts the full 30 seconds.
 5. **You decide when you are done.** "Done" works at any time (even after 1 fill). Sharing is offered once, never pushed. Challenges are invitations, not scores to beat.
