@@ -1,8 +1,21 @@
 // Portfolio data, loaded first. Shared by js/site.js (desktop portfolio) and js/game.js (phone game).
 /* ===== Edit these: real contact details and portfolio entries ===== */
+// An empty value means "not known yet": the button or link for it stays hidden (B15). Never put a placeholder here.
 const CONFIG = {
-  email: "hello@example.com",                 // TODO: real email
-  links: { instagram: "https://instagram.com/", dribbble: "https://dribbble.com/", behance: "https://behance.net/" }, // TODO: real profiles
+  name: "Ekky Arya",
+  site: "https://ekkyarya.com/",              // official site: share and download credits, base of share links (D10)
+  email: "ekkyarya87@gmail.com",              // business email: Hire Ekky, Final Quest, quick actions
+  emailPersonal: "ekkyaryasm@gmail.com",      // personal/inquiries; not shown in round 1 (one clear address is easier to act on)
+  whatsapp: "",                               // owner to send; the WhatsApp button stays hidden until then
+  contactPage: "https://ekkyarya.com/contact/",
+  links: {
+    instagram: "https://www.instagram.com/ekkyarya/",
+    behance: "https://www.behance.net/ekkyarya",          // owner wrote "ekkyarya Portfolio"; URL to confirm
+    linkedin: "https://id.linkedin.com/in/ekkyarya",
+    dribbble: "https://dribbble.com/shots/6634499-Flat-Guy-Illustration" // a single shot for now; profile URL to come
+  },
+  // Where "Hire Ekky" sends people if there is no email: the first non-empty of these.
+  hireFallback: ["contactPage", "instagram"],
   // Which kinds of piece may take creative roles (sticker, coloring, sprite, level, scene, share, featured, avatar).
   // Every piece always keeps its portfolio and card roles, whatever these say.
   // original and client: Ekky's own work (owner, "yes to all": client pieces may be reused too, with their "Client: X" tag kept).
@@ -96,11 +109,18 @@ const CAT_NAME_ID={illustration:"Ilustrasi Proyek",web:"Desain Web & UI",brandin
 // Every user-facing string (B14), in English (en) and Indonesian (id). Placeholders in braces are filled by t():
 // {name} {n} {title} {url}. Rules: short and warm, no emoji; Ekky is "he" ("ia" in Indonesian).
 // The Indonesian is written for Indonesian readers, not translated word for word.
+// Where Hire Ekky goes today: the email if there is one, else the first fallback link, else the site.
+function hireTarget() {
+  if (CONFIG.email) return { kind: "email", href: "mailto:" + CONFIG.email };
+  for (const k of CONFIG.hireFallback) { const href = CONFIG[k] || CONFIG.links[k]; if (href) return { kind: k, href }; }
+  return { kind: "site", href: CONFIG.site };
+}
 const COPY = {
   en: {
     // Start screen (D11)
     "start.tagline": "Ekky Arya draws characters that make people smile.",
-    "start.role": "Illustrator and graphic designer",
+    "start.role": "Character Illustrator",
+    "start.roleLong": "Character illustrator and graphic designer",
     "start.featured": "A few of Ekky's drawings",
     "start.color": "Color",
     "start.catch": "Catch stars",
@@ -116,8 +136,8 @@ const COPY = {
     "level.next": "Next",
     // Who is Ekky? and About (B26)
     "about.title": "About Ekky",
-    "about.body": "Ekky is an illustrator from Indonesia. He fills worlds with characters: kids on adventures, monsters on their lunch break, little planets with someone working late. His work is bright, bold and a bit silly, and he likes it when one drawing tells a whole story.",
-    "about.fact.from": "Illustrator from Indonesia",
+    "about.body": "Ekky is a character illustrator from Indonesia. He fills worlds with characters: kids on adventures, monsters on their lunch break, little planets with someone working late. His work is bright, bold and a bit silly, and he likes it when one drawing tells a whole story.",
+    "about.fact.from": "Character illustrator from Indonesia",
     "about.fact.lang": "Works in Indonesian and English",
     "about.fact.hours": "Available evenings to night, WIB (GMT+7)",
     "about.fact.price": "Projects from $25",
@@ -167,6 +187,11 @@ const COPY = {
     "hire.price": "Projects from $25",
     "hire.email": "Email Ekky",
     "hire.whatsapp": "WhatsApp Ekky",
+    "hire.dribbble": "Ekky on Dribbble",
+    "hire.instagram": "Message Ekky on Instagram",
+    "hire.linkedin": "Ekky on LinkedIn",
+    "hire.behance": "Ekky on Behance",
+    "hire.site": "Contact page on ekkyarya.com",
     "hire.copy": "Copy email",
     "hire.copied": "Email copied",
     "hire.formTitle": "Or send a quick note",
@@ -215,7 +240,7 @@ const COPY = {
     // Desktop and classic site
     "hero.hi": "Hi, I'm Ekky Arya",
     "hero.title": "I draw characters that make people smile.",
-    "hero.sub": "Illustrator and graphic designer from Indonesia. Picture books, mascots, packaging, web art and games.",
+    "hero.sub": "Character illustrator and graphic designer from Indonesia. Picture books, mascots, packaging, web art and games.",
     "hero.hire": "Hire Ekky",
     "hero.work": "See my work",
     "hero.game": "Try the game",
@@ -231,7 +256,8 @@ const COPY = {
   },
   id: {
     "start.tagline": "Ekky Arya menggambar karakter yang bikin orang tersenyum.",
-    "start.role": "Ilustrator dan desainer grafis",
+    "start.role": "Ilustrator Karakter",
+    "start.roleLong": "Ilustrator karakter dan desainer grafis",
     "start.featured": "Beberapa gambar Ekky",
     "start.color": "Mewarnai",
     "start.catch": "Tangkap bintang",
@@ -245,8 +271,8 @@ const COPY = {
     "level.5": "Misi Terakhir: Kerja Bareng Ekky",
     "level.next": "Lanjut",
     "about.title": "Tentang Ekky",
-    "about.body": "Ekky adalah ilustrator asal Indonesia. Dunianya penuh karakter: anak-anak yang berpetualang, monster yang sedang istirahat makan siang, planet kecil dengan seseorang yang lembur. Karyanya cerah, berani, dan sedikit konyol, dan ia paling senang kalau satu gambar bisa bercerita utuh.",
-    "about.fact.from": "Ilustrator asal Indonesia",
+    "about.body": "Ekky adalah ilustrator karakter asal Indonesia. Dunianya penuh karakter: anak-anak yang berpetualang, monster yang sedang istirahat makan siang, planet kecil dengan seseorang yang lembur. Karyanya cerah, berani, dan sedikit konyol, dan ia paling senang kalau satu gambar bisa bercerita utuh.",
+    "about.fact.from": "Ilustrator karakter asal Indonesia",
     "about.fact.lang": "Bisa berbahasa Indonesia dan Inggris",
     "about.fact.hours": "Tersedia sore sampai malam, WIB (GMT+7)",
     "about.fact.price": "Proyek mulai $25",
@@ -292,6 +318,11 @@ const COPY = {
     "hire.price": "Proyek mulai $25",
     "hire.email": "Email Ekky",
     "hire.whatsapp": "WhatsApp Ekky",
+    "hire.dribbble": "Ekky di Dribbble",
+    "hire.instagram": "Kirim DM ke Ekky di Instagram",
+    "hire.linkedin": "Ekky di LinkedIn",
+    "hire.behance": "Ekky di Behance",
+    "hire.site": "Halaman kontak di ekkyarya.com",
     "hire.copy": "Salin email",
     "hire.copied": "Email disalin",
     "hire.formTitle": "Atau kirim pesan singkat",
@@ -336,7 +367,7 @@ const COPY = {
     "lang.id": "Bahasa Indonesia",
     "hero.hi": "Halo, aku Ekky Arya",
     "hero.title": "Aku menggambar karakter yang bikin orang tersenyum.",
-    "hero.sub": "Ilustrator dan desainer grafis asal Indonesia. Buku bergambar, maskot, kemasan, ilustrasi web, dan game.",
+    "hero.sub": "Ilustrator karakter dan desainer grafis asal Indonesia. Buku bergambar, maskot, kemasan, ilustrasi web, dan game.",
     "hero.hire": "Hubungi Ekky",
     "hero.work": "Lihat karyaku",
     "hero.game": "Coba gamenya",
