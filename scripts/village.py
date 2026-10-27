@@ -97,8 +97,8 @@ def build():
     bridge(d, (360, 268), (360, 332), 5)
     bridge(d, (384, 628), (396, 688), 5)
     # paths from Ekky's home to every place
-    home = (360, 486)
-    for to in [(205, 450), (520, 470), (240, 572), (360, 335), (384, 628)]:
+    home = (372, 486)
+    for to in [(205, 430), (520, 470), (226, 576), (360, 335), (384, 628)]:
         path(d, [home, to])
     path(d, [(360, 268), (360, 225)])
     path(d, [(396, 688), (400, 742)])
@@ -131,9 +131,9 @@ def build():
     places["gallery"] = [420, 300, 645, 510]
     paste(img, "palette", (532, 362), 44)
     paste(img, "toybox", (604, 506), 62)
-    places["studio"] = paste(img, "studio", (205, 470), 168)
-    places["home"] = paste(img, "home", (360, 520), 200)
-    places["doodle"] = paste(img, "ghost", (240, 590), 92)
+    places["studio"] = paste(img, "studio", (205, 440), 168)
+    places["home"] = paste(img, "home", (372, 520), 200)
+    places["doodle"] = paste(img, "ghost", (222, 594), 92)
     places["hire"] = paste(img, "gate", (400, 778), 172)
     # crop to the drawing (plus a small margin), so the island fills the phone's width and no sky is wasted above it
     bb = img.getchannel("A").getbbox()
@@ -145,8 +145,9 @@ def build():
     for f in frames:
         f["x"], f["y"] = round(f["x"] - ox, 1), round(f["y"] - oy, 1)
     out = dict(w=img.width, h=img.height, frames=frames, places={})
-    # label signs sit where they cover no other place: above the studio, below the others
-    labels = {"observatory": (372, 250), "gallery": (532, 528), "studio": (190, 262), "home": (360, 526), "doodle": (240, 598), "hire": (400, 800)}
+    # one rule for every label: centred just under its own place, so labels never sit on a character
+    labels = {k: ((b[0] + b[2]) / 2, b[3] + 4) for k, b in places.items()}
+    labels["gallery"] = (532, 516)   # the gallery's place box includes its whole block; its label goes under the front corner
     for k, box in places.items():
         out["places"][k] = dict(box=[box[0] - ox, box[1] - oy, box[2] - ox, box[3] - oy], label=[labels[k][0] - ox, labels[k][1] - oy])
     with open(os.path.join(OUT, "village.json"), "w") as f:
