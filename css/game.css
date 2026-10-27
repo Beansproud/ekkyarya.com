@@ -526,3 +526,13 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 @media (orientation:landscape){.pp-end{justify-content:center;gap:8px}.pp-art{max-height:34vh}.pp-end h2{font-size:1.3rem}.pp-end p{font-size:.9rem}}
 [data-install-row][hidden],[data-install][hidden]{display:none!important}
 #game button,#game a,dialog button{touch-action:manipulation}
+
+/* Quiet pass (B43, Ekky: "too jam-packed", "trying too hard"). Nothing loops on its own; the art is just shown.
+   Kept: tap press, plain fades for screens, sheets and overlays, the coloring fill, Star Catcher's own play. */
+.g-sky i,.g-logo,.g-card,.g-card.legendary .inner::after,.g-result h2{animation:none!important}
+.g-card.legendary .inner::after{display:none}
+/* the village stands still: villagers stay at their spots, no clouds, lantern, steam or shimmer */
+.v-walk,.v-walk *,.v-cloud,.v-shimmer,.v-lantern,.v-smoke,[class*="v-smoke"],[class*="v-lantern"]{animation:none!important}
+.v-cloud,.v-shimmer,.v-smoke{display:none}
+/* the turn-your-phone hint turns twice, then rests */
+.pp-turn img{animation-iteration-count:2}
