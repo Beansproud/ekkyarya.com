@@ -358,3 +358,7 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 .g-start-foot .g-classic{flex:1}
 .g-mine-list .g-small{grid-column:1/-1}
 .g-sheet h2{padding-right:56px}
+/* Mine scrolls to clear the tab bar: a spacer as tall as the bar (72 px + 12 px offset) plus 16 px */
+#g-mine::after{content:"";display:block;height:calc(env(safe-area-inset-bottom) + 100px)}
+/* hidden Art cards: nothing animates off-screen (B42) */
+.g-screen:not(.active) .g-card,.g-screen:not(.active) .g-card *{animation:none!important}

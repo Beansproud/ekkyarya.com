@@ -105,7 +105,7 @@ function openLevel(i){const l=LEVELS[i];
   if(l.id==="art")return go("art");
   if(l.id==="hire")return openHire();
   if(l.id==="about"){const three=featuredSix(3).map(p=>({p,k:PROJECTS.indexOf(p)}));
-    const facts=["about.fact.from","about.fact.lang","about.fact.hours"].map(k=>t(k)).filter(v=>v&&!v.startsWith("about."));
+    const facts=["about.fact.from","about.fact.lang","about.fact.hours","about.fact.price","about.workedWith"].map(k=>t(k)).filter(v=>v&&!v.startsWith("about."));
     openSheet(head(l)+`<p>${esc(t("about.body"))}</p>${facts.length?`<ul class="g-facts">${facts.map(f=>`<li>${esc(f)}</li>`).join("")}</ul>`:""}<h3 class="g-sheet-h3">${esc(t("about.pieces"))}</h3>
       <div class="g-three">${three.map(({p,k})=>`<button class="g-feat" data-i="${k}" aria-label="${esc(ptitle(p))}"><img src="${p.img}" alt="" loading="lazy"><b>${esc(ptitle(p))}</b></button>`).join("")}</div>`+hireChip())}
   if(l.id==="process"){openSheet(head(l)+`<p>${esc(t("process.intro"))}</p>`+

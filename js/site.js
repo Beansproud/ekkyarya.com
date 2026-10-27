@@ -170,6 +170,8 @@ stars.innerHTML=Array.from({length:40},()=>{const sz=2+Math.random()*4;
   +[0,1,2].map(i=>`<b class="shoot" style="left:${60+i*14}%;top:${5+i*12}%;animation-delay:${i*2.3}s"></b>`).join("");
 // marquee
 const words=["Illustration","Character Design","Mascots","Branding","Web & UI","Social Media","Stickers","Picture Books"];
+// the services ticker only moves while it is on screen (the hero keeps a single loop)
+{const m=document.querySelector(".marquee");if(m)new IntersectionObserver(es=>es.forEach(e=>m.classList.toggle("in-view",e.isIntersecting))).observe(m)}
 document.getElementById("marq").innerHTML=[...words,...words].map(w=>`<span>${w}${ico("s-sparkle","ico sep")}</span>`).join("");
 // custom cursor
 if(fine&&!reduce){const c=document.getElementById("cursor"),d=document.getElementById("cursorDot");let x=0,y=0,cx=0,cy=0;

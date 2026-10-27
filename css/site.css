@@ -323,3 +323,12 @@ footer a .ico{vertical-align:-.12em}
 .lang-switch button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
 .lb-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.lb-actions .lb-hire{margin-top:0}
 .lb-dl[hidden],.app-install[hidden]{display:none}
+/* B26 hiring facts on the desktop About */
+.about .facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 24px;margin:18px 0 10px;padding-left:18px;font-size:.95rem}
+.about .worked{color:var(--muted);font-size:.92rem;margin-bottom:16px}
+@media (max-width:760px){.about .facts{grid-template-columns:1fr}}
+.loader.done{pointer-events:none}
+/* the hero keeps one loop: the illustration's slow float (the typing caret stays still) */
+.typed .caret{animation:none}
+.marquee .track{animation-play-state:paused}
+.marquee.in-view .track{animation-play-state:running}
