@@ -314,7 +314,7 @@ footer a .ico{vertical-align:-.12em}
 .feat{border-radius:14px;overflow:hidden;background:var(--card);border:1px solid var(--line);text-align:left;transition:transform .25s,box-shadow .25s}
 .feat:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
 .feat img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
-.feat span{display:block;padding:8px 10px;font-family:Fredoka;font-weight:600;font-size:.9rem;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.feat span{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;padding:8px 10px;font-family:Fredoka;font-weight:600;font-size:.9rem;line-height:1.25;color:var(--ink);overflow:hidden}
 @media (max-width:1000px){.feat-row{grid-template-columns:repeat(3,1fr)}}
 
 /* EN / ID switch (B41) */

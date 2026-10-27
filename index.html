@@ -112,10 +112,10 @@
   <section class="section hero" id="home">
     <div class="stars" id="stars"></div>
     <div class="reveal">
-      <p class="eyebrow">Hi!</p>
-      <h1><span class="split">I'm Ekky</span> <span class="wave" aria-hidden="true"><img src="assets/ui/ekky.png" alt=""></span></h1>
-      <p class="roles">Illustrator<br>Graphic Designer</p>
-      <p class="typed" aria-live="polite">I draw <b id="typed">mascots</b><span class="caret" aria-hidden="true"></span></p>
+      <p class="eyebrow" data-t="hero.eyebrow">Hi!</p>
+      <h1><span class="split" data-t="hero.name">I'm Ekky</span> <span class="wave" aria-hidden="true"><img src="assets/ui/ekky.png" alt=""></span></h1>
+      <p class="roles" data-t="start.roleLong">Character illustrator and graphic designer</p>
+      <p class="typed" aria-live="polite"><span data-t="hero.draw">I draw</span> <b id="typed">mascots</b><span class="caret" aria-hidden="true"></span></p>
       <div class="hero-ctas">
         <a href="#contact" class="btn" data-t="hero.hire" data-t-aria="hire.chip.aria">Hire Ekky</a>
         <a href="#work" class="btn ghost" data-t="hero.work">See my work</a>
@@ -198,7 +198,7 @@
         <svg viewBox="0 0 80 80"><path d="M40 68S10 50 10 30a15 15 0 0 1 30-6 15 15 0 0 1 30 6c0 20-30 38-30 38z" fill="#FF9C9C" stroke="#2B1342" stroke-width="4" stroke-linejoin="round"/></svg>
       </div>
     </div>
-    <div class="feat-strip reveal"><p class="eyebrow">Selected work</p><div class="feat-row" id="featStrip"></div></div>
+    <div class="feat-strip reveal"><p class="eyebrow" data-t="hero.selected">Selected work</p><div class="feat-row" id="featStrip"></div></div>
   </section>
 
   <!-- ABOUT -->
@@ -245,7 +245,7 @@
   <!-- WORK -->
   <section class="section" id="work">
     <div class="work-head">
-      <div><p class="eyebrow reveal">Selected work</p><h2 class="h2 reveal split">Portfolio</h2></div>
+      <div><p class="eyebrow reveal" data-t="hero.selected">Selected work</p><h2 class="h2 reveal split">Portfolio</h2></div>
       <div class="filters reveal" id="filters" role="tablist" aria-label="Filter projects">
         <button class="active" data-filter="all">All</button>
         <button data-filter="illustration">Illustrations</button>
