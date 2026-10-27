@@ -5,7 +5,7 @@
 const Color=(()=>{
 const G=document.getElementById("game");
 // A page with a switch stays hidden until FEATURES turns it on (Road Trip waits for Ekky's OK on the lines).
-const PAGES=[{id:"giraffe",slug:"giraffe"},{id:"road-trip",slug:"road-trip",flag:"pageRoadTrip"},{id:"monster",slug:"monster",flag:"pageMonster"}];
+const PAGES=[{id:"giraffe",slug:"giraffe"},{id:"road-trip",slug:"road-trip",flag:"pageRoadTrip"},{id:"monster",slug:"monster",flag:"pageMonster"},{id:"little-planet",slug:"little-planet"},{id:"day-in-life",slug:"day-in-life"},{id:"doodles",slug:"doodles"}];
 // The Doodle Scene: a plain paper page with one region (the background) and Ekky's palette.
 const SCRATCH={id:"scratch",slug:null,title:"Doodle Scene",w:800,h:1000,regions:1,
   colors:["#FFFFFF","#FFF4D6","#FFE08A","#FFB400","#FF6B6B","#F4C2D7","#C9A7FF","#9C91BD","#B8D5FF","#7ED9B0","#3E7C6A","#2B1342"]};
@@ -205,10 +205,14 @@ function closeWheel(){wheel.hidden=true;const b=$("cColors").querySelector(".c-a
 $("cWNo").addEventListener("click",closeWheel);
 $("cWYes").addEventListener("click",()=>{addCustom(hsl2hex(hsl));closeWheel()});
 wheel.addEventListener("keydown",e=>{if(e.key==="Escape"){e.stopPropagation();closeWheel()}});
+/* a touch fill feels alive: a quick ripple from the tap point and a tiny pop of the swatch (about 300 ms; the CSS turns both off under reduced motion) */
+function fillPop(e){const r=stage.getBoundingClientRect(),d=document.createElement("i");d.className="c-ripple";d.style.cssText=`left:${e.clientX-r.left}px;top:${e.clientY-r.top}px;--c:${colorOf(cur,color)}`;
+  stage.appendChild(d);setTimeout(()=>d.remove(),400);
+  const sw=$("cColors").querySelector(".c-sw.on");if(sw){sw.classList.remove("pop");void sw.offsetWidth;sw.classList.add("pop")}}
 function pagePoint(e){const r=cv.getBoundingClientRect();return [Math.floor((e.clientX-r.left)/r.width*cur.pd.meta.w),Math.floor((e.clientY-r.top)/r.height*cur.pd.meta.h)]}
 stage.addEventListener("pointerdown",e=>{if(!cur||e.target.closest(".c-st"))return;
   const [x,y]=pagePoint(e);if(x<0||y<0||x>=cur.pd.meta.w||y>=cur.pd.meta.h)return;const r=cur.pd.ids[y*cur.pd.meta.w+x];if(!r||cur.fills[r]===color)return;
-  cur.undo.push([r,cur.fills[r]]);cur.fills[r]=color;paintRegion(cur,cv,r,true);Game.sfx("fill");Game.buzz(8);save()});
+  cur.undo.push([r,cur.fills[r]]);cur.fills[r]=color;paintRegion(cur,cv,r,true);Game.sfx("fill");Game.buzz(8);save();if(e.pointerType!=="mouse")fillPop(e)});
 // Undo history survives leaving and reopening a page (the owner: "undo button is not working in mewarnai": the colors came
 // back but the history did not, so Undo looked active and did nothing). The button is disabled when there is nothing to undo.
 function updUndo(){const b=$("cUndo");if(b)b.disabled=!(cur&&cur.undo.length)}

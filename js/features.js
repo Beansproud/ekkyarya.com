@@ -12,9 +12,9 @@ const FEATURES = {
   challengeLinks: true,  // Star Catcher challenge links (later ticket B22)
   holoCards: true,       // holo foil on tilt (later ticket B36)
   pwa: true,             // "Install the app" (manifest + sw.js); the full offline work is B37
-  pageRoadTrip: false,   // Road Trip coloring page: built (assets/color/road-trip/), waits for Ekky to approve the lines (D8)
-  pageMonster: false,    // experiment: the green monster from Monster in My Room as a coloring page (assets/color/monster/),
-                         // the owner's own-art alternative to a fan-art page; waits for Ekky to approve docs/color-monster-lines.png
+  pageRoadTrip: true,    // Road Trip coloring page: built (assets/color/road-trip/), the owner approved it
+  pageMonster: true,     // experiment: the green monster from Monster in My Room as a coloring page (assets/color/monster/),
+                         // the owner's own-art alternative to a fan-art page; the owner approved it
   artDownload: true,     // lightbox Download: a copy of at most 1600 px with a subtle mark, never on fan art (owner: yes)
   sound: true,           // sound effects and the sound toggle
   paintPatrol: true,     // Paint Patrol stage 1 (js/patrol.js, loaded on first open): on after the Director's MG4 GO (21:24)
