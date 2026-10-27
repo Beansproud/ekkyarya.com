@@ -78,9 +78,11 @@ function makeArt(p){
 }
 // A project with `img` shows that file; if it fails to load, the drawn placeholder takes its place.
 // Animated pieces (GIF) show a still poster frame (assets/work/thumb/<slug>.jpg) in grids; the lightbox plays the animation.
-const thumbOf=p=>/\.gif$/i.test(p.img)?`assets/work/thumb/${p.slug}.jpg`:p.img;
+// S5: phones get the 480 px copies in assets/work/s/ (scripts/small-thumbs.py), about half the bytes of the 720 px set
+const smallThumbs=matchMedia("(max-width:760px)").matches;
+const thumbOf=p=>{const t=/\.gif$/i.test(p.img)?`assets/work/thumb/${p.slug}.jpg`:p.img;return smallThumbs?t.replace("assets/work/thumb/","assets/work/s/"):t};
 function artOf(p,big){return p.img?`<img src="${big&&p.full||thumbOf(p)}" alt="${ptitle(p)}" loading="lazy" decoding="async" onload="this.classList.add('ok')" onerror="this.outerHTML=makeArt(PROJECTS[${PROJECTS.indexOf(p)}])">`:makeArt(p)}
-const catImg=(c,cls="cat-ico")=>`<img class="${cls}" src="${CAT_ICON[c]}" alt="">`;
+const catImg=(c,cls="cat-ico")=>`<img class="${cls}" src="${CAT_ICON[c]}" alt="" loading="lazy">`;   // lazy: not fetched while the desktop page is hidden (game mode)
 // "Fan art", "Client: X" ... from PROJECTS; Ekky's own pieces have no tag.
 const tagOf=p=>p.label?`<span class="tag">${plabel(p)}</span>`:"";
 // Icons: ico() uses the inline SVG set in index.html (i-* line icons, s-* palette shapes); uiImg() uses a cut-out from assets/ui/.
