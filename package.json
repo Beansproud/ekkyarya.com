@@ -6,6 +6,8 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "check": "node scripts/check.mjs",
+    "a11y": "node scripts/a11y-scan.cjs",
+    "reel": "node scripts/make-reel.cjs",
     "cap:sync": "npm run build && npx cap sync",
     "android": "npm run cap:sync && npx cap open android"
   },

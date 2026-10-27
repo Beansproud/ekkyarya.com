@@ -5,7 +5,7 @@ const {chromium}=require('playwright');const fs=require('fs'),path=require('path
 const ROOT=path.join(__dirname,'..');
 // file, display size in px (half the PNG size)
 const PNG=[['face',64],['pen-hand',48],['palette',48],['ghost',48],['monster-head',64],['monster-head-check',64],
-  ['helmet',48],['virus',48],['planet',48],['cat',48]];
+  ['helmet',48],['virus',48],['planet',48],['cat',48],['astronaut',48],['radio-explorer',48]];
 const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
 const sprite=html.match(/<svg width="0" height="0"[\s\S]*?<\/svg>/)[0];
 const SVG=[...sprite.matchAll(/<symbol id="([^"]+)"/g)].map(m=>m[1]);

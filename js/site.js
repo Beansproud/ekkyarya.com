@@ -1,4 +1,23 @@
 // Desktop portfolio: gallery, lightbox, menus, theme, contact form and motion. Its globals (catImg, ico, uiImg, artOf, show, say, confetti, reduce) are used by js/game.js.
+document.documentElement.lang=LANG;   // B41: the page language follows the visitor (js/data.js picks it)
+// Text in the markup: data-t="key" sets the text, data-t-aria="key" the accessible name, data-tt="key|English" uses tt().
+document.querySelectorAll("[data-t]").forEach(el=>el.textContent=t(el.dataset.t));
+document.querySelectorAll("[data-t-aria]").forEach(el=>el.setAttribute("aria-label",t(el.dataset.tAria)));
+document.querySelectorAll("[data-tt]").forEach(el=>{const [k,en]=el.dataset.tt.split("|");el.textContent=tt(k,en)});
+document.querySelectorAll("[data-tta]").forEach(el=>{const [k,en]=el.dataset.tta.split("|");el.setAttribute("aria-label",tt(k,en))});
+// EN / ID switch (B41): remembers the choice (setLang in js/data.js) and redraws the page in that language.
+document.querySelectorAll("[data-lang]").forEach(b=>{b.setAttribute("aria-pressed",b.dataset.lang===LANG);
+  b.addEventListener("click",()=>{if(b.dataset.lang===LANG)return;setLang(b.dataset.lang);location.reload()})});
+/* ===== Install the app (B40, FEATURES.pwa): only where the browser offers it ===== */
+if(feature("pwa")&&"serviceWorker" in navigator&&/^https?:/.test(location.protocol))addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+let installEvt=null;
+addEventListener("beforeinstallprompt",e=>{if(!feature("pwa"))return;e.preventDefault();installEvt=e;
+  document.querySelectorAll("[data-install],[data-install-row]").forEach(b=>b.hidden=false)});
+document.addEventListener("click",async e=>{if(!e.target.closest("[data-install]")||!installEvt)return;installEvt.prompt();
+  try{await installEvt.userChoice}catch{}installEvt=null;document.querySelectorAll("[data-install],[data-install-row]").forEach(b=>b.hidden=true)});
+/* ===== Feature switches: entry points of a switched-off feature disappear (js/features.js) ===== */
+document.querySelectorAll("[data-feature]").forEach(el=>{if(!feature(el.dataset.feature))el.remove()});
+
 /* ===== Procedural placeholder art ===== */
 function rng(seed){return()=>((seed=Math.imul(seed^seed>>>15,seed|1)+0x6D2B79F5|0,(seed^seed>>>13)>>>0)%1e4)/1e4}
 function makeArt(p){
@@ -17,8 +36,10 @@ function makeArt(p){
   return `<svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" role="img" aria-label="${p.title} artwork"><rect width="400" height="300" fill="${bg}"/>${s}</svg>`;
 }
 // A project with `img` shows that file; if it fails to load, the drawn placeholder takes its place.
-function artOf(p,big){return p.img?`<img src="${big&&p.full||p.img}" alt="${p.title}" loading="lazy" decoding="async" onload="this.classList.add('ok')" onerror="this.outerHTML=makeArt(PROJECTS[${PROJECTS.indexOf(p)}])">`:makeArt(p)}
+function artOf(p,big){return p.img?`<img src="${big&&p.full||p.img}" alt="${ptitle(p)}" loading="lazy" decoding="async" onload="this.classList.add('ok')" onerror="this.outerHTML=makeArt(PROJECTS[${PROJECTS.indexOf(p)}])">`:makeArt(p)}
 const catImg=(c,cls="cat-ico")=>`<img class="${cls}" src="${CAT_ICON[c]}" alt="">`;
+// "Fan art", "Client: X" ... from PROJECTS; Ekky's own pieces have no tag.
+const tagOf=p=>p.label?`<span class="tag">${plabel(p)}</span>`:"";
 // Icons: ico() uses the inline SVG set in index.html (i-* line icons, s-* palette shapes); uiImg() uses a cut-out from assets/ui/.
 const ico=(id,cls="ico")=>`<svg class="${cls}" aria-hidden="true"><use href="#${id}"/></svg>`;
 const uiImg=(name,cls="b-ico")=>`<img class="${cls}" src="assets/ui/${name}.png" alt="">`;
@@ -27,10 +48,10 @@ const uiImg=(name,cls="b-ico")=>`<img class="${cls}" src="assets/ui/${name}.png"
 const grid=document.getElementById("grid");
 grid.innerHTML=PROJECTS.map((p,i)=>`<button class="tile reveal" data-cat="${p.cat}" data-i="${i}">
   <span class="tile-cat">${catImg(p.cat,"")}</span><div class="art">${artOf(p)}</div><span class="view">View</span>
-  <div class="meta"><small>${CAT_NAME[p.cat]}</small><h3>${p.title}</h3></div></button>`).join("");
+  <div class="meta"><small>${catName(p.cat)}</small><h3>${ptitle(p)}</h3>${tagOf(p)}</div></button>`).join("");
 
 document.querySelectorAll("#filters [data-filter],#sideCats [data-filter]").forEach(b=>b.insertAdjacentHTML("afterbegin",catImg(b.dataset.filter)));
-document.querySelectorAll(".card[data-jump] .ico").forEach(i=>i.innerHTML=catImg(i.parentElement.dataset.jump,""));
+document.querySelectorAll(".card[data-jump] > .ico").forEach(i=>i.innerHTML=catImg(i.parentElement.dataset.jump,""));
 let shown=12;
 function setFilter(f,keep){
   if(!keep)shown=12;setFilter.cur=f;let n=0;
@@ -47,20 +68,33 @@ document.querySelectorAll("#sideCats button,[data-jump]").forEach(b=>b.addEventL
   document.getElementById("work").scrollIntoView({behavior:"smooth"});
 }));
 
+/* ===== Selected work: the featured six under the hero (B08) ===== */
+document.getElementById("featStrip").innerHTML=featuredSix().map(p=>({p,i:PROJECTS.indexOf(p)}))
+  .map(({p,i})=>`<button class="feat" data-i="${i}"><img src="${p.img}" alt="" loading="lazy" decoding="async"><span>${ptitle(p)}</span></button>`).join("");
+document.getElementById("featStrip").addEventListener("click",e=>{const b=e.target.closest(".feat");if(b)show(+b.dataset.i)});
+
 /* ===== Lightbox ===== */
 const lb=document.getElementById("lightbox");let cur=0;
 function visible(){return [...grid.querySelectorAll(".tile:not(.hide)")].map(t=>+t.dataset.i)}
 function show(i){cur=i;const p=PROJECTS[i];
   document.getElementById("lbArt").innerHTML=artOf(p,true);
-  document.getElementById("lbCat").innerHTML=catImg(p.cat,"")+CAT_NAME[p.cat];
-  document.getElementById("lbTitle").textContent=p.title;
-  document.getElementById("lbDesc").textContent=p.desc||"";
+  document.getElementById("lbCat").innerHTML=catImg(p.cat,"")+catName(p.cat);
+  document.getElementById("lbTitle").textContent=ptitle(p);
+  document.getElementById("lbDesc").textContent=pdesc(p)||"";
+  const tag=document.getElementById("lbTag");tag.textContent=plabel(p);tag.hidden=!p.label;
+  document.getElementById("lbHire").textContent=t("lb.hire");
+  const dl=document.getElementById("lbDl");if(dl)dl.hidden=p.kind==="fan";
   if(!lb.open)lb.showModal();}
 function step(d){const v=visible(),k=v.indexOf(cur);show(v[(k+d+v.length)%v.length])}
 grid.addEventListener("click",e=>{const t=e.target.closest(".tile");if(t)show(+t.dataset.i)});
 document.getElementById("lbPrev").onclick=()=>step(-1);
 document.getElementById("lbNext").onclick=()=>step(1);
 document.getElementById("lbClose").onclick=()=>lb.close();
+if(document.getElementById("lbDl"))document.getElementById("lbDl").onclick=()=>typeof Share!=="undefined"&&Share.downloadArt(PROJECTS[cur]);
+// Hire from the lightbox: prefill "I saw <title>". Game mode opens its Final Quest sheet over the lightbox's screen.
+document.getElementById("lbHire").onclick=()=>{const note=t("lb.prefill",{title:ptitle(PROJECTS[cur])});lb.close();
+  if(document.body.classList.contains("game-mode")&&window.openHire)return openHire(note);
+  const m=document.querySelector("#form [name=message]");m.value=note;document.getElementById("contact").scrollIntoView({behavior:"smooth"});setTimeout(()=>m.focus({preventScroll:true}),600)};
 lb.addEventListener("click",e=>{if(e.target===lb)lb.close()});
 lb.addEventListener("keydown",e=>{if(e.key==="ArrowRight")step(1);if(e.key==="ArrowLeft")step(-1)});
 
@@ -73,13 +107,6 @@ lb.addEventListener("keydown",e=>{if(e.key==="ArrowRight")step(1);if(e.key==="Ar
     else{c++;if(c===words[w].length){del=true;el.textContent=words[w];return setTimeout(tick,1800)}}
     el.textContent=words[w].slice(0,c)||"\u200b";setTimeout(tick,del?55:95)})();
 })();
-
-/* ===== Parallax floats ===== */
-const scene=document.getElementById("scene");
-if(matchMedia("(pointer:fine)").matches&&!matchMedia("(prefers-reduced-motion: reduce)").matches){
-  window.addEventListener("mousemove",e=>{const x=e.clientX/innerWidth-.5,y=e.clientY/innerHeight-.5;
-    scene.querySelectorAll(".float").forEach(f=>{const d=+f.dataset.depth;f.style.transform=`translate(${x*d}px,${y*d}px)`})});
-}
 
 /* ===== Reveal, active nav, progress, to-top ===== */
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.12});
@@ -108,16 +135,20 @@ document.getElementById("themeToggle").onclick=()=>{const t=isDark()?"light":"da
 
 /* ===== Contact ===== */
 const toast=document.getElementById("toast");
-function say(m,icon){toast.textContent=m;if(icon)toast.insertAdjacentHTML("afterbegin",ico(icon));toast.classList.add("show");clearTimeout(say.t);say.t=setTimeout(()=>toast.classList.remove("show"),2400)}
+function say(m,icon){toast.textContent=m;if(icon)toast.insertAdjacentHTML("afterbegin",ico(icon));toast.classList.add("show");clearTimeout(say.t);say.t=setTimeout(()=>toast.classList.remove("show"),document.body.classList.contains("game-mode")?1500:2400)}   // D14: 1.5 s in the game
 const mail=document.getElementById("mailLink");mail.textContent=CONFIG.email;mail.href="mailto:"+CONFIG.email;
-document.querySelectorAll("[data-link]").forEach(a=>a.href=CONFIG.links[a.dataset.link]);
-document.getElementById("copyMail").onclick=async()=>{try{await navigator.clipboard.writeText(CONFIG.email);say("Email copied","i-check")}catch{say(CONFIG.email)}};
+// B15 safe default: a placeholder email or a link to a bare home page (no profile path) stays hidden until CONFIG is filled in.
+const realLink=u=>{try{return new URL(u).pathname.replace(/\/+$/,"").length>0}catch{return false}};
+document.querySelectorAll("[data-link]").forEach(a=>{const u=CONFIG.links[a.dataset.link];if(realLink(u))a.href=u;else a.remove()});
+if(!CONFIG.email){document.querySelector(".mail").remove();document.querySelector('.socials a[href="#contact"]')?.remove()}
+const copyMail=document.getElementById("copyMail");if(copyMail)copyMail.onclick=async()=>{try{await navigator.clipboard.writeText(CONFIG.email);say(t("hire.copied"),"i-check")}catch{say(CONFIG.email)}};
 document.getElementById("form").addEventListener("submit",e=>{e.preventDefault();const f=e.target;let ok=true;
   f.querySelectorAll("[required]").forEach(i=>{const err=i.parentElement.querySelector(".err");
     const msg=i.validity.valueMissing?"This one's needed":i.validity.typeMismatch?"Hmm, that email looks off":i.validity.tooShort?"A few more words, please":"";
     err.textContent=msg;if(msg)ok=false});
   if(!ok)return say("Please check the form");
   const d=Object.fromEntries(new FormData(f));
+  if(!CONFIG.email){open(hireTarget().href,"_blank","noopener");return}
   location.href=`mailto:${CONFIG.email}?subject=${encodeURIComponent(d.type+" project from "+d.name)}&body=${encodeURIComponent(d.message+"\n\n"+d.name+" ("+d.email+")")}`;
   say("Opening your email app…");confetti();
 });
@@ -139,6 +170,8 @@ stars.innerHTML=Array.from({length:40},()=>{const sz=2+Math.random()*4;
   +[0,1,2].map(i=>`<b class="shoot" style="left:${60+i*14}%;top:${5+i*12}%;animation-delay:${i*2.3}s"></b>`).join("");
 // marquee
 const words=["Illustration","Character Design","Mascots","Branding","Web & UI","Social Media","Stickers","Picture Books"];
+// the services ticker only moves while it is on screen (the hero keeps a single loop)
+{const m=document.querySelector(".marquee");if(m)new IntersectionObserver(es=>es.forEach(e=>m.classList.toggle("in-view",e.isIntersecting))).observe(m)}
 document.getElementById("marq").innerHTML=[...words,...words].map(w=>`<span>${w}${ico("s-sparkle","ico sep")}</span>`).join("");
 // custom cursor
 if(fine&&!reduce){const c=document.getElementById("cursor"),d=document.getElementById("cursorDot");let x=0,y=0,cx=0,cy=0;
@@ -146,25 +179,7 @@ if(fine&&!reduce){const c=document.getElementById("cursor"),d=document.getElemen
   (function loop(){cx+=(x-cx)*.18;cy+=(y-cy)*.18;c.style.transform=`translate(${cx}px,${cy}px)`;requestAnimationFrame(loop)})();
   document.addEventListener("mouseover",e=>c.classList.toggle("big",!!e.target.closest("a,button,.tile,input,select,textarea")));
 }else{document.getElementById("cursor").remove();document.getElementById("cursorDot").remove()}
-// magnetic buttons
-if(fine&&!reduce)document.querySelectorAll(".btn,.socials a,.to-top").forEach(b=>{
-  b.addEventListener("mousemove",e=>{const r=b.getBoundingClientRect();b.style.translate=`${(e.clientX-r.left-r.width/2)*.25}px ${(e.clientY-r.top-r.height/2)*.35}px`});
-  b.addEventListener("mouseleave",()=>b.style.translate="");
-});
-// 3D tilt on cards and tiles
-if(fine&&!reduce)document.querySelectorAll(".card,.tile").forEach(t=>{
-  t.classList.add("tilt");t.insertAdjacentHTML("beforeend",'<span class="shine"></span>');
-  t.addEventListener("mousemove",e=>{const r=t.getBoundingClientRect(),px=(e.clientX-r.left)/r.width,py=(e.clientY-r.top)/r.height;
-    t.style.transform=`perspective(800px) rotateX(${(.5-py)*10}deg) rotateY(${(px-.5)*12}deg) translateY(-6px)`;
-    t.style.setProperty("--mx",px*100+"%");t.style.setProperty("--my",py*100+"%")});
-  t.addEventListener("mouseleave",()=>t.style.transform="");
-});
-// sparkle burst on click
-if(!reduce)addEventListener("click",e=>{const cols=["#FFB400","#FF6B6B","#7ED9B0","#B8D5FF","#9C91BD"];
-  for(let i=0;i<8;i++){const s=document.createElement("span");s.className=i%2?"spark":"spark dot";if(i%2)s.innerHTML=ico("s-sparkle");
-    const a=Math.PI*2*i/8,dist=30+Math.random()*30;
-    s.style.cssText=`left:${e.clientX-6}px;top:${e.clientY-8}px;color:${cols[i%5]};--dx:${Math.cos(a)*dist}px;--dy:${Math.sin(a)*dist}px`;
-    document.body.appendChild(s);setTimeout(()=>s.remove(),800)}});
+// B39: decorative motion removed (parallax, magnetic buttons, 3D tilt, click sparkles); hover keeps calm CSS transitions
 // stagger chips
 document.querySelectorAll(".chip").forEach((c,i)=>c.style.animationDelay=i*60+"ms");
 // confetti
@@ -172,7 +187,5 @@ function confetti(){if(reduce)return;const cols=["#FFB400","#FF6B6B","#7ED9B0","
   for(let i=0;i<90;i++){const c=document.createElement("i");c.className="confetti";
     c.style.cssText=`left:${Math.random()*100}vw;background:${cols[i%5]};--dx:${(Math.random()-.5)*200}px;--r:${Math.random()*900}deg;animation-duration:${1.8+Math.random()*1.6}s;animation-delay:${Math.random()*.4}s;border-radius:${i%3?2:50}%`;
     document.body.appendChild(c);setTimeout(()=>c.remove(),4000)}}
-// subtle scroll parallax on the hero scene
-if(!reduce)addEventListener("scroll",()=>{const y=scrollY;if(y<innerHeight)scene.style.translate=`0 ${y*.15}px`},{passive:true});
 
 document.getElementById("year").textContent=new Date().getFullYear();

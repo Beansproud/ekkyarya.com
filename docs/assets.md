@@ -11,13 +11,16 @@ Every icon in the game and site is cut from Ekky's own artwork (`assets/ui/`) or
 
 | File | Size | Source piece | Crop area (x0, y0, x1, y1) | Type | Sticker | Used for |
 |---|---|---|---|---|---|---|
-| `face.png` | 128 | `assets/face.png` | 0, 0, 256, 256 | Cut-out (mint background removed) | yes | Level 1 "Who is Ekky?", game-mode button, desktop hero wave, Press Start and Nice to Meet You trophies |
+| `ekky.png` | 128 | `assets/hero.png` (Ekky, owner answer) | 244, 140, 346, 252 | Cut-out (head, inside the outline; laptop edge removed) | yes | HUD avatar, Level 1 "Who is Ekky?", desktop hero wave |
+| `face.png` | 128 | `assets/face.png` | 0, 0, 256, 256 | Cut-out (mint background removed) | yes | Game-mode button (the middle tab and favicon use `assets/face.png` itself) |
 | `pen-hand.png` | 96 | `assets/hero.png` | 170, 100, 262, 220 (cut at the wrist) | Cut-out with a light sticker outline | yes | Level 2 "Skill Tree" |
 | `palette.png` | 96 | `assets/hero.png` | 388, 58, 486, 156 | Cut-out | yes | Level 3 "Art Collection", Cards tab, Art Collector trophy, Star Catcher +3 |
 | `planet.png` | 96 | `assets/hero.png` | 428, 186, 526, 252 | Cut-out | yes | Sticker only for now |
 | `cat.png` | 96 | `assets/hero.png` | 232, 8, 324, 100 | Cut-out | yes | Trophies tab (until it becomes "Mine") |
 | `ghost.png` | 96 | `assets/work/doodles.jpg` | 925, 362, 1252, 632 | Cut-out | yes | Level 4 "Doodle to Done" |
 | `virus.png` | 96 | `assets/work/virus-and-war.jpg` | 440, 355, 582, 487 | Cut-out | yes | Star Catcher hazard |
+| `astronaut.png` | 96 | `assets/work/nft-3.jpg` (Ekky holds the rights) | 30, 8, 228, 182 | Cut-out (helmet and head, inside the outline) | yes | Sticker |
+| `radio-explorer.png` | 96 | `assets/work/nft-9.jpg` (Ekky holds the rights) | 52, 10, 198, 174 | Cut-out (head, inside the outline) | yes | Sticker |
 | `monster-head.png` | 128 | `assets/work/monster.jpg` | 610, 0, 1000, 390 | Badge (the head runs into the body and the raised hand) | no | Level 5 boss "Final Quest", Final quest button |
 | `monster-head-check.png` | 128 | same as `monster-head.png` | same | Badge + check mark | no | Quest Complete trophy |
 | `helmet.png` | 96 | `assets/work/nft-3.jpg` (Ekky holds the rights) | 30, 6, 226, 202 | Badge (256 px source, busy background) | no | Star Catcher and Earn coins buttons |
@@ -49,3 +52,12 @@ Defined once as `<symbol>`s; use `<svg class="ico"><use href="#id"/></svg>`, or 
 | `s-star` | Shape (#FFB400, #2B1342) | Score and coin count, level star rating, owned card mark, falling star +1, Star Catcher +1, placeholder for dropped trophies |
 | `s-star-glow` | Shape | Falling star +5, Star Catcher +5 |
 | `s-sparkle` | Shape (text colour) | Start hint, marquee separator, click sparks |
+
+## Role map
+
+The plan for every piece (owner: "make sure all artwork has its role") is the `roles` array in `js/data.js` and the
+table in `docs/roles.md`, both by the UX lead. `node scripts/check.mjs --roles` prints the roles per piece;
+`npm run check` warns about any shareable original that has no creative role.
+
+Two code rules on top of `roles` (`creative()` in `js/features.js`): stickers, coloring pages, share cards and the
+featured rows use only shareable **original** pieces. Client and fan pieces stay in the portfolio list and the Art tab.
