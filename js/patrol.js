@@ -7,7 +7,7 @@ const G=document.getElementById("game"),reduce=matchMedia("(prefers-reduced-moti
 const {sfx,buzz,esc}=window.Game;
 const PP={worldH:540,ground:470,heroH:110,run:200,gravity:1800,jumpHeights:1.6,paintRate:4,paintSpeed:650,bombRecharge:12,
   waveEvery:[3,5],maxOnScreen:5,hits:{normal:3,big:6},friendMeter:40,attackEvery:[2.5,3.5],telegraph:.8,
-  stageScreens:12,screenW:960,knockback:120,invulnerable:.8,powerTime:6,dropChance:.25};
+  stageScreens:12,screenW:960,knockback:80,invulnerable:.8,powerTime:6,dropChance:.25};
 const DOODLES=[["virus","assets/ui/virus.png",58,0],["blob","assets/sprites/blob.png",70,0],["skull","assets/sprites/skull.png",56,0],
   ["orange-monster","assets/sprites/orange-monster.png",72,0],["pickle","assets/sprites/pickle.png",92,1],["dog","assets/sprites/dog.png",100,1],
   ["doodle-cat","assets/sprites/doodle-cat.png",62,0],["waver","assets/sprites/waver.png",96,1],["ufo","assets/sprites/ufo.png",70,0,1]];
