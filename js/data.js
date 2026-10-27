@@ -3,19 +3,18 @@
 // An empty value means "not known yet": the button or link for it stays hidden (B15). Never put a placeholder here.
 const CONFIG = {
   name: "Ekky Arya",
-  site: "https://ekkyarya.com/",              // official site: share and download credits, base of share links (D10)
+  siteUrl: "https://ekkyarya.com/",           // owner: "point ekkyarya.com to the new site"; share links, printed host on cards and downloads (D10)
   email: "ekkyarya87@gmail.com",              // business email: Hire Ekky, Final Quest, quick actions
   emailPersonal: "ekkyaryasm@gmail.com",      // personal/inquiries; not shown in round 1 (one clear address is easier to act on)
   whatsapp: "",                               // owner to send; the WhatsApp button stays hidden until then
-  contactPage: "https://ekkyarya.com/contact/",
   links: {
     instagram: "https://www.instagram.com/ekkyarya/",
     behance: "https://www.behance.net/ekkyarya",          // confirmed by the owner
     linkedin: "https://id.linkedin.com/in/ekkyarya",
     dribbble: "https://dribbble.com/shots/6634499-Flat-Guy-Illustration" // a single shot for now; profile URL to come
   },
-  // Where "Hire Ekky" sends people if there is no email: the first non-empty of these.
-  hireFallback: ["contactPage", "instagram"],
+  // Where "Hire Ekky" sends people if there is no email: the first non-empty of these links.
+  hireFallback: ["instagram", "linkedin"],
   // Which kinds of piece may take creative roles (sticker, coloring, sprite, level, scene, share, featured, avatar).
   // Every piece always keeps its portfolio and card roles, whatever these say.
   // original and client: Ekky's own work (owner, "yes to all": client pieces may be reused too, with their "Client: X" tag kept).
@@ -113,11 +112,11 @@ const CAT_NAME_ID={illustration:"Ilustrasi Proyek",web:"Desain Web & UI",brandin
 // Every user-facing string (B14), in English (en) and Indonesian (id). Placeholders in braces are filled by t():
 // {name} {n} {title} {url}. Rules: short and warm, no emoji; Ekky is "he" ("ia" in Indonesian).
 // The Indonesian is written for Indonesian readers, not translated word for word.
-// Where Hire Ekky goes today: the email if there is one, else the first fallback link, else the site.
+// Where Hire Ekky goes: the email if there is one, else the first fallback link (Instagram, LinkedIn), else the site.
 function hireTarget() {
   if (CONFIG.email) return { kind: "email", href: "mailto:" + CONFIG.email };
-  for (const k of CONFIG.hireFallback) { const href = CONFIG[k] || CONFIG.links[k]; if (href) return { kind: k, href }; }
-  return { kind: "site", href: CONFIG.site };
+  for (const k of CONFIG.hireFallback) if (CONFIG.links[k]) return { kind: k, href: CONFIG.links[k] };
+  return { kind: "site", href: CONFIG.siteUrl };
 }
 const COPY = {
   en: {
@@ -208,7 +207,6 @@ const COPY = {
     "hire.instagram": "Message Ekky on Instagram",
     "hire.linkedin": "Ekky on LinkedIn",
     "hire.behance": "Ekky on Behance",
-    "hire.site": "Contact page on ekkyarya.com",
     "hire.copy": "Copy email",
     "hire.copied": "Email copied",
     "hire.formTitle": "Or send a quick note",
@@ -396,7 +394,6 @@ const COPY = {
     "hire.instagram": "Kirim DM ke Ekky di Instagram",
     "hire.linkedin": "Ekky di LinkedIn",
     "hire.behance": "Ekky di Behance",
-    "hire.site": "Halaman kontak di ekkyarya.com",
     "hire.copy": "Salin email",
     "hire.copied": "Email disalin",
     "hire.formTitle": "Atau kirim pesan singkat",
