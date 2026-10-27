@@ -45,9 +45,10 @@ $("gSky").innerHTML=Array.from({length:60},()=>{const s=1+Math.random()*3;
 
 /* ---- screens and tabs ---- */
 let screen="start";
-function go(to){
+function go(to,fromPop){
   if(to==="color")return typeof Color!=="undefined"?Color.openPicker():null;
   if(to==="hire")return openHire();
+  if(!fromPop&&to!==screen){try{history.pushState({s:to},"")}catch(e){}}   // Back returns to the previous screen
   screen=to;G.classList.toggle("at-start",to==="start");G.classList.toggle("at-paper",to==="art"||to==="mine");   // S1: Art and Mine on paper
   G.querySelectorAll(".g-screen").forEach(s=>s.classList.toggle("active",s.id==="g-"+to));
   G.querySelectorAll(".g-tabs button").forEach(b=>b.classList.toggle("active",b.dataset.tab===to));
@@ -56,6 +57,8 @@ function go(to){
   if(to==="map")renderMap();
   requestAnimationFrame(moveInd);
 }
+try{history.replaceState({s:"start"},"")}catch(e){}
+addEventListener("popstate",e=>{const to=e.state&&e.state.s;if(to&&to!==screen&&document.body.classList.contains("game-mode"))go(to,true)});
 G.querySelector(".g-tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(b){buzz(10);go(b.dataset.tab)}});
 G.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(g){buzz(10);sfx("tap");go(g.dataset.go)}
   if(e.target.closest("[data-hire]")){buzz(10);openHire()}});
