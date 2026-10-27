@@ -87,9 +87,49 @@ function renderMap(){
     places.map(p=>{const b=V.places[p.id].box,l=V.places[p.id].label;
       return `<button class="v-place${p.hire?" hire":""}" data-place="${p.id}" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}" aria-label="${esc(t(p.key))}"></button>
       <span class="v-label${p.hire?" hire":""}" aria-hidden="true" style="left:${pct(l[0],V.w)};top:${pct(l[1],V.h)}">${esc(t(p.key))}</span>`}).join("");
+  W.insertAdjacentHTML("beforeend",villageLife(V));
   $("gMapList").innerHTML=places.map(p=>`<li><button class="g-btn sm${p.hire?" pink":" alt"}" data-place="${p.id}">${esc(t(p.key))}</button></li>`).join("");
 }
-$("gMapWrap").addEventListener("click",e=>{const b=e.target.closest(".v-place");if(!b)return;buzz(15);sfx("tap");
+/* ---- Village life (B42 V3), inside the ambience budget (decision 10, docs/motion.md): walkers, two clouds, the
+   gate's lantern, the noodle bath's steam and the water shimmer. All CSS animations on transform and opacity, so the
+   off-screen pause and reduced motion (villagers stand still) apply; day or night is set once, on load. ---- */
+const TILE=36,TILE_S=1.6,END_PAUSE=2,CORNER_PAUSE=.8;   // 1 tile (36 image px) per 1.6 s; pauses at the ends and corners
+function walkCss(w,k,V){
+  const fwd=w.route,pts=fwd.concat(fwd.slice(0,-1).reverse()),steps=[];let t=0;
+  for(let i=0;i<pts.length;i++){const end=i===0||i===fwd.length-1;
+    steps.push([t,pts[i]]);t+=end?END_PAUSE:CORNER_PAUSE;steps.push([t,pts[i]]);
+    if(i<pts.length-1)t+=Math.hypot(pts[i+1][0]-pts[i][0],pts[i+1][1]-pts[i][1])/TILE*TILE_S}
+  const at=(x,y)=>`transform:translate(${pct(x,V.w)},${pct(y,V.h)})`,off=v=>(v/t*100).toFixed(3)+"%";
+  const face=(a,b)=>w.face===0?1:Math.sign(b[0]-a[0]||1)*w.face;
+  let move="",turn="";
+  for(const [time,p] of steps)move+=`${off(time)}{${at(p[0],p[1])}}`;
+  for(let i=0;i<pts.length-1;i++){turn+=`${off(steps[2*i+1][0])}{transform:scaleX(${face(pts[i],pts[i+1])})}`}
+  return {dur:t.toFixed(2),start:at(fwd[0][0],fwd[0][1]),face0:face(pts[0],pts[1]),
+    css:`@keyframes vw${k}{${move}100%{${at(pts[0][0],pts[0][1])}}}@keyframes vf${k}{0%{transform:scaleX(${face(pts[0],pts[1])})}${turn}}`}
+}
+function villageLife(V){
+  const night=(h=>h<6||h>=19)(new Date().getHours());
+  $("gMapWrap").classList.toggle("night",night);
+  let css="",html=`<img class="v-shimmer" src="assets/village/shimmer.png" alt="" decoding="async">`+
+    // clouds drift over the drawn village only (masked by its picture), never as grey blobs on the night sky
+    `<div class="v-sky"><div class="v-cloudrow" style="top:${pct(V.h*.18,V.h)}"><i class="v-cloud" style="animation-duration:84s;animation-delay:-30s"></i></div>`+
+    `<div class="v-cloudrow" style="top:${pct(V.h*.62,V.h)}"><i class="v-cloud small" style="animation-duration:72s;animation-delay:-58s"></i></div></div>`;
+  if(V.lantern)html+=`<i class="v-lantern" style="left:${pct(V.lantern[0],V.w)};top:${pct(V.lantern[1],V.h)}"></i>`;
+  (V.smoke||[]).forEach(s=>html+=`<i class="v-smoke" style="left:${pct(s[0],V.w)};top:${pct(s[1],V.h)}"></i>`);
+  const card=piece=>{const p=PROJECTS.find(q=>q.id===piece||q.slug===piece);return p&&creative(p)?p:null};
+  for(const [name,f] of Object.entries(V.folk||{})){const p=card(f.piece);if(!p)continue;const b=f.box;
+    html+=`<button class="v-folk" data-piece="${PROJECTS.indexOf(p)}" data-sprite="assets/sprites/${name}.png" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}" aria-label="${esc(t("town.seeArt")+": "+ptitle(p))}"></button>`}
+  (V.walkers||[]).slice(0,8).forEach((w,k)=>{const p=card(w.piece);if(!p)return;const c=walkCss(w,k,V);css+=c.css;
+    const delay=`-${(Math.random()*c.dur).toFixed(2)}s`;
+    html+=`<div class="v-walk" style="${c.start};animation:vw${k} ${c.dur}s linear ${delay} infinite"><button class="v-walker" data-piece="${PROJECTS.indexOf(p)}" data-sprite="${w.src}" aria-label="${esc(t("town.seeArt")+": "+ptitle(p))}"><img src="${w.src}" alt="" decoding="async" style="height:${(w.h/V.w*100).toFixed(2)}cqw;transform:scaleX(${c.face0});animation:vf${k} ${c.dur}s steps(1,end) ${delay} infinite"></button></div>`});
+  let st=$("vWalkCss");if(!st){st=document.createElement("style");st.id="vWalkCss";document.head.appendChild(st)}st.textContent=css;
+  return html}
+function openVillager(b){const k=+b.dataset.piece,p=PROJECTS[k];if(!p)return;
+  openSheet(`<h2 id="gSheetTitle"><img class="h-ico" src="${esc(b.dataset.sprite)}" alt="">${esc(ptitle(p))}</h2>
+    <button class="g-villager-art" data-see="${k}" aria-label="${esc(t("town.seeArt")+": "+ptitle(p))}"><img src="${thumbOf(p)}" alt="" loading="lazy"></button>
+    <p>${esc(pdesc(p))}</p><p><button class="g-btn" data-see="${k}">${ico("i-eye")} ${esc(t("town.seeArt"))}</button></p>`+hireChip())}
+$("gMapWrap").addEventListener("click",e=>{const v=e.target.closest(".v-folk,.v-walker");if(v){buzz(10);sfx("tap");return openVillager(v)}
+  const b=e.target.closest(".v-place");if(!b)return;buzz(15);sfx("tap");
   // the place lifts and its label glows once (300 ms), then it opens (B42: "I'm going there")
   const l=b.nextElementSibling;if(!reduce&&l){l.classList.remove("go");void l.offsetWidth;l.classList.add("go")}
   setTimeout(()=>PLACES.find(p=>p.id===b.dataset.place).open(),reduce?0:300)});
@@ -122,7 +162,8 @@ function openLevel(i){const l=LEVELS[i];
     // the steps tick one after another, slowly, so the order of the process reads (B39)
     setTimeout(()=>$("gSheetBody").querySelectorAll(".g-quest").forEach(q=>setTimeout(()=>q.classList.add("ok"),reduce?0:500+q.dataset.k*600)),300)}
 }
-$("gSheetBody").addEventListener("click",e=>{const f=e.target.closest(".g-feat");if(f){show(+f.dataset.i)}});
+$("gSheetBody").addEventListener("click",e=>{const f=e.target.closest(".g-feat");if(f){show(+f.dataset.i)}
+  const s=e.target.closest("[data-see]");if(s){buzz(10);show(+s.dataset.see)}});
 
 /* ---- Final Quest: the Hire sheet (B07, B17). Opens over the current screen; closing returns there. ---- */
 function openHire(prefill){const l=LEVELS[4];
