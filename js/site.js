@@ -155,7 +155,9 @@ function show(i){cur=i;const p=PROJECTS[i];
   const tag=document.getElementById("lbTag");tag.textContent=plabel(p);tag.hidden=!p.label;
   document.getElementById("lbHire").textContent=t("lb.hire");
   const dl=document.getElementById("lbDl");if(dl)dl.hidden=p.kind==="fan";
-  if(!lb.open)lb.showModal();}
+  // decode the big image before the dialog animates in (capped, so a slow image never holds the tap)
+  const open=()=>{if(!lb.open)lb.showModal()},im=document.querySelector("#lbArt img");
+  if(!lb.open&&im&&im.decode)Promise.race([im.decode(),new Promise(r=>setTimeout(r,300))]).catch(()=>{}).then(open);else open()}
 function step(d){const v=visible(),k=v.indexOf(cur);show(v[(k+d+v.length)%v.length])}
 grid.addEventListener("click",e=>{const t=e.target.closest(".tile");if(t)show(+t.dataset.i)});
 document.getElementById("lbPrev").onclick=()=>step(-1);
@@ -302,3 +304,8 @@ new MutationObserver(()=>{if(langDirty&&!document.body.classList.contains("game-
     requestAnimationFrame(()=>requestAnimationFrame(()=>{i.style.transition=""}));
     new MutationObserver(()=>sync(i)).observe(i,{attributes:true,attributeFilter:["style"]})};
   hook();new MutationObserver(hook).observe(tabs,{childList:true})})();
+
+// The Star Catcher time bar scales with transform: game.js still writes style.width, which is mirrored into --tp (0 to 1).
+(()=>{const bar=document.getElementById("gTime");if(!bar)return;
+  const sync=()=>{const w=parseFloat(bar.style.width);if(!isNaN(w)){const v=(w/100).toFixed(3);if(bar.style.getPropertyValue("--tp")!==v)bar.style.setProperty("--tp",v)}};
+  new MutationObserver(sync).observe(bar,{attributes:true,attributeFilter:["style"]});sync()})();
