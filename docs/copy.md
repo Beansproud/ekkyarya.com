@@ -138,6 +138,6 @@ The challenge text avoids "her/his": the sender's pronouns are unknown.
 2. Reply time, availability and price line (`hire.body`, `hire.price`, `hero.status`, `contact.body`).
 3. Which clients may be named (`clients.line`), and the clients behind "Client work": Character Crowd Banner, My Sports Club App, Save Early, Buy Future, Thinker & Doer, Monster Noodles Cup (Pop Mie commission or pitch?).
 4. Is Morumelons a client or Ekky's own project? If his own, it can be `own: true` and Legendary.
-5. Boss Fight: is the fire spirit Ekky's own design? It is `own: false` until confirmed.
+5. ~~Boss Fight: is the fire spirit Ekky's own design?~~ Answered: yes ("fire spirit is his own design"); the piece is titled "RPG".
 6. Plug Hero and Toybox are marked as Ekky's own (the plan uses Toybox as the card-pack icon). Confirm neither was a commission.
 7. Astronaut and Radio Explorer (NFT): confirm Ekky holds the rights.
