@@ -264,11 +264,18 @@ document.getElementById("year").textContent=new Date().getFullYear();
     DOODLES=["cat","palette","planet","pen-hand","ghost"].map(n=>`assets/ui/${n}.png`);
   const play=(el,c)=>{el.classList.add(c);const done=()=>el.classList.remove(c);
     el.addEventListener("animationend",e=>{if(e.target===el)done()},{once:true});setTimeout(done,600)};
-  function burst(x,y){if(document.querySelectorAll(".t-burst").length>10)return;
-    for(let i=0;i<5;i++){const a=(i/5)*6.283+Math.random()*.9,d=34+Math.random()*26,im=new Image();
-      im.className="t-burst";im.alt="";im.src=DOODLES[(Math.random()*DOODLES.length)|0];
+  function burst(x,y,big){if(document.querySelectorAll(".t-burst").length>(big?24:10))return;
+    const n=big?9:5;
+    for(let i=0;i<n;i++){const a=(i/n)*6.283+Math.random()*.7,d=(big?70:34)+Math.random()*(big?50:26),im=new Image();
+      im.className="t-burst"+(big?" big":"");im.alt="";im.src=DOODLES[(Math.random()*DOODLES.length)|0];
       im.style.cssText=`left:${x}px;top:${y}px;--dx:${Math.cos(a)*d}px;--dy:${Math.sin(a)*d-14}px;--r:${(Math.random()-.5)*60}deg`;
-      document.body.appendChild(im);setTimeout(()=>im.remove(),560)}}
+      document.body.appendChild(im);setTimeout(()=>im.remove(),big?680:560)}}
+  // Finishing a drawing: a bigger burst from Done on touch, then the newest item in Mine pops once the next time Mine opens
+  let justDone=false;
+  document.addEventListener("pointerdown",e=>{if(e.pointerType!=="touch"||mq.matches||!e.target.closest)return;
+    const d=e.target.closest("#cDone");if(!d)return;justDone=true;const r=d.getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2,true)},{passive:true});
+  document.addEventListener("click",e=>{if(!justDone||!e.target.closest||!e.target.closest('[data-tab="mine"]'))return;
+    justDone=false;const it=document.querySelector("#gMineList .g-mine-item");if(it&&!mq.matches)play(it,"t-popin")});
   document.addEventListener("pointerdown",e=>{if(e.pointerType!=="touch"||mq.matches||!e.target.closest)return;
     const el=e.target.closest(TAP);if(!el||/\bt-(squash|wiggle|bounce)\b/.test(el.className))return;
     const tab=el.matches(".g-tabs button");
