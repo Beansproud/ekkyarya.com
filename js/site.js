@@ -134,7 +134,7 @@ lb.addEventListener("click",e=>{if(e.target===lb)lb.close()});
 lb.addEventListener("keydown",e=>{if(e.key==="ArrowRight")step(1);if(e.key==="ArrowLeft")step(-1)});
 
 /* ===== Typed words ===== */
-(function(){const words=t("hero.words").split("|"),el=document.getElementById("typed");el.textContent=words[0];
+(function(){const words=t("hero.words").split("|"),el=document.getElementById("typed");if(!el)return;el.textContent=words[0];
   return; // quiet pass (B43): one still word, no typing loop
   let w=0,c=words[0].length,del=true;
   (function tick(){const word=words[w];

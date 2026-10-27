@@ -133,7 +133,7 @@ const siteHost = () => { try { return new URL(siteBase()).host; } catch (e) { re
 const COPY = {
   en: {
     // Start screen (D11)
-    "start.tagline": "I draw characters. Most of them are friendly.",
+    "start.tagline": "Art that makes you smile. Zero uncanny valley.",
     "start.role": "Character Illustrator",
     "start.roleLong": "Character illustrator and graphic designer",
     "hud.role": "Character Illustrator",
@@ -283,7 +283,7 @@ const COPY = {
     "lang.id": "Bahasa Indonesia",
     // Desktop and classic site
     "hero.hi": "Hi, I'm Ekky Arya",
-    "hero.title": "I draw characters. Most of them are friendly.",
+    "hero.title": "I draw characters that make people smile. The warm kind, not the uncanny-valley kind.",
     "hero.sub": "Characters for books, brands, games and the web.",
     "hero.hire": "Hire Ekky",
     "hero.eyebrow": "Hi!",
@@ -397,7 +397,7 @@ const COPY = {
     "tag.fanNote": "Fan art. Characters belong to their owners."
   },
   id: {
-    "start.tagline": "Aku gambar karakter. Kebanyakan ramah kok.",
+    "start.tagline": "Gambar yang bikin senyum. Bebas uncanny valley.",
     "start.role": "Ilustrator Karakter",
     "start.roleLong": "Ilustrator karakter dan desainer grafis",
     "hud.role": "Ilustrator Karakter",
@@ -536,7 +536,7 @@ const COPY = {
     "lang.en": "English",
     "lang.id": "Bahasa Indonesia",
     "hero.hi": "Halo, aku Ekky Arya",
-    "hero.title": "Aku gambar karakter. Kebanyakan ramah kok.",
+    "hero.title": "Aku gambar karakter yang bikin orang senyum. Senyum hangat, bukan senyum seram ala uncanny valley.",
     "hero.sub": "Karakter untuk buku, brand, game, dan web.",
     "hero.hire": "Hubungi Ekky",
     "hero.eyebrow": "Halo!",

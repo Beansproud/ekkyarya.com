@@ -359,3 +359,4 @@ dialog[open]{animation:fadeIn var(--dur) var(--ease-in)}
 .reveal{opacity:1!important;transform:none!important;transition:none!important}
 .split .ch{opacity:1!important;transform:none!important}
 .about .tools{color:var(--muted);margin-top:10px}
+.hero-joke{max-width:30ch;line-height:1.5}
