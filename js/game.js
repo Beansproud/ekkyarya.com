@@ -68,12 +68,12 @@ $("gFeatured").addEventListener("click",e=>{const b=e.target.closest(".g-feat");
    featuredPick(4) real pieces on every visit. Never locked, no "next" glow, no boss. ---- */
 // place id -> what it opens (index in LEVELS, or Star Catcher), its label key, and a feature switch if it has one
 const PLACES=[
-  {id:"home",        key:"town.home",    open:()=>openLevel(0)},
-  {id:"studio",      key:"town.studio",  open:()=>openLevel(1)},
-  {id:"gallery",     key:"town.gallery", open:()=>openLevel(2)},
-  {id:"doodle",      key:"town.workshop",open:()=>openLevel(3)},
-  {id:"observatory", key:"town.launch",  open:()=>startArcade(), feature:"starCatcher"},
-  {id:"hire",        key:"town.hire",    open:()=>openHire(), hire:true},
+  {id:"home",        key:"town.home",    icon:"assets/sprites/home.png",      open:()=>openLevel(0)},
+  {id:"studio",      key:"town.studio",  icon:"assets/sprites/studio.png",    open:()=>openLevel(1)},
+  {id:"gallery",     key:"town.gallery", icon:"assets/sprites/toybox.png",    open:()=>openLevel(2)},
+  {id:"doodle",      key:"town.workshop",icon:"assets/ui/ghost.png",          open:()=>openLevel(3)},
+  {id:"observatory", key:"town.launch",  icon:"assets/ui/astronaut.png",      open:()=>startArcade(), feature:"starCatcher"},
+  {id:"hire",        key:"town.hire",    icon:"assets/sprites/gate.png",      open:()=>openHire(), hire:true},
 ];
 const pct=(v,of)=>(v/of*100).toFixed(3)+"%";
 function renderMap(){
@@ -88,7 +88,7 @@ function renderMap(){
       return `<button class="v-place${p.hire?" hire":""}" data-place="${p.id}" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}" aria-label="${esc(t(p.key))}"></button>
       <span class="v-label${p.hire?" hire":""}" aria-hidden="true" style="left:${pct(l[0],V.w)};top:${pct(l[1],V.h)}">${esc(t(p.key))}</span>`}).join("");
   W.insertAdjacentHTML("beforeend",villageLife(V));
-  $("gMapList").innerHTML=places.map(p=>`<li><button class="g-btn sm${p.hire?" pink":" alt"}" data-place="${p.id}">${esc(t(p.key))}</button></li>`).join("");
+  $("gMapList").innerHTML=places.map(p=>`<li><button class="v-row${p.hire?" hire":""}" data-place="${p.id}"><img src="${p.icon}" alt="" loading="lazy">${esc(t(p.key))}</button></li>`).join("");
 }
 /* ---- Village life (B42 V3), inside the ambience budget (decision 10, docs/motion.md): walkers, two clouds, the
    gate's lantern, the noodle bath's steam and the water shimmer. All CSS animations on transform and opacity, so the
@@ -138,7 +138,10 @@ $("gMapWrap").addEventListener("click",e=>{const v=e.target.closest(".v-folk,.v-
   const l=b.nextElementSibling;if(!reduce&&l){l.classList.remove("go");void l.offsetWidth;l.classList.add("go")}
   setTimeout(()=>PLACES.find(p=>p.id===b.dataset.place).open(),reduce?0:300)});
 $("gMapList").addEventListener("click",e=>{const b=e.target.closest("[data-place]");if(b){buzz(10);sfx("tap");PLACES.find(p=>p.id===b.dataset.place).open()}});
-$("gMapListBtn").onclick=()=>{const l=$("gMapList"),open=l.hidden;l.hidden=!open;$("gMapListBtn").setAttribute("aria-expanded",open)};
+// The list view replaces the island on the same screen (each place once, 48 px rows); the same link switches back.
+$("gMapListBtn").onclick=()=>{const l=$("gMapList"),open=l.hidden,b=$("gMapListBtn");l.hidden=!open;$("gMapWrap").hidden=open;
+  b.setAttribute("aria-expanded",open);b.textContent=open?tt("town.showVillage","Show the village"):t("town.list");$("g-map").scrollTop=0;
+  if(open)l.querySelector("button")?.focus({preventScroll:true})};
 
 /* ---- sheets ---- */
 const sheet=$("gSheet");let sheetFrom=null;
