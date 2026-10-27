@@ -723,6 +723,16 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 @media (prefers-reduced-motion:reduce){.g-tile.t-squash img,.lang-switch button[aria-pressed="true"]{animation:none}
   .g-tile:hover img,.lang-switch button:hover{rotate:none;scale:none;translate:none}}
 
+/* Coloring chrome and the Star Catcher end screen: hover reactions for the back and close buttons and the page picker cards
+   (touch already squashes every button; the .g-btn buttons on the end screen lift on hover above). */
+@media (hover:hover) and (pointer:fine){
+  .c-icon,.g-x,.c-page{transition:translate .2s,scale .2s,rotate .2s}
+  .c-icon:hover,.g-x:hover{translate:0 -2px;scale:1.08}
+  .g-x:hover{rotate:6deg}
+  .c-page:hover{translate:0 -4px;scale:1.04;rotate:-1deg}
+}
+@media (prefers-reduced-motion:reduce){.c-icon:hover,.g-x:hover,.c-page:hover{translate:none;scale:none;rotate:none}}
+
 /* Developer 3: touch */
 /* Touch response, added by js/site.js on pointerdown (touch only, once, removed on animationend). Uses the individual
    scale and rotate properties so a tile's own tilt in transform is untouched. */
