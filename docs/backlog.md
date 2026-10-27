@@ -15,6 +15,7 @@ Author: Game Director. Gate G1. This file merges `docs/game-brief.md` ("brief #n
 7. **Owner answer (2026-10-27): "everything is owned by Ekky."** Every piece whose ownership was unclear is his own work, `own: true`: Morumelons, Oasis, Web Illustration, My Sports Club, Save Early Buy Future, Plug Hero, Thinker & Doer, Type Is Art, Android, Kemerdekaan, RPG, Toybox, and the NFTs. They may be icons, stickers, coloring pages and share-card art.
    **The project's hard rule still holds and is not changed by this answer:** the fan-art pieces (`one-piece-fan-art`, `rocket-groot-fan-art`, `spider-verse-fan-art`, `adventure-time-fan-art`, `godzilla-kong-fan-art`, `game-pattern`, `dnd`) show characters owned by others, and the client pieces (`indomaret`, `bca-flazz-card`, `pop-mie`, `ancol-logo`, `msi`, `tea-break-website`) carry clients' brands. They stay portfolio-only. Only the integrator can change that rule (owner question 14).
 8. **Owner direction (2026-10-27): "Don't limit yourself at the moment, do whatever you can, and we limit after."** The two-day cap is lifted. Every ticket in this file is round-1 scope, ranked P1 to P3. When the owner and the UX lead limit scope later, the cut line runs along that ranking: P3 goes first, then P2. The project's hard rules (static, no backend, no login, the asset rule, no emoji) still apply.
+9. **Owner answer (2026-10-27): "He is Indonesian, speaks Bahasa and English."** The hiring facts show **"Based in Indonesia · Works in English and Bahasa Indonesia"** in desktop About, game level 1 ("Who is Ekky?") and the Final Quest sheet. The site's own text stays English (project rule).
 
 ## Design principles: de-gamification, play your way
 
@@ -354,7 +355,7 @@ In build order. Each acceptance test gets expanded when the developer picks the 
 | B23 | P2 | Card gift share (own art only) | DEV | S | B11 | brief #18 (F) | Test: Share shows on own pieces only. The friend's link opens that piece. |
 | B24 | P2 | "I recommend Ekky" sticker | DEV, UX | S | B11 | brief #19 | 4 preset reasons, no free text. Test: 2 taps to the preview, 1 to share. |
 | B25 | P2 | Other deep links and the desktop phone frame | DEV | S | B12 | brief #9 (rest), brief issue 16 | Test: each sample link opens its screen in under 2 s. Desktop shows a centered 430 px frame. |
-| B26 | P2 | Hiring facts, "Worked with", client-work row | UX, OWNER | S | owner questions 7 to 9 | audit #17, #18, audit section 2 | Test: the six facts show in desktop About and in level 1. |
+| B26 | P2 | Hiring facts, "Worked with", client-work row | UX, OWNER | S | owner questions 7 and 8 (location and languages answered) | audit #17, #18, audit section 2 | Location and languages can ship now. Test: "Based in Indonesia · Works in English and Bahasa Indonesia" shows in desktop About, level 1 and Final Quest; the remaining facts follow when owner questions 7 and 8 are answered. |
 | B28 | P2 | "My gallery" share card (replaces the brief's Player Card) | DEV | M | B11 | brief #17, D0c | Shows the player's colorings next to Ekky's originals: what they made, with no stats or levels. Test: "Share my gallery" makes one card with up to 4 colorings and the credit line. |
 | B29 | P2 | Coloring v2: reveal slider, zoom, eraser, brush with pressure | DEV | M | B10 | brief #6, #22 | Test: two-finger zoom works. A stylus changes the brush width. |
 | B30 | P2 | Doodle to Done with a real process | UX, OWNER, DEV | S | owner question 10 | audit #24 | Test: the sketch and the final of the same piece show. |
@@ -384,7 +385,7 @@ Asked through the integrator. The safe default applies until an answer comes in.
 | 6 | Can you send line layers (transparent PNG, 2000 px) for Road Trip, Little Planet, Giraffe and Plug Hero? Is it OK to extract your own lines from the JPG by darkness threshold? | Per D8 as UX approves: Road Trip from a layer if it arrives in time, otherwise Giraffe by threshold. | B09, B20 |
 | 7 | Reply time, availability and a starting price (or "quote only"). | No promised reply time; "Ask for a quote". | B17, B26 |
 | 8 | May we name your clients in a "Worked with" row? | No row. The tags only use names already in today's titles. | B26 |
-| 9 | Location, time zone and languages. | Not shown. | B26 |
+| 9 | Location and languages | **Answered:** Indonesian, works in English and Bahasa Indonesia. **Still open (small):** which city or time zone (Indonesia has three: WIB GMT+7, WITA GMT+8, WIT GMT+9)? Default: "Based in Indonesia" with no time zone. | B26 |
 | 10 | Sketch files of one lead piece. | Text-only process steps. | B30 |
 | 11 | An SVG logo, a Type Is Art still, and doodle cut-outs. | Today's files. Any crop that fails at 32 px becomes a simple palette shape. | B02, B34 |
 | 12 | De-gamification: no trophies and no lives? | **Answered:** no trophies, no lives. | closed |
