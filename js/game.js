@@ -26,7 +26,9 @@ G.querySelectorAll("[data-t]").forEach(el=>el.textContent=t(el.dataset.t));
 G.querySelectorAll("[data-t-aria]").forEach(el=>el.setAttribute("aria-label",t(el.dataset.tAria)));
 
 /* ---- mode switching ---- */
-const phone=matchMedia("(max-width:760px)");
+// a phone held sideways is wider than 760 px: keep it in game mode (touch screen, short viewport), or turning the
+// phone for Paint Patrol would drop the visitor onto the classic site
+const phone=matchMedia("(max-width:760px), (pointer:coarse) and (max-height:520px)");
 const pref=()=>{try{return localStorage.getItem("ekkyMode")}catch{return null}};
 const q=new URLSearchParams(location.search);
 const deep=["color","challenge","card"].some(k=>q.has(k));   // any deep link opens game mode, on desktop too (B12)
