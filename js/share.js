@@ -160,6 +160,7 @@ $("sVideo").onclick=async()=>{const b=$("sVideo");if(b.disabled)return;remember(
 addEventListener("ekky:lang",()=>{const o=$("gShare"),set=(sel,w,aria)=>o.querySelectorAll(sel).forEach(el=>{if(aria)return el.setAttribute("aria-label",w);
     const n=[...el.childNodes].reverse().find(x=>x.nodeType===3&&x.textContent.trim());if(n)n.textContent=(/^\s/.test(n.textContent)?" ":"")+w;else el.textContent=w});
   o.setAttribute("aria-label",t("share.go"));set("#sX",tt("ui.close","Close"),1);set("[data-hire]",t("hire.chip.aria"),1);set(".s-sign",t("share.sign"));$("sName").placeholder=t("share.sign.ph");
+  if(o.classList.contains("open")&&cur)draw();   // the card picture carries words too
   set("#sGo",t("share.go"));set("#sDl",t("dl.button"));if(!$("sVideo").disabled)set("#sVideo span",tt("share.video","Share as video"));set(".g-hire span",t("hire.chip"))});
 
 return {renderCard,renderVideo,paintCard,openPreview,download,downloadArt,downloadStars,canVideo,save};
