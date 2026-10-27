@@ -22,7 +22,10 @@ INK = (43, 19, 66)
 GRASS, GRASS_L, GRASS_R = (168, 219, 160), (111, 179, 122), (78, 142, 92)
 SAND = (255, 227, 168)
 CLIFF, CLIFF_DARK = (201, 138, 74), (150, 96, 52)
-ROCK, ROCK_LIT = (122, 74, 64), (163, 104, 84)
+ROCK, ROCK_LIT, ROCK_DARK = (122, 74, 64), (163, 104, 84), (92, 52, 50)
+STONE, PEBBLE = (176, 156, 178), (150, 96, 52)
+GRASS_DEEP, GRASS_SPECK, GRASS_LIGHT = (126, 196, 120), (214, 240, 196), (200, 238, 184)
+FLOWERS = [(255, 143, 177), (255, 255, 255), (255, 210, 90), (195, 139, 255)]
 PATH, PATH_EDGE = (255, 243, 220), (233, 214, 178)
 SEA, SEA_LIGHT = (104, 160, 219), (128, 180, 230)
 PLANK, PLANK_EDGE = (201, 138, 74), (122, 74, 34)
@@ -54,10 +57,13 @@ def scaled(pts, cx, cy, k, dy=0):
     return [(cx + (x - cx) * k, cy + (y - cy) * k + dy) for x, y in pts]
 
 
-def island(d, cx, cy, hw, hh, depth, seed=1, k=.97, tips=((-.45, .32), (0, .48), (.42, .3))):
+def island(base, cx, cy, hw, hh, depth, seed=1, k=.97, tips=((-.45, .32), (0, .48), (.42, .3))):
     """A floating island: a grass top over a soil band, and a rock underside that tapers into points.
     tips: (x offset as a share of the width, depth as a share of the width) for each hanging point."""
     import math
+    import random
+    rnd = random.Random(seed * 101)
+    d = ImageDraw.Draw(base)
     top = blob(cx, cy, hw * k, hh * .9, seed, wobble=.11)
     rx = hw * k
     # the front half of the outline, left to right, at the bottom of the soil band
@@ -79,34 +85,84 @@ def island(d, cx, cy, hw, hh, depth, seed=1, k=.97, tips=((-.45, .32), (0, .48),
     # rock underside: from the right end, down to each point and back up between them, to the left end
     under = []
     pts = sorted(tips, key=lambda t: -t[0])
-    base = cy + hh * .9 + depth
+    bot = cy + hh * .9 + depth
     for j, (ox, dep) in enumerate(pts):
         x = cx + ox * rx
         if j:
             px = cx + pts[j - 1][0] * rx
-            under.append(((x + px) / 2, base + rx * .18))           # the valley between two points
-        under.append((x + rx * .1, base + rx * dep * .55))        # shoulder
-        under.append((x, base + rx * dep))                         # the point
-        under.append((x - rx * .1, base + rx * dep * .55))
+            under.append(((x + px) / 2, bot + rx * .18))           # the valley between two points
+        under.append((x + rx * .1, bot + rx * dep * .55))        # shoulder
+        under.append((x, bot + rx * dep))                         # the point
+        under.append((x - rx * .1, bot + rx * dep * .55))
     rock = front + under
-    d.polygon(P(rock), fill=ROCK, outline=INK, width=2 * S)
-    for ox, dep in pts:   # a lit face on the left of each point
-        x = cx + ox * rx
-        d.polygon(P([(x - rx * .1, base + rx * dep * .55), (x, base + rx * dep), (x - rx * .02, base + rx * dep * .4), (x - rx * .16, base)]), fill=ROCK_LIT)
-    for kk in range(depth, 0, -2):   # soil band under the grass
-        d.polygon(P(scaled(top, cx, cy, 1.0, kk)), fill=CLIFF)
+    d.polygon(P(rock), fill=ROCK)
+
+    def clipped(poly, paint):
+        """Paint on a layer and keep only what falls inside poly (texture stays inside its shape)."""
+        layer = Image.new("RGBA", base.size)
+        paint(ImageDraw.Draw(layer))
+        m = Image.new("L", base.size, 0)
+        ImageDraw.Draw(m).polygon(P(poly), fill=255)
+        layer.putalpha(Image.fromarray(np.minimum(np.array(layer.getchannel("A")), np.array(m))))
+        base.alpha_composite(layer)
+
+    def rock_texture(ld):
+        for ox, dep in pts:   # each point: a lit face on the left, a shaded face on the right
+            x = cx + ox * rx
+            ld.polygon(P([(x - rx * .1, bot + rx * dep * .55), (x, bot + rx * dep), (x - rx * .02, bot + rx * dep * .4), (x - rx * .16, bot)]), fill=ROCK_LIT)
+            ld.polygon(P([(x + rx * .02, bot + rx * dep * .3), (x, bot + rx * dep), (x + rx * .1, bot + rx * dep * .55), (x + rx * .14, bot)]), fill=ROCK_DARK)
+        for j in range(5):   # strata: wavy layers across the rock
+            y0 = bot + 8 + j * rx * .07
+            line = [(x, y0 + 3 * math.sin(x / 18 + j * 1.7 + seed)) for x in range(int(cx - rx * 1.2), int(cx + rx * 1.2), 6)]
+            ld.line(P(line), fill=ROCK_DARK + (200,), width=2 * S)
+        for _ in range(int(rx / 18)):   # cracks
+            x, y = cx + rnd.uniform(-.8, .8) * rx, bot + rnd.uniform(.05, .4) * rx
+            ld.line(P([(x, y), (x + rnd.uniform(-6, 6), y + 7), (x + rnd.uniform(-8, 8), y + 15)]), fill=INK + (150,), width=S + 2)
+        for _ in range(int(rx / 22)):   # stones set in the rock
+            x, y, r = cx + rnd.uniform(-.8, .8) * rx, bot + rnd.uniform(.05, .35) * rx, rnd.uniform(3, 6)
+            ld.ellipse(P([(x - r, y - r * .7), (x + r, y + r * .7)]), fill=STONE, outline=INK + (180,), width=S)
+    clipped(rock, rock_texture)
+    d.polygon(P(rock), outline=INK, width=2 * S)
+
+    for kk in range(depth, 0, -2):   # soil band under the grass, with a darker lower half
+        d.polygon(P(scaled(top, cx, cy, 1.0, kk)), fill=CLIFF_DARK if kk > depth * .6 else CLIFF)
+    soil = scaled(top, cx, cy, 1.0, depth)
+
+    def soil_texture(ld):
+        for x, y in front[::2]:   # pebbles along the band
+            if rnd.random() < .6:
+                yy = y - depth * rnd.uniform(.3, .8)
+                ld.ellipse(P([(x - 2, yy - 1.5), (x + 2, yy + 1.5)]), fill=PEBBLE)
+    clipped([(x, y - depth) for x, y in front] + front[::-1], soil_texture)
     d.line(P(front), fill=INK, width=2 * S)
     d.polygon(P(scaled(top, cx, cy, 1.0, 6)), fill=GRASS_R)   # the turf's own thickness
+    # the grass lip hangs over the soil in small drips
+    for x, y in front[1:-1:3]:
+        r = rnd.uniform(3, 6)
+        d.ellipse(P([(x - r, y - depth + 2), (x + r, y - depth + 2 + r * 2.2)]), fill=GRASS_R)
     d.polygon(P(top), fill=GRASS)
+
+    def grass_texture(ld):
+        for _ in range(int(rx / 14)):   # darker patches
+            x, y = cx + rnd.uniform(-.9, .9) * rx, cy + rnd.uniform(-.8, .8) * hh
+            a, b = rnd.uniform(.08, .2) * rx, rnd.uniform(.04, .1) * rx
+            ld.ellipse(P([(x - a, y - b), (x + a, y + b)]), fill=GRASS_DEEP + (120,))
+        for _ in range(int(rx * .5)):   # light specks
+            x, y = cx + rnd.uniform(-1, 1) * rx, cy + rnd.uniform(-1, 1) * hh
+            ld.ellipse(P([(x - 1.2, y - .8), (x + 1.2, y + .8)]), fill=GRASS_SPECK)
+        for _ in range(int(rx / 5)):   # grass tufts
+            x, y = cx + rnd.uniform(-.95, .95) * rx, cy + rnd.uniform(-.9, .9) * hh
+            for dx in (-2.5, 0, 2.5):
+                ld.line(P([(x + dx * .4, y), (x + dx, y - 5 - abs(dx))]), fill=GRASS_L, width=S + 1)
+        for _ in range(int(rx / 10)):   # little flowers
+            x, y = cx + rnd.uniform(-.9, .9) * rx, cy + rnd.uniform(-.85, .85) * hh
+            c = rnd.choice(FLOWERS)
+            ld.ellipse(P([(x - 2.4, y - 1.8), (x + 2.4, y + 1.8)]), fill=c)
+            ld.ellipse(P([(x - .9, y - .7), (x + .9, y + .7)]), fill=(255, 225, 120))
+    clipped(top, grass_texture)
     d.line(P(top + [top[0]]), fill=GRASS_L, width=3 * S)
-
-
-def pond(d, cx, cy, rx, ry):
-    """A small pond on the main island (the water that shimmers)."""
-    pts = blob(cx, cy, rx, ry, 5, wobble=.08)
-    d.polygon(P(scaled(pts, cx, cy, 1.12)), fill=SAND)
-    d.polygon(P(pts), fill=SEA)
-    d.polygon(P(scaled(pts, cx, cy - ry * .2, .55)), fill=SEA_LIGHT)
+    back = [p for p in top if p[1] < cy]   # a soft light along the back edge
+    d.line(P(sorted(back)), fill=GRASS_LIGHT, width=2 * S)
 
 
 def path(d, pts, w=16):
@@ -165,16 +221,47 @@ WALKERS = [   # at most 2 from one piece (UX review): a client meets several pie
 CLIENT_SCENERY = []
 
 
+def galaxy(base):
+    """A galaxy cloud behind the floating islands: soft nebula glows in Ekky's purples and pinks, and small stars."""
+    import random
+    rnd = random.Random(7)
+    col = Image.new("RGB", (W, H), (98, 58, 170))   # color and alpha are blurred apart, so the edges never go dark
+    al = Image.new("L", (W, H), 0)
+    cd, ad = ImageDraw.Draw(col), ImageDraw.Draw(al)
+    for (x, y, rx, ry, c) in [(360, 480, 215, 300, (120, 72, 200, 235)), (285, 350, 120, 110, (214, 96, 190, 190)),
+                              (450, 600, 130, 120, (132, 84, 222, 210)), (410, 280, 100, 80, (255, 143, 177, 150)),
+                              (290, 620, 100, 90, (86, 136, 220, 150)), (480, 430, 90, 90, (240, 130, 210, 150))]:
+        box = (x - rx, y - ry, x + rx, y + ry)
+        cd.ellipse(box, fill=c[:3])
+        ad.ellipse(box, fill=c[3])
+    g = col.filter(ImageFilter.GaussianBlur(40)).convert("RGBA")
+    g.putalpha(al.filter(ImageFilter.GaussianBlur(40)))
+    gd = ImageDraw.Draw(g)
+    for _ in range(140):   # stars inside the cloud
+        x, y = rnd.gauss(360, 170), rnd.gauss(480, 200)
+        if 0 < x < W and 0 < y < H and g.getpixel((int(x), int(y)))[3] > 40:
+            r = rnd.choice([.6, .8, 1, 1.4])
+            gd.ellipse((x - r, y - r, x + r, y + r), fill=(255, 255, 255, rnd.randint(140, 255)))
+    for _ in range(8):   # a few sparkles
+        x, y = rnd.gauss(360, 150), rnd.gauss(480, 180)
+        if 0 < x < W and 0 < y < H and g.getpixel((int(x), int(y)))[3] > 60:
+            gd.line((x - 4, y, x + 4, y), fill=(255, 240, 255, 220), width=1)
+            gd.line((x, y - 4, x, y + 4), fill=(255, 240, 255, 220), width=1)
+    base.alpha_composite(g.resize(base.size, Image.LANCZOS))
+    return g
+
+
 def build():
     os.makedirs(OUT, exist_ok=True)
     base = Image.new("RGBA", (W * S, H * S))
     d = ImageDraw.Draw(base)
     # the calm sea: one soft diamond, with a lighter band
     # islands: main, the observatory islet (top) and the gate islet (bottom)
-    island(d, 360, 205, 140, 70, 18, seed=2, tips=((-.3, .4), (.25, .5)))
-    island(d, 360, 480, 310, 155, 26, seed=1, k=.9)
-    island(d, 400, 755, 150, 75, 18, seed=3, tips=((-.35, .45), (.05, .6), (.4, .38)))
-    pond(d, 505, 578, 46, 18)
+    galaxy(base)
+    island(base, 360, 205, 140, 70, 18, seed=2, tips=((-.3, .4), (.25, .5)))
+    island(base, 360, 480, 310, 155, 26, seed=1, k=.9)
+    island(base, 400, 755, 150, 75, 18, seed=3, tips=((-.35, .45), (.05, .6), (.4, .38)))
+    d = ImageDraw.Draw(base)
     bridge(d, (360, 268), (360, 332), 5)
     bridge(d, (384, 628), (396, 688), 5)
     # paths from Ekky's home to every place
@@ -221,17 +308,16 @@ def build():
     places["doodle"] = paste(img, "ghost", (222, 594), 92)
     places["hire"] = paste(img, "gate", (400, 778), 172)
     # crop to the drawing (plus a small margin), so the island fills the phone's width and no sky is wasted above it
-    bb = img.getchannel("A").getbbox()
+    bb = img.getchannel("A").point(lambda v: 255 if v > 6 else 0).getbbox()   # crop to the glow, which fades out inside the canvas
     ox, oy = max(0, bb[0] - 4), max(0, bb[1] - 4)
     img = img.crop((ox, oy, min(W, bb[2] + 4), min(H, bb[3] + 4)))
     img.save(os.path.join(OUT, "village.png"), optimize=True)
-    # water shimmer layer: white wherever the sea shows, so a 10 % opacity pulse lightens only the water
-    a = np.array(img.convert("RGB")).astype(int)
-    sea = np.zeros(a.shape[:2], bool)
-    for c in (SEA, SEA_LIGHT):
-        sea |= np.abs(a - np.array(c)).sum(-1) < 12
+    # galaxy glow layer: white wherever the nebula shows between the islands, for its slow 10 % pulse
+    a = np.array(img).astype(int)
+    r, g, b = a[..., 0], a[..., 1], a[..., 2]
+    neb = (a[..., 3] > 20) & (b > g + 25) & (r > g)
     sh = Image.new("LA", img.size, (255, 0))
-    sh.putalpha(Image.fromarray((sea * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(1)))
+    sh.putalpha(Image.fromarray((neb * 140).astype(np.uint8)).filter(ImageFilter.GaussianBlur(3)))
     sh.save(os.path.join(OUT, "shimmer.png"), optimize=True)
 
     # label anchors (bottom center of each place) and the buttons' hit boxes, in image pixels
