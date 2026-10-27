@@ -23,9 +23,10 @@ const FEATURES = {
                          // Off until the owner confirms the client-piece change to the Developer directly; no client
                          // cut-out is made or committed before that (scripts/village.py CLIENT_SCENERY stays empty).
 };
-// Playtest override: ?ff=paintPatrol (repeatable) turns a switch on for this visit only, so the Director can test a
+// Playtest override: ?ff=paintPatrol turns an allowlisted switch on for this visit only, so the Director can test a
 // feature on a real phone while it stays off for everyone else. It only turns switches on, never off.
-try { new URLSearchParams(location.search).getAll("ff").forEach(n => { if (n in FEATURES) FEATURES[n] = true; }); } catch (e) {}
+const PLAYTEST_FF = ["paintPatrol"];   // only these can be switched on by a link; Road Trip and client scenery never
+try { new URLSearchParams(location.search).getAll("ff").forEach(n => { if (PLAYTEST_FF.includes(n)) FEATURES[n] = true; }); } catch (e) {}
 const feature = name => FEATURES[name] === true;
 // Creative use (icons, stickers, coloring pages, share cards, the featured rows): the piece must be shareable() AND Ekky's
 // own original work. Project rule: client and fan pieces stay in the portfolio list and the Art tab only, whatever
