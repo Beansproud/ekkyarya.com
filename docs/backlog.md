@@ -618,6 +618,59 @@ Owner DEV (UX copy done) · Size M (3 to 4 h) · **P0, before any new feature** 
 - **Less on screen.** Desktop: drop the marquee band, shorten Services to one line of what Ekky draws, show the four process steps as four short lines with no cards. Phone: one heading per screen, no helper sentences under headings (the copy already dropped them), at most one line under any title.
 - **Acceptance (UX):** `document.getAnimations()` returns 0 endless animations on every screen, desktop and phone, except inside Star Catcher while playing; no text block under a heading is longer than 2 lines except the About paragraph; the desktop first screen shows the name, one role line, Hire Ekky, See my work and the art, and nothing that moves; Ekky looks at the result and says it no longer feels "ngoyo".
 
+## Sprint 6h acceptance criteria (UX lead, 2026-10-27 21:00 UTC)
+
+Plan: `docs/sprint-6h.md`. Every merge is checked on a phone probe at 360x640 and 390x664 in EN and ID, plus desktop 1440x900. **Always (every merge):** 0 page errors, 0 failed requests, `npm run check` passes, 0 endless animations outside a game in play, no emoji, no fan art outside the portfolio and cards, Hire Ekky one tap from every screen, the first screen shows Ekky's art before anything else, the 5 uncanny-valley lines unchanged, no new copy that isn't in `COPY` (EN and ID).
+
+**UX decision for S2: the phone keeps the bottom tab bar, and the top HUD goes.** The tab bar gets four buttons: Art, Map (the face, in the middle), Mine, and **Hire Ekky** (coral, on the right, always visible). The HUD's sound toggle already lives in Mine; the "Try Ekky" title and the EN/ID switch move onto the start screen and into Mine. Reason: one bar, in thumb reach, with Hire in it on every screen.
+
+### S1. Sketchbook look (Developer B)
+- [ ] Background: off-white paper (#FBF8F1 to #F6F1E6) with a texture that is under 30 KB and under 6 % visible contrast; the night sky stays only in the game and village.
+- [ ] Art tiles: each has a fixed tilt between −2° and +2° (seeded by piece, not random per load, not animated), a white paper border of 6 to 10 px, and a "tape" strip (one plain shape in Ekky's palette, 30 to 40 % opacity); no border-radius above 4 px and no shadow larger than `0 2px 6px rgba(0,0,0,.12)`.
+- [ ] At least 3 section dividers use Ekky's own doodle cut-outs (from `assets/ui/`), at most 48 px tall.
+- [ ] The text stays readable: body contrast at least 7:1 on the paper, links at least 4.5:1.
+- [ ] A side-by-side screenshot (before and after) at 390x664 and 1440x900; UX answers "does it look like one person's sketchbook?" with yes.
+
+### S2. Fewer layers (Developer B)
+- [ ] Phone: exactly one persistent bar (the bottom tab bar, as decided above); `document.querySelectorAll` finds no fixed or sticky top bar on any game screen.
+- [ ] Hire Ekky is in the tab bar on every screen, topmost at its center, at least 44 x 44 px, and opens the Hire sheet in one tap.
+- [ ] Sheets only for Hire, the level sheets and the villager card; nothing else stacks a second overlay.
+- [ ] Desktop: one accent color (yellow #FFB400) for actions; no game-style badges, glows or extra frames; the sidebar keeps the nav, portfolio filters, socials and the EN/ID switch.
+- [ ] The number of visible UI elements (buttons and links) on the phone start screen goes down by at least 20 % from main 6d6296a.
+
+### S3. Handwriting and photo slots (Developer B)
+- [ ] `FEATURES.handLettering` (off): when on, each heading with a `data-hand="<word>"` shows `assets/hand/<word>.png` if it exists, and the heading text stays the accessible name; when off or the file is missing, nothing changes.
+- [ ] A photo or self-portrait slot in About (`FEATURES.aboutPhoto`, off) that shows `assets/hand/ekky.jpg` if present.
+- [ ] Turning either switch on with no files gives 0 errors and 0 broken images.
+- [ ] `docs/owner-asks.md` lists the exact words and the file format Ekky should send (PNG, transparent, 2x, one word per file).
+
+### S4. Real-phone polish (Developer B)
+- [ ] Download, Share and Install work, or show the existing save/install help, on iPhone Safari, Android Chrome and an in-app browser (Instagram or WhatsApp user agent in the probe); none is a dead button.
+- [ ] Every element toggled with `hidden` stays hidden (a CSS rule `[hidden]{display:none!important}`); the probe finds 0 visible `[hidden]` elements.
+- [ ] Every control is at least 44 x 44 px; `touch-action: manipulation` on buttons (no double-tap zoom).
+- [ ] No horizontal scroll at 360 px on any screen.
+
+### S5. Speed (Developer B)
+- [ ] On "Slow 4G" throttling (Chrome preset) at 390x664, the start screen's six artworks are visible in under 2.5 s (Largest Contentful Paint under 2.5 s).
+- [ ] The first screen loads no image larger than 120 KB and nothing below the fold before it is needed (`loading="lazy"` on the rest).
+- [ ] Total bytes for the first screen under 900 KB.
+
+### G1. Village quiet and readable (Developer A)
+- [ ] Pinch or a 2x button zooms the map (1x to 2x), one finger pans when zoomed; a place is still one tap at any zoom (tap is not mistaken for a pan under 10 px of movement).
+- [ ] Each place sheet shows "Made from: <piece title>" (`COPY`: `town.madeFrom`, EN and ID) that opens the artwork in the lightbox.
+- [ ] 0 animations on the map that run without a tap; labels readable at 1x (at least 12 px) and 2x.
+- [ ] "Daftar tempat" / "Show places as a list" and "Work with Ekky" still work at both zoom levels.
+
+### G2. Paint Patrol slice (Developer A, with the Director)
+- [ ] The Director's MG4 playtest gives GO or NO-GO with numbers (finish rate, time to finish stage 1, taps to Hire).
+- [ ] If GO: `FEATURES.paintPatrol` on; stage 1 finishable in 60 to 120 s by a first-time tester; nothing can be lost or locked; every enemy names its piece; Hire one tap from pause and the end screen; no "boss" wording; no franchise name anywhere.
+- [ ] If NO-GO: the switch stays off, the entry points are hidden, and the reasons are listed in `docs/playtest-*.md`.
+
+### G3. Star Catcher and Color polish (Developer A)
+- [ ] Star Catcher: an idle player averages 12 or less, a casual player 30 to 55 (the Director's simulation); the end screen says the score and offers Play again, Share, Download and Hire.
+- [ ] Color: Share and Download work after Done (S4 rules); the Road Trip page stays off until Ekky approves its lines.
+- [ ] Every new string is in `COPY` (EN and ID), short, in Ekky's voice.
+
 ## Mini-games (after the round-1 P1 tickets)
 
 Approved brief: `docs/minigames.md` (from director/backlog 78699e2; read its "UX lead review" first). Owner direction 14. The vertical slice (MG1 to MG4, about 16 h) runs right after the P1 tickets (B38, B41, B26, B39, B40). MG5 to MG10 (about 30 to 40 h) start only on a "go" from the MG4 playtest **and** the UX lead's acceptance of the slice.
