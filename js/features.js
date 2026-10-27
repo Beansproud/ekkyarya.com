@@ -25,7 +25,10 @@ const FEATURES = {
 };
 // Playtest override: ?ff=paintPatrol (repeatable) turns a switch on for this visit only, so the Director can test a
 // feature on a real phone while it stays off for everyone else. It only turns switches on, never off.
-try { new URLSearchParams(location.search).getAll("ff").forEach(n => { if (n in FEATURES) FEATURES[n] = true; }); } catch (e) {}
+// Only switches on this list can be turned on from a link; anything waiting for the owner or Ekky (pageRoadTrip,
+// clientScenery, handLettering, aboutPhoto) can never be switched on from a URL.
+const PLAYTEST_FF = ["paintPatrol"];
+try { new URLSearchParams(location.search).getAll("ff").forEach(n => { if (PLAYTEST_FF.includes(n)) FEATURES[n] = true; }); } catch (e) {}
 const feature = name => FEATURES[name] === true;
 // Creative use (icons, stickers, coloring pages, share cards, the featured rows): the piece must be shareable() AND Ekky's
 // own original work. Project rule: client and fan pieces stay in the portfolio list and the Art tab only, whatever
