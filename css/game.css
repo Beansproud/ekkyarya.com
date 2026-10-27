@@ -706,3 +706,8 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 /* Developer 2 */
 .c-page:not(.c-scratch) b{color:#FFF}   /* the page name sat dark-on-dark under the picture (inherited the ink color) */
 #gPatrol:has(.pp-end:not([hidden])) .pp-hint{display:none}   /* the hint ran behind the end-screen buttons */
+
+/* Start header: logo and "Try Ekky" share the first row; the tagline runs full width under them, on the same left edge
+   as "Fresh from the sketchbook" (owner: "this part a bit off"). */
+#g-start .g-start-head .g-logo{grid-row:1;align-self:center}
+#g-start .g-start-head .g-tagline{grid-column:1/-1;margin:6px 0 0;max-width:none}
