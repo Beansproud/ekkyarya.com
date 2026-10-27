@@ -165,6 +165,8 @@ const COPY = {
     "town.list": "Show places as a list",
     "town.seeArt": "See the artwork",
     "town.madeFrom": "Made from: {title}",
+    "town.zoomIn": "Zoom in",
+    "town.zoomOut": "Zoom out",
     "town.showVillage": "Show the village",
     // Who is Ekky? and About (B26)
     "about.title": "About Ekky",
@@ -428,6 +430,8 @@ const COPY = {
     "town.list": "Daftar tempat",
     "town.seeArt": "Lihat karyanya",
     "town.madeFrom": "Dibuat dari: {title}",
+    "town.zoomIn": "Perbesar",
+    "town.zoomOut": "Perkecil",
     "town.showVillage": "Lihat desa",
     "about.title": "Tentang Ekky",
     "about.body": "Halo, aku Ekky. Aku gambar karakter, monster, dan dunia mini. Monsterku sengaja aneh, bukan uncanny.",
