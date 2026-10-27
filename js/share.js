@@ -156,5 +156,5 @@ $("sDl").onclick=()=>{remember();download(withName())};
 $("sVideo").onclick=async()=>{const b=$("sVideo");if(b.disabled)return;remember();b.disabled=true;const label=b.querySelector("span");label.textContent=tt("share.video.making","Making your video...");
   try{const d=withName(),v=await renderVideo(d),name=fileName(d,v.ext);await send(new File([v.blob],name,{type:v.blob.type}),v.blob,d,cur.link(d.name),tt("share.video.saved","Video saved, link copied"))}
   catch{say(t("share.copied"))}finally{b.disabled=false;label.textContent=tt("share.video","Share as video")}};
-return {renderCard,renderVideo,paintCard,openPreview,download,downloadArt,downloadStars,canVideo};
+return {renderCard,renderVideo,paintCard,openPreview,download,downloadArt,downloadStars,canVideo,save};
 })();
