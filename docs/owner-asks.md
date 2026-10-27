@@ -28,3 +28,4 @@ These are not blocking: everything they unlock is ready behind a switch that sta
    - Is `com.ekkyarya.app` the final app ID? It can't change after the first release.
    - Who keeps the release signing key (stored outside git)?
    - Google Play listing, or a direct APK download from the site?
+6. **Approve the "Monster in My Room" coloring lines** (`docs/color-monster-lines.png`). This is Ekky's own green monster, offered instead of the fan-art Godzilla page (which can't be used). It unlocks `FEATURES.pageMonster`.
