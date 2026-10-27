@@ -39,7 +39,9 @@ function makeArt(p){
   return `<svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" role="img" aria-label="${p.title} artwork"><rect width="400" height="300" fill="${bg}"/>${s}</svg>`;
 }
 // A project with `img` shows that file; if it fails to load, the drawn placeholder takes its place.
-function artOf(p,big){return p.img?`<img src="${big&&p.full||p.img}" alt="${ptitle(p)}" loading="lazy" decoding="async" onload="this.classList.add('ok')" onerror="this.outerHTML=makeArt(PROJECTS[${PROJECTS.indexOf(p)}])">`:makeArt(p)}
+// Animated pieces (GIF) show a still poster frame (assets/work/thumb/<slug>.jpg) in grids; the lightbox plays the animation.
+const thumbOf=p=>/\.gif$/i.test(p.img)?`assets/work/thumb/${p.slug}.jpg`:p.img;
+function artOf(p,big){return p.img?`<img src="${big&&p.full||thumbOf(p)}" alt="${ptitle(p)}" loading="lazy" decoding="async" onload="this.classList.add('ok')" onerror="this.outerHTML=makeArt(PROJECTS[${PROJECTS.indexOf(p)}])">`:makeArt(p)}
 const catImg=(c,cls="cat-ico")=>`<img class="${cls}" src="${CAT_ICON[c]}" alt="">`;
 // "Fan art", "Client: X" ... from PROJECTS; Ekky's own pieces have no tag.
 const tagOf=p=>p.label?`<span class="tag">${plabel(p)}</span>`:"";
@@ -73,7 +75,7 @@ document.querySelectorAll("#sideCats button,[data-jump]").forEach(b=>b.addEventL
 
 /* ===== Selected work: the featured six under the hero (B08) ===== */
 document.getElementById("featStrip").innerHTML=featuredSix().map(p=>({p,i:PROJECTS.indexOf(p)}))
-  .map(({p,i})=>`<button class="feat" data-i="${i}"><img src="${p.img}" alt="" loading="lazy" decoding="async"><span>${ptitle(p)}</span></button>`).join("");
+  .map(({p,i})=>`<button class="feat" data-i="${i}"><img src="${thumbOf(p)}" alt="" loading="lazy" decoding="async"><span>${ptitle(p)}</span></button>`).join("");
 document.getElementById("featStrip").addEventListener("click",e=>{const b=e.target.closest(".feat");if(b)show(+b.dataset.i)});
 
 /* ===== Lightbox ===== */
