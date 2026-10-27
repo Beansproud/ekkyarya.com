@@ -106,7 +106,7 @@ body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family
 .g-quest b{font-family:Fredoka;color:#2B1342}
 .g-sheet form{box-shadow:none;border:0;padding:0;margin-top:10px;background:none}
 .g-sheet input,.g-sheet select,.g-sheet textarea{background:#F7F5FB;color:#2B1342;border-color:#E5E0EE}
-.g-sheet label{color:#7A7585}
+.g-sheet label{color:#645F70}
 
 /* popups */
 .g-mode-fab{display:none}
