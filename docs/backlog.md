@@ -636,7 +636,7 @@ Plan: `docs/sprint-6h.md`. Every merge is checked on a phone probe at 360x640 an
 - [ ] Hire Ekky is in the tab bar on every screen, topmost at its center, at least 44 x 44 px, and opens the Hire sheet in one tap.
 - [ ] Sheets only for Hire, the level sheets and the villager card; nothing else stacks a second overlay.
 - [ ] Desktop: one accent color (yellow #FFB400) for actions; no game-style badges, glows or extra frames; the sidebar keeps the nav, portfolio filters, socials and the EN/ID switch.
-- [ ] The number of visible UI elements (buttons and links) on the phone start screen goes down by at least 20 % from main 6d6296a.
+- [ ] The phone start screen goes from 20 to at most 17 visible buttons (-15 %, revised 21:10 with Dev B): the "Try Ekky" title, the 6 drawings with their 6 Save badges (owner), one full-width "Color with Ekky" tile (the share loop stays visible), and the tab bar (Art, Map, Mine, Hire). Catch stars moves to the Map and Mine; "Just the art, please" and EN/ID move to Mine (the Art tab covers "just the art" on the phone).
 
 ### S3. Handwriting and photo slots (Developer B)
 - [ ] `FEATURES.handLettering` (off): when on, each heading with a `data-hand="<word>"` shows `assets/hand/<word>.png` if it exists, and the heading text stays the accessible name; when off or the file is missing, nothing changes.
