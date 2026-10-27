@@ -711,3 +711,4 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
    as "Fresh from the sketchbook" (owner: "this part a bit off"). */
 #g-start .g-start-head .g-logo{grid-row:1;align-self:center}
 #g-start .g-start-head .g-tagline{grid-column:1/-1;margin:6px 0 0;max-width:none}
+#c-edit .c-tool:disabled,.c-tool:disabled{opacity:.4;cursor:default}

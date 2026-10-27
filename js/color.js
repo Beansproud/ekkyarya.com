@@ -115,9 +115,11 @@ async function pageData(id){
 /* ---- drawing: fills (0 = paper, 1..12 = the page's colors, 13..15 = custom colors), Ekky's lines on top ---- */
 const hexRgb=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
 function colorOf(s,v){return v===0?"#FFFFFF":v<=12?s.pd.meta.colors[v-1]:s.custom[v-13]||"#FFFFFF"}
+const UNDO_KEEP=40;
 function makeState(pd,saved){const k=pd.meta.regions;const s={pd,fills:new Uint8Array(k+1),custom:[],stickers:[],undo:[]};
   // fills saved for a different region map (the page was rebuilt) are dropped rather than painted onto the wrong shapes
-  if(saved){if((saved.fills||[]).length===k+1)saved.fills.forEach((v,r)=>{s.fills[r]=v});s.custom=(saved.custom||[]).slice(0,MAX_CUSTOM);s.stickers=(saved.stickers||[]).filter(x=>stickers().some(t=>t.n===x.n)).slice(0,MAX_STICKERS)}
+  if(saved){if((saved.fills||[]).length===k+1)saved.fills.forEach((v,r)=>{s.fills[r]=v});s.custom=(saved.custom||[]).slice(0,MAX_CUSTOM);s.stickers=(saved.stickers||[]).filter(x=>stickers().some(t=>t.n===x.n)).slice(0,MAX_STICKERS);
+    if((saved.fills||[]).length===k+1&&Array.isArray(saved.undo))s.undo=saved.undo.filter(u=>Array.isArray(u)&&(u[0]==="st"?Array.isArray(u[1]):u[0]>0&&u[0]<=k)).slice(-UNDO_KEEP)}
   if(pd.id==="scratch"&&!saved)s.fills[1]=1;
   return s}
 // Paint the fill layer of a state onto a canvas at the page's own size.
@@ -157,7 +159,7 @@ async function open(id,opts={}){
   $("cTitle").textContent=title;stage.style.aspectRatio=`${pd.meta.w}/${pd.meta.h}`;
   $("cPeek").src=id==="scratch"?"":pd.meta.original||(bySlug(pd.meta.slug)||{}).full||"";$("cPeekBtn").hidden=id==="scratch";
   paint(cur,cv);renderColors();renderStickers();$("cTray").hidden=true;
-  view("cEdit");sizeStage();
+  view("cEdit");sizeStage();updUndo();
   if(!hintShown&&!(Game.st.hints||{}).color){hintShown=true;const h=$("cHint");h.textContent=t("color.hint");h.classList.add("show");setTimeout(()=>h.classList.remove("show"),2600);
     Game.st.hints=Object.assign({},Game.st.hints,{color:1});Game.save()}
 }
@@ -178,7 +180,10 @@ function pagePoint(e){const r=cv.getBoundingClientRect();return [Math.floor((e.c
 stage.addEventListener("pointerdown",e=>{if(!cur||e.target.closest(".c-st"))return;
   const [x,y]=pagePoint(e);if(x<0||y<0||x>=cur.pd.meta.w||y>=cur.pd.meta.h)return;const r=cur.pd.ids[y*cur.pd.meta.w+x];if(!r||cur.fills[r]===color)return;
   cur.undo.push([r,cur.fills[r]]);cur.fills[r]=color;paintRegion(cur,cv,r,true);Game.sfx("fill");Game.buzz(8);save()});
-$("cUndo").onclick=()=>{const u=cur&&cur.undo.pop();if(!u)return;Game.buzz(6);
+// Undo history survives leaving and reopening a page (the owner: "undo button is not working in mewarnai": the colors came
+// back but the history did not, so Undo looked active and did nothing). The button is disabled when there is nothing to undo.
+function updUndo(){const b=$("cUndo");if(b)b.disabled=!(cur&&cur.undo.length)}
+$("cUndo").onclick=()=>{const u=cur&&cur.undo.pop();if(!u){updUndo();return}Game.buzz(6);
   if(u[0]==="st"){cur.stickers=u[1];renderStickers()}else{cur.fills[u[0]]=u[1];paintRegion(cur,cv,u[0])}save()};
 // Peek: hold to see Ekky's own colors
 const peek=on=>{$("cPeek").classList.toggle("show",on&&!!$("cPeek").getAttribute("src"))};
@@ -223,7 +228,7 @@ function endGesture(e){if(!gest||!pts.has(e.pointerId))return;pts.delete(e.point
 let saveT=0;
 function save(now){if(!cur)return;clearTimeout(saveT);const run=()=>{if(!cur)return;const st=Game.st;st.colorings=st.colorings||{};
   let thumb="";try{const c=document.createElement("canvas");c.width=240;c.height=Math.round(240*cur.pd.meta.h/cur.pd.meta.w);compose(cur,c.getContext("2d"),0,0,240);thumb=c.toDataURL("image/jpeg",.7)}catch{}
-  st.colorings[cur.pd.id]={title:cur.title,fills:[...cur.fills],custom:cur.custom,stickers:cur.stickers.map(s=>({n:s.n,x:+s.x.toFixed(4),y:+s.y.toFixed(4),s:+s.s.toFixed(4),r:+s.r.toFixed(4)})),at:Date.now(),thumb};Game.save()};
+  st.colorings[cur.pd.id]={title:cur.title,fills:[...cur.fills],custom:cur.custom,stickers:cur.stickers.map(s=>({n:s.n,x:+s.x.toFixed(4),y:+s.y.toFixed(4),s:+s.s.toFixed(4),r:+s.r.toFixed(4)})),undo:cur.undo.slice(-UNDO_KEEP),at:Date.now(),thumb};Game.save();updUndo()};
   if(now)run();else saveT=setTimeout(run,400)}
 
 /* ---- reveal: yours and Ekky's, then the share preview ---- */
