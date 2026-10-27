@@ -629,6 +629,16 @@ body.game-mode #game.at-start{background:var(--paper,#FBF7EE) var(--grain);color
 #g-start .g-start-foot .g-classic,#g-start .g-start-foot .lang-switch{height:44px;min-height:44px}
 @media (max-width:380px){#game .g-start{padding-left:12px;padding-right:12px}#g-start .g-featured{column-gap:6px}#g-start .g-featured .g-feat{padding:3px 3px 0}}
 #game .g-start{padding-bottom:calc(env(safe-area-inset-bottom) + 120px)}   /* the bar (72 + 12) plus the Map face that rises 30 px above it */
+/* S2 part 2 (UX, 18 controls on start): two tiles side by side, Color and Paint Patrol, icon beside the label;
+   Catch stars lives on the Map and in Mine, "Just the art" and EN/ID in Mine */
+#g-start .g-tiles{grid-auto-flow:column;grid-auto-columns:1fr}
+#g-start .g-tile,#g-start .g-tile.patrol{height:56px;min-height:56px;flex-direction:row;gap:8px;border-radius:6px;border:1.5px solid #2B1342;box-shadow:0 3px 0 #2B1342;color:#2B1342}
+#g-start .g-tile.patrol{background:#7ED9B0}
+#g-start .g-tile img{width:32px;height:32px;object-fit:contain}
+#g-mine .g-stars-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+#g-mine .g-stars-head h3{margin:0}
+#g-mine .g-stars-head .g-btn{min-height:44px;padding:4px 14px 4px 8px;font-size:.95rem;border-radius:6px;border:1.5px solid #2B1342;box-shadow:0 3px 0 #2B1342}
+#g-mine .g-stars-head .g-btn img{width:28px;height:28px;object-fit:contain}
 .pp-cast{font-size:.85rem}
 .pp-cast .g-link{min-height:44px;padding:0 4px;color:#FFB400;text-decoration:underline}
 @media (orientation:landscape){.pp-end>p:not(.pp-cast){display:none}.pp-end .pp-art{max-height:22vh}.pp-end{gap:4px}.pp-cast{margin:0;line-height:1.1}}
