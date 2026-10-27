@@ -27,6 +27,9 @@ const PAGES = {
   // crop: the drawing itself, without the empty paper around it (a crop changes no line)
   giraffe: { slug: "giraffe", lineMax: 128, inkSoft: 140, crop: [33, 107, 733, 714] },
   "road-trip": { slug: "road-trip", lineMax: 110, inkSoft: 130, crop: [190, 376, 748, 560] },
+  // experiment (switch pageMonster, off): the green monster from Monster in My Room, the owner's own-art alternative
+  // to a fan-art page; Ekky approves the lines first (docs/color-monster-lines.png)
+  monster: { slug: "monster", lineMax: 110, inkSoft: 130, crop: [300, 0, 780, 780] },
 };
 const MIN_AREA = 40, COLORS = 12;
 // Color split: areas above SPLIT_AREA px are divided by up to SPLIT_K of their own colors; patches under SPECK px fold

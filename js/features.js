@@ -13,6 +13,8 @@ const FEATURES = {
   holoCards: true,       // holo foil on tilt (later ticket B36)
   pwa: true,             // "Install the app" (manifest + sw.js); the full offline work is B37
   pageRoadTrip: false,   // Road Trip coloring page: built (assets/color/road-trip/), waits for Ekky to approve the lines (D8)
+  pageMonster: false,    // experiment: the green monster from Monster in My Room as a coloring page (assets/color/monster/),
+                         // the owner's own-art alternative to a fan-art page; waits for Ekky to approve docs/color-monster-lines.png
   artDownload: true,     // lightbox Download: a copy of at most 1600 px with a subtle mark, never on fan art (owner: yes)
   sound: true,           // sound effects and the sound toggle
   paintPatrol: true,     // Paint Patrol stage 1 (js/patrol.js, loaded on first open): on after the Director's MG4 GO (21:24)
@@ -25,7 +27,7 @@ const FEATURES = {
 };
 // Playtest override: ?ff=paintPatrol (repeatable) turns a switch on for this visit only, so the Director can test a
 // feature on a real phone while it stays off for everyone else. It only turns switches on, never off.
-// Only switches on this list can be turned on from a link; anything waiting for the owner or Ekky (pageRoadTrip,
+// Only switches on this list can be turned on from a link; anything waiting for the owner or Ekky (pageRoadTrip, pageMonster,
 // clientScenery, handLettering, aboutPhoto) can never be switched on from a URL.
 const PLAYTEST_FF = ["paintPatrol"];
 try { new URLSearchParams(location.search).getAll("ff").forEach(n => { if (PLAYTEST_FF.includes(n)) FEATURES[n] = true; }); } catch (e) {}
