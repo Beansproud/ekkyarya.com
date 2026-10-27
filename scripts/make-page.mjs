@@ -33,7 +33,6 @@ const PAGES = {
   "plug-hero": { slug: "plug-hero", lineMax: 110, inkSoft: 130 },
   "little-planet": { slug: "little-planet", lineMax: 100, inkSoft: 112 },
   "hands": { slug: "hands", lineMax: 110, inkSoft: 130 },
-  doodles: { slug: "doodles", lineMax: 128, inkSoft: 140 },
   "day-in-life": { slug: "day-in-life", lineMax: 128, inkSoft: 140 },
 };
 const MIN_AREA = 40, COLORS = 12;
