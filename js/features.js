@@ -23,7 +23,7 @@ const FEATURES = {
                          // Off until the owner confirms the client-piece change to the Developer directly; no client
                          // cut-out is made or committed before that (scripts/village.py CLIENT_SCENERY stays empty).
 };
-// Playtest override: ?ff=paintPatrol turns an allowlisted switch on for this visit only, so the Director can test a
+// Playtest override: ?ff=paintPatrol (repeatable) turns a switch on for this visit only, so the Director can test a
 // feature on a real phone while it stays off for everyone else. It only turns switches on, never off.
 // Only switches on this list can be turned on from a link; anything waiting for the owner or Ekky (pageRoadTrip,
 // clientScenery, handLettering, aboutPhoto) can never be switched on from a URL.
