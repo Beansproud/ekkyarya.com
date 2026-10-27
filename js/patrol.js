@@ -212,5 +212,5 @@ function loop(now){if(!S)return;const t0=performance.now(),dt=Math.min(1/20,(now
   if(S.run){S.acc=(S.acc||0)+dt;let n=0;while(S.acc>=1/60&&n<5){step(1/60);S.acc-=1/60;n++}if(n===5)S.acc=0}
   const d0=performance.now();draw();const d1=performance.now();S.ms=(S.ms||0)*.95+(d1-t0)*.05;S.msDraw=(S.msDraw||0)*.95+(d1-d0)*.05;raf=requestAnimationFrame(loop)}   // S.ms: work per frame, for the perf probe
 
-window.Patrol={open,close,get state(){return S},PP};
+window.Patrol={open,close,end,get state(){return S},PP};
 })();
