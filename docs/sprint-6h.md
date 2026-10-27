@@ -54,7 +54,7 @@ When you need a change in a file you don't own, message its owner. Copy (text pe
 
 ### Game Director
 - Commit the playtest driver scripts to `scripts/playtest/` (anyone can re-run them).
-- Playtest tags the integrator cuts (`sprint-h1` … `sprint-h6`), never a moving head.
+- Playtest the snapshot branches the integrator cuts (`sprint/h1` … `sprint/h6`), never a moving head.
 - The MG4 playtest of Paint Patrol: GO or NO-GO, with numbers.
 - Each finding is one line with a fix of about 10 minutes. Small fixes go on `director/fix-*`, and the integrator merges them.
 
@@ -74,7 +74,7 @@ When you need a change in a file you don't own, message its owner. Copy (text pe
 |---|---|
 | 20:53 | Kick-off |
 | 21:15 | Acceptance criteria are in the backlog |
-| every hour | The integrator tags `sprint-hN`, the Director playtests it, and the UX lead sends nits |
+| every hour | The integrator cuts the branch `sprint/hN`, the Director playtests it, and the UX lead sends nits |
 | 02:15 | Code freeze |
 | 02:15–02:40 | Final acceptance, the walkthrough video and the board |
 | 02:53 | Stop. Each session sends a 5-line reflection |
