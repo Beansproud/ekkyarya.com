@@ -243,7 +243,7 @@ document.getElementById("year").textContent=new Date().getFullYear();
 // and lift, tab-bar items bounce (the Map face nods), and the drawings, Hire and the play tiles pop a few of Ekky's doodles.
 (()=>{const mq=matchMedia("(prefers-reduced-motion: reduce)");
   const TAP="button,a,[data-i],.g-feat,.g-tile,.v-place,.v-walker,.v-folk,.c-st,.c-sw,.tile,.feat,.g-hint>span",
-    WIG=".tile,.feat,.g-feat,.v-walker,.v-folk",BURST=".g-feat,.tile,.feat,.g-hire,.g-tile,.play-card",
+    WIG=".tile,.feat,.g-feat,.g-card,.g-mine-item,.v-walker,.v-folk",BURST=".g-feat,.g-card,.g-mine-item,.tile,.feat,.g-hire,.g-tile,.play-card",
     DOODLES=["cat","palette","planet","pen-hand","ghost"].map(n=>`assets/ui/${n}.png`);
   const play=(el,c)=>{el.classList.add(c);const done=()=>el.classList.remove(c);
     el.addEventListener("animationend",e=>{if(e.target===el)done()},{once:true});setTimeout(done,600)};
