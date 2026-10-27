@@ -29,7 +29,7 @@ fs.mkdirSync(OUT, { recursive: true });
     opened.push([who, Date.now() - t0]); await click(p, "#lbClose"); await p.waitForTimeout(500); await click(p, "#gSheetX"); await p.waitForTimeout(800);
   }
   R.threeArtworks = opened;
-  R.hire = await p.evaluate(() => ({ place: !!document.querySelector(".v-place.hire"), chip: !!document.querySelector(".g-hud .g-hire") }));
+  R.hire = await p.evaluate(() => ({ place: !!document.querySelector(".v-place.hire"), chip: [...document.querySelectorAll(".g-hire")].some(e => { const r = e.getBoundingClientRect(); if (!r.width) return false; const t = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return t && (t === e || e.contains(t)) }) }));
   R.listFallback = await p.evaluate(() => [...document.querySelectorAll("#g-map button")].some(e => /list|daftar/i.test(e.textContent)));
   R.errors = errs; await ctx.close();
   { const c2 = await b.newContext({ ...PHONE, reducedMotion: "reduce" }), q = await c2.newPage(); await q.goto(s.url); await q.waitForTimeout(2500); await click(q, '[data-tab="map"]'); await q.waitForTimeout(1500);
