@@ -59,6 +59,7 @@ Author: Game Director. Gate G1. This file merges `docs/game-brief.md` ("brief #n
    - **Still out:** client elements in Paint Patrol and Little Planet Quest gameplay (heroes, enemies, allies, power-ups), so the games stay brand-free; fan art everywhere except the portfolio and cards.
 16. **Owner decision (2026-10-27, typed to the integrator): "no need deploy to ekkyarya.com in this case"** (it reverses "point ekkyarya.com to the new site" from a few minutes earlier; the CNAME was removed from main). The new site is not served at ekkyarya.com. `CONFIG.siteUrl` stays empty, so share links and the "Your turn: {host}" line on cards use the host the site is served from (`siteBase()` / `siteHost()` in `js/data.js`). ekkyarya.com stays Ekky's existing site: `CONFIG.website` is linked as "Ekky's website" (`hire.website`), the credit line "Illustrated by Ekky Arya · ekkyarya.com" and the download watermark keep naming it, and `CONFIG.contactPage` stays in the Hire fallback.
 17. **Owner answers (2026-10-27, typed in the UX lead's session): "the glasses guy is ekky, fire spirit is his own design".** The glasses guy (`hero.png`, Little Planet) is Ekky, as already applied (answer 11). The fire spirit in "RPG" is Ekky's own design: it is cut and used like the rest of the RPG party (stickers, the village camp, the Explore Lair camp). Mini-games question 7 is closed.
+18. **Feedback from Ekky Arya himself (2026-10-27, after the round, relayed by the owner):** "opo yo, mungkin jam-packed bgt, copywriting e, trus biasane iku koyok animasine niat bgt misale. jd macem yg bikin itu bnyak orang yg ngoyo bgt ngono kesane." (Roughly: "it's too jam-packed, the copywriting too, and the animations feel like they try way too hard, as if many people made it while straining hard.") This outranks earlier motion and copy decisions. UX decisions: the copy is cut now (`COPY`, plain and short, Ekky's first-person voice, no game-quest words like "Final Quest"); motion and clutter go in ticket B43, P0 for round 2.
 
 ## UX lead decisions (summary)
 
@@ -606,6 +607,16 @@ Probed at 390 x 664 in EN and ID: screenshots at 0.3, 1.5 and 4 s, hit-testing e
 4. **ID header:** "Tampilkan sebagai daftar" wrapped to two lines next to "Desa Ekky". Fixed in `COPY.id`: now "Daftar tempat".
 
 **Not checked here (V6):** day and night by the visitor's clock, the first frame at 4x CPU slowdown, and client scenery (V5 not in this build).
+
+### B43. Quiet pass: less on screen, almost no motion (P0, round 2)
+Owner DEV (UX copy done) · Size M (3 to 4 h) · **P0, before any new feature** · From: Ekky's feedback (owner direction 18)
+- **Goal:** the site should feel like one artist's calm sketchbook, not a busy product. The art moves nothing; it is just shown.
+- **Motion: keep only these.** Tap press feedback (250 ms); screens, sheets and the lightbox fade in and out (300 to 400 ms, no rise, no scale); the color fading into a tapped shape; Star Catcher's own gameplay. **Remove everything else:**
+  - desktop: the typing "I draw ..." line (show one static line), the head wave, the hero float, the moving marquee (make it a static line, or drop it), fade-ups on scroll, staggered chips;
+  - game: the start logo drop, the card fade-up stagger, the Legendary foil sweep, the "Doodle to Done" tick sequence, confetti, toasts sliding (fade only), the sky twinkle (static stars);
+  - village: villagers stand still at their spots (no walking), no clouds, no lantern pulse, no steam, no water shimmer. Tapping a villager or place still opens it at once.
+- **Less on screen.** Desktop: drop the marquee band, shorten Services to one line of what Ekky draws, show the four process steps as four short lines with no cards. Phone: one heading per screen, no helper sentences under headings (the copy already dropped them), at most one line under any title.
+- **Acceptance (UX):** `document.getAnimations()` returns 0 endless animations on every screen, desktop and phone, except inside Star Catcher while playing; no text block under a heading is longer than 2 lines except the About paragraph; the desktop first screen shows the name, one role line, Hire Ekky, See my work and the art, and nothing that moves; Ekky looks at the result and says it no longer feels "ngoyo".
 
 ## Mini-games (after the round-1 P1 tickets)
 

@@ -51,3 +51,7 @@ The first-pass report follows for the record.
 - 31 endless animations keep running on the Art screen while it is hidden. Pause them off-screen (the playtest asked for this; the village budget, B42 decision 10, requires it).
 - Desktop hero runs `blink` and `bob` plus the marquee: keep one hero loop (B39).
 - Client pieces are still portfolio and card only in the Developer's build, which predates the owner's "yes to all". `js/data.js` already allows them (`CONFIG.reuse.client`), so this needs only the Developer's filters relaxed once the owner confirms it with the Developer.
+
+## Final acceptance at the deadline (main 243f861, 2026-10-27 11:55 UTC)
+
+**ACCEPTED.** Probe at 390 x 664, 360 x 640 and 1440 x 900, EN and ID: 6 artworks fully visible first, no fan art in the featured row, Hire one tap from start, map, Art and Mine, every village place labeled, on screen and topmost, "Work with Ekky" above the tab bar, fan-art lightbox tagged with no Download, no "boss" text, no English left on ID screens (the desktop hero was the last one, fixed in 243f861), 0 errors, 0 failed requests, 0 loops under reduced motion, `npm run check` passes. The low-poly village islands are generated from plain shapes by `scripts/village.py`: nothing is copied from the reference.
