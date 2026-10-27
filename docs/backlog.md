@@ -11,6 +11,7 @@ Author: Game Director. Gate G1. This file merges `docs/game-brief.md` ("brief #n
 3. **No locked features.** Every visitor gets every feature, with no login, no coins and no unlocking. Round 1 is static and has no login at all (project rule). If a login ever comes, it only keeps your colorings across devices; it never unlocks anything. See D0b.
 4. **Owner answer (2026-10-27): "no trophies, no lives, nothing ever locked."** This settles D0b, D0c, D1 and D2, and closes owner questions 12 and 13.
 5. **Owner answer (2026-10-27): "Ekky has the rights to all NFT".** NFT #3 (Astronaut) and NFT #9 (Radio Explorer) are his own work, `own: true`. They can be icons, stickers and share-card art. This closes the rights half of owner question 3; larger files are still wanted.
+6. **Owner answer (2026-10-27): "the glasses guy is Ekky."** The glasses guy from `hero.png` (Little Planet) is the one Ekky avatar everywhere. The blue-haired `face.png` is one of his characters (the Secret Android boy), not him. This closes owner question 1.
 
 ## Design principles: de-gamification, play your way
 
@@ -96,7 +97,7 @@ Format for each: **Proposed (audit)** is what gets built if UX approves as writt
 ### D17. Creative freedom (owner direction)
 - **Decided by the owner, scope proposed by the Director:**
   - **Colors:** "Ekky's colors" stays the default row, plus an **"Any color"** swatch that opens the system color picker. The brief's "no free picker" rule is dropped: the result is the visitor's, not a copy of Ekky's.
-  - **Stickers in round 1:** Ekky's own doodles (cat, palette, book, robot, cassette, microphone, planet, the Ekky face, the NFT astronaut and radio explorer, plus every T1 cut-out). Drag, pinch to scale and rotate, drag to the bin. Up to 12 per picture. Moved up from "later" into round 1 (B21).
+  - **Stickers in round 1:** Ekky's own doodles (cat, palette, book, robot, cassette, microphone, planet, the glasses-guy Ekky head, the blue-haired boy from `face.png` (his character), the NFT astronaut and radio explorer, plus every T1 cut-out). Drag, pinch to scale and rotate, drag to the bin. Up to 12 per picture. Moved up from "later" into round 1 (B21).
   - **Blank page:** "Start from scratch" opens a plain paper background where the visitor only uses stickers and colors. This is a **Doodle Scene** made of Ekky's characters (B21).
   - **Later:** brush with pressure, and more pages (B29, B20).
 - **Why:** creating something of your own is the strongest intrinsic reward (D0c) and the best share: every result is different, and every result is made of Ekky's art and carries his credit.
@@ -152,7 +153,7 @@ Format for each: **Proposed (audit)** is what gets built if UX approves as writt
 - **Director alternative, simpler and play-your-way:** four equal tiles, each with an Ekky icon and a two-word label: **Color**, **Catch stars**, **Explore**, **See the art**. Plus the "Hire Ekky" HUD chip, and "Just show me the art" (the classic site) as a full-width link. *Why:* "Play" doesn't say what you play. Under D0c, no choice is pushed as the main one, but every choice is one tap. **UX decides.** B08 builds whichever UX picks.
 
 ### D12. Icon map
-- **Proposed (audit section 3, which the Developer is already following in T1):** Level 1 / avatar: one Ekky face (owner question 1). Skill Tree: pen hand. Art Collection and the Art tab: palette. Doodle to Done: yellow ghost. Final Quest: monster head. Send: line "send" icon. Star Catcher button: astronaut helmet crop from NFT #3. Star Catcher items: star shape (+1), palette (+3), glowing star shape (+5), teal virus (hazard). General controls: one inline-SVG line set.
+- **Proposed (audit section 3, which the Developer is already following in T1):** Ekky avatar (Map tab center, HUD, map token, game FAB, Level 1, desktop hero wave): **the glasses guy's head from `hero.png`, owner decided.** Skill Tree: pen hand. Art Collection and the Art tab: palette. Doodle to Done: yellow ghost. Final Quest: monster head. Send: line "send" icon. Star Catcher button: astronaut helmet crop from NFT #3. Star Catcher items: star shape (+1), palette (+3), glowing star shape (+5), teal virus (hazard). General controls: one inline-SVG line set.
 - **Settled by the owner's NFT answer:** the astronaut helmet crop is the Star Catcher button. The Director's star-shape alternative is withdrawn.
 - **Not needed any more** (owner decisions D0, D1, D2): hearts, the trophy cup, the map pin, and the pack, Legendary Pull and Completionist icons.
 
@@ -182,7 +183,7 @@ Owner DEV · Size M · **Done: merged into `main`** · From: plan T0
 Owner DEV (UX picks crops) · Size L · **In progress on `dev/assets`**, following audit section 3 · Depends: B01 · From: plan T1, brief #2, audit #5, #7, #16
 - **Goal:** every emoji and generic glyph replaced per D12, with cut-out transparent PNGs in `assets/ui/`, one inline-SVG line-icon set, a star shape and a sparkle shape. **Every Ekky doodle cut-out doubles as a sticker** for B21 (D17). Re-crop `cat-social.png` and `cat-web.png`.
 - **Note from this backlog:** with D0, D1 and D2, T1 can skip hearts, the trophy cup, the map pin, and the pack, coin, Legendary Pull and Completionist icons.
-- **Acceptance:** the G2 emoji scan of `www/` returns 0. A UX contact sheet shows each icon readable at 32 px on `#2B1642` and on white. Nothing in `assets/ui/` is cut from fan or client art. One single avatar file is used for "Ekky".
+- **Acceptance:** the G2 emoji scan of `www/` returns 0. A UX contact sheet shows each icon readable at 32 px on `#2B1642` and on white. Nothing in `assets/ui/` is cut from fan or client art. One single avatar file, the glasses guy's head crop from `hero.png`, is used everywhere "Ekky" appears. `face.png` is not used as Ekky anywhere (it may appear only as a character sticker).
 
 ### B03. Art metadata and the share guard
 Owner DEV · Size S (1 h) · R1 must-have · Depends: B01 · From: brief #1, audit #6
@@ -376,7 +377,7 @@ Asked through the integrator. The safe default applies until an answer comes in.
 
 | # | Question | Safe default | Blocks |
 |---|---|---|---|
-| 1 | Which avatar is really you: the glasses guy in `hero.png` or the blue-haired `face.png`? | The glasses guy (the audit labels Little Planet a self-portrait). One file in `assets/ui/`, so swapping is one line. | B02 |
+| 1 | Which avatar is really you? | **Answered:** the glasses guy in `hero.png`. | closed |
 | 2 | Which pieces are your own and which are client work? Unclear: Tea Break, Morumelons, Oasis, Web Illustration, My Sports Club, Save Early Buy Future, Plug Hero, Thinker & Doer, Type Is Art, Android, Kemerdekaan, RPG (the fire spirit), Toybox. Is Pop Mie a commission or a pitch? Are Beansproud and Puff character names? Is the D&D figure your own design? | All of these are `own: false`: shown in the portfolio, never on share cards, coloring pages or icons. `dnd` and `game-pattern` stay portfolio-only regardless (project rule). | B03, B20 |
 | 3 | NFT #3 and #9: rights, and larger files | **Rights answered:** Ekky has the rights to all NFTs, so both are `own: true`. **Still open:** can you send them at 1000 px or more? Until then they show at their current 256 px (no upscaling on share cards; the sticker crop uses the native size). | B02, B34 |
 | 4 | What domain do share links use: `ekkyarya.com` or the GitHub Pages URL for now? | `CONFIG.siteUrl` stays empty, so links use the current page URL. In the Android app, links use the Pages URL. | B11, B12 |
@@ -404,7 +405,7 @@ Integrator question: a QR code on share cards needs an encoder (a new package or
 | 4 Cut the clutter | B05 | | 4 Art within 10 s | B08 |
 | 5 Page pipeline | B09 | | 5 Emoji | B02 |
 | 6 Coloring screen | B10, B21 (R1), B29 | | 6 Fan and client tags | B03 |
-| 7 Share renderer | B11 | | 7 One avatar | B02, owner question 1 |
+| 7 Share renderer | B11 | | 7 One avatar | B02 (owner: the glasses guy) |
 | 8 Share service | B11 | | 8 Titles, descriptions | B04 (UX-1) |
 | 9 Deep links | B12, B25 | | 9 Order, rarity | B04 (D4, D5) |
 | 10 Link encoding | B12 | | 10 Contrast | B16 |
