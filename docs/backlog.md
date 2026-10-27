@@ -383,7 +383,7 @@ Owner DEV (UX spec) · Size M (2.5 h) · R1 must-have · Depends: B10, B03 · Fr
 - **Acceptance:**
   - On iOS Safari and Android Chrome, Done to the system share sheet takes 3 taps or fewer, and the sheet holds the image and the link.
   - The PNG is 1080 x 1920, with the credit line readable above the bottom 300 px.
-  - `renderCard('coloring', {art: 'indomaret'})` throws.
+  - `renderCard('coloring', {art: 'dnd'})` throws (fan art; client pieces are shareable since the owner's "yes to all").
   - On desktop, the PNG downloads and the clipboard holds the link.
 
 ### B12. Coloring link and the arrival screen
@@ -533,6 +533,15 @@ Source: `docs/playtest-r1a.md` (Director, build `abedf97`): "Simple: yes. Fun: n
 - Star Catcher: a 50-round idle simulation averages 12 or less; casual 30 to 55.
 - "Clear what I made" is tappable without scrolling under the tab bar; a hidden tab never resumes play by itself.
 - `npm run check` passes.
+
+### UX review of dev/assets e084bea (B10, B11, B12, B21), 2026-10-27
+Not merged yet (the r1a fixes come first). Verdict: **the share card and the sticker set are approved; the copy wiring must change before merge.**
+- **Copy (blocking):** `js/copy.js` defines its own `t()` and `COPY_DEFAULT`, loads after `js/data.js` and replaces the `t()` there, so the build never reads `COPY.en` / `COPY.id`. It shows stale text ("Ekky's favorites", "Illustrator and graphic designer", "Ask for a quote", English only). **Delete `js/copy.js` and its `<script>` tag** and use `t()` from `js/data.js`. Every key the build uses now exists in `COPY.en` and `COPY.id` under the same names (178 keys each), with `{name}`-style placeholders instead of `<name>`. Read the language from `LANG`, titles with `ptitle(p)`, tags with `plabel(p)`.
+- **Share card (approved):** it matches the audit's "Gallery frame": free top 220 px and bottom 300 px, white frame, name line, yellow call-to-action pill, one-line credit at 40 px above the free bottom. Changes: the two hard-coded English lines become `t("card.title", {title: ptitle(p)})` and `t("card.scene")`; the file name becomes `ekkyarya-coloring-<slug>.png` / `ekkyarya-scene-<date>.png` (B40); add a **Download** button next to Share (B40, P1). Nice to have: Ekky's logo small at the top of the safe area, and one doodle sticker overlapping a frame corner (audit layout A).
+- **Share guard:** client pieces are shareable now (owner, "yes to all"); fan art must still throw. Verified on this build: the guard throws for a non-shareable piece.
+- **Stickers (approved):** 13 cut-outs, all from Ekky's own pieces (Little Planet doodles and category icons, the face, the ghost, the virus, the NFT astronaut and radio explorer), clean on the dark background. The other 17 sticker sources in `docs/roles.md` come with the V2 cut-out batch.
+- **Coloring copy:** covered by the `COPY` keys above in EN and ID (`color.*`, `reveal.*`, `share.*`, `arrive.*`).
+- **Role warning:** with every role counted, no original lacks a creative role; fan-art pieces having only portfolio and card is intended, so the warning should skip `kind: "fan"`.
 
 ### B42. Ekky's Village: the isometric map (approved by UX; tickets V1 to V6)
 Owner DEV (engine), UX (names, labels and lines: `COPY` `town.*`), DIRECTOR (layout and motion review) · Size about 30 to 32 h over V1 to V6 · **Next map work, after the r1a fixes** · Replaces the node list in B06, and replaces MG6 and MG7 · From: owner directions "make the map like this so no bossfight", "make the map isomoprihc like this" and "but with animation and re-createfd with his asset" (reference screenshots: mood only), "re-use all of asset of his as much as possible"
