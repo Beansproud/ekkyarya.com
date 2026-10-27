@@ -33,6 +33,12 @@ Author: Game Director. Gate G1. This file merges `docs/game-brief.md` ("brief #n
 - `plug-hero`, `toybox`: confirmed `original` (no change).
 - The copy (B14) uses "he", "Projects from $25", "Available evenings to night (GMT+7)" and "Works in Indonesian and English".
 
+8. **Owner direction (2026-10-27, 08:16 UTC, typed in the Developer's session): "no need to curate the best artwork make sure all art work has its role".** UX decision:
+   - **No fixed "best six".** The `featured` numbers are gone. The start-screen row and the desktop strip show **6 pieces picked at random on every visit** from every original piece (`featuredPick()` in `js/data.js`, at most 2 per category). Over a few visits a client sees the whole range, and no piece is ranked above another.
+   - **Every piece has a role.** Each `PROJECTS` entry has a `roles` list (portfolio, card, featured, share, coloring, sticker, sprite, level, scene, avatar). Fan-art and client pieces keep only portfolio and card (hard rule, enforced in `js/data.js`). Each of the 29 originals has at least one creative role. The full table and the Developer's cut-out list are in `docs/roles.md`.
+   - **Rarity is not a ranking.** The card frame (`rar`) is computed from how many creative roles a piece has.
+   - The scorecard row "6 best pieces visible within 10 s" now reads "6 pieces visible within 10 s".
+
 ## UX lead decisions (summary)
 
 Judged from the point of view of the person deciding whether to hire Ekky: the art first, Hire Ekky one tap away, nothing in the way. Owner-decided items are recorded, not re-opened.
@@ -48,7 +54,7 @@ Judged from the point of view of the person deciding whether to hire Ekky: the a
 | D6 packs, D7 map | Approved: no packs; 5 levels (Who is Ekky?, Color with Ekky, Art Collection, Doodle to Done, Final Quest). |
 | D8 first page | **Recommendation:** Road Trip if the line layer arrives before B09 starts, otherwise Giraffe Ride by threshold, swapped later. |
 | D9, D10 | Approved (audit card layout; `from`, `challenge`, `card`, `color` + `f` + `s`; `seed` added in B22). |
-| D11 start screen | **Mixed, see D11:** tagline, the featured six, three equal tiles (Color, Catch stars, Explore), "Just show me the art" link, Hire Ekky chip. |
+| D11 start screen | **Mixed, see D11:** tagline, a random featured row of six (owner direction 8), three equal tiles (Color, Catch stars, Explore), "Just show me the art" link, Hire Ekky chip. |
 | D12 icons | Approved; the NFT #3 helmet is the Star Catcher button (owner answer). |
 | D13 floating stars | **Director alternative:** removed. |
 | D14, D15, D16 | Approved as written. |
@@ -108,7 +114,7 @@ The game is three simple things plus one button: **Color** (tap a shape to fill 
 | B05 | Make it simple: remove the meta-game | DEV | S | 2 | R1 must-have |
 | B06 | Simple map (Skill Tree replaced by Color with Ekky) | DEV | S | 1 | R1 must-have |
 | B07 | "Hire Ekky" in one tap from every screen | DEV | S | 2 | R1 must-have |
-| B08 | Start screen and the featured six | DEV | S | 1.5 | R1 must-have |
+| B08 | Start screen and the random featured row | DEV | S | 1.5 | R1 must-have |
 | B09 | First coloring page files | DEV | S | 2 | R1 must-have |
 | B10 | Coloring screen (tap to fill) | DEV | M | 2.5 | R1 must-have |
 | B11 | Share card and share service | DEV | M | 2.5 | R1 must-have |
@@ -189,6 +195,7 @@ Format for each: **Proposed (audit)** is what gets built if UX approves as writt
 - **Director alternative:** Blue Bird, Coexistence, Hidden Monster, Old Bus, Floating Boy, Monster (brief). **Director agrees with the audit:** its reasons are hiring reasons.
 
 - **UX decision:** approved; already applied.
+- **UX decision, revised (owner direction 8):** no fixed lead six. The featured row is a fresh random pick of 6 originals on every visit (`featuredPick()`).
 ### D5. Rarity labels (cosmetic only after D0)
 - **Proposed (audit):** Legendary = the lead six + Little Planet + Morumelons. Tea Break and My Sports Club are Common.
 - **Director alternative:** leave Morumelons out (7 Legendaries), because it is client work and can never be on a share card. If share moment B (Legendary pull) comes back later, every Legendary must be shareable. With D0 in round 1, the difference is only a frame color.
@@ -274,7 +281,7 @@ Owner DEV · Size S (1 h) · R1 must-have · Depends: B01 · From: brief #1, aud
 ### B04. Art content check
 Owner UX · Size S · R1 must-have · Depends: B03 · From: audit #8, #9
 - **Goal:** done with this approval: titles, descriptions and order (UX-1), `kind` for every piece and the reuse config (owner direction), the unconfirmed "Client work" tags removed, and Morumelons Legendary (D5).
-- **Acceptance:** the first 6 tiles under "All" are the D4 six. Every piece shows a description in the lightbox.
+- **Acceptance:** every piece shows a description in the lightbox and its tag; every piece has a `roles` list, and `docs/roles.md` matches it.
 
 ### B05. Make it simple: remove the meta-game
 Owner DEV · Size S (2 h) · R1 must-have · Depends: B02 · From: owner direction (D0), brief #4 and its cut list, audit #15, #18 (bars only), #21
@@ -312,9 +319,9 @@ Owner DEV (UX copy) · Size S (2 h) · R1 must-have · Depends: B02 · From: bri
   - Accessible name: "Hire Ekky, send a message".
 - **Acceptance:** the capture script visits each listed screen, and from each one a single tap opens the sheet (desktop: the contact section). Closing returns to the same screen and scroll. Hire from the Monster Snack Bar lightbox prefills "I saw Monster Snack Bar".
 
-### B08. Start screen and the featured six
+### B08. Start screen and the random featured row
 Owner DEV · Size S (1.5 h) · R1 must-have · Depends: B04, B07 · From: brief #11, audit #4, audit #11 (classic-site link)
-- **Goal:** the start screen per D11 as approved, with the Featured row of six (each opens the lightbox). "Open the classic site" is 44 px tall and above the fold. Desktop: a strip of the six under the hero, above the fold. Every start-screen control is at least 44 x 44 px.
+- **Goal:** the start screen per D11 as approved, with the Featured row of six (each opens the lightbox). "Open the classic site" is 44 px tall and above the fold. Desktop: a strip of the six under the hero, above the fold. Every start-screen control is at least 44 x 44 px. **Revised (owner direction 8):** the row and the desktop strip use `featuredPick(6)`, a new random pick on every visit; they never show fan-art or client pieces.
 - **Acceptance:** in a screenshot 2 s after load, the phone start screen shows at least 3 pieces, and a swipe reveals 6. The classic-site link is fully visible. The desktop at 1440 x 900 shows all 6.
 
 ### B09. First coloring page files
@@ -406,6 +413,7 @@ Owner DEV · Size S (2 h) · R1 must-have (Option A) · Depends: B02 · From: au
 
 ### B21. Stickers and the Doodle Scene (creative mode)
 Owner DEV · Size M (3 h) · R1 must-have · Depends: B10, B02, B03 · From: owner direction (D17), brief #6 (stickers), #10 (`s=`)
+- **Cut-out list (UX):** `docs/roles.md` lists the cut-outs per piece, for every piece with the `sticker` role (24 pieces). Build the tray from `withRole("sticker")` and backdrops from `withRole("scene")`.
 - **Goal:**
   - A sticker tray in the coloring screen with Ekky's own doodles (D17). Drag to place, pinch to scale and rotate, drag onto the bin to delete, up to 12.
   - The "Any color" swatch (system color picker).

@@ -1,5 +1,7 @@
 # Copy: user-facing wording
 
+**Round 1: the `COPY` object in `js/data.js` is the source of truth (B14).** It supersedes the tables below where they differ (start tiles, Mine tab, no trophies or packs, the owner's facts: he/him, Indonesian and English, evenings to night GMT+7, projects from $25). The open questions at the end are answered in `docs/backlog.md` (owner answers, 2026-10-27).
+
 Owner: UX Portfolio. Source: `docs/ux-audit.md` sections 1, 2 and 4.
 Every string the Developer needs for round 1, in English. Keep it short and warm. No emoji anywhere.
 `<...>` is a value filled in at runtime. Lines marked **confirm** need the owner's answer before launch (see the end).
