@@ -5,7 +5,7 @@
 const Color=(()=>{
 const G=document.getElementById("game");
 // A page with a switch stays hidden until FEATURES turns it on (Road Trip waits for Ekky's OK on the lines).
-const PAGES=[{id:"giraffe",slug:"giraffe"},{id:"road-trip",slug:"road-trip",flag:"pageRoadTrip"},{id:"monster",slug:"monster",flag:"pageMonster"},{id:"little-planet",slug:"little-planet",flag:"pageLittlePlanet"},{id:"hands",slug:"hands",flag:"pageHands"},{id:"day-in-life",slug:"day-in-life"},{id:"plug-hero",slug:"plug-hero",flag:"pagePlugHero"}];
+const PAGES=[{id:"giraffe",slug:"giraffe"},{id:"road-trip",slug:"road-trip",flag:"pageRoadTrip"},{id:"monster",slug:"monster",flag:"pageMonster"},{id:"little-planet",slug:"little-planet",flag:"pageLittlePlanet"},{id:"hands",slug:"hands",flag:"pageHands"},{id:"noodles",slug:"noodles",flag:"pageNoodles"},{id:"shark",slug:"shark",flag:"pageShark"},{id:"day-in-life",slug:"day-in-life"},{id:"plug-hero",slug:"plug-hero",flag:"pagePlugHero"}];
 // The Doodle Scene: a plain paper page with one region (the background) and Ekky's palette.
 const SCRATCH={id:"scratch",slug:null,title:"Doodle Scene",w:800,h:1000,regions:1,
   colors:["#FFFFFF","#FFF4D6","#FFE08A","#FFB400","#FF6B6B","#F4C2D7","#C9A7FF","#9C91BD","#B8D5FF","#7ED9B0","#3E7C6A","#2B1342"]};
@@ -233,7 +233,7 @@ if($("cStickBtn")){
   $("cTray").addEventListener("click",e=>{const b=e.target.closest("[data-n]");if(!b||!cur)return;
     if(cur.stickers.length>=MAX_STICKERS)return say(t("color.full"));
     cur.undo.push(["st",cur.stickers.map(x=>({...x}))]);
-    cur.stickers.push({n:+b.dataset.n,x:.5+(Math.random()-.5)*.2,y:.45+(Math.random()-.5)*.2,s:.24,r:0});renderStickers();Game.sfx("tap");Game.buzz(8);save()});
+    cur.stickers.push({n:+b.dataset.n,x:.5+(Math.random()-.5)*.2,y:.45+(Math.random()-.5)*.2,s:.24,r:0});renderStickers();popSticker(cur.stickers.length-1);Game.sfx("tap");Game.buzz(8);save()});
 }
 function renderStickers(){$("cStickers").innerHTML=cur.stickers.map((s,k)=>{const im=STICKERS.find(x=>x.n===s.n);imgOf(s.n);
   return `<img class="c-st" data-k="${k}" src="${im.src}" alt="" draggable="false" style="left:${s.x*100}%;top:${s.y*100}%;width:${s.s*100}%;transform:translate(-50%,-50%) rotate(${s.r}rad)">`}).join("")}
@@ -241,6 +241,7 @@ const pts=new Map();let gest=null;
 $("cStickers").addEventListener("pointerdown",e=>{const el=e.target.closest(".c-st");if(!el||!cur)return;e.preventDefault();el.setPointerCapture(e.pointerId);
   pts.set(e.pointerId,[e.clientX,e.clientY]);const k=+el.dataset.k;
   if(!gest||gest.k!==k){gest={k,el,before:cur.stickers.map(x=>({...x}))};$("cBin").classList.add("show")}
+  el.classList.add("drag");
   gest.base={...cur.stickers[k]};gest.start=[...pts.values()].map(p=>p.slice())});
 $("cStickers").addEventListener("pointermove",e=>{if(!gest||!pts.has(e.pointerId))return;pts.set(e.pointerId,[e.clientX,e.clientY]);
   const r=stage.getBoundingClientRect(),s=cur.stickers[gest.k],b=gest.base,now=[...pts.values()],st=gest.start;
@@ -255,12 +256,14 @@ $("cStickers").addEventListener("pointermove",e=>{if(!gest||!pts.has(e.pointerId
 function endGesture(e){if(!gest||!pts.has(e.pointerId))return;pts.delete(e.pointerId);
   if(pts.size){gest.base={...cur.stickers[gest.k]};gest.start=[...pts.values()].map(p=>p.slice());return}
   const hot=$("cBin").classList.contains("hot");$("cBin").classList.remove("show","hot");
-  cur.undo.push(["st",gest.before]);if(hot){cur.stickers.splice(gest.k,1);Game.buzz(15)}gest=null;renderStickers();save()}
+  const k=gest.k,moved=JSON.stringify(gest.before[k])!==JSON.stringify(cur.stickers[k]);   // a plain tap on a sticker is not an edit: no Undo step
+  if(moved||hot)cur.undo.push(["st",gest.before]);if(hot){cur.stickers.splice(k,1);Game.buzz(15)}gest=null;renderStickers();if(!hot&&moved)popSticker(k);save()}
+function popSticker(k){const el=$("cStickers").children[k];if(el){el.classList.add("pop");setTimeout(()=>el.classList.remove("pop"),300)}}
 ["pointerup","pointercancel"].forEach(ev=>$("cStickers").addEventListener(ev,endGesture));
 
 /* ---- autosave to Mine ---- */
 let saveT=0;
-function save(now){if(!cur)return;clearTimeout(saveT);const run=()=>{if(!cur)return;const st=Game.st;st.colorings=st.colorings||{};
+function save(now){updUndo();if(!cur)return;clearTimeout(saveT);const run=()=>{if(!cur)return;const st=Game.st;st.colorings=st.colorings||{};
   let thumb="";try{const c=document.createElement("canvas");c.width=240;c.height=Math.round(240*cur.pd.meta.h/cur.pd.meta.w);compose(cur,c.getContext("2d"),0,0,240);thumb=c.toDataURL("image/jpeg",.7)}catch{}
   st.colorings[cur.pd.id]={title:cur.title,fills:[...cur.fills],custom:cur.custom,stickers:cur.stickers.map(s=>({n:s.n,x:+s.x.toFixed(4),y:+s.y.toFixed(4),s:+s.s.toFixed(4),r:+s.r.toFixed(4)})),undo:cur.undo.slice(-UNDO_KEEP),at:Date.now(),thumb};Game.save();updUndo()};
   if(now)run();else saveT=setTimeout(run,400)}
@@ -273,7 +276,7 @@ function reveal(){const scratch=cur.pd.id==="scratch",c=$("cYours"),{w,h}=cur.pd
 $("cClose").onclick=close;$("cAgain").onclick=()=>{view("cEdit");sizeStage()};$("cAnother").onclick=openPicker;
 if($("cShare"))$("cShare").onclick=()=>typeof Share!=="undefined"&&Share.openPreview(shareData());
 if($("cDl"))$("cDl").onclick=()=>typeof Share!=="undefined"&&Share.download({...shareData(),name:Game.st.name||""});
-function shareData(){const s=cur;return {art:s.pd.meta.slug||null,page:s.pd.id,title:s.title,stickers:s.stickers.map(x=>x.n),
+function shareData(){const s=cur;return {art:s.pd.meta.slug||null,page:s.pd.id,get title(){return s.title},stickers:s.stickers.map(x=>x.n),
   draw:(ctx,X,Y,W,t)=>compose(s,ctx,X,Y,W,t),aspect:s.pd.meta.h/s.pd.meta.w,link:name=>Links.colorUrl(s,name)}}
 
 /* ---- arrival: a friend's coloring link (js/links.js) ---- */

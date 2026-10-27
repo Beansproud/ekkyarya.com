@@ -34,6 +34,8 @@ const PAGES = {
   "little-planet": { slug: "little-planet", lineMax: 100, inkSoft: 112 },
   "hands": { slug: "hands", lineMax: 110, inkSoft: 130 },
   "day-in-life": { slug: "day-in-life", lineMax: 128, inkSoft: 140 },
+  "noodles": { slug: "noodles", lineMax: 110, inkSoft: 130 },
+  "shark": { slug: "shark", lineMax: 110, inkSoft: 130 },
 };
 const MIN_AREA = 40, COLORS = 12;
 // Color split: areas above SPLIT_AREA px are divided by up to SPLIT_K of their own colors; patches under SPECK px fold

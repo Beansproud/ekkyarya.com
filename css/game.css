@@ -106,7 +106,7 @@ body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family
 .g-quest b{font-family:Fredoka;color:#2B1342}
 .g-sheet form{box-shadow:none;border:0;padding:0;margin-top:10px;background:none}
 .g-sheet input,.g-sheet select,.g-sheet textarea{background:#F7F5FB;color:#2B1342;border-color:#E5E0EE}
-.g-sheet label{color:#7A7585}
+.g-sheet label{color:#645F70}
 
 /* popups */
 .g-mode-fab{display:none}
@@ -134,7 +134,7 @@ body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family
 #gArcade{padding:0;background:#120a1f}
 #gCanvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
 .g-ahud{position:absolute;top:calc(env(safe-area-inset-top) + 14px);left:14px;right:66px;display:flex;gap:10px;align-items:center;z-index:2;pointer-events:none}
-.g-ahud .pill{background:#2f1f47cc;border:2px solid #3e2a5c;border-radius:16px;padding:6px 12px;font-weight:700;display:inline-flex;align-items:center;gap:6px;font-size:1.05rem}
+.g-ahud .pill{color:#fff;background:#2f1f47cc;border:2px solid #3e2a5c;border-radius:16px;padding:6px 12px;font-weight:700;display:inline-flex;align-items:center;gap:6px;font-size:1.05rem}
 .g-ahud .ico{width:20px;height:20px;vertical-align:0}
 .g-time{flex:1;height:12px;border-radius:8px;background:#2f1f47;overflow:hidden;border:2px solid #3e2a5c}
 .g-time i{display:block;height:100%;background:linear-gradient(90deg,#7ED9B0,#FFB400,#FF6B6B);width:100%}
@@ -798,3 +798,8 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 .c-sw.pop::before{animation:cPop .3s ease-out}
 @keyframes cPop{40%{transform:scale(1.18)}}
 @media (prefers-reduced-motion:reduce){.c-ripple{display:none}.c-sw.pop::before{animation:none}}
+/* Doodle Scene: a sticker lifts while it is held, and pops when it lands or is added */
+.c-st.drag{scale:1.1;filter:drop-shadow(0 8px 8px rgba(0,0,0,.3))}
+.c-st.pop{animation:cStPop .3s ease-out}
+@keyframes cStPop{0%{scale:.7}60%{scale:1.14}100%{scale:1}}
+@media (prefers-reduced-motion:reduce){.c-st.pop{animation:none}}
