@@ -1,11 +1,11 @@
 # Artwork
 
-The page picks these files up automatically. Until a file exists, it shows the drawn placeholder.
+| Path | Used for |
+|---|---|
+| `hero.png` | Hero illustration (cropped from a screenshot of the old site; replace with the original PNG when available) |
+| `logo.png` | Logo in the sidebar, phone top bar, loading screen and game card packs (also a screenshot crop) |
+| `work/<slug>.jpg` | Large version of a portfolio piece, shown in the lightbox (max 1600 px) |
+| `work/thumb/<slug>.jpg` | Thumbnail for grids and game cards (max 720 px) |
+| `work/<slug>.gif` | Animated pieces, used at full size everywhere |
 
-| File | Used for | Tips |
-|---|---|---|
-| `hero.png` | Hero illustration (the character on the moon) | Transparent PNG, about 1200 px wide |
-| `logo.png` | Sidebar, mobile top bar and loading screen logo | Transparent PNG with the white sticker outline |
-| `work/<name>.jpg` | Portfolio tiles and lightbox | 4:3, about 1200 × 900 px |
-
-For portfolio images, set `img: "assets/work/<name>.jpg"` on the project in `PROJECTS` in `index.html`, and update its `title`, `desc` and `cat`.
+Each piece is listed in `PROJECTS` in `index.html` with its category (`cat`), title, image paths and card rarity in game mode (`rar`: 0 common to 3 legendary).
