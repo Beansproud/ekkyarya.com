@@ -31,9 +31,8 @@ const PAGES = {
   // to a fan-art page; Ekky approves the lines first (docs/color-monster-lines.png)
   monster: { slug: "monster", lineMax: 110, inkSoft: 130, crop: [300, 0, 780, 780] },
   "plug-hero": { slug: "plug-hero", lineMax: 110, inkSoft: 130 },
-    "hands": { slug: "hands", lineMax: 110, inkSoft: 130 },
-  // candidates for "more pictures": kept only if --verify passes and the lines read clean (see docs for what was dropped)
-  "little-planet": { slug: "little-planet", lineMax: 95, inkSoft: 115 },
+  "little-planet": { slug: "little-planet", lineMax: 100, inkSoft: 112 },
+  "hands": { slug: "hands", lineMax: 110, inkSoft: 130 },
   doodles: { slug: "doodles", lineMax: 128, inkSoft: 140 },
   "day-in-life": { slug: "day-in-life", lineMax: 128, inkSoft: 140 },
 };
