@@ -420,3 +420,30 @@ dialog{border-radius:6px}
 .doodle-rule:nth-of-type(even) img{transform:rotate(5deg)}
 @media (max-width:980px){.doodle-rule{padding:0 16px}}
 .tile.reveal{transform:rotate(var(--tilt))!important}   /* the quiet pass flattens .reveal; the taped tilt is fixed, not a reveal */
+
+/* ===== S2 desktop, fewer layers: no game-style chrome, one accent (yellow #FFB400) for actions =====
+   Gone: the custom cursor, the scroll progress bar, the category badge and the "View" pill on each tile, the colored
+   icon blobs on the service cards, the heavy sticker outline on the logo, the green status dot. */
+.tile-cat,.tile .view{display:none}
+.card>.ico{background:none!important;width:auto;height:auto;margin-bottom:12px;place-items:start}
+.logo{text-shadow:none}
+.status i{background:var(--ink-soft)}
+.filters button.active{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.lb-nav button:hover,.lb-close:hover{background:var(--side);color:var(--ink)}
+input:focus,select:focus,textarea:focus{box-shadow:none;border-color:var(--ink)}
+.nav a::after,.cats button::after{height:1.5px}
+.card .more .ico{width:1.1em;height:1.1em}
+
+/* S3: Ekky's lettering replaces a heading's look, never its text (still read out and selectable); photo slot in About */
+.has-hand{color:transparent!important;-webkit-text-stroke:0;text-shadow:none;background:left center/contain no-repeat;min-height:1.2em}
+.about-photo[hidden]{display:none}
+.about-photo{grid-column:1;max-width:260px;transform:rotate(-1.5deg);background:var(--card);padding:8px 8px 28px;box-shadow:var(--paper-shadow)}
+.about-photo img{width:100%;height:auto;display:block}
+
+/* ===== S4, real-phone polish =====
+   Every element toggled with `hidden` stays hidden, whatever display a class gives it; no double-tap zoom on controls;
+   every control at least 44 x 44 px. */
+[hidden]{display:none!important}
+a,button,input,select,textarea,label,[role=switch],[role=button]{touch-action:manipulation}
+.mail a{display:inline-flex;align-items:center;min-height:44px}
+.copy{min-height:44px;min-width:44px;display:inline-flex;align-items:center}

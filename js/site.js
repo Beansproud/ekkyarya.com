@@ -48,6 +48,16 @@ function heroArt(){if(document.body.classList.contains("game-mode"))return;const
 setTimeout(heroArt,0);document.addEventListener("click",e=>{if(e.target.closest("[data-classic]"))setTimeout(heroArt,0)});
 /* ===== Feature switches: entry points of a switched-off feature disappear (js/features.js) ===== */
 document.querySelectorAll("[data-feature]").forEach(el=>{if(!feature(el.dataset.feature))el.remove()});
+// S3: Ekky's hand lettering and his photo, each behind a switch that stays off until the files arrive. Only files listed
+// in assets/hand/index.json are ever requested (no 404s, no broken images). A word may have an Indonesian version,
+// "<word>-id.png"; the English lettering shows only in English. The heading keeps its text as the accessible name.
+if(feature("handLettering")||feature("aboutPhoto"))fetch("assets/hand/index.json").then(r=>r.ok?r.json():[]).catch(()=>[]).then(have=>{
+  if(!Array.isArray(have))return;
+  if(feature("handLettering"))document.querySelectorAll("[data-hand]").forEach(el=>{
+    const w=el.dataset.hand,f=have.includes(w+"-"+LANG+".png")?w+"-"+LANG+".png":LANG==="en"&&have.includes(w+".png")?w+".png":"";
+    if(f){el.style.backgroundImage=`url("assets/hand/${f}")`;el.classList.add("has-hand")}});
+  const fig=document.querySelector(".about-photo");
+  if(fig&&feature("aboutPhoto")&&have.includes("ekky.jpg")){fig.querySelector("img").src="assets/hand/ekky.jpg";fig.querySelector("img").alt=t("about.title");fig.hidden=false}});
 
 /* ===== Procedural placeholder art ===== */
 function rng(seed){return()=>((seed=Math.imul(seed^seed>>>15,seed|1)+0x6D2B79F5|0,(seed^seed>>>13)>>>0)%1e4)/1e4}
@@ -152,14 +162,14 @@ lb.addEventListener("keydown",e=>{if(e.key==="ArrowRight")step(1);if(e.key==="Ar
     el.textContent=words[w].slice(0,c)||"\u200b";setTimeout(tick,del?55:95)})();
 })();
 
-/* ===== Reveal, active nav, progress, to-top ===== */
+/* ===== Reveal, active nav, to-top ===== */
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.12});
 document.querySelectorAll(".reveal").forEach((el,i)=>{el.style.transitionDelay=(i%4)*70+"ms";io.observe(el)});
 const navLinks=[...document.querySelectorAll(".nav a")];
 const spy=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)navLinks.forEach(a=>a.classList.toggle("active",a.hash==="#"+e.target.id))}),{rootMargin:"-45% 0px -50% 0px"});
 ["about","services","work","contact"].forEach(id=>spy.observe(document.getElementById(id)));
-const prog=document.getElementById("progress"),toTop=document.getElementById("toTop");
-addEventListener("scroll",()=>{const h=document.documentElement;prog.style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100+"%";toTop.classList.toggle("show",h.scrollTop>600)},{passive:true});
+const toTop=document.getElementById("toTop");
+addEventListener("scroll",()=>toTop.classList.toggle("show",document.documentElement.scrollTop>600),{passive:true});
 toTop.onclick=()=>scrollTo({top:0,behavior:"smooth"});
 
 /* ===== Mobile menu ===== */
@@ -215,14 +225,6 @@ stars.innerHTML=Array.from({length:40},()=>{const sz=2+Math.random()*4;
 // marquee
 const words=["Illustration","Character Design","Mascots","Branding","Web & UI","Social Media","Stickers","Picture Books"];
 // the services ticker only moves while it is on screen (the hero keeps a single loop)
-{const m=document.querySelector(".marquee");if(m)new IntersectionObserver(es=>es.forEach(e=>m.classList.toggle("in-view",e.isIntersecting))).observe(m)}
-document.getElementById("marq").innerHTML=[...words,...words].map(w=>`<span>${w}${ico("s-sparkle","ico sep")}</span>`).join("");
-// custom cursor
-if(fine&&!reduce){const c=document.getElementById("cursor"),d=document.getElementById("cursorDot");let x=0,y=0,cx=0,cy=0;
-  addEventListener("mousemove",e=>{x=e.clientX;y=e.clientY;d.style.transform=`translate(${x}px,${y}px)`});
-  (function loop(){cx+=(x-cx)*.18;cy+=(y-cy)*.18;c.style.transform=`translate(${cx}px,${cy}px)`;requestAnimationFrame(loop)})();
-  document.addEventListener("mouseover",e=>c.classList.toggle("big",!!e.target.closest("a,button,.tile,input,select,textarea")));
-}else{document.getElementById("cursor").remove();document.getElementById("cursorDot").remove()}
 // B39: decorative motion removed (parallax, magnetic buttons, 3D tilt, click sparkles); hover keeps calm CSS transitions
 // stagger chips
 document.querySelectorAll(".chip").forEach((c,i)=>c.style.animationDelay=i*60+"ms");

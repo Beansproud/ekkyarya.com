@@ -56,9 +56,7 @@
   <symbol id="s-sparkle" viewBox="0 0 24 24"><path d="M12 1.5c.9 6.4 4.1 9.6 10.5 10.5-6.4.9-9.6 4.1-10.5 10.5-.9-6.4-4.1-9.6-10.5-10.5C7.9 11.1 11.1 7.9 12 1.5z" fill="currentColor"/></symbol>
 </svg>
 <div class="loader" id="loader" aria-hidden="true"><div><div class="logo"><img class="logo-img" src="assets/logo.png" alt="Ekky Arya" onload="this.parentElement.classList.add('has-img')" onerror="this.remove()"><span class="logo-text">EKKY<br>AR<span class="y">Y</span>A</span></div><div class="dots"><i></i><i></i><i></i></div></div></div>
-<div class="cursor" id="cursor"></div><div class="cursor-dot" id="cursorDot"></div>
 <a class="skip" href="#main">Skip to content</a>
-<div class="progress" id="progress"></div>
 
 <!-- Mobile top bar -->
 <header class="topbar">
@@ -112,7 +110,7 @@
   <section class="section hero" id="home">
     <div class="stars" id="stars"></div>
     <div class="reveal">
-      <p class="eyebrow" data-t="hero.eyebrow">Hi!</p>
+      <p class="eyebrow" data-t="hero.eyebrow" data-hand="hi">Hi!</p>
       <h1><span class="split" data-t="hero.name">I'm Ekky</span> <span class="wave" aria-hidden="true"><img src="assets/ui/ekky.png" alt=""></span></h1>
       <p class="roles" data-t="start.roleLong">Character illustrator and graphic designer</p>
       <p class="typed hero-joke" data-t="hero.title">I draw characters that make people smile. The warm kind, not the uncanny-valley kind.</p>
@@ -198,21 +196,21 @@
         <svg viewBox="0 0 80 80"><path d="M40 68S10 50 10 30a15 15 0 0 1 30-6 15 15 0 0 1 30 6c0 20-30 38-30 38z" fill="#FF9C9C" stroke="#2B1342" stroke-width="4" stroke-linejoin="round"/></svg>
       </div>
     </div>
-    <div class="feat-strip reveal"><p class="eyebrow" data-t="hero.selected">Selected work</p><div class="feat-row" id="featStrip"></div></div>
+    <div class="feat-strip reveal"><p class="eyebrow" data-t="hero.selected" data-hand="selected-work">Selected work</p><div class="feat-row" id="featStrip"></div></div>
   </section>
 
   <!-- ABOUT -->
-  <div class="marquee" aria-hidden="true"><div class="track" id="marq"></div></div>
   <div class="doodle-rule" aria-hidden="true"><img src="assets/ui/cat.png" alt="" width="44" height="44" loading="lazy" decoding="async"></div>
   <section class="section about" id="about">
     <div class="blob" aria-hidden="true"></div>
-    <div class="about-title reveal"><h2 class="h2" data-t="about.title">About Me</h2></div>
+    <div class="about-title reveal"><h2 class="h2" data-t="about.title" data-hand="about">About Me</h2></div>
     <div class="reveal">
       <p data-t="about.body">Ekky is a character illustrator from Indonesia.</p>
       <ul class="facts"><li data-t="about.fact.from"></li><li data-t="about.fact.lang"></li><li data-t="about.fact.hours"></li><li data-t="about.fact.price"></li></ul>
       <p class="worked" data-t="about.workedWith"></p>
       <p class="tools" data-t="about.tools"></p>
     </div>
+    <figure class="about-photo" data-feature="aboutPhoto" hidden><img alt="" width="480" height="600" loading="lazy" decoding="async"></figure>
   </section>
 
   <!-- SERVICES -->
@@ -243,7 +241,7 @@
   <div class="doodle-rule" aria-hidden="true"><img src="assets/ui/palette.png" alt="" width="44" height="44" loading="lazy" decoding="async"></div>
   <section class="section" id="work">
     <div class="work-head">
-      <div><p class="eyebrow reveal" data-t="hero.selected">Selected work</p><h2 class="h2 reveal" data-t="nav.portfolio">Portfolio</h2></div>
+      <div><p class="eyebrow reveal" data-t="hero.selected">Selected work</p><h2 class="h2 reveal" data-t="nav.portfolio" data-hand="work">Portfolio</h2></div>
       <div class="filters reveal" id="filters" role="tablist" aria-label="Filter projects">
         <button class="active" data-filter="all" data-t="filter.all">All</button>
         <button data-filter="illustration" data-t="filter.illustration">Illustration</button>
@@ -272,7 +270,7 @@
   <div class="doodle-rule" aria-hidden="true"><img src="assets/ui/planet.png" alt="" width="44" height="44" loading="lazy" decoding="async"></div>
   <section class="section contact" id="contact">
     <div class="reveal">
-      <h2 class="h2" data-t="contact.title">Got an idea? Let's bring it to life.</h2>
+      <h2 class="h2" data-t="contact.title" data-hand="hire-me">Got an idea? Let's bring it to life.</h2>
       <p class="lead" data-t="contact.body">Tell me a little about your project and I'll get back to you soon.</p>
       <div class="mail"><a id="mailLink" href="#"></a><button class="copy" id="copyMail" data-t="hire.copy">Copy</button></div>
     </div>
@@ -307,23 +305,16 @@
   <div class="g-sky" id="gSky"></div>
   <div class="g-planet-bg"></div>
 
-  <header class="g-hud">
-    <div class="g-avatar"><img src="assets/ui/ekky.png" alt=""></div>
-    <div class="g-player"><b data-t="map.title"></b><small data-t="hud.role"></small></div>
-    <button class="g-round" id="gSnd" data-feature="sound" data-t-aria="mine.sound" aria-pressed="false"><svg class="ico on" aria-hidden="true"><use href="#i-sound"/></svg><svg class="ico off" aria-hidden="true"><use href="#i-mute"/></svg></button>
-    <button class="g-hire" data-hire data-t-aria="hire.chip.aria"><img src="assets/ui/monster-head.png" alt=""><span data-t="hire.chip"></span></button>
-  </header>
 
   <section class="g-screen g-start active" id="g-start">
     <div class="g-start-head"><img class="g-logo" src="assets/logo.png" alt="Ekky Arya" onerror="this.outerHTML='<div class=&quot;g-logo-text&quot;>EKKY<br>ARYA</div>'">
-      <p class="g-tagline" data-t="start.tagline"></p></div>
-    <div class="g-row-head"><h2 class="g-row-title" data-t="start.featured"></h2><p class="g-hint"><span><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span data-tt="start.hint.view|View"></span></span><span data-feature="artDownload"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg><span data-tt="start.hint.save|Save"></span></span></p></div>
+      <div><h1 class="g-start-title" data-t="map.title"></h1><p class="g-tagline" data-t="start.tagline"></p></div></div>
+    <div class="g-row-head"><h2 class="g-row-title" data-t="start.featured" data-hand="selected-work"></h2><p class="g-hint"><span><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span data-tt="start.hint.view|View"></span></span><span data-feature="artDownload"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg><span data-tt="start.hint.save|Save"></span></span></p></div>
     <div class="g-featured" id="gFeatured"></div>
     <div class="g-tiles">
-      <button class="g-tile" data-go="color"><img src="assets/ui/pen-hand.png" alt=""><span data-t="start.color"></span></button>
-      <button class="g-tile catch" data-arcade data-feature="starCatcher"><img src="assets/ui/helmet.png" alt=""><span data-t="start.catch"></span></button>
+      <button class="g-tile" data-go="color"><img src="assets/ui/pen-hand.png" alt=""><span data-t="start.color" data-hand="color"></span></button>
+      <button class="g-tile catch" data-arcade data-feature="starCatcher"><img src="assets/ui/helmet.png" alt=""><span data-t="start.catch" data-hand="catch-stars"></span></button>
       <button class="g-tile patrol" data-patrol data-feature="paintPatrol"><img src="assets/sprites/hero-desk.png" alt=""><span data-tt="start.patrol|Paint Patrol"></span></button>
-      <button class="g-tile explore" data-go="map"><img src="assets/ui/planet.png" alt=""><span data-t="start.explore"></span></button>
     </div>
     <div class="g-start-foot"><button class="g-classic" data-classic data-t="start.classic"></button><div class="lang-switch" role="group" data-t-aria="lang.label"><button data-lang="en">EN</button><button data-lang="id">ID</button></div></div>
   </section>
@@ -359,6 +350,7 @@
     <button data-tab="art"><span class="g-ico"><img src="assets/ui/palette.png" alt=""></span><span data-t="tab.art"></span></button>
     <button data-tab="map" class="center"><img class="g-face" src="assets/face.png" alt=""><small data-tt="tab.map|Map"></small></button>
     <button data-tab="mine"><span class="g-ico g-ico-line"><svg class="ico" aria-hidden="true"><use href="#i-frame"/></svg></span><span data-t="tab.mine"></span></button>
+    <button data-tab="hire" class="g-tab-hire" data-t-aria="hire.chip.aria"><span class="g-ico"><img src="assets/ui/monster-head.png" alt=""></span><span data-t="hire.chip"></span></button>
   </nav>
 
   <div class="g-sheet" id="gSheet"><div class="g-sheet-in" role="dialog" aria-modal="true" aria-labelledby="gSheetTitle"><div class="g-grab"></div><button class="g-x" id="gSheetX" data-tta="ui.close|Close"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button><div id="gSheetBody"></div></div></div>
