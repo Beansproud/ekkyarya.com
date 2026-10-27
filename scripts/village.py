@@ -197,6 +197,8 @@ def build():
 
     # one rule for every label: centred just under its own place, so labels never sit on a character
     labels = {k: ((b[0] + b[2]) / 2, b[3] + 4) for k, b in places.items()}
+    for k in ("studio", "observatory"):   # Director: 8 px lower, so these labels sit in front of the place, not on a face
+        labels[k] = (labels[k][0], labels[k][1] + 8)
     labels["gallery"] = (532, 516)   # the gallery's place box includes its whole block; its label goes under the front corner
     for k, box in places.items():
         out["places"][k] = dict(box=[box[0] - ox, box[1] - oy, box[2] - ox, box[3] - oy], label=[labels[k][0] - ox, labels[k][1] - oy])
