@@ -1,4 +1,7 @@
 // Desktop portfolio: gallery, lightbox, menus, theme, contact form and motion. Its globals (catImg, ico, uiImg, artOf, show, say, confetti, reduce) are used by js/game.js.
+/* ===== Feature switches: entry points of a switched-off feature disappear (js/features.js) ===== */
+document.querySelectorAll("[data-feature]").forEach(el=>{if(!feature(el.dataset.feature))el.remove()});
+
 /* ===== Procedural placeholder art ===== */
 function rng(seed){return()=>((seed=Math.imul(seed^seed>>>15,seed|1)+0x6D2B79F5|0,(seed^seed>>>13)>>>0)%1e4)/1e4}
 function makeArt(p){
@@ -19,6 +22,8 @@ function makeArt(p){
 // A project with `img` shows that file; if it fails to load, the drawn placeholder takes its place.
 function artOf(p,big){return p.img?`<img src="${big&&p.full||p.img}" alt="${p.title}" loading="lazy" decoding="async" onload="this.classList.add('ok')" onerror="this.outerHTML=makeArt(PROJECTS[${PROJECTS.indexOf(p)}])">`:makeArt(p)}
 const catImg=(c,cls="cat-ico")=>`<img class="${cls}" src="${CAT_ICON[c]}" alt="">`;
+// "Fan art", "Client: X" ... from PROJECTS; Ekky's own pieces have no tag.
+const tagOf=p=>p.label?`<span class="tag">${p.label}</span>`:"";
 // Icons: ico() uses the inline SVG set in index.html (i-* line icons, s-* palette shapes); uiImg() uses a cut-out from assets/ui/.
 const ico=(id,cls="ico")=>`<svg class="${cls}" aria-hidden="true"><use href="#${id}"/></svg>`;
 const uiImg=(name,cls="b-ico")=>`<img class="${cls}" src="assets/ui/${name}.png" alt="">`;
@@ -27,7 +32,7 @@ const uiImg=(name,cls="b-ico")=>`<img class="${cls}" src="assets/ui/${name}.png"
 const grid=document.getElementById("grid");
 grid.innerHTML=PROJECTS.map((p,i)=>`<button class="tile reveal" data-cat="${p.cat}" data-i="${i}">
   <span class="tile-cat">${catImg(p.cat,"")}</span><div class="art">${artOf(p)}</div><span class="view">View</span>
-  <div class="meta"><small>${CAT_NAME[p.cat]}</small><h3>${p.title}</h3></div></button>`).join("");
+  <div class="meta"><small>${CAT_NAME[p.cat]}</small><h3>${p.title}</h3>${tagOf(p)}</div></button>`).join("");
 
 document.querySelectorAll("#filters [data-filter],#sideCats [data-filter]").forEach(b=>b.insertAdjacentHTML("afterbegin",catImg(b.dataset.filter)));
 document.querySelectorAll(".card[data-jump] .ico").forEach(i=>i.innerHTML=catImg(i.parentElement.dataset.jump,""));
@@ -47,6 +52,11 @@ document.querySelectorAll("#sideCats button,[data-jump]").forEach(b=>b.addEventL
   document.getElementById("work").scrollIntoView({behavior:"smooth"});
 }));
 
+/* ===== Selected work: the featured six under the hero (B08) ===== */
+document.getElementById("featStrip").innerHTML=PROJECTS.map((p,i)=>({p,i})).filter(x=>x.p.featured).sort((a,b)=>a.p.featured-b.p.featured)
+  .map(({p,i})=>`<button class="feat" data-i="${i}"><img src="${p.img}" alt="" loading="lazy" decoding="async"><span>${p.title}</span></button>`).join("");
+document.getElementById("featStrip").addEventListener("click",e=>{const b=e.target.closest(".feat");if(b)show(+b.dataset.i)});
+
 /* ===== Lightbox ===== */
 const lb=document.getElementById("lightbox");let cur=0;
 function visible(){return [...grid.querySelectorAll(".tile:not(.hide)")].map(t=>+t.dataset.i)}
@@ -55,12 +65,18 @@ function show(i){cur=i;const p=PROJECTS[i];
   document.getElementById("lbCat").innerHTML=catImg(p.cat,"")+CAT_NAME[p.cat];
   document.getElementById("lbTitle").textContent=p.title;
   document.getElementById("lbDesc").textContent=p.desc||"";
+  const tag=document.getElementById("lbTag");tag.textContent=p.label||"";tag.hidden=!p.label;
+  document.getElementById("lbHire").textContent=t("lb.hire");
   if(!lb.open)lb.showModal();}
 function step(d){const v=visible(),k=v.indexOf(cur);show(v[(k+d+v.length)%v.length])}
 grid.addEventListener("click",e=>{const t=e.target.closest(".tile");if(t)show(+t.dataset.i)});
 document.getElementById("lbPrev").onclick=()=>step(-1);
 document.getElementById("lbNext").onclick=()=>step(1);
 document.getElementById("lbClose").onclick=()=>lb.close();
+// Hire from the lightbox: prefill "I saw <title>". Game mode opens its Final Quest sheet over the lightbox's screen.
+document.getElementById("lbHire").onclick=()=>{const note=t("lb.hire.prefill",{title:PROJECTS[cur].title});lb.close();
+  if(document.body.classList.contains("game-mode")&&window.openHire)return openHire(note);
+  const m=document.querySelector("#form [name=message]");m.value=note;document.getElementById("contact").scrollIntoView({behavior:"smooth"});setTimeout(()=>m.focus({preventScroll:true}),600)};
 lb.addEventListener("click",e=>{if(e.target===lb)lb.close()});
 lb.addEventListener("keydown",e=>{if(e.key==="ArrowRight")step(1);if(e.key==="ArrowLeft")step(-1)});
 
@@ -110,8 +126,11 @@ document.getElementById("themeToggle").onclick=()=>{const t=isDark()?"light":"da
 const toast=document.getElementById("toast");
 function say(m,icon){toast.textContent=m;if(icon)toast.insertAdjacentHTML("afterbegin",ico(icon));toast.classList.add("show");clearTimeout(say.t);say.t=setTimeout(()=>toast.classList.remove("show"),2400)}
 const mail=document.getElementById("mailLink");mail.textContent=CONFIG.email;mail.href="mailto:"+CONFIG.email;
-document.querySelectorAll("[data-link]").forEach(a=>a.href=CONFIG.links[a.dataset.link]);
-document.getElementById("copyMail").onclick=async()=>{try{await navigator.clipboard.writeText(CONFIG.email);say("Email copied","i-check")}catch{say(CONFIG.email)}};
+// B15 safe default: a placeholder email or a link to a bare home page (no profile path) stays hidden until CONFIG is filled in.
+const realLink=u=>{try{return new URL(u).pathname.replace(/\/+$/,"").length>0}catch{return false}};
+document.querySelectorAll("[data-link]").forEach(a=>{const u=CONFIG.links[a.dataset.link];if(realLink(u))a.href=u;else a.remove()});
+if(/example\.com$/i.test(CONFIG.email)){document.querySelector(".mail").remove();document.querySelector('.socials a[href="#contact"]')?.remove()}
+const copyMail=document.getElementById("copyMail");if(copyMail)copyMail.onclick=async()=>{try{await navigator.clipboard.writeText(CONFIG.email);say("Email copied","i-check")}catch{say(CONFIG.email)}};
 document.getElementById("form").addEventListener("submit",e=>{e.preventDefault();const f=e.target;let ok=true;
   f.querySelectorAll("[required]").forEach(i=>{const err=i.parentElement.querySelector(".err");
     const msg=i.validity.valueMissing?"This one's needed":i.validity.typeMismatch?"Hmm, that email looks off":i.validity.tooShort?"A few more words, please":"";
