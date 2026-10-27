@@ -703,3 +703,6 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 #gMapListBtn,.g-vcard .g-btn,.g-villager-art{min-height:44px;min-width:44px}
 .v-map .v-label{pointer-events:auto}
 .v-label::after{content:"";position:absolute;left:50%;top:50%;width:max(100%,44px);height:44px;transform:translate(-50%,-50%)}
+/* Developer 2 */
+.c-page:not(.c-scratch) b{color:#FFF}   /* the page name sat dark-on-dark under the picture (inherited the ink color) */
+#gPatrol:has(.pp-end:not([hidden])) .pp-hint{display:none}   /* the hint ran behind the end-screen buttons */
