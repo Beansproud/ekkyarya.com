@@ -235,6 +235,35 @@ Not in the village or the games: the 8 fan-art pieces (never), and the client pi
 ### One-line pitch
 Ride through Ekky's illustrations as **Ekky himself** on his desk chair, paint every grey doodle monster back into color, ride the Broken-Down Bus, and color in four big bosses.
 
+### Vertical slice scope (MG1 + MG3): build this first
+Set by the Game Director on 2026-10-27, on the owner's request to speed up: **one screen, one minute of play, Ekky's art only.** Everything not listed here is out of the slice.
+
+| Item | Slice |
+|---|---|
+| Screen | **One fixed screen, no scrolling.** Landscape 16:9 logical stage (960 x 540, scaled to fit). In portrait: the "Turn your phone sideways" card with "Play anyway" (letterboxed). |
+| Backdrop | **Coexistence** only: one horizontal band of the street (the bench and the bus-stop sign at the right, the brick wall behind), cropped from `assets/work/coexistence.jpg` as drawn, plus one plain ground strip in his palette. One extra parallax layer is optional, not required. |
+| Hero | **Ekky on his desk chair**, one cut from Little Planet (`little-planet`, the glasses guy with the chair and desk, without the moon). Paper-puppet motion only: a 700 ms bob while moving, a 4 degree lean, a 6 % squash before a jump. Paint comes from his stylus. |
+| Friends to paint | 4 kinds, all existing cut-outs in `assets/sprites/` and `assets/ui/`: `virus` (Virus and War, floats in a slow sine), `orange-monster`, `blob` and `pickle` (Monster World Doodles, walk in). Grey-tinted until painted. 3 hits each; painted, a friend turns full color, hops once and walks off. |
+| The grumpy friend | **The green one-eyed monster from Monster in My Room**, one new full-body cut (`monster`; the head is already cut). It appears at 40 s, slowly swings its hammer (800 ms wind-up before every swing, a swing every 3 s), and has a color meter. 30 hits calm it. **No fail:** the meter also fills by itself at 2 % per second, so the monster always calms down by about 80 s at worst. On screen it is never called a boss. |
+| Controls | Phone: drag on the left half to move (a thumb stick appears under the finger), tap the right half to jump. **Painting is automatic** (4 blobs per second, forward). Desktop: arrows or A/D, Space to jump. One hint, once, 4 s: "Drag to move, tap to jump. Painting is automatic." |
+| Rules | No lives, no score, no timer on screen, no game over. A touch from a friend means 120 px of knockback, a paint splash on the chair and 0.8 s of invulnerability. No power-ups, no bus, no allies in the slice. |
+| Pacing (one minute) | 0 to 5 s: the hint and 2 slow viruses. 5 to 40 s: a wave of 2 to 4 friends every 4 s from both sides, at most 5 on screen. 40 s: the green monster walks in, and the waves pause. About 60 s: the monster calms down. |
+| End | The monster calms down, everyone on screen dances once (1 s), then **Coexistence fades in full screen** (1.4 s, from 96 % to 100 %) with its title, one line from `pdesc`, "See it in the portfolio" (the lightbox), "Play again", "Something else" and the Hire chip. |
+| Sound | Sound effects only, from the existing synth: paint pop, friend hop, jump, monster calm-down chime. Off by default on the web. |
+| Motion | B39 tokens: no overshoot. Reduced motion: no bob, lean, squash or shake; fades only; the stage still plays. |
+| Code | `js/patrol.js` (engine loop, input, puppet animator, stage), loaded on demand. Behind `FEATURES.paintPatrol` (on for testing, off in production until the MG4 go). Entry: a start-screen tile "Paint Patrol" and, while the switch is on, the village bus stop. Pause on `visibilitychange`, and an Esc / pause button with Hire. |
+| Not in the slice | Scrolling, stages 2 to 4, the bus, power-ups, allies, the other grumpy friends, credits, deep links, share card. |
+
+**Acceptance (MG3):**
+- On the iPhone 13 in landscape, a first-time tester finishes in 50 to 80 s without help and can't lose.
+- At least 5 of Ekky's characters are visible within 30 s.
+- The monster telegraphs every swing for at least 800 ms.
+- The end screen shows Coexistence and opens it in the lightbox. Hire is one tap from pause and from the end.
+- 60 fps at 4x CPU slowdown. 0 console errors. `npm run check` passes (only `kind: "original"` art in `js/patrol.js` and `assets/sprites/`).
+- No franchise name and no "boss" anywhere in the product.
+
+**New cuts needed:** 2 (Ekky on the chair with the desk; the full green monster), plus the Coexistence street band.
+
 ### Why this genre fits a portfolio
 - His big scenes (Coexistence, Broken-Down Bus, Monster Snack Bar, Buried at the Beach) are already wide, layered and full of characters. They become parallax stage backgrounds almost as they are.
 - His monsters (Monster World Doodles, Monster Snack Bar, Virus and War, Monster in My Room, Year of the Tiger, Big Catch, Boss Fight) are a ready-made cast of enemies and bosses.
