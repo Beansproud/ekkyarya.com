@@ -45,6 +45,9 @@ for (const f of [...ui, ...iconSources]) {
       if (/^\s*const PROJECTS\s*=\s*\[/.test(line)) inProjects = true;
       if (inProjects) { if (/^\s*\];/.test(line)) inProjects = false; return; }
     }
+    // sticker sources (from:"slug") and coloring pages (slug:"slug") in the game code
+    for (const m of line.matchAll(/\b(?:from|slug):"([a-z0-9-]+)"/g))
+      if (SHAREABLE.get(m[1]) !== true) problems.push(`${at}  sticker or coloring page from "${m[1]}", which is not shareable`);
     for (const m of line.matchAll(WORK))
       if (SHAREABLE.get(m[1]) !== true) problems.push(`${at}  "${m[1]}" is not shareable (CONFIG.reuse / reuseBlock in js/data.js), so it can't be an icon, sticker or UI art`);
     for (const m of line.matchAll(SLUG))

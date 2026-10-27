@@ -44,7 +44,7 @@ $("gSky").innerHTML=Array.from({length:60},()=>{const s=1+Math.random()*3;
 /* ---- screens and tabs ---- */
 let screen="start";
 function go(to){
-  if(to==="color")return window.Color?Color.openPicker():null;
+  if(to==="color")return typeof Color!=="undefined"?Color.openPicker():null;
   if(to==="hire")return openHire();
   screen=to;G.classList.toggle("at-start",to==="start");
   G.querySelectorAll(".g-screen").forEach(s=>s.classList.toggle("active",s.id==="g-"+to));
@@ -157,7 +157,7 @@ function renderMine(){
   if($("gBest"))$("gBest").innerHTML=st.best?`${ico("s-star")} ${st.best}`:esc(t("mine.best.none"));
   syncToggles();
 }
-$("gMineList").addEventListener("click",e=>{const b=e.target.closest("[data-page]");if(b&&window.Color)Color.open(b.dataset.page)});
+$("gMineList").addEventListener("click",e=>{const b=e.target.closest("[data-page]");if(b&&typeof Color!=="undefined")Color.open(b.dataset.page)});
 function syncToggles(){
   [$("gSnd"),$("gSndSwitch")].forEach(b=>{if(!b)return;b.classList.toggle("on",st.snd);b.setAttribute(b.id==="gSnd"?"aria-pressed":"aria-checked",st.snd)});
   $("gVib").classList.toggle("on",st.vib);$("gVib").setAttribute("aria-checked",st.vib)}

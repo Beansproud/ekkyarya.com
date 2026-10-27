@@ -35,7 +35,7 @@ grid.innerHTML=PROJECTS.map((p,i)=>`<button class="tile reveal" data-cat="${p.ca
   <div class="meta"><small>${CAT_NAME[p.cat]}</small><h3>${p.title}</h3>${tagOf(p)}</div></button>`).join("");
 
 document.querySelectorAll("#filters [data-filter],#sideCats [data-filter]").forEach(b=>b.insertAdjacentHTML("afterbegin",catImg(b.dataset.filter)));
-document.querySelectorAll(".card[data-jump] .ico").forEach(i=>i.innerHTML=catImg(i.parentElement.dataset.jump,""));
+document.querySelectorAll(".card[data-jump] > .ico").forEach(i=>i.innerHTML=catImg(i.parentElement.dataset.jump,""));
 let shown=12;
 function setFilter(f,keep){
   if(!keep)shown=12;setFilter.cur=f;let n=0;
