@@ -507,6 +507,47 @@ Owner DIRECTOR · Size S · R1 must-have, last · Depends: B03 to B18
 
 ---
 
+## Playtest r1a fixes (UX lead ranking, hiring-client view)
+
+Source: `docs/playtest-r1a.md` (Director, build `abedf97`): "Simple: yes. Fun: not yet." Both scorecard checks failed. The Director's fix list is accepted, re-ranked by what a person deciding to hire Ekky meets first. Numbers in brackets are the Director's.
+
+| Rank | Fix | Why first |
+|---|---|---|
+| 1 | **Hire Ekky tappable on every sheet** [1]: the sheet backdrop starts below the HUD; "Who is Ekky?" and "Doodle to Done" end with their own button (`sheet.hire`: "Like what you see? Hire Ekky"). | The client is most ready to hire right after "Who is Ekky?". Scorecard row. |
+| 2 | **Six artworks at once** [2]: a 3 x 2 grid of `featuredPick(6)` (random on every visit, owner direction 8), titled with `start.featured` ("A few of Ekky's drawings"), **not** "Ekky's favorites" (the owner said not to curate a best set). Logo about 84 px. Static. | The art is the point. Scorecard row. |
+| 3 | **The broken `undefined` image** (4x in `svg.ico`): fix it. | A console error fails gate G2 on every screen. |
+| 4 | **No "BOSS LEVEL" tag** [6]: no tag at all on Final Quest. | Owner direction. |
+| 5 | **HUD role line cut off** [7]: use `hud.role` ("Character Illustrator" / "Ilustrator Karakter"); it fits at 390 px. | A truncated job title next to the hire button looks careless. |
+| 6 | **Calm motion** [4, 10, and the motion table]: no overshoot curve anywhere, at most one decorative endless loop per screen besides the sky, the countdown and result fades as proposed. Also the desktop hero (12 loops at once), as part of B39. | Owner direction; on desktop it is the first thing a client sees. |
+| 7 | **Star Catcher retune** [3]: the Director's `BALANCE`. | Fun: input must matter. |
+| 8 | **Mine reset reachable** [8], **pause bug** [9], **dead CSS** [11]. | Polish and fairness. |
+| 9 | **Village map** [5]: B42 below, after ranks 1 to 8. | Large; the fixes above come first. |
+
+**Acceptance for the fixed build (r1b), checked by UX on the capture script and the probe:**
+- iPhone 13 (390 x 664): within 2 s of load, 6 artwork thumbnails are fully on screen with no swipe; two reloads show different sets; each opens the lightbox; no fan-art piece ever appears there.
+- Desktop 1440 x 900: the strip of 6 is above the fold.
+- Hire Ekky opens the Hire sheet in one tap from every screen and sheet (probe: the chip is the topmost element at its center everywhere except the countdown and live play); "Who is Ekky?" and "Doodle to Done" also have their own button.
+- No visible text contains "boss" (EN and ID); the HUD role line is not truncated at 390 px.
+- 0 console errors and 0 failed requests on every captured screen.
+- No `cubic-bezier` with a y value above 1 in `css/` or `js/`; at most one decorative endless loop visible per screen besides the sky; with reduced motion, nothing moves except fades.
+- Star Catcher: a 50-round idle simulation averages 12 or less; casual 30 to 55.
+- "Clear what I made" is tappable without scrolling under the tab bar; a hidden tab never resumes play by itself.
+- `npm run check` passes.
+
+### B42. Little Planet Town: the isometric village map (approved by UX, with changes)
+Owner DEV (engine), UX (names and labels, done in `COPY`: `town.*`), DIRECTOR (layout and motion review) · Size L (6 to 8 h) · Next map work, after the r1a fixes · Replaces the node list in B06 · From: owner directions "make the map like this so no bossfight", "make the map isomoprihc like this" and "but with animation and re-createfd with his asset" (reference screenshot: mood only), "re-use all of asset of his as much as possible"
+- **Spec:** the Director's "Little Planet Town" in `docs/playtest-r1a.md`, with these UX changes:
+  1. **Nothing copied from the reference game:** no building designs, textures, characters, resource bars, build menus, layout or color scheme. Buildings are plain isometric blocks in Ekky's palette, marked by his cut-outs. The reference screenshot is never committed to the repo or shipped.
+  2. **Only `village`-role art** (35 pieces): the 29 originals, plus drawn elements of the 6 client pieces listed in `docs/roles.md` (never a logo, wordmark, sign or campaign lettering). Fan art never.
+  3. **The gallery** hangs 4 real pieces on its walls from `featuredPick(4)` (client pieces allowed; their tag shows when opened). Tapping a frame opens that piece.
+  4. **The Hire place is named "Work with Ekky"** (`town.hire`), not "the gate", so a client reads it as the hire action. It sits at the island's edge but on the first screen; the HUD Hire chip stays too.
+  5. **5 of Ekky's characters in the first static frame,** before anything walks: Ekky at his desk, the ghost at the workshop door, the giraffe at the studio fence, the lantern gate's monster head, and at least one walker placed on a path at load. Walkers then move (3 to 5, at most one per path; one may be a client-piece character such as the Indomaret scooter rider).
+  6. **Fast static first frame:** the ground image and the place buttons render first (under 1 s after the map opens, on a 4x CPU slowdown); the walker canvas and the isometric engine load after that, lazily.
+  7. **Fallback:** a "Show places as a list" link (`town.list`) on the map, plus "Just show me the art" on the start screen. Both work with JavaScript animation off.
+  8. **Motion within B39:** walkers 1 tile per 1.6 s; Ekky's chair glide 0.6 to 1.2 s, ease-in-out, and a second tap opens at once; the lantern pulse every 6 s (not 4 s, B39 ambient range); clouds drift 60 s per crossing; that is the one decorative loop besides the sky. Reduced motion: nothing walks or glides, every place opens instantly.
+  9. **No "boss", coins, score, locks or "next" glow.**
+- **Acceptance (UX, hiring-client view):** on the iPhone 13 viewport, all 6 places are visible without panning, each a labeled `<button>` of at least 44 px that opens its content in one tap; at least 5 of Ekky's characters are visible in the first frame, within 30 s of opening; "Work with Ekky" and the HUD chip are both visible without scrolling; the first frame appears in under 1 s at 4x CPU slowdown and runs at 60 fps; place names show in EN and ID; the list fallback works; `npm run check` passes with no fan art and no client logo in `assets/`; a side-by-side review against the reference screenshot finds no copied building, texture, character or layout.
+
 ## Mini-games (after the round-1 P1 tickets)
 
 Approved brief: `docs/minigames.md` (from director/backlog 78699e2; read its "UX lead review" first). Owner direction 14. The vertical slice (MG1 to MG4, about 16 h) runs right after the P1 tickets (B38, B41, B26, B39, B40). MG5 to MG10 (about 30 to 40 h) start only on a "go" from the MG4 playtest **and** the UX lead's acceptance of the slice.
