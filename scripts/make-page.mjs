@@ -31,7 +31,7 @@ const PAGES = {
   // to a fan-art page; Ekky approves the lines first (docs/color-monster-lines.png)
   monster: { slug: "monster", lineMax: 110, inkSoft: 130, crop: [300, 0, 780, 780] },
   "plug-hero": { slug: "plug-hero", lineMax: 110, inkSoft: 130 },
-  "little-planet": { slug: "little-planet", lineMax: 110, inkSoft: 130 },
+  "little-planet": { slug: "little-planet", lineMax: 100, inkSoft: 112 },
   "hands": { slug: "hands", lineMax: 110, inkSoft: 130 },
 };
 const MIN_AREA = 40, COLORS = 12;
