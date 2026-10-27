@@ -360,3 +360,67 @@ dialog[open]{animation:fadeIn var(--dur) var(--ease-in)}
 .split .ch{opacity:1!important;transform:none!important}
 .about .tools{color:var(--muted);margin-top:10px}
 .hero-joke{max-width:30ch;line-height:1.5}
+
+/* ===== S1, the sketchbook look (Ekky: "too jam-packed", "trying too hard", "uncanny valley") =====
+   Off-white paper with a faint grain, art taped on at a fixed tilt (each tile its own angle, never animated),
+   flat paper cards instead of glossy rounded ones, Ekky's own doodles between sections. Fredoka stays. */
+:root{--paper:#FBF7EE;--paper-2:#F3EDDF;--paper-line:#E4DCCB;--tape:rgba(236,224,196,.85);
+  --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .3 0 0 0 0 .2 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --bg:var(--paper);--side:var(--paper-2);--card:#FFFDF8;--line:var(--paper-line)}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){--paper:#1b1722;--paper-2:#221d2a;--paper-line:#3a3346;--tape:rgba(214,200,170,.35);--bg:var(--paper);--side:var(--paper-2);--card:#25202e;--line:var(--paper-line)}
+}
+:root[data-theme="dark"]{--paper:#1b1722;--paper-2:#221d2a;--paper-line:#3a3346;--tape:rgba(214,200,170,.35);--bg:var(--paper);--side:var(--paper-2);--card:#25202e;--line:var(--paper-line)}
+body{background:var(--paper) var(--grain)}
+.sidebar{background:var(--paper-2) var(--grain);border-right:1.5px solid var(--paper-line)}
+.topbar{background:color-mix(in srgb,var(--paper) 92%,transparent)}
+
+/* taped art: a paper print with a strip of tape, a fixed 1 to 2 degree tilt per tile */
+.tile,.feat{--tilt:-1.5deg;border-radius:3px;border:0;background:var(--card);padding:8px 8px 0;overflow:visible;
+  box-shadow:0 1px 0 var(--paper-line),0 2px 6px -3px rgba(60,40,20,.25);transform:rotate(var(--tilt));transition:box-shadow var(--dur-fast)}
+.tile:nth-child(4n+2),.feat:nth-child(4n+2){--tilt:1.2deg}
+.tile:nth-child(4n+3),.feat:nth-child(4n+3){--tilt:-1deg}
+.tile:nth-child(4n+4),.feat:nth-child(4n+4){--tilt:1.8deg}
+.tile:nth-child(5n+1),.feat:nth-child(5n+1){--tilt:-1.8deg}
+.tile::before,.feat::before{content:"";position:absolute;top:-9px;left:50%;width:72px;height:20px;margin-left:-36px;background:var(--tape);
+  transform:rotate(calc(var(--tilt) * -2));box-shadow:0 1px 1px rgba(60,40,20,.12);z-index:3;pointer-events:none}
+.tile:hover,.feat:hover,.tile:focus-visible,.feat:focus-visible{transform:rotate(var(--tilt));box-shadow:0 1px 0 var(--paper-line),0 4px 10px -4px rgba(60,40,20,.35)}
+.tile .art{border-radius:2px}
+.tile:hover .art img,.tile:hover .art svg{transform:none}
+.tile .meta{padding:10px 6px 12px}
+.tile-cat{top:18px;left:18px;box-shadow:none;border:1px solid var(--paper-line);border-radius:50%}
+.tile .view{border-radius:3px}
+.feat img{border-radius:2px}
+.feat span{padding:6px 2px 8px}
+.feat-row{gap:18px;padding-top:10px}
+.grid{gap:30px 26px}
+.art{background:var(--paper-2);animation:none}
+
+/* no glossy cards: flat paper with a pencil edge, nothing lifts */
+.card,form{border-radius:4px;box-shadow:none;border:1.5px solid var(--paper-line);background:var(--card)}
+.card:hover,.step:hover{transform:none;box-shadow:none}
+.card .ico{border-radius:50%}
+.card:hover .ico{transform:none}
+.process-band{border-radius:4px;background:var(--paper-2) var(--grain);border:1.5px dashed var(--paper-line)}
+.btn{border-radius:6px;box-shadow:0 3px 0 #d99400}
+.btn:hover{transform:none;box-shadow:0 3px 0 #d99400}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 #d99400}
+.btn.ghost,.btn.ghost:hover{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.chip,.filters button,.socials a,.tag{border-radius:4px}
+.chip:hover{transform:none}
+.socials a:hover{transform:none}
+.blob,.about-title::before{display:none}
+.stars{display:none}
+.to-top{border-radius:50%;box-shadow:none;border:1.5px solid var(--ink)}
+dialog{border-radius:6px}
+.lb-art{border-radius:6px 6px 0 0}
+.save-media img,.save-media video{border-radius:3px;box-shadow:0 2px 8px -3px rgba(60,40,20,.3)}
+
+/* doodle dividers: one of Ekky's own small doodles between two pencil lines */
+.doodle-rule{display:flex;align-items:center;gap:18px;max-width:560px;margin:0 auto;padding:0 clamp(20px,8vw,150px);box-sizing:content-box}
+.doodle-rule::before,.doodle-rule::after{content:"";flex:1;height:8px;opacity:.55;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='8'%3E%3Cpath d='M0 4c7-3 13-3 20 0s13 3 20 0 13-3 20 0' fill='none' stroke='%239C91BD' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") repeat-x center/60px 8px}
+.doodle-rule img{width:44px;height:44px;object-fit:contain;transform:rotate(-6deg)}
+.doodle-rule:nth-of-type(even) img{transform:rotate(5deg)}
+@media (max-width:980px){.doodle-rule{padding:0 16px}}
+.tile.reveal{transform:rotate(var(--tilt))!important}   /* the quiet pass flattens .reveal; the taped tilt is fixed, not a reveal */
