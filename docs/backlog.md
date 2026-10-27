@@ -622,7 +622,7 @@ Owner DEV (UX copy done) · Size M (3 to 4 h) · **P0, before any new feature** 
 
 Plan: `docs/sprint-6h.md`. Every merge is checked on a phone probe at 360x640 and 390x664 in EN and ID, plus desktop 1440x900. **Always (every merge):** 0 page errors, 0 failed requests, `npm run check` passes, 0 endless animations outside a game in play, no emoji, no fan art outside the portfolio and cards, Hire Ekky one tap from every screen, the first screen shows Ekky's art before anything else, the 5 uncanny-valley lines unchanged, no new copy that isn't in `COPY` (EN and ID).
 
-**UX decision for S2: the phone keeps the bottom tab bar, and the top HUD goes.** The tab bar gets four buttons: Art, Map (the face, in the middle), Mine, and **Hire Ekky** (coral, on the right, always visible). The HUD's sound toggle already lives in Mine; the "Try Ekky" title and the EN/ID switch move onto the start screen and into Mine. Reason: one bar, in thumb reach, with Hire in it on every screen.
+**S2 (owner decision 21:16 UTC, overrides the UX call): "menu bar strictly only 3".** The phone tab bar has exactly three buttons: Art, Map (the face, in the centre) and Mine. Hire Ekky is a small fixed chip at the top right on every screen. The old top HUD (title, sound, avatar) stays gone: the sound toggle lives in Mine, and "Try Ekky" and EN/ID live on the start screen and in Mine.
 
 ### S1. Sketchbook look (Developer B)
 - [ ] Background: off-white paper (#FBF8F1 to #F6F1E6) with a texture that is under 30 KB and under 6 % visible contrast; the night sky stays only in the game and village.
@@ -632,11 +632,11 @@ Plan: `docs/sprint-6h.md`. Every merge is checked on a phone probe at 360x640 an
 - [ ] A side-by-side screenshot (before and after) at 390x664 and 1440x900; UX answers "does it look like one person's sketchbook?" with yes.
 
 ### S2. Fewer layers (Developer B)
-- [ ] Phone: exactly one persistent bar (the bottom tab bar, as decided above); `document.querySelectorAll` finds no fixed or sticky top bar on any game screen.
-- [ ] Hire Ekky is in the tab bar on every screen, topmost at its center, at least 44 x 44 px, and opens the Hire sheet in one tap.
+- [ ] Phone: exactly one bar, the bottom tab bar, with exactly 3 buttons (Art, Map, Mine); no full-width top bar on any screen (the Hire chip is not a bar: at most 140 x 48 px).
+- [ ] The Hire Ekky chip is fixed at the top right on every screen (start, map, Art, Mine, sheets, the coloring screen, Star Catcher results), topmost at its center, at least 44 x 44 px, and opens the Hire sheet in one tap; it never covers a heading, a close button or the art.
 - [ ] Sheets only for Hire, the level sheets and the villager card; nothing else stacks a second overlay.
 - [ ] Desktop: one accent color (yellow #FFB400) for actions; no game-style badges, glows or extra frames; the sidebar keeps the nav, portfolio filters, socials and the EN/ID switch.
-- [ ] The phone start screen goes from 20 to at most 17 visible buttons (-15 %, revised 21:10 with Dev B): the "Try Ekky" title, the 6 drawings with their 6 Save badges (owner), one full-width "Color with Ekky" tile (the share loop stays visible), and the tab bar (Art, Map, Mine, Hire). Catch stars moves to the Map and Mine; "Just the art, please" and EN/ID move to Mine (the Art tab covers "just the art" on the phone).
+- [ ] The phone start screen goes from 20 to at most 17 visible buttons (-15 %, revised 21:10 with Dev B): the "Try Ekky" title, the 6 drawings with their 6 Save badges (owner), one full-width "Color with Ekky" tile (the share loop stays visible), and the tab bar (Art, Map, Mine) plus the Hire chip. Catch stars moves to the Map and Mine; "Just the art, please" and EN/ID move to Mine (the Art tab covers "just the art" on the phone).
 
 ### S3. Handwriting and photo slots (Developer B)
 - [ ] `FEATURES.handLettering` (off): when on, each heading with a `data-hand="<word>"` shows `assets/hand/<word>.png` if it exists, and the heading text stays the accessible name; when off or the file is missing, nothing changes.

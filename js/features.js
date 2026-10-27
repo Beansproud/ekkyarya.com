@@ -25,7 +25,9 @@ const FEATURES = {
 };
 // Playtest override: ?ff=paintPatrol turns an allowlisted switch on for this visit only, so the Director can test a
 // feature on a real phone while it stays off for everyone else. It only turns switches on, never off.
-const PLAYTEST_FF = ["paintPatrol"];   // only these can be switched on by a link; Road Trip and client scenery never
+// Only switches on this list can be turned on from a link; anything waiting for the owner or Ekky (pageRoadTrip,
+// clientScenery, handLettering, aboutPhoto) can never be switched on from a URL.
+const PLAYTEST_FF = ["paintPatrol"];
 try { new URLSearchParams(location.search).getAll("ff").forEach(n => { if (PLAYTEST_FF.includes(n)) FEATURES[n] = true; }); } catch (e) {}
 const feature = name => FEATURES[name] === true;
 // Creative use (icons, stickers, coloring pages, share cards, the featured rows): the piece must be shareable() AND Ekky's
