@@ -126,7 +126,7 @@ Seven **main places** carry an action. Each is a labeled button visible on the f
 | The beach party | Oasis: 2 or 3 party characters, palm trees, cacti, the sun | Client: Fizzy Tube |
 | Ekky's front yard | Save Early, Buy Future: the grandparents on a bench, the graduate, the golden chicken | Client work |
 
-**Open point for the UX lead:** the Village and the Quest are now the same island, so client scenery would also be visible while exploring. Proposed: keep it as scenery in both views, tappable to open its piece, but **never part of Quest gameplay** (no dialog lines, no lost-doodle tasks, no paths that depend on it). **UX lead decides.**
+**Owner answer, typed in the Game Director session (2026-10-27): "client scenery ok in explore too".** Client scenery shows in both views, Village and Explore, tappable to open its piece with its tag. It stays scenery: no Quest dialog lines, no lost-doodle tasks, no paths that depend on it, never in Paint Patrol, and never a logo, wordmark, sign or lettering.
 
 ### Villagers
 - Characters that stand or move upright stroll the paths, cut exactly as drawn:
@@ -173,7 +173,7 @@ Keep the three tabs (Art, the face button, Mine). Their tiles can take warmer ro
 | V2 | **Shared cut-out batch** (MG2 and B21 merged): every element in the asset-yield table, from `docs/roles.md` | DEV, UX (contact sheet) | L (8 h, in 2 batches: main places first, then villagers and scenery) | MG1 (puppet animator), B21 | `scripts/sprites.py` regenerates byte-identical files. The contact sheet shows each cut on dark and on white with clean edges. Nothing is cut from fan art, and nothing from client pieces outside the allowed elements. |
 | V3 | **Villagers and ambience**: walkers, the road loop, tap-a-villager card, clouds, smoke, water, lantern, day and night, reduced motion | DEV | M (4 h) | V1, V2 | At most 8 walkers at once, at the speeds above. Tapping one opens its artwork card. With reduced motion, nothing moves and everything is tappable. 60 fps in a Chrome trace with 4x CPU slowdown. Off-screen animations paused. |
 | V4 | **Explore mode** (was MG6 and MG7): zoom in, tap-to-walk with A* on the same tile map, HTML dialog lines, the lost-doodle tasks, the guide bird, Ekky's laptop menu | DEV, UX (lines) | L (10 to 12 h) | V1 to V3 | Switching views takes 600 ms, with nothing reloading. Every area is reachable from the start. Every character names and opens its artwork. Tasks gate nothing. Hire Ekky is one tap from every dialog. |
-| V5 | **Client scenery** (UX decision) | DEV | S (2 h) | V2 | The 6 client sceneries appear as listed, each opening its piece with its tag. No logo, wordmark, sign or lettering is visible. None appears in Paint Patrol, and none in Quest dialog or tasks. |
+| V5 | **Client scenery** (UX decision) | DEV | S (2 h) | V2 | The 6 client sceneries appear as listed, each opening its piece with its tag. No logo, wordmark, sign or lettering is visible. They show in both Village and Explore (owner: "client scenery ok in explore too"). None appears in Paint Patrol, and none in Quest dialog or tasks. |
 | V6 | **Director playtest of the village**, and UX acceptance | DIRECTOR, UX | S | V3 | Report on calm, cozy, simple, motion feel and "does a tester open at least 3 artworks within 60 s?". Go for V4. |
 
 **New order:** V1 → V2 → V3 → V6 (playtest) → V4, then the Paint Patrol slice (MG1, MG3, MG4) and the rest. MG1's puppet animator and game loop are built first as part of V2/V3 and reused by Paint Patrol. MG6 and MG7 are replaced by V1 to V4.
