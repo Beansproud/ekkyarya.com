@@ -12,6 +12,8 @@ Author: Game Director. Gate G1. This file merges `docs/game-brief.md` ("brief #n
 4. **Owner answer (2026-10-27): "no trophies, no lives, nothing ever locked."** This settles D0b, D0c, D1 and D2, and closes owner questions 12 and 13.
 5. **Owner answer (2026-10-27): "Ekky has the rights to all NFT".** NFT #3 (Astronaut) and NFT #9 (Radio Explorer) are his own work, `own: true`. They can be icons, stickers and share-card art. This closes the rights half of owner question 3; larger files are still wanted.
 6. **Owner answer (2026-10-27): "the glasses guy is Ekky."** The glasses guy from `hero.png` (Little Planet) is the one Ekky avatar everywhere. The blue-haired `face.png` is one of his characters (the Secret Android boy), not him. This closes owner question 1.
+7. **Owner answer (2026-10-27): "everything is owned by Ekky."** Every piece whose ownership was unclear is his own work, `own: true`: Morumelons, Oasis, Web Illustration, My Sports Club, Save Early Buy Future, Plug Hero, Thinker & Doer, Type Is Art, Android, Kemerdekaan, RPG, Toybox, and the NFTs. They may be icons, stickers, coloring pages and share-card art.
+   **The project's hard rule still holds and is not changed by this answer:** the fan-art pieces (`one-piece-fan-art`, `rocket-groot-fan-art`, `spider-verse-fan-art`, `adventure-time-fan-art`, `godzilla-kong-fan-art`, `game-pattern`, `dnd`) show characters owned by others, and the client pieces (`indomaret`, `bca-flazz-card`, `pop-mie`, `ancol-logo`, `msi`, `tea-break-website`) carry clients' brands. They stay portfolio-only. Only the integrator can change that rule (owner question 14).
 
 ## Design principles: de-gamification, play your way
 
@@ -125,7 +127,7 @@ Format for each: **Proposed (audit)** is what gets built if UX approves as writt
 
 ### D5. Rarity labels (cosmetic only after D0)
 - **Proposed (audit):** Legendary = the lead six + Little Planet + Morumelons. Tea Break and My Sports Club are Common.
-- **Director alternative:** leave Morumelons out (7 Legendaries), because it is client work and can never be on a share card. If share moment B (Legendary pull) comes back later, every Legendary must be shareable. With D0 in round 1, the difference is only a frame color.
+- **Settled by the owner's ownership answer:** Morumelons is Ekky's own work, so all 8 Legendaries are shareable. The Director's alternative is withdrawn.
 
 ### D6. Pack price: 10 or 30
 - **Proposed (owner direction, D0):** **no packs and no price in round 1.** The audit takes no position.
@@ -136,7 +138,7 @@ Format for each: **Proposed (audit)** is what gets built if UX approves as writt
 - **Director alternative:** 6, adding Star Catcher as a node (brief). **Director withdraws it:** on the phone, the map area is about 536 px, and six 64 px nodes at a 105 px step need 589 px, while five need 484 px. Star Catcher gets one big button on the start screen and the map header instead.
 
 ### D8. First coloring page
-- **Proposed (audit):** **Road Trip**, from Ekky's own line layer (thick outlines, big shapes). Then Little Planet, Plug Hero (once ownership is confirmed) and Giraffe Ride. The audit warns that tracing lines out of the colored JPGs gives muddy outlines.
+- **Proposed (audit):** **Road Trip**, from Ekky's own line layer (thick outlines, big shapes). Then Little Planet, Plug Hero (his own, owner answer) and Giraffe Ride. The audit warns that tracing lines out of the colored JPGs gives muddy outlines.
 - **Director alternative:** **Giraffe Ride** now, with lines extracted by a darkness threshold from his JPG (his real lines, nothing restyled). It is the one page that tests clean today. *Why:* without it, coloring, sharing and the coloring link all wait on owner question 6.
 - **Recommended:** if Ekky's Road Trip layer arrives before B09 starts, use it. Otherwise ship Giraffe and swap when the layer comes. B09 is written to work either way.
 
@@ -349,7 +351,7 @@ In priority order. Each acceptance test gets expanded when its ticket is pulled 
 
 | ID | Ticket | Owner | Size | Depends | From | Goal and acceptance test |
 |---|---|---|---|---|---|---|
-| B20 | More coloring pages and a picker | DEV, OWNER | M | B09, owner question 6 | brief #23, audit #14 | Road Trip, Little Planet, Giraffe, Plug Hero (once own), then the audit's list. Test: each page passes B09's no-leak check and is approved by Ekky. |
+| B20 | More coloring pages and a picker | DEV, OWNER | M | B09, owner question 6 | brief #23, audit #14 | Road Trip, Little Planet, Giraffe, Plug Hero, then the audit's list. Test: each page passes B09's no-leak check and is approved by Ekky. |
 | B22 | Star Catcher challenge link | DEV | M | B13, B11 | brief #12 (seed), #13 | Same seed for both friends. Test: the D10 challenge link shows "Rina scored 42. Can you beat it?", and the result reads "You N vs Rina 42". |
 | B23 | Card gift share (own art only) | DEV | S | B11 | brief #18 (F) | Test: Share shows on own pieces only. The friend's link opens that piece. |
 | B24 | "I recommend Ekky" sticker | DEV, UX | S | B11 | brief #19 | 4 preset reasons, no free text. Test: 2 taps to the preview, 1 to share. |
@@ -378,7 +380,7 @@ Asked through the integrator. The safe default applies until an answer comes in.
 | # | Question | Safe default | Blocks |
 |---|---|---|---|
 | 1 | Which avatar is really you? | **Answered:** the glasses guy in `hero.png`. | closed |
-| 2 | Which pieces are your own and which are client work? Unclear: Tea Break, Morumelons, Oasis, Web Illustration, My Sports Club, Save Early Buy Future, Plug Hero, Thinker & Doer, Type Is Art, Android, Kemerdekaan, RPG (the fire spirit), Toybox. Is Pop Mie a commission or a pitch? Are Beansproud and Puff character names? Is the D&D figure your own design? | All of these are `own: false`: shown in the portfolio, never on share cards, coloring pages or icons. `dnd` and `game-pattern` stay portfolio-only regardless (project rule). | B03, B20 |
+| 2 | Which pieces are your own? | **Answered:** everything is Ekky's own. All pieces outside the hard-rule list are `own: true`. **Still open (small):** are "Beansproud" and "Puff" character names (for the title)? Default: the audit's title "Viking vs Dragon Kid". | B03, B04 |
 | 3 | NFT #3 and #9: rights, and larger files | **Rights answered:** Ekky has the rights to all NFTs, so both are `own: true`. **Still open:** can you send them at 1000 px or more? Until then they show at their current 256 px (no upscaling on share cards; the sticker crop uses the native size). | B02, B34 |
 | 4 | What domain do share links use: `ekkyarya.com` or the GitHub Pages URL for now? | `CONFIG.siteUrl` stays empty, so links use the current page URL. In the Android app, links use the Pages URL. | B11, B12 |
 | 5 | Real email, WhatsApp, Instagram, Dribbble and Behance. | Placeholders stay hidden (B15). No public launch until answered. | B15, B17 |
@@ -389,6 +391,7 @@ Asked through the integrator. The safe default applies until an answer comes in.
 | 10 | Sketch files of one lead piece. | Text-only process steps. | B30 |
 | 11 | An SVG logo, a Type Is Art still, and doodle cut-outs. | Today's files. Any crop that fails at 32 px becomes a simple palette shape. | B02, B34 |
 | 12 | De-gamification: no trophies and no lives? | **Answered:** no trophies, no lives. | closed |
+| 14 | For the integrator: the owner says everything is Ekky's own. Should the fan-art and client pieces stay portfolio-only (current hard rule), or does the owner want client pieces (not fan art) usable too? | Hard rule unchanged: fan-art and client pieces stay portfolio-only. Fan art can never change: it shows other owners' characters. | B03 |
 | 13 | Login and locked features? | **Answered:** nothing ever locked. Round 1 has no login. | closed |
 
 Integrator question: a QR code on share cards needs an encoder (a new package or about 300 lines of code). Default: no QR.
