@@ -596,6 +596,26 @@ button:hover>.cat-ico,button.active>.cat-ico{transform:rotate(-12deg) scale(1.2)
 .g-filters .cat-ico{width:20px;height:20px;margin-right:6px}
 .g-skill .ic img{width:34px;height:34px;object-fit:contain;animation:catBob 3s ease-in-out infinite}
 @media (prefers-reduced-motion:reduce){.art img:not(.ok),.lb-art img:not(.ok){opacity:1;transform:none;filter:none}}
+
+/* ===== tab bar: clean layout (overrides earlier tab styles) ===== */
+#game .g-tabs{grid-template-columns:1fr 1fr 1fr;height:72px;padding:0 8px;align-items:stretch;border-radius:26px;background:#241638;border:2px solid #3e2a5c}
+#game .g-tabs button{height:100%;padding:0 0 11px;gap:5px;justify-content:flex-end;border-radius:0;background:none;color:#a99bc4;font-size:.78rem;font-weight:600;letter-spacing:.01em;transform:none}
+#game .g-tabs button.active{background:none;color:#FFB400}
+#game .g-tabs .g-ind{bottom:4px;width:6px!important;height:6px;border-radius:50%;background:#FFB400;box-shadow:none;opacity:1;margin-left:-3px}
+#game .g-ico{width:30px;height:30px;transition:transform .35s cubic-bezier(.2,1.6,.4,1)}
+#game .g-tabs button.active .g-ico{transform:translateY(-2px) scale(1.1)}
+#game .g-tabs button:not(.active) .g-ico{opacity:.75}
+#game .g-medal{border-radius:50%;background:#FFB400;box-shadow:0 0 0 2px #2B1342}
+#game .g-medal::before,#game .g-medal::after{display:none}
+#game .g-medal img{width:80%;height:80%}
+#game .g-badge{top:6px;right:calc(50% - 26px)}
+#game .g-tabs button.center{width:auto;height:100%;margin:0;border:0;border-radius:0;background:none;box-shadow:none;overflow:visible}
+#game .g-tabs button.center::before,#game .g-tabs button.center::after{display:none}
+#game .g-tabs button.center:active{transform:none}
+#game .g-tabs button.center .g-face{position:absolute;top:-30px;left:calc(50% - 32px);width:64px;height:64px;border-radius:50%;background:#D3FFD8;
+  border:4px solid #241638;box-shadow:0 0 0 2px #3e2a5c,0 8px 16px rgba(0,0,0,.4);transition:box-shadow .3s}
+#game .g-tabs button.center.active .g-face{box-shadow:0 0 0 3px #FFB400,0 8px 18px rgba(0,0,0,.45)}
+#game .g-tabs button.center small{position:static;font-size:.78rem;font-weight:600;color:inherit}
 </style>
 </head>
 <body>
@@ -1350,8 +1370,7 @@ function sfx(type){if(!st.snd)return;try{actx=actx||new(window.AudioContext||win
 
 /* ---- animated tab bar ---- */
 const tabs=G.querySelector(".g-tabs"),ind=document.createElement("span");ind.className="g-ind";tabs.prepend(ind);
-function moveInd(){const a=tabs.querySelector("button.active");if(!a||a.classList.contains("center")){ind.style.opacity=0;return}
-  ind.style.opacity=1;ind.style.left=a.offsetLeft+"px";ind.style.width=a.offsetWidth+"px"}
+function moveInd(){const a=tabs.querySelector("button.active");if(!a)return;ind.style.left=a.offsetLeft+a.offsetWidth/2+"px"}
 tabs.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;sfx("tap");b.classList.remove("pressed");void b.offsetWidth;b.classList.add("pressed")});
 addEventListener("resize",moveInd);
 function badge(){const el=$("gAchBadge");el.textContent=st.newAch||"";el.classList.toggle("on",!!st.newAch)}
