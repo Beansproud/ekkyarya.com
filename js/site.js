@@ -287,8 +287,12 @@ document.getElementById("year").textContent=new Date().getFullYear();
     if(el.matches(BURST))burst(e.clientX,e.clientY)},{passive:true})})();
 
 // Language switched in place: redraw what the desktop page built with t() at load (the text in the markup is applyText()).
-addEventListener("ekky:lang",()=>{renderGrid();setFilter(setFilter.cur||"all",true);renderCats();renderStrip();typedWord();applyTheme();splitHeads();
-  if(lb.open)show(cur)});
+// Redrawing the desktop page costs about 40 ms at 4x CPU, so while game mode covers it the redraw waits until the classic page shows again.
+let langDirty=false;
+const redrawDesktop=()=>{langDirty=false;renderGrid();setFilter(setFilter.cur||"all",true);renderCats();renderStrip();typedWord();applyTheme();splitHeads();
+  if(lb.open)show(cur)};
+addEventListener("ekky:lang",()=>{if(document.body.classList.contains("game-mode"))langDirty=true;else redrawDesktop()});
+new MutationObserver(()=>{if(langDirty&&!document.body.classList.contains("game-mode"))redrawDesktop()}).observe(document.body,{attributes:true,attributeFilter:["class"]});
 
 // The tab marker slides with translate, not left: game.js still writes style.left, and it is mirrored into --ix (the first
 // placement is instant, so the dot never slides in from the edge on load).
