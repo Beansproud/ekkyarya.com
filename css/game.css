@@ -693,3 +693,8 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 #g-start .g-start-foot .g-classic,#g-start .g-start-foot .lang-switch{height:44px;min-height:44px}
 @media (max-width:380px){#game .g-start{padding-left:12px;padding-right:12px}#g-start .g-featured{column-gap:6px}#g-start .g-featured .g-feat{padding:3px 3px 0}}
 #game .g-start{padding-bottom:calc(env(safe-area-inset-bottom) + 120px)}   /* the bar (72 + 12) plus the Map face that rises 30 px above it */
+
+/* Dark mode on phones: the game is a sketchbook page, so it always uses the light paper and ink. Without this, a phone
+   in dark mode got the dark site tokens (dark paper) under the ink-colored text, and the title, tagline and headings
+   vanished (owner screenshot, iPhone, 21:46). The classic site keeps its own dark mode. */
+#game{--paper:#FBF8F1;--paper-2:#F6F1E6;--paper-line:#E4DCCB;--tape:rgba(255,180,0,.35);--card:#FFFDF8;--line:#E4DCCB;--bg:#FBF8F1;--side:#F6F1E6;color-scheme:light}
