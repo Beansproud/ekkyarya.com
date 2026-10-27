@@ -1,7 +1,7 @@
 // Usage: npm run check. Fails (exit 1) with a list of file:line locations when
 //  1. an emoji or symbol glyph is left in index.html, css/ or js/ (icons come from assets/ui/ or the inline SVG set), or
 //  2. a fan-art or client piece is referenced from UI code. Those pieces may appear only in the PROJECTS list in js/data.js.
-//  3. UI code or the icon generator uses a piece from assets/work/ whose PROJECTS entry is not own: true.
+//  3. UI code or the icon generator uses a piece from assets/work/ for which shareable(p) in js/data.js is false.
 // No packages: Node built-ins only.
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, dirname } from "node:path";
@@ -28,9 +28,9 @@ const ui = [join(ROOT, "index.html"), ...files(join(ROOT, "css"), [".css"]), ...
 // The icon generator must not cut from those pieces either.
 const iconSources = [join(ROOT, "scripts", "ui-assets.py")];
 
-// slug -> own, read from the PROJECTS list itself
-const data = vm.runInNewContext(readFileSync(join(ROOT, "js", "data.js"), "utf8") + ";({PROJECTS})", {});
-const OWN = new Map(data.PROJECTS.map(p => [p.full.replace(/^.*\/|\.\w+$/g, ""), p.own === true]));
+// slug -> shareable(p), computed by js/data.js itself (CONFIG.reuse and CONFIG.reuseBlock decide)
+const data = vm.runInNewContext(readFileSync(join(ROOT, "js", "data.js"), "utf8") + ";({PROJECTS, shareable})", {});
+const SHAREABLE = new Map(data.PROJECTS.map(p => [p.slug, data.shareable(p) === true]));
 const WORK = /assets\/work\/(?:thumb\/)?([a-z0-9-]+)\.\w+/gi;
 
 const problems = [];
@@ -46,7 +46,7 @@ for (const f of [...ui, ...iconSources]) {
       if (inProjects) { if (/^\s*\];/.test(line)) inProjects = false; return; }
     }
     for (const m of line.matchAll(WORK))
-      if (OWN.get(m[1]) !== true) problems.push(`${at}  "${m[1]}" is not marked own: true in PROJECTS, so it can't be an icon or UI art`);
+      if (SHAREABLE.get(m[1]) !== true) problems.push(`${at}  "${m[1]}" is not shareable (CONFIG.reuse / reuseBlock in js/data.js), so it can't be an icon, sticker or UI art`);
     for (const m of line.matchAll(SLUG))
       problems.push(`${at}  "${m[1]}" is a fan-art or client piece: it may appear only in the PROJECTS list`);
   });
@@ -56,4 +56,4 @@ if (problems.length) {
   console.error(`check failed (${problems.length}):\n` + problems.map(p => "  " + p).join("\n"));
   process.exit(1);
 }
-console.log(`check passed: ${ui.length} UI files, no emoji or symbol glyphs, no fan-art or client pieces outside PROJECTS, UI art only from own pieces`);
+console.log(`check passed: ${ui.length} UI files, no emoji or symbol glyphs, no fan-art or client pieces outside PROJECTS, UI and sticker art only from shareable pieces`);
