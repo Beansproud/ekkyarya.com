@@ -327,6 +327,16 @@ function endArcade(){const a=A;a.run=false;lastScore=a.score;const rec=(st.best|
   sfx(rec?"legend":"level");if(rec&&typeof confetti==="function")confetti()}
 function quitArcade(){cancelAnimationFrame(raf);A=null;pausedByHide=false;$("gArcade").classList.remove("open");G.classList.remove("playing");$("gCount").innerHTML=""}
 let lastScore=0;
+// G3: Share on the result, next to Download. It shares the same stars card (Share.renderCard) through the phone's
+// share sheet; where that can't take a file it falls back to the Download path (Share.downloadStars).
+async function shareStars(){if(typeof Share==="undefined")return;
+  try{const c=await Share.renderCard("stars",{score:lastScore}),blob=await new Promise(ok=>c.toBlob(ok,"image/png"));
+    const file=new File([blob],`ekkyarya-stars-${lastScore}.png`,{type:"image/png"});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text:tt("stars.shareText","I caught {n} points in Ekky's Star Catcher.",{n:lastScore}).replace("{n}",lastScore)});return}
+  }catch(e){if(e&&e.name==="AbortError")return}
+  Share.downloadStars(lastScore)}
+if(cv&&feature("shareCards")&&!$("gResShare")){$("gAgain").insertAdjacentHTML("afterend",`<button class="g-btn alt sm" id="gResShare">${ico("i-share")} <span>${esc(t("reveal.share"))}</span></button>`);
+  $("gResShare").onclick=()=>{buzz(10);shareStars()}}
 if(cv){$("gResDl").onclick=()=>typeof Share!=="undefined"&&Share.downloadStars(lastScore);$("gArcadeX").onclick=quitArcade;$("gResBack").onclick=()=>{quitArcade();go("start")};$("gAgain").onclick=startArcade}
 G.addEventListener("click",e=>{if(e.target.closest("[data-arcade]")){sfx("tap");startArcade()}
   if(e.target.closest("[data-patrol]")){sfx("tap");openPatrol()}});
