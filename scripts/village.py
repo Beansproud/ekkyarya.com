@@ -21,6 +21,7 @@ S = 4  # supersampling for the shapes
 INK = (43, 19, 66)
 GRASS, GRASS_L, GRASS_R = (168, 219, 160), (111, 179, 122), (78, 142, 92)
 SAND = (255, 227, 168)
+CLIFF, CLIFF_DARK = (201, 138, 74), (150, 96, 52)
 PATH, PATH_EDGE = (255, 243, 220), (233, 214, 178)
 SEA, SEA_LIGHT = (104, 160, 219), (128, 180, 230)
 PLANK, PLANK_EDGE = (201, 138, 74), (122, 74, 34)
@@ -36,14 +37,32 @@ def diamond(cx, cy, hw, hh):
     return [(cx, cy - hh), (cx + hw, cy), (cx, cy + hh), (cx - hw, cy)]
 
 
-def island(d, cx, cy, hw, hh, depth):
-    """An isometric island: grass top, earth sides, a sand rim."""
-    top = diamond(cx, cy, hw, hh)
-    d.polygon(P([top[3], top[2], (top[2][0], top[2][1] + depth), (top[3][0], top[3][1] + depth)]), fill=GRASS_L)
-    d.polygon(P([top[2], top[1], (top[1][0], top[1][1] + depth), (top[2][0], top[2][1] + depth)]), fill=GRASS_R)
-    d.polygon(P(diamond(cx, cy, hw + 6, hh + 3)), fill=SAND)
+def blob(cx, cy, rx, ry, seed, n=72, wobble=.05):
+    """An island outline: an iso ellipse with a gentle, fixed wobble (same shape on every build)."""
+    import math
+    ph = [seed * 1.7, seed * 2.9, seed * .7]
+    pts = []
+    for i in range(n):
+        a = 2 * math.pi * i / n
+        r = 1 + wobble * (math.sin(3 * a + ph[0]) * .6 + math.sin(5 * a + ph[1]) * .3 + math.sin(7 * a + ph[2]) * .1)
+        pts.append((cx + math.cos(a) * rx * r, cy + math.sin(a) * ry * r))
+    return pts
+
+
+def scaled(pts, cx, cy, k, dy=0):
+    return [(cx + (x - cx) * k, cy + (y - cy) * k + dy) for x, y in pts]
+
+
+def island(d, cx, cy, hw, hh, depth, seed=1, k=.97):
+    """A real island instead of a flat tile: shallow water around it, earth cliffs below, a sand beach, grass on top."""
+    top = blob(cx, cy, hw * k, hh * .9, seed, wobble=.11)
+    d.polygon(P(scaled(top, cx, cy, 1.1, depth * .6)), fill=SEA_LIGHT)            # shallows
+    for k in range(depth, 0, -2):                                                   # cliff: the outline stacked downwards
+        d.polygon(P(scaled(top, cx, cy, 1.0, k)), fill=CLIFF_DARK if k > depth * .55 else CLIFF)
+    d.line(P(scaled(top, cx, cy, 1.0, depth) + [scaled(top, cx, cy, 1.0, depth)[0]]), fill=INK, width=2 * S)
+    d.polygon(P(scaled(top, cx, cy, 1.05, 2)), fill=SAND)                            # beach
     d.polygon(P(top), fill=GRASS)
-    d.line(P([top[3], top[2], top[1]]), fill=INK, width=3 * S, joint="curve")
+    d.line(P(top + [top[0]]), fill=GRASS_L, width=2 * S)
 
 
 def path(d, pts, w=16):
@@ -107,12 +126,11 @@ def build():
     base = Image.new("RGBA", (W * S, H * S))
     d = ImageDraw.Draw(base)
     # the calm sea: one soft diamond, with a lighter band
-    d.polygon(P(diamond(360, 500, 352, 330)), fill=SEA)
-    d.polygon(P(diamond(360, 500, 300, 250)), fill=SEA_LIGHT)
+    d.polygon(P(blob(360, 490, 350, 360, 4, wobble=.04)), fill=SEA)              # the sea around the islands
     # islands: main, the observatory islet (top) and the gate islet (bottom)
-    island(d, 360, 205, 140, 70, 18)
-    island(d, 360, 480, 310, 155, 26)
-    island(d, 400, 755, 150, 75, 18)
+    island(d, 360, 205, 140, 70, 18, seed=2)
+    island(d, 360, 480, 310, 155, 26, seed=1, k=.9)
+    island(d, 400, 755, 150, 75, 18, seed=3)
     bridge(d, (360, 268), (360, 332), 5)
     bridge(d, (384, 628), (396, 688), 5)
     # paths from Ekky's home to every place
