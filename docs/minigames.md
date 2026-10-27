@@ -10,7 +10,7 @@ Typed in the Game Director session, 2026-10-27, quoted exactly:
 > game like metal slug *re-use all of his aset
 > game like zelda but isomorphic *re-use all of his aset"
 
-Owner answers, typed in the Game Director session, 2026-10-27: "yes paint and befriend is ok, sound effects only". This closes owner questions 2 and 5.
+Owner answers, typed in the Game Director session, 2026-10-27: "yes paint and befriend is ok, sound effects only" (closes owner questions 2 and 5), and "use ekky as the hero, landscape is fine" (closes owner questions 3 and 4).
 
 Read as two minigames that play like real games and work as a portfolio:
 - **A run-and-gun side-scroller**, the genre Metal Slug made famous.
@@ -43,7 +43,7 @@ The other owner directions still hold:
 ## Game A: "Paint Patrol" (run-and-gun side-scroller)
 
 ### One-line pitch
-Run through Ekky's illustrations as the helmet kid from "Virus and War", paint every grey doodle monster back into color, ride the Broken-Down Bus, and color in four big bosses.
+Ride through Ekky's illustrations as **Ekky himself** on his desk chair, paint every grey doodle monster back into color, ride the Broken-Down Bus, and color in four big bosses.
 
 ### Why this genre fits a portfolio
 - His big scenes (Coexistence, Broken-Down Bus, Monster Snack Bar, Buried at the Beach) are already wide, layered and full of characters. They become parallax stage backgrounds almost as they are.
@@ -56,17 +56,18 @@ Run through Ekky's illustrations as the helmet kid from "Virus and War", paint e
 | Phone | Drag on the left half of the screen (a thumb stick appears where you touch) | Tap the right half | **Automatic:** fires forward at a steady rhythm whenever an enemy is ahead | Double-tap the right half (12 s recharge, shown as a filling palette) |
 | Desktop | Arrow keys or A / D | Up, W or Space | Automatic (or hold X to aim up) | Z |
 
-- Holding the phone in landscape is best. Portrait works too, with the camera zoomed in.
+- **Landscape** (owner: "landscape is fine"). In portrait, a calm "Turn your phone sideways" card shows Ekky's chair turning, with a "Play anyway" button that runs a zoomed-in view.
 - On first play, a hint shows once and fades after 4 s: "Drag to run, tap to jump. Painting is automatic."
 
 ### Rules
 - **Painting:** each paint blob hits once. A normal enemy needs 3 hits, a big one 6, and a boss shows a "color meter" that fills as you paint it.
-- **Getting touched:** the hero is knocked back about 120 px, gets a paint splash on the helmet and is invulnerable for 0.8 s. Nothing is lost. There is no health bar.
+- **Getting touched:** the hero is knocked back about 120 px, gets a paint splash on his chair and is invulnerable for 0.8 s. Nothing is lost. There is no health bar.
 - **Power-ups** (dropped by befriended enemies, no counters):
   - pen-hand = rapid paint for 6 s;
   - palette = a rainbow spread shot of 3 blobs for 6 s;
   - Plug Hero = he runs across the screen and paints everything in his path;
   - Astronaut helmet = a bubble shield that absorbs the next knockback.
+  - The helmet kid from "Virus and War" = he runs in for 8 s and paints alongside Ekky, then waves and leaves.
 - **Vehicle:** in stage 2, the Broken-Down Bus rolls in. Jump on its roof and it becomes a slow, sturdy moving platform with a big paint cannon (the bear, the lion driver and the caped hero ride along and cheer). Jump off at any time.
 - **Stage end:** the stage's original artwork fades in, full screen and slowly (D-motion below), with its title, one line of description, "See it in the portfolio" and the Hire Ekky chip. Then "Next stage", "Pick a stage" or "Something else".
 - **No score, no timer, no stars.** The stage-select screen shows which stages you've seen with a small painted frame, never as a percentage.
@@ -81,7 +82,10 @@ Run through Ekky's illustrations as the helmet kid from "Virus and War", paint e
 | Credits | **Parade** | The Character Crowd Banner scrolls past as a crowd of every friend you made, with the "Type Is Art in Motion" lettering as the title | Everyone you painted dances | none |
 
 ### Hero
-**The helmet kid from "Virus and War"**: he already wears a helmet and carries a blaster, so he reads as a run-and-gun hero at a glance. In the game, the blaster fires paint. If the owner prefers, `CONFIG.games.patrolHero` can switch the hero to the glasses guy (Ekky) or the blue-haired face, with no other change.
+**Ekky** (owner: "use ekky as the hero"). The game uses the image the owner confirms as Ekky (owner question 1 of `docs/backlog.md`; the glasses guy from Little Planet, per the owner's message in the Game Director session).
+- **No redrawing:** the only full-body drawing of him is Little Planet, where he sits at his desk on a chair holding a stylus. So by default, **Ekky rides his desk chair**, cut out exactly as drawn. The chair glides along the ground (run), hops (jump), and the paint comes from his stylus.
+- If Ekky sends a standing or running pose of himself (owner question 1 below), that drawing replaces the chair, with no other change.
+- `CONFIG.games.hero` points to the sprite file, so it can be swapped later without code changes.
 
 ---
 
@@ -100,19 +104,19 @@ Walk around a small isometric island where every house, tree and character comes
 | Phone | **Tap where to go** (the hero walks there along a path); or drag for direct control | Tap a character or an object next to you |
 | Desktop | Arrow keys or WASD (8 directions), or click to walk | Space or E |
 
-The bird from "The Blue Bird" flies slowly toward the nearest place you haven't seen yet. It is a gentle suggestion, never a requirement (principle 3).
+The glowing bird from "The Blue Bird" follows Ekky and flies slowly toward the nearest place you haven't seen yet. It is a gentle suggestion, never a requirement (principle 3).
 
 ### Rules
 - **No combat, no health, no locks.** Every area is reachable from the start.
 - **Optional little tasks**, which never gate anything. Seven characters have each lost a small doodle, scattered on the island: the book, cassette, microphone, robot, planet, palette and cat cut-outs from `assets/`. Bring it back and they do a short happy animation and say a thank-you line. That is the whole reward.
 - **Painting the world** (ties to Color with Ekky): a few objects start as grey line art (a bridge, a fountain, the observatory dome). Tapping them with the pen-hand paints them in his colors over 1.2 s. It only changes looks, and there is always another way around.
 - **The Sketchbook** (top right, `i-frame` icon) lists every artwork you have met, as thumbnails. It has no counter, no percentage and no "x of 29". Each thumbnail opens the lightbox.
-- **The artist:** in the hub, Ekky sits at his desk on the Little Planet. Talking to him gives three choices: "Tell me about you" (the hiring facts from B26), "Hire Ekky" (the Final Quest sheet) and "Show me everything" (the classic portfolio).
+- **Home base:** the hub is Ekky's desk on the Little Planet. The laptop gives three choices: "About me" (the hiring facts from B26), "Hire Ekky" (the Final Quest sheet) and "Show me everything" (the classic portfolio).
 
 ### The island (about 28 x 28 tiles, 11 areas)
 | Area | Built from | Who you meet and what happens |
 |---|---|---|
-| **Hub: Little Planet** | Little Planet (the moon, the desk, the floating doodles) | Ekky the artist (avatar per owner question 1), the hiring facts, Hire Ekky |
+| **Hub: Little Planet** | Little Planet (the moon, the desk, the floating doodles) | Ekky's home base. His laptop on the desk offers "About me" (the hiring facts from B26), "Hire Ekky" (the Final Quest sheet) and "Show me everything" (the classic portfolio) |
 | **Giraffe Meadow** | Giraffe Ride (fence, trees, grass) | The giraffe and the kid. Ride the giraffe to cross the island at 2x speed |
 | **Noodle Bath House** | Noodle Bath | The kid in the bowl. The bowl walks on its noodle legs to a new spot every minute |
 | **The Lake** | Afloat, Big Catch | The floating boy drifts in circles. The fishing kid is on the pier; the shark jumps at the end of his line |
@@ -123,10 +127,10 @@ The bird from "The Blue Bird" flies slowly toward the nearest place you haven't 
 | **Monster Quarter** | Monster in My Room, Monster Snack Bar, Monster World Doodles | The green monster's house, the snack bar counter, doodle monsters wandering about |
 | **Hidden Lair** (a small 3-room dungeon) | Hidden Monster, Tangled Hands, RPG | The two kids with the lantern. The mimic chest (it bites, then laughs). A "tangled hands" knot puzzle: rotate 4 tiles to untangle it and open a shortcut (the long way round is always open too). In the last room, the RPG party camps by a fire |
 | **Observatory** | Astronaut (NFT #3), Radio Explorer (NFT #9), Secret Android | The astronaut stargazing. The radio explorer gives hints over the radio. The Secret Android robot opens up in his workshop |
-| **Sky** | The Blue Bird, Year of the Tiger 2022, Virus and War, Plug Hero Mascot, Buried at the Beach | The hiker and her bird (the hero and the guide). The tiger lies in the sun by the gate. The helmet kid from Virus and War waves (the Paint Patrol hero, a link to Game A). Plug Hero winds himself up by the beach where the Buried at the Beach kid is stuck in the sand |
+| **Sky** | The Blue Bird, Year of the Tiger 2022, Virus and War, Plug Hero Mascot, Buried at the Beach | The hiker from The Blue Bird stargazing on a rock, with her glowing bird. The tiger lies in the sun by the gate. The helmet kid from Virus and War waves (the Paint Patrol hero, a link to Game A). Plug Hero winds himself up by the beach where the Buried at the Beach kid is stuck in the sand |
 
 ### Hero
-**The hiker from "The Blue Bird"** (backpack, binoculars, an explorer at a glance), with the glowing bird as her guide. `CONFIG.games.questHero` can switch to the glasses guy or another own character. Ekky himself is the artist in the hub, so the player meets him rather than plays him.
+**Ekky** (owner: "use ekky as the hero"), the same sprite as in Paint Patrol: by default Ekky on his rolling desk chair, cut out from Little Planet exactly as drawn, gliding from tile to tile. The glowing bird from The Blue Bird is his companion. Riding the giraffe swaps the chair for the giraffe until he gets off.
 
 ---
 
@@ -136,7 +140,7 @@ The bird from "The Blue Bird" flies slowly toward the nearest place you haven't 
 |---|---|---|
 | `android` | | Robot in the Observatory |
 | `beansproud-vs-puff` | Allies in stage 4 | Cliffs duel |
-| `blue-bird` | | **Hero and guide** |
+| `blue-bird` | | **Guide bird**, the hiker in the Sky area |
 | `coexistence` | Stage 1 background | Bus Stop |
 | `day-in-life` | | Ekky's House (4 rooms) |
 | `doodles` | Enemy pool | Monster Quarter, island props |
@@ -146,7 +150,7 @@ The bird from "The Blue Bird" flies slowly toward the nearest place you haven't 
 | `hello-2022` | Boss 2 (tiger) | Sky gate |
 | `hidden-monster` | Stage 4 final door | Hidden Lair |
 | `kemerdekaan` | | Courier on the Cliffs |
-| `little-planet` | Title screen | **Hub**, Ekky at his desk |
+| `little-planet` | **Hero** (Ekky on his chair), title screen | **Hero** (Ekky on his chair), **hub** |
 | `monster-crowd` | Stage 2 enemies, stage 4 background | Monster Quarter |
 | `monster` | Boss 1 (green monster) | Monster Quarter house |
 | `morumelons` | Stage 2 enemies | Market stalls |
@@ -161,7 +165,7 @@ The bird from "The Blue Bird" flies slowly toward the nearest place you haven't 
 | `summertime` | Stage 3 sand, crab | Beach by the Sky area |
 | `toybox` | | Pushable crates |
 | `type-is-art` | Credits title | Island title card, Market street sign |
-| `virus-and-war` | **Hero**, enemies | Cameo (links to Game A) |
+| `virus-and-war` | Ally power-up (the helmet kid), virus enemies | Cameo (links to Game A) |
 | `web-illustration` | Credits parade | |
 
 Never used: the 8 fan-art pieces and the 9 client pieces on `main` (`CONFIG.reuse`; that now includes Oasis, My Sports Club, Save Early Buy Future and Thinker & Doer as client, and Pop Mie as fan). If the owner switches `client: true` later, client pieces still stay out of the games. Brand logos don't belong in a game world.
@@ -225,7 +229,7 @@ Ekky's pieces are flat, finished illustrations, not sprite sheets. Two routes, b
 | # | Ticket | Owner | Size | Depends | Acceptance test |
 |---|---|---|---|---|---|
 | MG1 | Shared mini engine | DEV | L (4 to 6 h) | B38 | A test scene runs at 60 fps on the phone viewport. Keyboard, touch drag and tap all work. It pauses when the tab is hidden. Reduced motion stops the bob and shake. |
-| MG2 | Sprite pipeline and the first 12 cut-outs | DEV, UX (review) | L (6 h) | MG1 | `scripts/sprites.py` regenerates byte-identical PNGs. The contact sheet shows the Patrol hero, 6 enemies, boss 1 and the stage 1 layers, each with clean edges on dark and on white. `npm run check` passes. |
+| MG2 | Sprite pipeline and the first 12 cut-outs | DEV, UX (review) | L (6 h) | MG1 | `scripts/sprites.py` regenerates byte-identical PNGs. The contact sheet shows the Ekky-on-chair hero, 6 enemies, boss 1 and the stage 1 layers, each with clean edges on dark and on white. `npm run check` passes. |
 | MG3 | **Paint Patrol vertical slice: stage 1 "Rush Hour"** | DEV | L (6 h) | MG1, MG2 | A first-time tester on the phone finishes stage 1 in 60 to 120 s without help. Nobody can lose. The Monster in My Room boss telegraphs every swing. The stage end shows Coexistence and opens it in the lightbox. Hire Ekky is reachable while paused and on the end screen. |
 | MG4 | Director playtest of the slice | DIRECTOR | S | MG3 | A short report: fun, simple, motion feel (too fast / too bouncy / meaningless), ranked fixes. Go or no-go for MG5. |
 | MG5 | Paint Patrol stages 2 to 4, bus vehicle, bosses 2 to 4, credits | DEV | L (8 to 10 h) | MG4 go | Each stage is selectable from the start and runs 60 to 120 s. The bus can be boarded and left at any time. Each boss telegraphs every attack for at least 0.8 s. |
@@ -241,7 +245,7 @@ Order: MG1 → MG2 → MG3 → **MG4 (go or no-go)** → MG5 and MG6 in parallel
 
 ## Balance starting numbers (Director owns these; tuned in MG4 and MG10)
 
-**Paint Patrol** (in world pixels; the hero is about 96 px tall):
+**Paint Patrol** (in world pixels; the hero, Ekky on his chair, is about 110 px tall):
 
 | Setting | Value |
 |---|---|
@@ -271,9 +275,9 @@ Order: MG1 → MG2 → MG3 → **MG4 (go or no-go)** → MG5 and MG6 in parallel
 
 | # | Question | Safe default |
 |---|---|---|
-| 1 | Can Ekky export the main characters as separate transparent PNGs (layered files)? Priority: the Virus and War helmet kid, the Blue Bird hiker and bird, the green monster, the tiger, the shark, the RPG giant. | Cut-outs from the published images (route 2). Quality may be rougher on busy pieces. |
+| 1 | Can Ekky export the main characters as separate transparent PNGs (layered files)? Priority: **Ekky himself standing or running** (a full-body pose; today there is only the seated one in Little Planet), the Blue Bird bird, the Virus and War helmet kid, the green monster, the tiger, the shark, the RPG giant. | Ekky rides his desk chair, cut from Little Planet. The other characters are cut from the published images (route 2); quality may be rougher on busy pieces. |
 | 2 | Is it OK that the helmet kid's blaster fires paint, and that enemies are "colored in and befriended" rather than defeated? | **Answered:** "yes paint and befriend is ok". |
-| 3 | Heroes: the helmet kid for Paint Patrol and the Blue Bird hiker for the Quest, with Ekky as the artist you meet in the hub? Or should Ekky be the hero of one or both? | As proposed. Switchable in `CONFIG.games`. |
-| 4 | Phone orientation for Paint Patrol: landscape preferred, with portrait supported? | Both: landscape preferred, portrait supported. |
+| 3 | Heroes | **Answered:** "use ekky as the hero". Ekky is the hero of both games. |
+| 4 | Phone orientation for Paint Patrol | **Answered:** "landscape is fine". Landscape, with a "Play anyway" portrait fallback. |
 | 5 | Should the games have their own short music loops, or stay with sound effects only? | **Answered:** "sound effects only". No music loops. Sound is off by default on the web. |
 | 6 | "endi onok bossfight": did you mean you want a boss fight, or that the RPG piece has no boss fight in it? | The RPG giant is boss 4 in Paint Patrol either way. The piece's title is the UX lead's call. |
