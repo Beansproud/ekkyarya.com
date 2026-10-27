@@ -391,3 +391,31 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 .v-label{font-size:.75rem}
 .v-list{margin-top:8px}
 .v-list[hidden]{display:none}
+
+/* ===== Start screen, neat pass (owner: "make sure this one neat") =====
+   One 16 px gutter, one 12 px gap, one radius (14 px) and one shadow for every card and tile. The six drawings fill
+   the middle; the three action tiles and the bottom row sit at the bottom, in thumb reach. No scrolling at 390 x 664. */
+#game{--gut:16px;--gap:12px;--rad:14px;--lift:0 4px 0 rgba(0,0,0,.3)}
+.g-hud{gap:8px;padding:calc(env(safe-area-inset-top) + 12px) var(--gut) 12px}
+.g-avatar{width:44px;height:44px;border-radius:var(--rad);border-width:2px}
+.g-player b{font-size:1rem;line-height:1.15}
+.g-player small{white-space:nowrap;overflow:visible;font-family:Fredoka;font-weight:500;font-size:.75rem;line-height:1.2}
+.g-round{width:44px;height:44px;border-radius:var(--rad)}
+.g-hud .g-hire{height:44px;min-height:44px;padding:0 12px 0 5px;border-radius:var(--rad);font-size:.9rem}
+.g-hud .g-hire img{width:32px;height:32px;border-radius:10px}
+.g-start{gap:var(--gap);padding:calc(env(safe-area-inset-top) + 72px) var(--gut) calc(env(safe-area-inset-bottom) + var(--gut));justify-content:flex-start}
+.g-start .g-logo{width:64px;margin-bottom:-6px}
+.g-tagline{font-size:1rem;line-height:1.25;margin:0}
+.g-row-title{margin:0;font-size:.9rem}
+.g-featured{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:1fr 1fr;gap:var(--gap);padding:0}
+.g-featured .g-feat{display:flex;flex-direction:column;min-height:0;border-radius:var(--rad);border-width:2px;box-shadow:var(--lift)}
+.g-featured .g-feat img{flex:1 1 auto;min-height:56px;height:0;aspect-ratio:auto}
+.g-featured .g-feat b{flex:none;font-size:.75rem;line-height:1.2;padding:5px 6px 6px;white-space:normal;overflow:hidden;text-overflow:clip;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;min-height:calc(2 * 1.2em + 11px)}
+.g-tiles{gap:var(--gap)}
+.g-tile,.g-tile.catch,.g-tile.explore{flex-direction:column;gap:4px;height:68px;min-height:68px;padding:6px 4px;border-radius:var(--rad);color:#2B1342;font-size:.85rem;box-shadow:var(--lift)}
+.g-tile span{white-space:nowrap}
+.g-tile img{width:32px;height:32px}
+.g-start-foot{gap:var(--gap);align-items:stretch}
+.g-start-foot .g-classic,.g-start-foot .lang-switch{height:48px;min-height:48px;border-radius:var(--rad);border:2px solid #3e2a5c;box-sizing:border-box}
+.g-start-foot .lang-switch button{min-height:0;height:100%}
