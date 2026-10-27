@@ -39,13 +39,25 @@ Author: Game Director. Gate G1. This file merges `docs/game-brief.md` ("brief #n
    - **Rarity is not a ranking.** The card frame (`rar`) is computed from how many creative roles a piece has.
    - The scorecard row "6 best pieces visible within 10 s" now reads "6 pieces visible within 10 s".
 
+9. **Owner direction (2026-10-27, typed to the integrator): "dont make the animation too fast make it slow but make sense".** P1 ticket B39 (motion pass): taps about 250 ms, transitions 450 to 600 ms, reveals 0.8 to 1.2 s, ambient loops 6 to 12 s, calm easing, and every animation explains something. The UX lead accepts each motion only if a hiring client would understand why it moves.
+10. **Owner direction (2026-10-27, typed to the integrator): "dont forget to add download button".** P1 ticket B40: a Download button next to every Share, a downloadable portfolio image in the lightbox, and "Install app".
+11. **Owner answers (2026-10-27, typed to the integrator): "yes to all"**, to the integrator's five questions:
+
+| Question | Owner decision |
+|---|---|
+| "Is Ekky the glasses guy on the little planet?" | **Yes.** `hero.png` (Little Planet) is Ekky's avatar: HUD avatar, map token, Level 1 "Who is Ekky?", desktop hero wave. The middle tab button and the favicon stay `face.png` (the blue-haired character the owner picked for them); `face.png` stays one of Ekky's characters and a sticker. Owner question 1 is closed. |
+| "Should client pieces become reusable?" | **Yes.** `CONFIG.reuse.client = true`. Client pieces may be stickers, share art, downloads and featured; their "Client: X" tag stays visible wherever the full piece shows (lightbox, card), and stickers cut from them never include a brand logo. Fan art stays `false`, including Pop Mie (`kind: "fan"`, Godzilla-like kaiju). |
+| "Should the site get a Bahasa Indonesia version?" | **Yes.** P1 ticket B41 (EN/ID switch). UX wrote the Indonesian copy (`COPY.id`) and Indonesian titles and descriptions for every piece. |
+| "Is his time zone GMT+7 (WIB)?" | **Yes.** The facts read "evenings to night, WIB (GMT+7)". |
+| "May visitors download his portfolio pieces?" | **Yes.** `FEATURES.artDownload = true`: a Download button in the lightbox, a smaller copy (at most 1600 px on the long side) with a subtle "ekkyarya.com" watermark, never on fan art (B40). |
+
 ## UX lead decisions (summary)
 
 Judged from the point of view of the person deciding whether to hire Ekky: the art first, Hire Ekky one tap away, nothing in the way. Owner-decided items are recorded, not re-opened.
 
 | Item | Decision |
 |---|---|
-| Budget | **Option A, full scope, about 27 h** (24.5 h + 0.5 h for the D3 alternative + 1 h for B38 + 1 h for B26), on the owner's direction "do whatever you can at its finest, we will limit later". Nothing moves to round 2. B17 is built now with its contact buttons hidden until B15. |
+| Budget | **Option A, full scope, about 34 h** (24.5 h + 0.5 h for the D3 alternative + 1 h for B38 + 1 h for B26 + 2 h for B39 + 3 h for B40 + 2 h for B41), on the owner's direction "do whatever you can at its finest, we will limit later". Nothing moves to round 2. B17 is built now with its contact buttons hidden until B15. |
 | D0, D0b, D0c, D1, D2, D17 | Owner decided; recorded. D17 approved as scoped, with the `shareable()` guard. |
 | "Mine" tab icon | A **simple frame line icon** (your gallery). The palette doodle stays with Art (D12), so each icon has one meaning. |
 | D3 Skill Tree | **Director alternative:** removed; level 2 is "Color with Ekky" (pen-hand icon). |
@@ -65,15 +77,15 @@ Judged from the point of view of the person deciding whether to hire Ekky: the a
 The owner says every piece is Ekky's. What may be *reused* (as an icon, sticker, coloring page, Doodle Scene background or share-card art) is now one switchboard in `js/data.js`, so it can be limited later without touching code:
 
 ```js
-CONFIG.reuse      = { original: true, client: false, fan: false };
+CONFIG.reuse      = { original: true, client: true, fan: false };   // client: owner, "yes to all"
 CONFIG.reuseBlock = [];   // slugs to keep out later, e.g. ["morumelons"]
 ```
 
-- Every `PROJECTS` entry has `kind`: `"original"` (33 pieces), `"client"` (the six pieces the project's hard rule names: Indomaret, BCA Flazz, Pop Mie, Ancol, MSI, Tea Break) or `"fan"` (the 7 fan-art pieces, including D&D and Game Pattern).
+- Every `PROJECTS` entry has `kind`: `"original"` (29 pieces), `"client"` (9: Indomaret, BCA Flazz, Ancol, MSI, Tea Break, Oasis, My Sports Club, Save Early Buy Future, Thinker & Doer) or `"fan"` (8: the 7 fan-art pieces, including D&D and Game Pattern, plus Pop Mie).
 - `js/data.js` computes `p.slug` (file name) and `p.own = CONFIG.reuse[p.kind] && !CONFIG.reuseBlock.includes(p.slug)`, and defines `shareable(p) = p.own === true`. Code only ever calls `shareable()`.
-- `client: false` keeps the project's hard rule; the owner can switch it on. `fan` stays off: those characters belong to their owners.
+- `client: true` since the owner's "yes to all" (answer 11). `fan` stays off: those characters belong to their owners.
 - Every piece always stays visible in the portfolio, whatever the config says. Tags come from `p.label`.
-- Today: 33 pieces are reusable; the 7 fan-art and 6 client pieces are not.
+- Today: 38 pieces are reusable; the 8 fan-art pieces are not. Each piece's roles are in `docs/roles.md`.
 
 ## Design principles: de-gamification, play your way
 
@@ -128,15 +140,18 @@ The game is three simple things plus one button: **Color** (tap a shape to fill 
 | B21 | Stickers and the Doodle Scene (creative mode) | DEV | M | 3 | R1 must-have (D17) |
 | B38 | Feature switches (`FEATURES` config) | DEV | S | 1 | **R1 must-have, P1** (owner: "or make config for it") |
 | B26 | Hiring facts and "Worked with" row | UX, DEV | S | 1 | **R1 must-have, P1** (owner answered, 2026-10-27) |
+| B39 | Motion pass: slow, calm, meaningful | DEV | S | 2 | **R1 must-have, P1** (owner direction 9) |
+| B40 | Download everywhere, and "Install app" | DEV | M | 3 | **R1 must-have, P1** (owner direction 10, answer 11) |
+| B41 | English / Bahasa Indonesia switch | DEV (UX copy done) | S | 2 | **R1 must-have, P1** (owner answer 11) |
 | B19 | Round-1 playtest and scorecard run | DIRECTOR | S | (DIRECTOR) | R1 must-have, last |
-| | **DEV total, Option A** | | | **27** | |
+| | **DEV total, Option A** | | | **34** | |
 
 **Budget.** 24.5 h is about 3 working days. The ask was about two (16 to 18 h).
 - **Option A (UX lead's list in full, plus creative mode):** 24.5 h.
 - **Option B (Director's recommendation, about 18 h):** move the desktop strip in B08 (0.5 h), the name field in B11 (0.5 h) and B18 (2 h) to the top of round 2. B08 still fixes the cut-off classic-site link, the worst tap-target problem. That gives about 21 h. To reach two days, also move B16 and B17 to the first days of round 2 (but B17 can't work before B15 anyway), which gives about 18.5 h. This keeps the whole loop (create, share, link, hire) inside two days.
-- **UX decision: Option A, full scope (about 27 h, with B38 and B26),** on the owner's direction "do whatever you can at its finest, we will limit later". Every ticket stays in round 1, plus the D3 alternative (+0.5 h). B17 is built now; its contact buttons stay hidden until B15 lands.
+- **UX decision: Option A, full scope (about 34 h, with B38, B26, B39, B40 and B41),** on the owner's direction "do whatever you can at its finest, we will limit later". Every ticket stays in round 1, plus the D3 alternative (+0.5 h). B17 is built now; its contact buttons stay hidden until B15 lands.
 
-**Build order (approved):** B03 → B38 → B26 (once B14 lands) → B05 → B06 → B07 → B08 → B09 → B10 → B11 → B12 → B21 → B13 → B16 → B17 → B15 → B18. UX works B04 and B14 in parallel. B19 runs last.
+**Build order (approved):** B03 → B38 → B41 → B26 → B39 → B05 → B06 → B07 → B08 → B09 → B10 → B11 → B12 → B40 → B21 → B13 → B16 → B17 → B15 → B18. UX works B04 and B14 in parallel. B19 runs last.
 
 ---
 
@@ -260,7 +275,7 @@ Format for each: **Proposed (audit)** is what gets built if UX approves as writt
 
 ## Round 1 tickets
 
-**Final round-1 list (UX lead, Option A, full scope):** B01 (done), B02 to B21, B26 and B38. B38 and B26 are P1: B38 right after B03, B26 right after B14. B15 waits on the owner's contacts and is the launch blocker; B17 is built now with its contact buttons hidden until then. B19 runs last.
+**Final round-1 list (UX lead, Option A, full scope):** B01 (done), B02 to B21, B26, B38, B39, B40 and B41. P1, in this order: B38, B41, B26, B39 (the motion pass runs alongside the others), then B40 as soon as share cards exist (B11). B15 waits on the owner's contacts and is the launch blocker; B17 is built now with its contact buttons hidden until then. B19 runs last.
 
 ### B01. T0: split `index.html` (done)
 Owner DEV · Size M · **Done: merged into `main`** · From: plan T0
@@ -271,7 +286,7 @@ Owner DEV (UX picks crops) · Size L · **In progress on `dev/assets`**, followi
 - **Goal:** every emoji and generic glyph replaced per D12, with cut-out transparent PNGs in `assets/ui/`, one inline-SVG line-icon set, a star shape and a sparkle shape. **Every Ekky doodle cut-out doubles as a sticker** for B21 (D17). Re-crop `cat-social.png` and `cat-web.png`.
 - **Note from this backlog:** with D0, D1 and D2, T1 can skip hearts, the trophy cup, the map pin, and the pack, coin, Legendary Pull and Completionist icons.
 - **Acceptance:** the G2 emoji scan of `www/` returns 0. A UX contact sheet shows each icon readable at 32 px on `#2B1642` and on white. Nothing in `assets/ui/` is cut from fan or client art.
-- **Avatar (owner question 1, UX correction):** B02 swaps no avatar. `face.png` stays on the middle tab, the favicon and Level 1; `hero.png` stays on the HUD avatar and the map token, until the owner says which drawing is Ekky.
+- **Avatar (owner answer 11, "yes to all"):** `hero.png`, the glasses guy on Little Planet, is Ekky: HUD avatar, map token, Level 1 and the desktop hero wave. `face.png` stays on the middle tab button and the favicon, and is a sticker.
 
 ### B03. Art metadata and the share guard
 Owner DEV · Size S (1 h) · R1 must-have · Depends: B01 · From: brief #1, audit #6
@@ -448,6 +463,35 @@ Owner UX (copy), DEV · Size S (1 h) · **R1 must-have, P1** · Depends: B14 · 
   - These replace the self-rated stat bars on Level 1 (B05). Strings come from the `COPY` object (B14).
 - **Acceptance:** at 1440 x 900 and on the phone, the four facts show in About, in Level 1 and (price and hours) in the Final Quest sheet. No client logo is used as an image. No stat percentages remain.
 
+### B39. Motion pass: slow, calm, meaningful (P1)
+Owner DEV · Size S (2 h) · **R1 must-have, P1** · Depends: B05 · From: owner direction 9 ("dont make the animation too fast make it slow but make sense")
+- **Goal:** one set of motion tokens in `css/` and used everywhere: `--t-tap: 250ms`, `--t-move: 500ms` (450 to 600), `--t-reveal: 1000ms` (0.8 to 1.2 s), ambient loops 6 to 12 s; easing `cubic-bezier(.22,.61,.36,1)` (calm ease-out) for entering, `cubic-bezier(.4,0,.2,1)` for moving. No bounce overshoot over 4%, no flashing, nothing faster than 200 ms except the tap press itself.
+- **Every motion has a reason**, and B39 lists them in `docs/motion.md` (one line each): what moves, how long, and what it tells the visitor (for example "the lightbox grows out of the tapped tile, so you know which piece opened"; "the reveal slides Ekky's colors over yours, so you can compare"). A motion with no reason is removed.
+- `prefers-reduced-motion`: transitions become 150 ms fades, ambient loops stop.
+- **Acceptance (UX lead, hiring-client view):** UX watches a phone and a desktop capture of every screen. Each motion is either named in `docs/motion.md` with a reason a client would understand, or it is gone. No ambient loop runs faster than 6 s. Star Catcher keeps its own game speed (B13), but its menus follow these tokens. Reduced motion leaves no movement except fades.
+
+### B40. Download everywhere, and "Install app" (P1)
+Owner DEV · Size M (3 h) · **R1 must-have, P1** · Depends: B11 (share card renderer), B38 · From: owner direction 10 ("dont forget to add download button"), owner answer 11
+- **Goal:**
+  - **A Download button next to every Share:** coloring, Doodle Scene, sticker scenes, Star Catcher result card and every share card. Line icon `i-download` (same set) plus the word "Download" (`dl.button`); never an icon alone.
+  - It saves a PNG at story size (1080 x 1920), with a "Square" (1080 x 1080) choice if the renderer can lay it out cheaply. Every PNG carries the credit line ("Illustrated by Ekky Arya", or "Ilustrasi oleh Ekky Arya" in Indonesian) and `ekkyarya.com`.
+  - File names name Ekky and the piece: `ekkyarya-coloring-<slug>.png`, `ekkyarya-scene-<date>.png`, `ekkyarya-stars-<score>.png`, `ekkyarya-<slug>.png`.
+  - Download is also the fallback wherever the Web Share API is missing.
+  - Only `shareable(p)` art may appear in a download, the same rule as share cards.
+  - **Lightbox:** `FEATURES.artDownload` (owner: yes) shows a Download button on every piece except fan art. It saves a smaller copy, at most 1600 px on the long side, with a subtle "ekkyarya.com" mark in a corner (about 3% of the width, 60% opacity), and shows `lb.downloadNote` once. Client pieces keep their tag in the lightbox.
+  - **Install app:** behind `FEATURES.pwa`, an "Install the app" button where the browser fires `beforeinstallprompt` (in "Mine" and the desktop footer), hidden otherwise. When the owner sends the Android build URL, an "Get the Android app" link next to it.
+- **Acceptance (UX lead, hiring-client view):**
+  - After Done in coloring, the Download button is on screen with no more than one tap (zero is better), on a 390 x 664 phone viewport, without scrolling.
+  - Its label reads "Download" (or "Unduh") next to a download icon; a first-time tester names what it does before tapping (B19).
+  - The saved PNG opens at 1080 x 1920 with the credit line readable, and the file name starts with `ekkyarya-`.
+  - In the lightbox, Download shows on an original and on a client piece and never on a fan-art piece; the saved image is at most 1600 px with the mark; the "Client: X" tag stays visible.
+  - With `FEATURES.artDownload = false`, the lightbox button is gone and nothing else changes.
+
+### B41. English / Bahasa Indonesia switch (P1)
+Owner DEV (copy by UX, done) · Size S (2 h) · **R1 must-have, P1** · Depends: B14 · From: owner answer 11
+- **Goal:** every user-facing string comes from `t(key)`, piece titles and descriptions from `ptitle(p)` / `pdesc(p)`, tags from `plabel(p)` and category names from `catName(c)` (all in `js/data.js`). A small "EN / ID" switch sits in the HUD menu, in "Mine", and in the desktop header; `setLang()` remembers the choice, and the first visit follows the browser language. `<html lang>` follows. Share captions, the credit line on share images and downloads, and the arrival screens use the current language.
+- **Acceptance:** with a browser in `id-ID`, a first visit shows Indonesian everywhere (start, map, levels, Art, lightbox, Hire, Star Catcher, share card); with `en-US`, English. Switching and reloading keeps the choice. No English string is left on an Indonesian screen except names (Star Catcher, Fan art, client names). No layout breaks with the longer Indonesian strings at 390 px.
+
 ### B19. Round-1 playtest and scorecard run
 Owner DIRECTOR · Size S · R1 must-have, last · Depends: B03 to B18
 - **Goal:** a timed first-60-seconds run from a fresh profile, share taps, deep-link time, Hire from each screen, any dead moment longer than 10 s, Star Catcher averages, a **"simple" test**: 3 first-time testers each start coloring and Star Catcher without any help, and a **"play your way" test**: each tester is asked to do only what they feel like. Note which paths they pick, whether any felt forced, and whether anyone hit a wall, a lock or a fail screen (target: none), and a **"make it yours" test**: each tester makes one coloring or scene. Count how many different-looking results come out, and how many testers wanted to share theirs.
@@ -489,7 +533,7 @@ Asked through the integrator. The safe default applies until an answer comes in.
 
 | # | Question | Safe default | Blocks |
 |---|---|---|---|
-| 1 | Which avatar is really you: the glasses guy in `hero.png` or the blue-haired `face.png`? | **Neutral until the owner answers:** keep `face.png` where it is used today (middle tab, favicon, Level 1) and `hero.png` where it is used today (HUD avatar, map token). Nothing is swapped before the answer; afterwards, one file in `assets/ui/` makes it a one-line change. | B02 |
+| 1 | Which avatar is really you? | **Answered ("yes to all"):** the glasses guy in `hero.png` is Ekky (HUD avatar, map token, Level 1, hero wave); `face.png` stays on the middle tab and the favicon. | closed |
 | 2 | Which pieces are your own and which are client work? | **Answered (2026-10-27):** everything is Ekky's; Morumelons and the NFT pieces are his own project; Plug Hero and Toybox are self projects; Pop Mie was not a client (it becomes fan art, see B04b). **Still open:** which of Sequis, Intiland, Viar, pbTaxand, Honshu, Suapi and Bima goes with Character Crowd Banner, My Sports Club, Save Early Buy Future and Thinker & Doer; is the fire spirit in RPG Ekky's design; are Beansproud and Puff character names? | B04b |
 | 3 | NFT #3 and #9: rights, and larger files | **Answered:** "yes to all Morumelon pieces"; both are Ekky's. **Still open:** files at 1000 px or more. Until then they show at 256 px (no upscaling on share cards). | B34 |
 | 4 | What domain do share links use: `ekkyarya.com` or the GitHub Pages URL for now? | `CONFIG.siteUrl` stays empty, so links use the current page URL. In the Android app, links use the Pages URL. | B11, B12 |
@@ -497,11 +541,14 @@ Asked through the integrator. The safe default applies until an answer comes in.
 | 6 | Can you send line layers (transparent PNG, 2000 px) for Road Trip, Little Planet, Giraffe and Plug Hero? Is it OK to extract your own lines from the JPG by darkness threshold? | Per D8 as UX approves: Road Trip from a layer if it arrives in time, otherwise Giraffe by threshold. | B09, B20 |
 | 7 | Reply time, availability and a starting price. | **Answered:** "Evening to night, starting price $25." No reply time is promised. | B17, B26 |
 | 8 | May we name your clients in a "Worked with" row? | **Answered:** Sequis, Intiland, Viar, pbTaxand, Honshu, Suapi, Bima. **Open:** may Indomaret, BCA, MSI, Tea Break and Fizzy Tube be named in that row too? Default: the row lists only the owner's seven; those names stay in the piece tags. | B26 |
-| 9 | Location, time zone and languages. | **Answered:** Indonesian; speaks Indonesian (Bahasa) and English. Time zone GMT+7 assumed from Indonesia (Ekky may be in WITA or WIT; default GMT+7). | B26 |
+| 9 | Location, time zone and languages. | **Answered:** Indonesian; works in Indonesian and English; WIB (GMT+7), confirmed ("yes to all"). | closed |
 | 10 | Sketch files of one lead piece. | Text-only process steps. | B30 |
 | 11 | An SVG logo, a Type Is Art still, and doodle cut-outs. | Today's files. Any crop that fails at 32 px becomes a simple palette shape. | B02, B34 |
 | 12 | De-gamification: no trophies and no lives? | **Answered:** no trophies, no lives. | closed |
 | 13 | Login and locked features? | **Answered:** nothing ever locked. Round 1 has no login. | closed |
+| 14 | May visitors download your portfolio pieces? | **Answered ("yes to all"):** yes, a smaller watermarked copy, never fan art (B40). | closed |
+| 15 | Should client pieces become reusable? | **Answered ("yes to all"):** yes, with their tags kept. | closed |
+| 16 | The Android app URL, for the "Get the Android app" link. | Hidden until it exists. | B40 |
 
 Integrator question: a QR code on share cards needs an encoder (a new package or about 300 lines of code). Default: no QR.
 
