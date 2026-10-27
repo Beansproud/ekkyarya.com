@@ -50,6 +50,7 @@ function go(to){
   G.querySelectorAll(".g-screen").forEach(s=>s.classList.toggle("active",s.id==="g-"+to));
   G.querySelectorAll(".g-tabs button").forEach(b=>b.classList.toggle("active",b.dataset.tab===to));
   if(to==="mine")renderMine();
+  if(to==="map")renderMap();
   requestAnimationFrame(moveInd);
 }
 G.querySelector(".g-tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(b){buzz(10);go(b.dataset.tab)}});
@@ -61,16 +62,28 @@ function renderStart(){const six=PROJECTS.map((p,i)=>({p,i})).filter(x=>x.p.feat
   $("gFeatured").innerHTML=six.map(({p,i})=>`<button class="g-feat" data-i="${i}" aria-label="${esc(p.title)}"><img src="${p.img}" alt="" loading="lazy"><b>${esc(p.title)}</b></button>`).join("")}
 $("gFeatured").addEventListener("click",e=>{const b=e.target.closest(".g-feat");if(b){buzz(10);show(+b.dataset.i)}});
 
-/* ---- map: 5 places, never locked, no "next level" pressure ---- */
+/* ---- map: an isometric world of 5 floating islands, never locked, no "next level" pressure (B06) ---- */
+// Each place is a small isometric island (grass top, earth sides) with Ekky's cut-out standing on it; plank bridges join them.
+const ISLAND={about:["#7ED9B0","#3f9f74","#2f7d59"],color:["#FFD45C","#c99a1e","#a87d12"],art:["#C9A7FF","#8f6fd1","#7558b5"],
+  process:["#B8D5FF","#7a9fd6","#5f84bd"],hire:["#FF9A8A","#d45a45","#a8402f"]};
+function isoIsland(n,tw,d,[top,left,right]){const th=tw/2,W=n*tw,H=n*th;let grid="";
+  for(let k=1;k<n;k++)grid+=`M${W/2-k*tw/2} ${k*th/2}L${W-k*tw/2} ${H/2+k*th/2}M${W/2+k*tw/2} ${k*th/2}L${k*tw/2} ${H/2+k*th/2}`;
+  return `<svg class="g-iso" width="${W}" height="${H+d}" viewBox="0 0 ${W} ${H+d}" aria-hidden="true">
+    <path d="M0 ${H/2}L${W/2} ${H}V${H+d}L0 ${H/2+d}z" fill="${left}"/><path d="M${W/2} ${H}L${W} ${H/2}V${H/2+d}L${W/2} ${H+d}z" fill="${right}"/>
+    <path d="M${W/2} 0L${W} ${H/2}L${W/2} ${H}L0 ${H/2}z" fill="${top}"/><path d="${grid}" stroke="#fff" stroke-opacity=".35" stroke-width="1"/>
+    <path d="M0 ${H/2}L${W/2} 0L${W} ${H/2}" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="2" stroke-linejoin="round"/>
+    <ellipse cx="${W/2}" cy="${H/2+2}" rx="${tw*.55}" ry="${th*.45}" fill="#2B1342" opacity=".22"/></svg>`}
 function renderMap(){
-  const W=$("gMapWrap"),STEP=62,TOP=40,X=[22,78,22,78,50],h=TOP+STEP*4+48;
-  const pts=X.map((x,i)=>[x,TOP+i*STEP]);
-  let d=`M${pts[0][0]} ${pts[0][1]}`;for(let i=1;i<pts.length;i++){const [x0,y0]=pts[i-1],[x1,y1]=pts[i];d+=` C${x0} ${(y0+y1)/2} ${x1} ${(y0+y1)/2} ${x1} ${y1}`}
+  const W=$("gMapWrap"),cw=Math.min(420,W.clientWidth||innerWidth-32),TOP=52,STEP=62,D=12;
+  const P=LEVELS.map((l,i)=>{const n=3,tw=l.boss?42:36,s=l.boss?62:52;
+    return {l,i,n,tw,s,H:n*tw/2,x:cw*(l.boss?.38:i%2?.72:.28),y:TOP+i*STEP+(l.boss?18:0)}});
+  const last=P[P.length-1],h=last.y+last.H/2+D+30;
+  let planks="";for(let i=1;i<P.length;i++){const a=P[i-1],b=P[i],steps=Math.floor(Math.hypot(b.x-a.x,b.y-a.y)/13);
+    for(let k=1;k<steps;k++){const x=a.x+(b.x-a.x)*k/steps,y=a.y+(b.y-a.y)*k/steps;planks+=`<path d="M${x.toFixed(1)} ${(y-3).toFixed(1)}l7 3-7 3-7-3z"/>`}}
   W.style.height=h+"px";
-  W.innerHTML=`<svg class="g-path" viewBox="0 0 100 ${h}" preserveAspectRatio="none"><path d="${d}" vector-effect="non-scaling-stroke"/></svg>`+
-    LEVELS.map((l,i)=>{const [x,y]=pts[i],side=l.boss?"right boss":x<50?"right":"left";
-      return `<button class="g-node${l.boss?" boss":""}" style="left:${x}%;top:${y}px" data-l="${i}" aria-label="${esc(t(l.key))}">${uiImg(l.icon,"")}</button>
-      <div class="g-label ${side}" style="left:${x}%;top:${y}px">${esc(t(l.key))}</div>`}).join("");
+  W.innerHTML=`<svg class="g-bridges" width="${cw}" height="${h}" viewBox="0 0 ${cw} ${h}" aria-hidden="true"><g fill="#c98a4a" stroke="#7a4a22" stroke-width="1.2" stroke-linejoin="round">${planks}</g></svg>`+
+    P.map(({l,i,n,tw,s,H,x,y})=>`<button class="g-node g-place${l.boss?" boss":""}" style="left:${x}px;top:${y-s+4}px;--s:${s}px;--h:${H}px;animation-delay:${-i*.7}s" data-l="${i}" aria-label="${esc(t(l.key))}">
+      ${uiImg(l.icon,"g-place-ic")}${isoIsland(n,tw,D,ISLAND[l.id])}<span class="g-place-label">${esc(t(l.key))}</span></button>`).join("");
 }
 $("gMapWrap").addEventListener("click",e=>{const n=e.target.closest(".g-node");if(!n)return;buzz(15);sfx("tap");openLevel(+n.dataset.l)});
 

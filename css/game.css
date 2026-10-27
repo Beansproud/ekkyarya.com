@@ -58,15 +58,6 @@ body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family
 
 /* map */
 .g-map-wrap{position:relative;margin:10px auto 0;max-width:420px}
-.g-path{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
-.g-path path{fill:none;stroke:#5b4482;stroke-width:10;stroke-linecap:round;stroke-dasharray:2 22;animation:dashMove 1.2s linear infinite}
-@keyframes dashMove{to{stroke-dashoffset:-24}}
-.g-node{position:absolute;width:68px;height:68px;margin:-34px 0 0 -34px;border-radius:50%;font-size:2.1rem;display:grid;place-items:center;z-index:2;
-  background:radial-gradient(circle at 35% 28%,#ffe08a,#FFB400 58%,#d99400);box-shadow:0 8px 0 #a86f00,0 14px 26px rgba(0,0,0,.45);transition:transform .1s,box-shadow .1s}
-.g-node:active{transform:translateY(6px);box-shadow:0 2px 0 #a86f00}
-.g-node.boss{width:84px;height:84px;margin:-42px 0 0 -42px;font-size:2.6rem;background:radial-gradient(circle at 35% 28%,#ffc2c2,#FF6B6B 58%,#d44545);box-shadow:0 8px 0 #9d2c2c,0 14px 26px rgba(0,0,0,.45)}
-.g-node img{width:48px;height:48px;object-fit:contain;filter:drop-shadow(0 2px 0 rgba(43,19,66,.45))}
-.g-node.boss img{width:64px;height:64px}
 
 /* falling collectible stars */
 
@@ -200,10 +191,18 @@ body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family
 
 /* map: 5 places, labels beside the nodes, all on one phone screen (B06) */
 .g-map-wrap{margin-top:4px}
-.g-label{position:absolute;z-index:2;pointer-events:none;font-weight:700;font-size:.95rem;text-shadow:0 2px 0 #120a1f;white-space:nowrap;transform:translateY(-50%)}
-.g-label.right{margin-left:44px}
-.g-label.left{transform:translate(-100%,-50%);margin-left:-44px;text-align:right}
-.g-label.boss{margin-left:54px}
+.g-head-row{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left}
+.g-head-row .g-title,.g-head-row .g-sub{text-align:left}
+.g-head-row .g-btn{flex:none}
+/* isometric map: floating islands with Ekky's cut-outs (B06) */
+.g-bridges{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
+.g-place{position:absolute;z-index:2;display:flex;flex-direction:column;align-items:center;transform:translateX(-50%);animation:islandBob 4s ease-in-out infinite;-webkit-tap-highlight-color:transparent}
+.g-place-ic{width:var(--s);height:var(--s);object-fit:contain;margin-bottom:calc(var(--h) / -2 - 4px);position:relative;z-index:1;filter:drop-shadow(0 3px 0 rgba(43,19,66,.35));transition:transform .15s}
+.g-place:active .g-place-ic{transform:translateY(4px) scale(.94)}
+.g-iso{display:block;filter:drop-shadow(0 10px 10px rgba(0,0,0,.35))}
+.g-place-label{margin-top:4px;padding:3px 10px;border-radius:10px;background:#241638;border:2px solid #3e2a5c;font-weight:700;font-size:.85rem;white-space:nowrap;text-shadow:none}
+.g-place.boss .g-place-label{background:#FF6B6B;border-color:#9d2c2c;color:#2B1342}
+@keyframes islandBob{50%{transform:translate(-50%,-5px)}}
 
 /* Art */
 .g-tag{display:inline-block;margin-top:4px;font-family:Poppins;font-size:.72rem;font-weight:600;padding:2px 7px;border-radius:7px;background:#3e2a5c;color:#e6defa}
