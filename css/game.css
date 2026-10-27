@@ -627,3 +627,33 @@ body.game-mode #game.at-start{background:var(--paper,#FBF7EE) var(--grain);color
 /* ===== Developer A: village zoom nits (UX): labels keep their 1x size when the map is zoomed ===== */
 .v-map .v-label{transform:translate(-50%,0) scale(var(--zs,1));transform-origin:50% 0}
 .v-map.zoomed{max-width:none}
+
+/* ===== Developer A: S1 paper for the Art and Mine tabs =====
+   Same sketchbook page as the start screen (Developer B's tokens): off-white paper, ink text, the drawings taped on
+   at a fixed per-piece tilt (tiltOf), flat paper tiles, no rarity borders, badge circles or foil. Nothing moves. */
+body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color:#2B1342}
+#game.at-paper .g-sky,#game.at-paper .g-planet-bg{display:none}
+#game.at-paper .g-title{color:#2B1342;text-shadow:none}
+#game.at-paper .g-sub,#game.at-paper .g-small{color:#645F70}
+#g-art .g-filters button{background:#FFFDF8;border:1.5px solid #2B1342;border-radius:6px;color:#2B1342}
+#g-art .g-filters button.active{background:#FFB400}
+#g-art .g-cards{gap:20px 16px;padding-top:8px}
+#g-art .g-card,#g-mine .g-mine-item{position:relative;animation:none;transform:rotate(var(--tilt,-1deg));perspective:none}
+#g-art .g-card::before,#g-mine .g-mine-item::before{content:"";position:absolute;top:-7px;left:50%;width:40px;height:13px;margin-left:-20px;
+  background:var(--tape,rgba(255,180,0,.35));transform:rotate(calc(var(--tilt,-1deg) * -2));z-index:2;pointer-events:none}
+#g-art .g-card .inner{background:#FFFDF8;border:0;border-radius:2px;padding:6px 6px 0;box-shadow:var(--paper-shadow,0 2px 6px rgba(0,0,0,.12));overflow:visible}
+#g-art .g-card .art{border-radius:1px;background:#F1EBDD}
+#g-art .g-card .art:has(> img.ok){background:#F1EBDD}
+#g-art .g-card .gcat,#g-art .g-card.legendary .inner::after{display:none}
+#g-art .g-card .info{padding:5px 2px 7px}
+#g-art .g-card .info b{color:#2B1342}
+#g-art .g-tag{background:none;border:1px solid #2B1342;border-radius:3px;color:#2B1342}
+#g-mine .g-panel{background:#FFFDF8;border:1.5px solid #E4DCCB;border-radius:6px;box-shadow:none}
+#g-mine .g-panel h3,#g-mine .g-best{color:#2B1342}
+#g-mine .g-row{color:#3d3550;border-top-color:#E4DCCB}
+#g-mine .g-switch::before{background:#D9D1C2}
+#g-mine .g-switch.on::before{background:#7ED9B0}
+#g-mine .g-mine-list{gap:18px 14px;padding-top:6px}
+#g-mine .g-mine-item{background:#FFFDF8;border-radius:2px;padding:6px 6px 0;box-shadow:var(--paper-shadow,0 2px 6px rgba(0,0,0,.12));overflow:visible}
+#g-mine .g-mine-item b{color:#2B1342;padding:5px 2px 7px}
+#g-mine .g-best{font-size:1.1rem;font-weight:600}

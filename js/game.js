@@ -48,7 +48,7 @@ let screen="start";
 function go(to){
   if(to==="color")return typeof Color!=="undefined"?Color.openPicker():null;
   if(to==="hire")return openHire();
-  screen=to;G.classList.toggle("at-start",to==="start");
+  screen=to;G.classList.toggle("at-start",to==="start");G.classList.toggle("at-paper",to==="art"||to==="mine");   // S1: Art and Mine on paper
   G.querySelectorAll(".g-screen").forEach(s=>s.classList.toggle("active",s.id==="g-"+to));
   G.querySelectorAll(".g-tabs button").forEach(b=>b.classList.toggle("active",b.dataset.tab===to));
   if(to==="mine")renderMine();
@@ -239,7 +239,7 @@ function renderArt(){
   $("gFilters").innerHTML=[["all","All"],["illustration","Illustration"],["web","Web & UI"],["branding","Branding"],["social","Social"]]
     .map(([f,n])=>`<button class="${f===gFilter?"active":""}" data-f="${f}" aria-pressed="${f===gFilter}">${catImg(f)}${esc(tt("filter."+f,n))}</button>`).join("");
   const list=PROJECTS.map((p,i)=>({p,i})).filter(x=>gFilter==="all"||x.p.cat===gFilter);
-  $("gCards").innerHTML=list.map(({p,i},k)=>`<button class="g-card${p.rar===3?" legendary":""}" data-i="${i}" style="--rc:${RARITY[p.rar||0]};animation-delay:${Math.min(k,12)*.04}s"><div class="inner">
+  $("gCards").innerHTML=list.map(({p,i},k)=>`<button class="g-card" data-i="${i}" style="--tilt:${typeof tiltOf==="function"?tiltOf(p):"-1deg"}"><div class="inner">
       <span class="gcat">${catImg(p.cat,"")}</span><div class="art">${artOf(p)}</div><div class="info"><b>${esc(ptitle(p))}</b>${p.label?`<span class="g-tag">${esc(plabel(p))}</span>`:""}</div></div></button>`).join("");
   $("gArtCount").textContent=t("art.count",{n:list.length});
 }
@@ -249,7 +249,7 @@ $("gCards").addEventListener("click",e=>{const c=e.target.closest(".g-card");if(
 /* ---- Mine: things you made, never rewards ---- */
 function renderMine(){
   const list=Object.entries(st.colorings||{}).sort((a,b)=>(b[1].at||0)-(a[1].at||0));
-  $("gMineList").innerHTML=list.length?list.map(([id,c])=>`<button class="g-mine-item" data-page="${esc(id)}" aria-label="${esc(c.title||id)}">${c.thumb?`<img src="${c.thumb}" alt="">`:""}<b>${esc(c.title||id)}</b></button>`).join(""):`<p class="g-small">${esc(t("mine.empty"))}</p>`;
+  $("gMineList").innerHTML=list.length?list.map(([id,c])=>`<button class="g-mine-item" data-page="${esc(id)}" aria-label="${esc(c.title||id)}" style="--tilt:${typeof tiltOf==="function"?tiltOf({slug:id}):"-1deg"}">${c.thumb?`<img src="${c.thumb}" alt="">`:""}<b>${esc(c.title||id)}</b></button>`).join(""):`<p class="g-small">${esc(t("mine.empty"))}</p>`;
   if($("gBest"))$("gBest").innerHTML=st.best?`${ico("s-star")} ${esc(t("mine.best",{n:st.best}))}`:esc(t("mine.best.none"));
   syncToggles();
 }
