@@ -357,3 +357,4 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 .g-start-foot{display:flex;gap:8px;width:100%}
 .g-start-foot .g-classic{flex:1}
 .g-mine-list .g-small{grid-column:1/-1}
+.g-sheet h2{padding-right:56px}
