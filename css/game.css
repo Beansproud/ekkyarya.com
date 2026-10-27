@@ -548,3 +548,40 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 .v-cloud,.v-shimmer,.v-smoke{display:none}
 /* the turn-your-phone hint turns twice, then rests */
 .pp-turn img{animation-iteration-count:2}
+
+/* ===== S1, the sketchbook look: start screen and HUD (Developer B) =====
+   The start screen is a page of Ekky's sketchbook: off-white paper with a faint grain (tokens from css/site.css),
+   the six drawings taped on at a fixed 1 to 2 degree tilt, flat paper tiles, ink text. Nothing moves.
+   The other screens keep the night sky for now; the HUD follows whichever page it sits on. */
+body.game-mode #game.at-start{background:var(--paper,#FBF7EE) var(--grain);color:#2B1342}
+#game.at-start .g-player b{color:#2B1342}
+#game.at-start .g-sky,#game.at-start .g-planet-bg{display:none}
+#game.at-start .g-hud{background:none}
+#game.at-start .g-player small{color:#645F70}
+#game.at-start .g-avatar{background:#FFFDF8;border:1.5px solid #2B1342;border-radius:50%}
+#game.at-start .g-round{background:#FFFDF8;border:1.5px solid #E4DCCB;color:#2B1342}
+#game.at-start .g-hud .g-hire{border-radius:6px;box-shadow:0 3px 0 #9d2c2c}
+#g-start .g-tagline{color:#2B1342;text-shadow:none}
+#g-start .g-row-title{color:#2B1342}
+#g-start .g-hint{color:#645F70}
+#g-start .g-hint .ico{color:#2B1342}
+#g-start .g-featured{gap:16px 14px;padding-top:6px}
+#g-start .g-feat-cell{--tilt:-1.5deg;transform:rotate(var(--tilt))}
+#g-start .g-feat-cell:nth-child(2){--tilt:1.2deg}
+#g-start .g-feat-cell:nth-child(3){--tilt:-1deg}
+#g-start .g-feat-cell:nth-child(4){--tilt:1.8deg}
+#g-start .g-feat-cell:nth-child(5){--tilt:-1.2deg}
+#g-start .g-feat-cell:nth-child(6){--tilt:1.5deg}
+#g-start .g-feat-cell::before{content:"";position:absolute;top:-7px;left:50%;width:40px;height:13px;margin-left:-20px;background:rgba(236,224,196,.9);
+  transform:rotate(calc(var(--tilt) * -2));box-shadow:0 1px 1px rgba(60,40,20,.12);z-index:2;pointer-events:none}
+#g-start .g-featured .g-feat{background:#FFFDF8;border-radius:2px;padding:4px 4px 0;box-shadow:0 1px 0 #E4DCCB,0 2px 5px -2px rgba(60,40,20,.3)}
+#g-start .g-featured .g-feat img{border-radius:1px}
+#g-start .g-featured .g-feat b{color:#2B1342;padding:4px 2px 5px}
+#g-start .g-feat-dl i{border-radius:50%;background:#FFFDF8;border:1.5px solid #2B1342;color:#2B1342;box-shadow:none}
+#g-start .g-tile,#g-start .g-tile.catch,#g-start .g-tile.explore{border-radius:6px;border:1.5px solid #2B1342;box-shadow:0 3px 0 #2B1342}
+#g-start .g-tile:active{transform:translateY(2px);box-shadow:0 1px 0 #2B1342}
+#g-start .g-start-foot .g-classic{background:#FFFDF8;color:#2B1342;border:1.5px solid #2B1342;border-radius:6px}
+#g-start .g-start-foot .lang-switch{border-radius:6px;box-shadow:inset 0 0 0 1.5px #2B1342}
+#g-start .g-start-foot .lang-switch button{background:#FFFDF8;color:#2B1342}
+#g-start .g-start-foot .lang-switch button[aria-pressed="true"]{background:#FFB400}
+#g-start .g-logo{filter:none}
