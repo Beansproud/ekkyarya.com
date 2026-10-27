@@ -270,7 +270,6 @@ body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family
 .c-sw.on::before{box-shadow:0 0 0 3px #120a1f,0 0 0 6px #FFB400}
 .c-any::before{background:conic-gradient(#FF6B6B,#FFB400,#7ED9B0,#B8D5FF,#C9A7FF,#FF6B6B)}
 .c-any .ico{position:absolute;width:18px;height:18px;color:#2B1342}
-.c-any-input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;bottom:0;left:0}
 .c-tools{display:flex;gap:8px;flex:none}
 .c-tool{flex:1;min-height:48px;border-radius:14px;background:#2f1f47;border:2px solid #3e2a5c;color:#fff;display:flex;align-items:center;justify-content:center;gap:6px;font-family:Fredoka;font-weight:600;font-size:.95rem}
 .c-tool .ico{width:22px;height:22px;vertical-align:0}
@@ -680,6 +679,13 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 #g-start .g-start-head .g-tagline{grid-column:1/-1;margin:6px 0 0;max-width:none}
 #c-edit .c-tool:disabled,.c-tool:disabled{opacity:.4;cursor:default}
 
+/* Map face in the tab bar: whole face, centered, 6px inset; a 4px paper ring separates the circle from the bar line; the circle
+   outline and the bar border are both 1.5px ink; the label sits on the same baseline as its neighbours. */
+.g-face{box-sizing:border-box;padding:6px;object-fit:contain;object-position:center;border:4px solid #FFFDF8;box-shadow:0 0 0 1.5px #2B1342;background-clip:padding-box;background-color:#D3FFD8}
+.g-tabs button.center{justify-content:flex-end;padding-bottom:11px}
+.g-tabs button.center small{text-align:center;width:100%}
+.g-tabs button.center.active .g-face{box-shadow:0 0 0 1.5px #2B1342,0 0 0 4px #FFB400}
+
 /* Developer 3: touch */
 /* Touch response, added by js/site.js on pointerdown (touch only, once, removed on animationend). Uses the individual
    scale and rotate properties so a tile's own tilt in transform is untouched. */
@@ -697,3 +703,38 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 #game .g-home:active{transform:translateY(1px);box-shadow:0 1px 0 #2B1342}
 #game.at-start .g-home,#game.playing .g-home{display:none}
 #game:has(.c-over.open) .c-top{padding-left:52px}
+.c-wheel{position:absolute;left:0;right:0;bottom:0;z-index:5;background:#2a1a40;color:#FFF;border-radius:18px 18px 0 0;padding:14px 16px calc(14px + env(safe-area-inset-bottom));box-shadow:0 -6px 24px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:10px}
+.c-wheel[hidden]{display:none}
+.c-wheel-top{display:flex;align-items:center;gap:12px;min-height:44px}
+.c-wheel-pre{width:44px;height:44px;border-radius:50%;box-shadow:inset 0 0 0 2px rgba(255,255,255,.5)}
+.c-strip{position:relative;height:44px;border-radius:22px;touch-action:none;cursor:pointer;outline-offset:3px}
+.c-strip canvas{display:block;width:100%;height:100%;border-radius:22px;box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}
+.c-knob{position:absolute;top:2px;width:8px;height:40px;margin-left:-4px;border-radius:4px;background:#FFF;box-shadow:0 0 0 2px #120a1f;pointer-events:none}
+.c-wheel-row{display:flex;gap:10px;justify-content:flex-end}
+.c-wheel-row .g-btn{min-height:44px}
+.c-top b{color:#FFF}   /* the page title in the top bar inherited the ink color: dark on dark */
+.c-pair figcaption{color:#E7DDF5}   /* "Yours" / "Ekky" captions were dark on the dark reveal page */
+/* Touch reactions, added by js/site.js on pointerdown (touch only, once, removed on animationend) and hover reactions on
+   mouse devices. Everything uses the individual scale, rotate and translate properties, so a tile's own tilt and a
+   walker's own placement in transform are untouched. Nothing runs untouched and nothing loops. */
+@keyframes t-squash{0%{scale:1}30%{scale:.9}70%{scale:1.06}100%{scale:1}}
+@keyframes t-wiggle{0%{rotate:0deg;translate:0 0}20%{rotate:-4deg;translate:0 -5px}40%{rotate:4deg;translate:0 -6px}60%{rotate:-3deg;translate:0 -4px}80%{rotate:2deg;translate:0 -1px}100%{rotate:0deg;translate:0 0}}
+@keyframes t-bounce{0%{translate:0 0;scale:1}35%{translate:0 -8px;scale:.94}70%{translate:0 1px;scale:1.05}100%{translate:0 0;scale:1}}
+@keyframes t-nod{0%{rotate:0deg}30%{rotate:10deg}60%{rotate:-6deg}100%{rotate:0deg}}
+@keyframes t-burst{0%{opacity:1;scale:.4;translate:-50% -50%}100%{opacity:0;scale:1;translate:calc(-50% + var(--dx)) calc(-50% + var(--dy));rotate:var(--r)}}
+@keyframes t-bob{0%,100%{translate:0 0}40%{translate:0 -5px}}
+.t-squash{animation:t-squash .3s ease-out}
+.t-wiggle{animation:t-wiggle .36s ease-out}
+.t-bounce{animation:t-bounce .3s ease-out}
+.t-nod{animation:t-nod .35s ease-out}
+.t-burst{position:fixed;z-index:99999;width:28px;height:28px;object-fit:contain;pointer-events:none;animation:t-burst .5s ease-out forwards}
+@media (hover:hover) and (pointer:fine){
+  .btn,.g-tile,.play-card,.g-hire,.filters button,.socials a,.g-feat-dl,.g-link,.g-tabs button,.c-sw,.c-st,.c-tool{transition:translate .2s,scale .2s,rotate .2s}
+  .btn:hover,.g-tile:hover,.play-card:hover,.filters button:hover,.socials a:hover,.g-feat-dl:hover,.g-link:hover,.g-tabs button:hover,.c-sw:hover,.c-st:hover,.c-tool:hover{translate:0 -2px;scale:1.04}
+  .tile,.feat,.g-feat{transition:translate .2s,scale .2s,rotate .2s,box-shadow .3s}
+  .tile:hover,.feat:hover,.g-feat:hover{translate:0 -4px;scale:1.04;rotate:calc(var(--tilt,0deg) * -1)}
+  .g-hire:hover{animation:t-wiggle .36s ease-out}
+  .v-place:hover,.v-walker:hover,.v-folk:hover{animation:t-bob .3s ease-out}
+}
+@media (prefers-reduced-motion:reduce){.t-squash,.t-wiggle,.t-bounce,.t-nod,.t-burst{animation:none}.t-burst{display:none}
+  .btn:hover,.g-tile:hover,.play-card:hover,.tile:hover,.feat:hover,.g-feat:hover,.g-hire:hover,.v-place:hover,.v-walker:hover,.v-folk:hover{animation:none;translate:none;scale:none;rotate:none}}
