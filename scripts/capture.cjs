@@ -1,7 +1,7 @@
 // Usage: node scripts/capture.cjs <absolute site dir> <out dir>. Clicks through every game screen on an iPhone 13 viewport and every desktop section, saves screenshots, and prints console errors and the emoji count as JSON. Needs Playwright (preinstalled in Claude cloud sessions).
 const {chromium,devices}=require('playwright');const [,,SITE,OUT]=process.argv;const url='file://'+SITE+'/index.html';
 (async()=>{const b=await chromium.launch();const errs=[];
-const p=await (await b.newContext({...devices['iPhone 13']})).newPage();p.on('pageerror',e=>errs.push('phone: '+e.message));p.on('console',m=>m.type()==='error'&&!/ERR_FILE_NOT_FOUND/.test(m.text())&&errs.push('phone: '+m.text()));
+const p=await (await b.newContext({...devices['iPhone 13']})).newPage();p.on('pageerror',e=>errs.push('phone: '+e.message));p.on('console',m=>m.type()==='error'&&errs.push('phone: '+m.text()));
 const t0=Date.now();await p.goto(url);await p.waitForTimeout(2800);const shot=async n=>{await p.waitForTimeout(900);await p.screenshot({path:`${OUT}/phone-${n}.png`})};const c=s=>p.click(s,{force:true});
 await shot('01-start');await c('#gPlay');await shot('02-map');
 for(const [l,n] of [[0,'03-level-about'],[1,'04-level-skills'],[3,'05-level-process'],[4,'06-level-quest']]){await c(`.g-node[data-l="${l}"]`);await p.waitForTimeout(700);await shot(n);await c('#gSheetX');await p.waitForTimeout(400)}

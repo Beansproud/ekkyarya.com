@@ -1,6 +1,22 @@
 # Minigames brief: "Paint Patrol" and "Little Planet Quest"
 
-**Status: proposed by Game Director, pending UX lead approval.** For the UX lead to turn into backlog tickets. This brief does not change `docs/backlog.md`.
+**Status: approved by UX lead (2026-10-27), with the changes below.** Proposed by the Game Director (director/backlog adc021e). The tickets are slotted in `docs/backlog.md` after the round-1 P1 tickets.
+
+## UX lead review (read this first)
+
+Approved: two games that play like real games and stay a portfolio. Ekky on his desk chair as the hero is charming and honest (his only full-body drawing, cut exactly as drawn). Painting instead of shooting, befriending instead of defeating, every character opening its artwork, and Hire Ekky on every pause and end screen are exactly right for a hiring client. Changes, already applied in the text below:
+
+1. **Only the 29 `kind: "original"` pieces build the games.** The brief matches `main`. `js/data.js` gives those 29 a `game` role and strips it from anything else, so a client or fan piece can't slip in, even though client pieces are reusable elsewhere.
+2. **Genre only, in the product.** The franchise names appear in this document only inside the owner's quote and the hard rules. They never appear in user-facing text, code, file names, comments, page metadata or commit messages. Stage names, area names and character lines (MG8) are reviewed by UX for this.
+3. **No boss-fight theme** (owner: "its a joke you can ignore or dont add bossfight theme to this", reported by the Director). "Boss" is only a design word in this brief: no on-screen text, file name or `COPY` string says "boss" or "boss fight" (checked: none in `COPY.en` or `COPY.id`). The big characters are "grumpy friends to calm down with paint". The RPG piece is not a stage character at all.
+4. **The guide bird stays silent.** A glowing companion that calls out to the player is a signature of the series the owner named. The Blue Bird only flies ahead quietly after Ekky stands still for 6 s; it never speaks, chimes or flashes for attention.
+5. **The fire spirit from "RPG" is not cut or animated** until the owner confirms it is Ekky's own design (open question). At the Lair camp, only the orc, the mouse knight and the armored giant rest by the fire.
+6. **Owner answers:** "use ekky as the hero, landscape is fine" is verified by the integrator. "yes paint and befriend is ok, sound effects only", "no png files, cut them from the images" and the no-boss-fight answer are **reported by the Director**; the brief follows them as the defaults until the integrator verifies them.
+7. **One cut-out pipeline.** `scripts/sprites.py` and the B21 sticker cut-outs share one list, kept in `docs/roles.md`; a cut made for a sticker is reused as a sprite and the other way round.
+8. **Scope:** the vertical slice (MG1 to MG4, about 16 h) runs after the round-1 P1 tickets. MG5 to MG10 start only on a "go" from the MG4 playtest **and** the UX lead's acceptance of the slice.
+
+**UX acceptance for every MG ticket (hiring-client view):** within 30 s of opening a game, a client sees at least 5 of Ekky's characters at full size; every character names its artwork and opens it in one tap; Hire Ekky is reachable in one tap from every pause, stage end and dialog; nothing can be lost, failed or locked; menus and reveals follow the B39 motion tokens; no franchise name and no "boss" wording anywhere in the product.
+
 
 ## Owner direction
 
@@ -104,7 +120,7 @@ Walk around a small isometric island where every house, tree and character comes
 | Phone | **Tap where to go** (the hero walks there along a path); or drag for direct control | Tap a character or an object next to you |
 | Desktop | Arrow keys or WASD (8 directions), or click to walk | Space or E |
 
-The glowing bird from "The Blue Bird" follows Ekky and flies slowly toward the nearest place you haven't seen yet. It is a gentle suggestion, never a requirement (principle 3).
+The glowing bird from "The Blue Bird" follows Ekky. After he stands still for 6 s, it flies slowly toward the nearest place you haven't seen yet. It never speaks, chimes or flashes for attention (UX review point 4). It is a gentle suggestion, never a requirement (principle 3).
 
 ### Rules
 - **No combat, no health, no locks.** Every area is reachable from the start.
@@ -125,7 +141,7 @@ The glowing bird from "The Blue Bird" follows Ekky and flies slowly toward the n
 | **Ekky's House** | A Day in the Life (the four panels become four rooms) | Walk through his day. The phone on the table opens the island map (a plain frame in his palette) |
 | **The Cliffs** | Viking vs Dragon Kid, Merdeka 77 | The two kids duel in slow motion. The cyclist from Merdeka 77 is a mail courier who rides you to the cliff top |
 | **Monster Quarter** | Monster in My Room, Monster Snack Bar, Monster World Doodles | The green monster's house, the snack bar counter, doodle monsters wandering about |
-| **Hidden Lair** (a small 3-room dungeon) | Hidden Monster, Tangled Hands, RPG | The two kids with the lantern. The mimic chest (it bites, then laughs). A "tangled hands" knot puzzle: rotate 4 tiles to untangle it and open a shortcut (the long way round is always open too). In the last room, the RPG party camps by a fire |
+| **Hidden Lair** (a small 3-room dungeon) | Hidden Monster, Tangled Hands, RPG | The two kids with the lantern. The mimic chest (it bites, then laughs). A "tangled hands" knot puzzle: rotate 4 tiles to untangle it and open a shortcut (the long way round is always open too). In the last room, the orc, the mouse knight and the armored giant from RPG rest by a fire (no fire spirit until confirmed, UX review point 5) |
 | **Observatory** | Astronaut (NFT #3), Radio Explorer (NFT #9), Secret Android | The astronaut stargazing. The radio explorer gives hints over the radio. The Secret Android robot opens up in his workshop |
 | **Sky** | The Blue Bird, Year of the Tiger 2022, Virus and War, Plug Hero Mascot, Buried at the Beach | The hiker from The Blue Bird stargazing on a rock, with her glowing bird. The tiger lies in the sun by the gate. The helmet kid from Virus and War waves (Ekky's ally in Paint Patrol, a link to Game A). Plug Hero winds himself up by the beach where the Buried at the Beach kid is stuck in the sand |
 
@@ -160,7 +176,7 @@ The glowing bird from "The Blue Bird" follows Ekky and flies slowly toward the n
 | `old-bus` | Stage 2 background, **vehicle** | Bus Stop |
 | `plug-hero` | Dash power-up | Sky / beach |
 | `road-trip` | Background car | Fast travel |
-| `rpg` | | Lair camp (the whole party, peaceful, by the fire) |
+| `rpg` | | Lair camp (orc, mouse knight and the giant, peaceful, by the fire; no fire spirit until confirmed) |
 | `shark` | Boss 3 (shark) | The Lake |
 | `summertime` | Stage 3 sand, crab | Beach by the Sky area |
 | `toybox` | | Pushable crates |
@@ -168,7 +184,7 @@ The glowing bird from "The Blue Bird" follows Ekky and flies slowly toward the n
 | `virus-and-war` | Ally power-up (the helmet kid), virus enemies | Cameo (links to Game A) |
 | `web-illustration` | Credits parade | |
 
-Never used: the 8 fan-art pieces and the 9 client pieces on `main` (`CONFIG.reuse`; that now includes Oasis, My Sports Club, Save Early Buy Future and Thinker & Doer as client, and Pop Mie as fan). If the owner switches `client: true` later, client pieces still stay out of the games. Brand logos don't belong in a game world.
+Never used in gameplay: the 8 fan-art pieces and the 9 client pieces. (Exception, owner "re-use all of asset of his as much as possible": drawn elements of 6 client pieces may be ambient villagers and props in Ekky's Village, never logos, and never heroes, enemies, allies or power-ups; see `docs/roles.md`.) `client` is `true` since the owner's "yes to all", so client pieces are reusable elsewhere, but they stay out of the games: brand logos don't belong in a game world. `js/data.js` enforces this with the `game` role (originals only).
 
 ---
 
@@ -275,8 +291,9 @@ Order: MG1 → MG2 → MG3 → **MG4 (go or no-go)** → MG5 and MG6 in parallel
 | # | Question | Safe default |
 |---|---|---|
 | 1 | Layered character files? | **Answered:** "no png files, cut them from the images". Every sprite is cut from the published images with `scripts/sprites.py`, and Ekky rides his chair (Little Planet). |
-| 2 | Is it OK that the helmet kid's blaster fires paint, and that enemies are "colored in and befriended" rather than defeated? | **Answered:** "yes paint and befriend is ok". |
+| 2 | Is it OK that the hero fires paint, and that enemies are "colored in and befriended" rather than defeated? | **Reported by the Director:** "yes paint and befriend is ok" (not yet verified by the integrator). |
 | 3 | Heroes | **Answered:** "use ekky as the hero". Ekky is the hero of both games. |
 | 4 | Phone orientation for Paint Patrol | **Answered:** "landscape is fine". Landscape, with a "Play anyway" portrait fallback. |
-| 5 | Should the games have their own short music loops, or stay with sound effects only? | **Answered:** "sound effects only". No music loops. Sound is off by default on the web. |
+| 5 | Should the games have their own short music loops, or stay with sound effects only? | **Reported by the Director:** "sound effects only" (not yet verified). No music loops. Sound is off by default on the web. |
+| 7 | Is the fire spirit in "RPG" Ekky's own design? | It stays out of both games until confirmed (UX review point 5). |
 | 6 | "endi onok bossfight" | **Answered:** "its a joke you can ignore or dont add bossfight theme to this". The RPG piece gets no boss-fight theme: it is not a boss in Paint Patrol, and in the Quest its party camps peacefully. No on-screen text in either game says "boss" or "boss fight" (see hard rule 4). |
