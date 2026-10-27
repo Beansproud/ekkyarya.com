@@ -310,7 +310,14 @@ function endArcade(){const a=A;a.run=false;lastScore=a.score;const rec=(st.best|
 function quitArcade(){cancelAnimationFrame(raf);A=null;pausedByHide=false;$("gArcade").classList.remove("open");G.classList.remove("playing");$("gCount").innerHTML=""}
 let lastScore=0;
 if(cv){$("gResDl").onclick=()=>typeof Share!=="undefined"&&Share.downloadStars(lastScore);$("gArcadeX").onclick=quitArcade;$("gResBack").onclick=()=>{quitArcade();go("start")};$("gAgain").onclick=startArcade}
-G.addEventListener("click",e=>{if(e.target.closest("[data-arcade]")){sfx("tap");startArcade()}});
+G.addEventListener("click",e=>{if(e.target.closest("[data-arcade]")){sfx("tap");startArcade()}
+  if(e.target.closest("[data-patrol]")){sfx("tap");openPatrol()}});
+// Paint Patrol (MG3) loads on first open, so the portfolio's first load does not change (MG9).
+let patrolJs=null;
+function openPatrol(){if(!feature("paintPatrol"))return;
+  patrolJs=patrolJs||new Promise((ok,no)=>{const s=document.createElement("script");s.src="js/patrol.js";s.onload=ok;s.onerror=no;document.head.appendChild(s)});
+  patrolJs.then(()=>window.Patrol.open()).catch(()=>{patrolJs=null})}
+if(feature("paintPatrol")&&new URLSearchParams(location.search).get("play")==="patrol")setTimeout(openPatrol,600);
 // A hidden tab pauses the round; it resumes only once the tab is visible again (r1a bug: it used to resume while hidden).
 let pausedByHide=false;
 document.addEventListener("visibilitychange",()=>{if(!A)return;if(document.hidden){if(A.run){A.run=false;pausedByHide=true}}
@@ -320,7 +327,7 @@ document.addEventListener("visibilitychange",()=>{if(!A)return;if(document.hidde
 let artDone=false;
 function renderAll(){if(deep)setTimeout(renderStart,2500);else renderStart();renderMap();renderMine();setTimeout(moveInd,60)}
 // Shared with js/color.js, js/share.js and js/links.js.
-window.Game={go,openHire,openSheet,closeSheet,sfx,buzz,save,get st(){return st},esc,contactReady,screen:()=>screen};
+window.Game={go,openHire,openPatrol,openSheet,closeSheet,sfx,buzz,save,get st(){return st},esc,contactReady,screen:()=>screen};
 window.openHire=openHire;
 setMode();
 })();

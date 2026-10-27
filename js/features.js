@@ -15,6 +15,7 @@ const FEATURES = {
   pageRoadTrip: false,   // Road Trip coloring page: built (assets/color/road-trip/), waits for Ekky to approve the lines (D8)
   artDownload: true,     // lightbox Download: a copy of at most 1600 px with a subtle mark, never on fan art (owner: yes)
   sound: true,           // sound effects and the sound toggle
+  paintPatrol: false,    // Paint Patrol stage 1 (MG3 slice, js/patrol.js, loaded on first open): on for the MG4 playtest
   clientScenery: false,  // V5: drawn elements of client pieces as village scenery, each opening its piece with its tag.
                          // Off until the owner confirms the client-piece change to the Developer directly; no client
                          // cut-out is made or committed before that (scripts/village.py CLIENT_SCENERY stays empty).

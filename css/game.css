@@ -492,3 +492,34 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 .v-row.hire{background:#FFB400;border-color:#b77e00;color:#2B1342}
 .v-row:active{transform:scale(.98)}
 .v-row:focus-visible{outline:3px solid #FFB400;outline-offset:2px}
+
+/* Paint Patrol (MG3): the canvas fills the screen; HUD, cards and the end screen are HTML */
+.g-tile.patrol{background:#C38BFF;box-shadow:0 6px 0 #7a4fb0,0 10px 20px rgba(0,0,0,.3)}
+.pp{padding:0;background:#120a1f;touch-action:none}
+#game.playing .g-sky{visibility:hidden}   /* the sky's 60 twinkles stop behind a full-screen game */
+#game.playing .g-sky i{animation-play-state:paused}
+.pp-cv{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.pp-hud{position:absolute;top:calc(env(safe-area-inset-top) + 10px);right:calc(env(safe-area-inset-right) + 12px);display:flex;gap:10px;align-items:center;z-index:2}
+.pp-pause{width:48px;height:48px;border-radius:14px;background:#2f1f47;color:#fff;font:700 1rem Fredoka,sans-serif}
+.pp-bomb{position:relative;width:48px;height:48px;border-radius:14px;background:#2f1f47;overflow:hidden;opacity:.6}
+.pp-bomb.ready{opacity:1;box-shadow:0 0 0 3px #FFB400}
+.pp-bomb img{position:relative;z-index:1;width:36px;height:36px;margin:6px}
+.pp-bomb i{position:absolute;left:0;right:0;bottom:0;background:#FFB40055}
+.pp-meter{position:absolute;top:calc(env(safe-area-inset-top) + 24px);left:50%;width:min(40vw,260px);height:12px;transform:translateX(-50%);border-radius:8px;background:#2f1f47;border:2px solid #fff3dc;overflow:hidden;z-index:2}
+.pp-meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,#FFB400,#FF6B6B,#7ED9B0,#68A0DB,#C38BFF)}
+.pp-meter[hidden]{display:none}
+.pp-hint{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom) + 20px);transform:translateX(-50%);margin:0;padding:8px 14px;border-radius:12px;background:#241638e6;color:#fff;font:600 .9rem Poppins,sans-serif;text-align:center;opacity:0;pointer-events:none;z-index:2}
+.pp-hint.show{animation:ppHint 4.5s var(--ease-in) both}
+@keyframes ppHint{0%{opacity:0}12%{opacity:1}80%{opacity:1}100%{opacity:0}}
+.pp-card{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;background:#120a1fe6;text-align:center;color:#fff}
+.pp-card[hidden]{display:none}
+.pp-card h2{font-size:1.6rem;margin:0;color:#FFB400}
+.pp-card p{font-family:Poppins;color:#cbbfe3;margin:0;max-width:420px}
+.pp-turn img{width:110px;animation:ppTurn 3s var(--ease-move) infinite}
+@keyframes ppTurn{0%,20%{transform:rotate(0)}50%,70%{transform:rotate(90deg)}100%{transform:rotate(0)}}
+.pp-end{background:#120a1ff2;overflow-y:auto;justify-content:flex-start}
+.pp-end.in{animation:overIn var(--dur-slow) var(--ease-in) both}
+.pp-art{max-height:42vh;flex:none;max-width:min(90vw,520px);border-radius:14px;object-fit:contain}
+.pp-row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center}
+@media (prefers-reduced-motion:reduce){.pp-hint.show{animation:none;opacity:1}.pp-turn img{animation:none}}
+@media (orientation:landscape){.pp-end{justify-content:center;gap:8px}.pp-art{max-height:34vh}.pp-end h2{font-size:1.3rem}.pp-end p{font-size:.9rem}}

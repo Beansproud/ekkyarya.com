@@ -135,3 +135,19 @@ dropped and reported, as with the shark in V2.
 3. **UX:** is the Rush Hour street OK as palette shapes, with the Coexistence characters and props standing on it
    (2.3)?
 4. **Integrator:** may MG1 start right after V6 passes, or only after V4?
+
+## Build status (MG1 + MG3 first pass, behind `paintPatrol`, off)
+
+- `js/patrol.js` (about 14 KB, loaded on the first tap of the Paint Patrol tile or `?play=patrol`): engine, input,
+  stage 1, the big friend, the end screen, the pause card with Hire, and the portrait card with "Play anyway".
+- **Built as proposed in section 2:** the hero is `hero-desk` (Ekky at his rolling desk) and the big friend is
+  `friend-monster` (one cut with the hammer). The friend's attack is a lean back (0.8 s telegraph) and a slam that
+  sends a paint wave along the ground to jump over.
+- **Dropped:** the Coexistence commuters (the cut pulled in the kid and the wall). The street is palette shapes
+  only, and Coexistence is shown at the stage end.
+- **Measured (iPhone 13 landscape, headless):** 1.1 ms of script per frame at 4x CPU, and 53 to 55 fps at 4x.
+  That is the same as this machine's ceiling with the game closed. The sky's 60 twinkles now stop behind any
+  full-screen game (Star Catcher too).
+- **Not yet:** `scripts/sim-patrol.mjs` (stage length check), the helmet shield and Plug Hero power-ups (MG5), and
+  copy keys in `COPY` (`tt()` English fallbacks for now: `start.patrol`, `patrol.*`).
+- **To playtest (MG4):** set `paintPatrol: true` in `js/features.js`; the start screen then shows a fourth tile.
