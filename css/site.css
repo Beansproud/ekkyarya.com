@@ -495,3 +495,13 @@ body.game-mode .idle-buddy{left:16px;right:auto;flex-direction:row;bottom:calc(e
 @media (min-width:1000px){
   .process-band{margin:0 calc(clamp(20px,8vw,150px) - clamp(24px,6vw,100px))}
 }
+
+/* Desktop sidebar, quieter: the Portfolio list repeated the filters in the page (they stay there); status, language and
+   dark mode share one soft row under the socials. Nothing is removed from the tab order that the page still offers. */
+@media (min-width:981px){
+  .side-h,.cats{display:none}
+  .nav{gap:10px;margin-top:56px}
+  .side-foot{display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center}
+  .socials,.status{grid-column:1/-1}
+  .theme-toggle{justify-self:start}
+}
