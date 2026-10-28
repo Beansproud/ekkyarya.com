@@ -12,10 +12,20 @@ Ambient loops run 9 to 48 s. At most one decorative loop per screen besides the 
 (`css/site.css`); content appears in place. Star Catcher keeps its falling items (that is the game) but drops the
 shake, the hit tint and the particle bursts.
 
-**Village budget** (B42 decision 10): the village is a place, not a UI screen, so it has its own list above: walkers
-(2 animations each, moving and turning), the lantern, the steam and the galaxy glow. `document.getAnimations()` on
-the map shows exactly these. Under reduced motion none of them run: villagers stand at the start of their path, no
-steam, no glow, and places open at once.
+**Village budget** (owner, 2026-10-28: "give a lot if animation / even when idle", "like 20 different animation / that
+changes simultaniously"; this replaces B42 decision 10): the village is a place, not a UI screen, and it is alive.
+Always on: walkers walking their routes, two clouds, 16 twinkling stars, the gate lantern's flicker, the noodle bath's
+steam, the UFO hovering, and each island bobbing a few px at its own pace. On top, a scheduler (`Life` in `js/game.js`)
+starts a new short moment every 1 to 3 s, so 3 to 5 play at once, never two in the same part of the map and never the
+same one twice in a row. The 20 moments are: shooting star, comet, UFO beam lifting a doodle, astronaut drifting by,
+crab dash, a villager waving, paper plane, fireflies at the lantern, cat hopping on the gallery roof, a ghost floating
+up, the Road Trip car honking, a small planet orbiting the north island, fire-spirit flare, noodle steam puffs,
+constellation glints, pickle hopping, a gallery frame swapping its picture, a monster riding a cloud, the palette
+spinning up from the studio, and a lantern swing. Every one is a short Web Animation on transform and opacity of one of
+Ekky's own sprites or a plain gold or paper shape, removed when it ends. Nothing runs when the map is off screen or the
+tab is hidden (everything in `#gMapZoom` is paused, and no moment starts under a finger), and under reduced motion
+the village is still: villagers stand at the start of their path, no moments, no glow, places open at once.
+Measured with `RUNS=3 node scripts/jank-map.cjs .` (Map tab, 10 s idle on the map, zoomed pan) at 4x CPU.
 
 **Off-screen**: game screens that are not showing have their animations paused; skeleton shimmer stops as soon as
 an image has loaded; the loader dots are removed once the page has loaded.
@@ -66,10 +76,7 @@ step "jelly", mouse parallax, magnetic buttons, 3D tilt, and the click sparkle b
 | Star Catcher catch | a few particles and "+n" rise | what you caught was worth n |
 | Result | title fades up, 1 s | the round is over, here is your score |
 | Village places | still; a tapped place's label lifts 4 px and glows once (300 ms), then the place opens | "I'm going there" |
-| Village walkers (V3) | 5 of Ekky's characters (at most 2 from one piece: the Road Trip car, Plug Hero, the crab and two doodles) walk their path, 1 tile (36 px) per 1.6 s, pause 2 s at each end and 0.8 s at corners, and turn to face where they go | the village is lived in; tap one to see the artwork it comes from |
-| Gate lantern | soft glow, one pulse every 6 s | points to "Work with Ekky" |
-| Noodle Bath steam | one puff every 6 s | the bath is warm (the only smoke: the snack bar could not be cut cleanly) |
-| Galaxy glow | the galaxy cloud behind the islands lightens by at most 10 % over 10 s | the islands float in Ekky's night sky |
+| Village life (Map squad) | walkers, clouds, twinkle, lantern flicker, steam, UFO hover, islands bobbing, plus 20 random moments, 3 to 5 at a time (see the village budget above) | the village is lived in, even when you only look |
 | Day and night | set once, on load, from the visitor's clock (night 19:00 to 6:00); framed art, labels and "Work with Ekky" keep full brightness | the village keeps the visitor's time without a live fade |
 
 Removed: the PLAY pulse, ring pings around map nodes, path dash crawl, tab icon wiggle, tab bounce, face idle sway
