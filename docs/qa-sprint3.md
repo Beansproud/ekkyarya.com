@@ -103,3 +103,23 @@ Round 1 of sprint 3, main cca4ff0, 16:15 UTC
    Stickers icon-only (the words add a row's worth of height) and give the active tool a yellow outline and tint, not a solid fill.
 Protect: the wobbly hand-drawn arrows and outlines of the flow bubbles; they are the only place in the new work that looks
 drawn by him. Nothing above removes them.
+
+## Re-test 17:05 (origin/main a525f18)
+
+Same method, targeted scripts, Chromium touch emulation. Screenshots: `docs/qa-sprint3/re-land-color.jpg`, `re-desk-flow.jpg`.
+
+| Finding | Now | Evidence |
+|---|---|---|
+| P1-1 Color at 844x390 | Fixed | Picture 480x328 px, colours and tools in a side column; 360x640 unchanged (340x284), 390x844 (370x488), iPad sideways 1160x464. Undo, Redo, Peek and Stickers are now icon-only (critic note 3 partly taken). |
+| P1-2 Editor phone Back | Fixed | 390x844 and 1440x900: Back closes the editor, `AdminEditor.open` resolves `null`, the page stays on `/`. |
+| P2-1 Editor Esc | Fixed | Esc closes it and resolves `null` (390 and 1440). |
+| P2-2 Wheel Back | Fixed | 844x390: Back with the wheel open leaves the editor and Color open. |
+| P2-3 Back from editor skips picker | Fixed | 390x844: device Back from the editor shows the picker with Color still open. |
+| P2-4 Editor targets under 44 px | Mostly fixed | Only the "Pen pressure" checkbox is left, 22x22 (sliders, colour inputs, selects and text input now pass at 1440). |
+| P2-5 Desktop flow below the fold | Fixed | 1440x900: the bubbles start at y=599 of the 864 px box and are visible without scrolling; the flow now shows Morumelons' new steps. |
+| P2-6 Step view has no visible Back | Open | No back-type control in the iPhone step view; device Back and Esc still work. |
+| P2-7 Flow on sideways phone and iPad | Not re-run | Layout unchanged by the merges I could see; still one node visible without scrolling at 844x390. |
+
+Still open from P3: the hint "Tap a shape to fill it" sits on top of the drawing (also at 844x390), no zoom reset button, flow
+step view keeps the piece title. Gate: `FAST=1 bash scripts/gate.sh` PASS on this branch (docs only). Not re-run: the full 24-config
+matrix, the dark and ID passes, the iPad upright Color layout.
