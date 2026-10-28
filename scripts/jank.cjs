@@ -15,6 +15,10 @@ const openColor=async p=>{await tap(p,'[data-go=color]');await p.waitForSelector
   const id=await p.evaluate(()=>document.querySelector('#cPages .c-page:not(.c-scratch)').dataset.page);await tap(p,`#cPages .c-page[data-page="${id}"]`);
   await p.waitForSelector('#cEdit #cCanvas',{state:'visible',timeout:8000});await sleep(1000)};
 
+// a finger drag across the page, in stage fractions
+const finger=async(p,x0,y0,x1,y1,n=40)=>{const r=await stageBox(p),c=await p.context().newCDPSession(p),pt=(f)=>[{x:r[0]+r[2]*(x0+(x1-x0)*f),y:r[1]+r[3]*(y0+(y1-y0)*f+.04*Math.sin(f*9))}];
+  await c.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:pt(0)});for(let i=1;i<=n;i++){await c.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:pt(i/n)});await sleep(16)}
+  await c.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await c.detach().catch(()=>{})};
 // each case: setup (not measured), run (measured), settle ms to keep recording after the run
 const CASES=[
  ['art tile (lightbox)',async p=>{await tap(p,'.g-tabs button[data-tab="art"]');await p.waitForSelector('#gCards >*',{state:'visible'});await sleep(1200)},
@@ -32,6 +36,10 @@ const CASES=[
  ['sticker drag',async p=>{await openColor(p);await tap(p,'#cStickBtn');await tap(p,'#cTray [data-n]');await sleep(600)},
    async p=>{const [x,y]=await p.$eval('#cStickers .c-st:last-child',e=>{const b=e.getBoundingClientRect();return [b.left+b.width/2,b.top+b.height/2]});
      await p.mouse.move(x,y);await p.mouse.down();for(let i=1;i<=24;i++){await p.mouse.move(x+i*3,y-i*2);await sleep(16)}await p.mouse.up()},500],
+ // sprint 3 color tools: a 40-step finger stroke (CDP touch, one move per 16 ms) with each tool
+ ...['brush','fade','eraser'].map(k=>[k==='brush'?'brush stroke':k==='fade'?'fade drag':'eraser rub',async p=>{await openColor(p);
+     if(k==='eraser'){await tap(p,'#cKit [data-tool=brush]');await finger(p,.25,.5,.75,.55)}await tap(p,`#cKit [data-tool=${k}]`);await sleep(400)},
+   async p=>{await finger(p,.25,.5,.75,.55)},600]),
  ['Done (reveal)',async p=>{await openColor(p);const r=await stageBox(p);await p.touchscreen.tap(r[0]+r[2]*.5,r[1]+r[3]*.5);await sleep(500)},
    async p=>{await tap(p,'#cDone')},2000],
  ['language toggle',async p=>{await tap(p,'.g-tabs button[data-tab="mine"]');await sleep(900)},
@@ -43,7 +51,7 @@ function stats(f){let over=0,worst=0;for(let i=1;i<f.length;i++){const d=f[i]-f[
 
 srv.listen(0,async()=>{
   const url=`http://localhost:${srv.address().port}/`;const b=await chromium.launch();const rows=[];
-  for(const [name,setup,run,settle,noSettle] of CASES){const c2={noSettle};let best=null,err='';
+  for(const [name,setup,run,settle,noSettle] of CASES){if(process.env.ONLY&&!new RegExp(process.env.ONLY,'i').test(name))continue;const c2={noSettle};let best=null,err='';
     for(let k=0;k<RUNS;k++){const c=await b.newContext({...IPHONE});await c.addInitScript(()=>{try{localStorage.setItem('lang','en')}catch(e){}});
       const p=await c.newPage();try{await p.goto(url+'?game=1');await p.waitForSelector('#g-start.active',{state:'visible',timeout:8000});await sleep(c2.noSettle?0:SETTLE);
         const cdp=await c.newCDPSession(p);await cdp.send('Emulation.setCPUThrottlingRate',{rate:RATE});

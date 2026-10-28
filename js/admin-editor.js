@@ -589,6 +589,7 @@
     S.tool = id; S.act = null;
     if (id === "adjust") { makeProxy(); if (S.narrow) S.panelOpen = true; } else { if (S.adj && S.narrow) S.panelOpen = false; S.adj = null; }
     paintTools(); paintOpts(); paintPanel(); paintTop(); render();
+    const tb = S.root.querySelector(`[data-tool="${id}"]`); if (tb && tb.scrollIntoView) tb.scrollIntoView({ block: "nearest", inline: "nearest" });
     S.cv.style.cursor = id === "hand" ? "grab" : id === "move" ? "move" : id === "text" ? "text" : "crosshair";
   }
   const btn = (a, label, extra = "", cls = "") => `<button type="button" class="ae-btn ${cls}" data-a="${a}" ${extra}>${esc(label)}</button>`;
@@ -762,7 +763,7 @@
 #aeRoot .ae-narrow{display:none}
 @media (max-width:759px){
   #aeRoot .ae-wide{display:none}#aeRoot .ae-narrow{display:inline-block}#aeRoot .ae-row.ae-narrow{display:flex}
-  #aeRoot .ae-top h2{font-size:.95rem}#aeRoot .ae-top .ae-btn{padding:6px 8px}
+  #aeRoot .ae-top h2{font-size:0;flex:1}#aeRoot .ae-top .ae-btn{padding:6px 8px}
   #aeRoot .ae-body{flex-direction:column}
   #aeRoot .ae-tools{order:3;width:auto;flex-direction:row;border-right:0;border-top:2px solid var(--line);overflow-x:auto;overflow-y:hidden;padding:4px max(6px,env(safe-area-inset-left)) max(4px,env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch}
   #aeRoot .ae-tool{flex:none;width:58px}

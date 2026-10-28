@@ -73,3 +73,9 @@ The only change in `js/admin-art.js`: an "Edit" (ID "Sunting") button next to th
 form keeps the picked file (`form.src`) so a second Edit continues from the last result; an existing piece opens from
 its `full` path. The flow squad's step pictures (`docs/flow.md`) can use the same call: an Edit button next to a step
 runs `AdminArt.editImage(step file or step.full)` and feeds the Blob to `resizeFile` like a newly picked file.
+
+## Reversible (owner rule, sprint 3)
+
+- Cancel, Esc and the phone's Back close the editor and return nothing: the form keeps its picture exactly as it was.
+- Inside the editor every step is in History and can be undone; Reset goes back to the opened picture (and can be redone).
+- After Apply the form shows "Back to original" ("Kembali ke asli"), which restores the picture as it was first picked.

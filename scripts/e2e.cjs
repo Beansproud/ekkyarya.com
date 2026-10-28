@@ -148,6 +148,64 @@ async function runConfig(browser,url,scheme,lang){
     if((await p.$$eval('#cStickers .c-st',e=>e.length))<=n0)throw new Error('sticker not placed on scratch page');
     await p.tap('#cUndo');await sleep(400);await p.tap('#cUndo');await sleep(400);if(await p.$$eval('#cStickers .c-st',e=>e.length)>n0&&await hash(p)===h1)throw new Error('undo changed nothing on scratch page')});
 
+  // --- Color tools (sprint 3, docs/color-tools.md): brush, fade, pattern, eraser, undo/redo, save and reopen ---
+  // snap() keeps the canvas in the page; diff() counts changed pixels inside shape r, in other shapes, and on Ekky's lines (id 0)
+  const snap=p=>p.evaluate(()=>{const c=document.getElementById('cCanvas');window.__snap=c.getContext('2d').getImageData(0,0,c.width,c.height).data});
+  const diff=(p,r)=>p.evaluate(r=>{const c=document.getElementById('cCanvas'),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data,a=window.__snap,ids=Color.state.pd.ids,o={in:0,out:0,line:0};
+    for(let i=0;i<ids.length;i++){const k=i*4;if(Math.abs(d[k]-a[k])+Math.abs(d[k+1]-a[k+1])+Math.abs(d[k+2]-a[k+2])>30){const v=ids[i];if(v===r)o.in++;else if(v)o.out++;else o.line++}}return o},r);
+  // the biggest shape and a point well inside it, in screen pixels
+  const bigShape=p=>p.evaluate(()=>{const s=Color.state,{meta,start,idx,ids}=s.pd;let r=1;for(let k=2;k<=meta.regions;k++)if(start[k+1]-start[k]>start[r+1]-start[r])r=k;
+    const b=document.getElementById('cCanvas').getBoundingClientRect(),W=meta.w,k=b.width/W,m=Math.ceil(64/k),v=Math.ceil(14/k);let best=null;
+    for(let j=start[r];j<start[r+1];j+=97){const i=idx[j],x=i%W,y=i/W|0;let ok=true;for(let dx=-m;dx<=m&&ok;dx+=2)for(const dy of [-v,0,v])if(x+dx<0||x+dx>=W||ids[(y+dy)*W+x+dx]!==r){ok=false;break}if(ok){best=[x,y];break}}
+    if(!best){const i=idx[start[r]+((start[r+1]-start[r])>>1)];best=[i%W,i/W|0]}
+    return {r,x:b.left+(best[0]+.5)/W*b.width,y:b.top+(best[1]+.5)/meta.h*b.height,k:b.width/W}});
+  // a finger drag (the phone profile has touch, so it goes through CDP touch events, like a real finger)
+  const drag=async(p,pts)=>{const cdp=await p.context().newCDPSession(p),tp=(type,q)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:q?[{x:q[0],y:q[1]}]:[]});
+    const all=[pts[0]];for(let i=1;i<pts.length;i++)for(let k=1;k<=6;k++)all.push([pts[i-1][0]+(pts[i][0]-pts[i-1][0])*k/6,pts[i-1][1]+(pts[i][1]-pts[i-1][1])*k/6]);
+    await tp('touchStart',all[0]);for(const q of all.slice(1)){await tp('touchMove',q);await sleep(16)}await tp('touchEnd');await cdp.detach().catch(()=>{});await sleep(250)};
+  const tool=async(p,k)=>{await p.tap(`#cKit [data-tool=${k}]`);await sleep(150);if(!await p.$eval(`#cKit [data-tool=${k}]`,e=>e.getAttribute('aria-checked')==='true'))throw new Error(k+' tool not on after tap')};
+  await T('color tools: brush stays inside the touched shape, eraser rubs it out',async p=>{await boot(p);await openColor(p);const s=await bigShape(p);await tool(p,'brush');await p.tap('#cOpts [data-size="2"]');await audit(p,'brush tool');
+    await snap(p);await drag(p,[[s.x-50,s.y],[s.x,s.y+4],[s.x+50,s.y]]);const d=await diff(p,s.r);
+    if(d.in<200)throw new Error('brush changed only '+d.in+' pixels in its shape');if(d.out>0)throw new Error('brush leaked into '+d.out+' pixels of other shapes');
+    if(await p.evaluate(()=>Color.state.ink.length)!==1)throw new Error('stroke not kept');
+    await tool(p,'eraser');await p.tap('#cOpts [data-size="2"]');await drag(p,[[s.x-50,s.y],[s.x,s.y+4],[s.x+50,s.y]]);const e=await diff(p,s.r);
+    if(e.in>d.in*.2)throw new Error('eraser left '+e.in+' of '+d.in+' brushed pixels');
+    await p.tap('#cUndo');await sleep(300);const u=await diff(p,s.r);if(u.in<d.in*.8)throw new Error('undo of the eraser did not bring the stroke back');
+    await p.tap('#cRedo');await sleep(300);const rd=await diff(p,s.r);if(rd.in>d.in*.2)throw new Error('redo did not erase again');
+    await p.tap('#cUndo');await p.tap('#cUndo');await sleep(300);const z=await diff(p,s.r);if(z.in+z.out>20)throw new Error('two undos did not restore the blank page ('+(z.in+z.out)+' px)')});
+  await T('color tools: fade (drag = straight, tap = round), pattern, eraser tap clears the shape',async p=>{await boot(p);await openColor(p);const s=await bigShape(p);await tool(p,'fade');await audit(p,'fade tool');
+    await snap(p);await drag(p,[[s.x-50,s.y],[s.x+50,s.y]]);const f=await p.evaluate(r=>Color.state.fx[r],s.r);if(!f||f.k!=='lin')throw new Error('drag did not make a straight fade: '+JSON.stringify(f));
+    const n=await p.evaluate(r=>{const c=document.getElementById('cCanvas'),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data,{start,idx}=Color.state.pd,set=new Set();for(let j=start[r];j<start[r+1];j+=7){const k=idx[j]*4;set.add(d[k]<<16|d[k+1]<<8|d[k+2])}return set.size},s.r);
+    if(n<8)throw new Error('fade shows only '+n+' colors in the shape');if((await diff(p,s.r)).out>0)throw new Error('fade leaked out of its shape');
+    await p.touchscreen.tap(s.x,s.y);await sleep(300);if((await p.evaluate(r=>Color.state.fx[r],s.r)||{}).k!=='rad')throw new Error('tap did not make a round fade');
+    await tool(p,'pattern');await p.tap('#cOpts [data-pat=dots]');await p.touchscreen.tap(s.x,s.y);await sleep(300);if((await p.evaluate(r=>Color.state.fx[r],s.r)||{}).k!=='dots')throw new Error('pattern not applied');
+    await tool(p,'eraser');await p.touchscreen.tap(s.x,s.y);await sleep(300);const c=await p.evaluate(r=>[Color.state.fills[r],!!Color.state.fx[r]],s.r);if(c[0]||c[1])throw new Error('eraser tap did not clear the shape');
+    if((await diff(p,s.r)).in>20)throw new Error('cleared shape is not back to paper');
+    await p.tap('#cUndo');await sleep(300);if((await p.evaluate(r=>Color.state.fx[r],s.r)||{}).k!=='dots')throw new Error('undo did not bring the pattern back');
+    for(let i=0;i<3;i++){await p.tap('#cUndo');await sleep(150)}if((await diff(p,s.r)).in>20)throw new Error('undo x4 did not return to paper');
+    for(let i=0;i<4;i++){await p.tap('#cRedo');await sleep(150)}const c2=await p.evaluate(r=>[Color.state.fills[r],!!Color.state.fx[r]],s.r);if(c2[0]||c2[1])throw new Error('redo x4 did not end on the cleared shape')});
+  await T('color tools: strokes and fades survive reload, reveal shows them',async p=>{await boot(p);const id=await openColor(p);const s=await bigShape(p);await snap(p);
+    await tool(p,'fade');await drag(p,[[s.x-50,s.y],[s.x+50,s.y]]);await tool(p,'brush');await drag(p,[[s.x-40,s.y+10],[s.x+40,s.y+10]]);await sleep(300);
+    const sample=()=>p.evaluate(()=>{const c=document.getElementById('cCanvas'),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data,o=[];for(let i=0;i<d.length;i+=28)o.push(d[i],d[i+1],d[i+2]);return o});const mine=await sample();
+    await p.tap('#cBack');await sleep(800);await p.reload();await must(p,'#g-start.active','reload failed',8000);await sleep(500);await openColor(p,id);await sleep(300);
+    const st=await p.evaluate(r=>({ink:Color.state.ink.length,fx:(Color.state.fx[r]||{}).k,undo:Color.state.undo.length}),s.r);if(st.ink!==1||st.fx!=='lin')throw new Error('not kept after reload: '+JSON.stringify(st));
+    const now=await sample();let bad=0;for(let i=0;i<now.length;i+=3)if(Math.abs(now[i]-mine[i])+Math.abs(now[i+1]-mine[i+1])+Math.abs(now[i+2]-mine[i+2])>40)bad++;const off=now.length===mine.length?bad/(now.length/3):-1;
+    if(off<0||off>.005)throw new Error('reopened picture differs from the one drawn ('+(off*100).toFixed(2)+'% of pixels)');
+    await p.tap('#cUndo');await sleep(300);if(await p.evaluate(()=>Color.state.ink.length)!==0)throw new Error('undo after reload did not remove the stroke');await p.tap('#cRedo');await sleep(300);
+    await p.tap('#cDone');await must(p,'#cReveal','reveal did not show',8000);await sleep(800);
+    const rv=await p.evaluate(()=>{const c=document.getElementById('cYours'),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;const s=Color.state,col=s.ink[0].c,R=parseInt(col.slice(1,3),16),G=parseInt(col.slice(3,5),16),B=parseInt(col.slice(5,7),16);let n=0;for(let i=0;i<d.length;i+=4)if(Math.abs(d[i]-R)+Math.abs(d[i+1]-G)+Math.abs(d[i+2]-B)<12)n++;return n});
+    if(rv<30)throw new Error('reveal does not show the brush stroke ('+rv+' px of its color)');
+    const th=await p.evaluate(id=>(Game.st.colorings[id]||{}).thumb||'',id);if(th.length<500)throw new Error('no thumbnail saved')});
+
+  await T('color tools: two-finger pinch zooms and pans, no stray stroke, fills still land',async p=>{await boot(p);const id=await openColor(p);const s=await bigShape(p);await tool(p,'brush');
+    const cdp=await p.context().newCDPSession(p),r=await p.$eval('#cStage',e=>{const b=e.getBoundingClientRect();return [b.left+b.width/2,b.top+b.height/2]}),tp=(type,pts)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:pts.map(([x,y],id)=>({x,y,id}))});
+    await tp('touchStart',[[r[0]-20,r[1]]]);await sleep(30);await tp('touchStart',[[r[0]-20,r[1]],[r[0]+20,r[1]]]);
+    for(let i=1;i<=10;i++){await tp('touchMove',[[r[0]-20-i*8,r[1]+i*2],[r[0]+20+i*8,r[1]+i*2]]);await sleep(20)}await tp('touchEnd',[]);await cdp.detach().catch(()=>{});await sleep(300);
+    const z=await p.$eval('#cStage',e=>new DOMMatrix(getComputedStyle(e).transform).a);if(!(z>1.5))throw new Error('pinch did not zoom: scale '+z);
+    if(await p.evaluate(()=>Color.state.ink.length))throw new Error('the pinch left a stroke');
+    await tool(p,'fill');const t=await p.$eval('.c-stage-wrap',e=>{const b=e.getBoundingClientRect();return {x:b.left+b.width*.5,y:b.top+b.height*.5}});const h0=await hash(p);await p.touchscreen.tap(t.x,t.y);if(await settled(p)===h0)throw new Error('a tap while zoomed did not fill');
+    await p.tap('#cBack');await sleep(800);await p.tap(`#cPages .c-page[data-page="${id}"]`);await must(p,'#cEdit #cCanvas','editor did not reopen',8000);await sleep(600);if(await p.$eval('#cStage',e=>getComputedStyle(e).transform)!=='none')throw new Error('zoom not reset when a page opens')});
+
   await T('doodle: sticker drag, drop on bin, undo',async p=>{await boot(p);await p.tap('[data-go=color]');await must(p,'#cPages .c-scratch','no Doodle Scene entry');await p.tap('#cPages .c-scratch');await must(p,'#cEdit #cCanvas','scratch editor did not open',8000);await sleep(800);
     await p.tap('#cStickBtn');await must(p,'#cTray [data-n]','no stickers');await p.tap('#cTray [data-n]');await sleep(1000);
     const pos=()=>p.$eval('#cStickers .c-st:last-child',e=>{const b=e.getBoundingClientRect();return [b.left+b.width/2,b.top+b.height/2]});
