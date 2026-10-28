@@ -162,6 +162,9 @@
     if (bm.close) bm.close();
     return { full, thumb };
   }
+  // Sprint 3 editor (docs/admin-editor.md): loads js/admin-editor.js on first use; resolves to the edited Blob, or null on Cancel
+  const editImage = (src, lang) => (window.AdminEditor ? Promise.resolve() : new Promise((ok, no) => { const s = document.createElement("script"); s.src = "js/admin-editor.js?v=" + Date.now(); s.onload = ok; s.onerror = no; document.head.appendChild(s); }))
+    .then(() => window.AdminEditor.open(src, { lang }));
 
   // ---- the tab ----
   function render(el, ctx) {
@@ -214,7 +217,7 @@
         <h3>${esc(state.editing ? t.edit : t.add)}</h3>
         <div class="aa-f"><span>${esc(t.image)}</span>
           <div class="aa-pick">${f.preview ? `<img class="aa-th aa-big" src="${esc(f.preview)}" alt="">` : ""}
-          <label class="aa-btn aa-txt aa-file">${esc(t.pick)}<input id="aaFile" type="file" accept="image/*"></label></div>
+          <label class="aa-btn aa-txt aa-file">${esc(t.pick)}<input id="aaFile" type="file" accept="image/*"></label>${f.preview ? `<button type="button" class="aa-btn aa-txt" id="aaEdit">${lang() === "id" ? "Sunting" : "Edit"}</button>` : ""}</div>
           <small id="aaBusy">${esc(f.busy ? t.resizing : t.imageHint)}</small></div>
         ${field("aaTe", t.titleEn, f.title)}${field("aaDe", t.descEn, f.desc, "area")}
         ${field("aaTi", t.titleId, f.id.title)}${field("aaDi", t.descId, f.id.desc, "area")}
@@ -319,6 +322,7 @@
       el.querySelector("#aaCancel").onclick = () => { state.form = null; state.editing = null; state.errors = []; draw(); };
       el.querySelector("#aaFile").onchange = async e => {
         const file = e.target.files && e.target.files[0]; if (!file) return;
+        state.form.src = file;
         readForm(); state.form.busy = true; el.querySelector("#aaBusy").textContent = T().resizing;
         try {
           const r = await resizeFile(file), f = state.form;
@@ -326,6 +330,11 @@
           if (!f.title.trim()) f.title = file.name.replace(/\.\w+$/, "").replace(/[-_]+/g, " ").trim();
         } catch (err) { state.form.busy = false; }
         draw();
+      };
+      const ed = el.querySelector("#aaEdit");
+      if (ed) ed.onclick = async () => {
+        readForm(); const blob = await editImage(state.form.src || state.form.full, lang()).catch(() => null); if (!blob) return;
+        const r = await resizeFile(blob), f = state.form; f.files = r; f.src = blob; f.preview = r.thumb.url; draw();
       };
       el.querySelector("#aaForm").onsubmit = e => { e.preventDefault(); submit(); };
       wireSteps();
@@ -401,5 +410,5 @@
   const tab = { get title() { return T().title; }, render };
   const reg = () => window.Admin && window.Admin.registerTab && window.Admin.registerTab("art", tab);
   if (window.Admin && window.Admin.registerTab) reg(); else (window.AdminTabs = window.AdminTabs || []).push(["art", tab]);
-  window.AdminArt = { validateData, validatePiece, validateSteps, resizeFile, rolesFor };
+  window.AdminArt = { validateData, validatePiece, validateSteps, resizeFile, rolesFor, editImage };
 })();
