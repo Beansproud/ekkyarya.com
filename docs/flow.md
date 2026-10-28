@@ -51,12 +51,31 @@ A piece may carry **steps**: the ordered pictures of its project. A piece withou
 
 ## Where the flow shows
 
-- Desktop lightbox (`js/site.js`): under the picture, a horizontal (zigzag when it wraps) diagram.
-- Phone game (`js/game.js`): the viewer opened from an Art tab card and from a start page tile; vertical diagram.
+- Desktop lightbox (`js/site.js` `renderFlow`): a zigzag row under the title and buttons (scrolls sideways past 5 steps).
+- Phone game: the same lightbox, opened from an Art tab card or a start page tile; a vertical diagram right under the
+  description, before the buttons. Art cards and start tiles of a piece with steps carry a small "3 pictures" sticker.
 - Each node is a sticker-like bubble with a hand-inked outline, a numbered badge and the caption, joined by hand-drawn
   arrows. Tapping a node opens that step's `full` picture. 44 px targets. A short entrance animation that plays once and
   is off under `prefers-reduced-motion`.
-- Strings in `COPY` (`js/data.js`): `flow.process`, `flow.series`, `flow.step` (`Step {n}`), `flow.this`, `flow.open`.
+- A node shows its step's picture in the lightbox (the piece's own step brings the piece back); it is marked
+  `aria-current="true"`.
+- Strings in `COPY` (`js/data.js`): `flow.process`, `flow.series`, `flow.step` (`Step {n}`), `flow.this`, `flow.open`, `flow.count`.
+
+## Admin (js/admin-art.js)
+
+The piece form of an added piece has a "Project flow (optional)" box: what the pictures show (process or series), Add
+pictures (several at once, resized like the piece), Add this piece's own picture, EN and ID captions, up and down
+buttons, a drag handle, and remove. Save writes `flow` and `steps` on the piece and queues the step pictures for the next
+Publish commit. `validatePiece` refuses 1 step, more than 8, a caption in one language only, a caption over 60
+characters, and emoji (`AdminArt.validateSteps`). Built-in pieces have no edit form, so their steps stay in `js/data.js`
+(or `flows` in data/site.json written by hand) for now.
+
+## Tests
+
+`scripts/e2e.cjs` (iPhone 13 and desktop 1440, light and dark, EN and ID): a piece with steps shows the column on the
+phone and the row on the desktop, a node opens its picture, a piece without steps has no flow at all.
+`scripts/e2e-admin.cjs`: steps in site.json merge and bad steps drop; the Art tab's steps editor adds, reorders, removes,
+validates and saves steps with their files queued (driven without the PIN).
 
 ## Content shipped
 

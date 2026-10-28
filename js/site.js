@@ -193,8 +193,11 @@ const flowArrow=k=>{const j=4+3*Math.sin(k*2.7);
 const flowCap=(st,k)=>(st.caption&&(st.caption[LANG]||st.caption.en))||t("flow.step",{n:k+1});
 function renderFlow(p){
   const lbBody=lb.querySelector(".lb-body");let box=document.getElementById("lbFlow");
-  if(!box){box=document.createElement("section");box.id="lbFlow";box.className="lb-flow";lbBody.appendChild(box)}
-  const steps=stepsOf(p);box.hidden=!steps.length;box.classList.toggle("fl-col",document.body.classList.contains("game-mode")||matchMedia("(max-width:760px)").matches);lb.classList.toggle("has-flow",!!steps.length);
+  if(!box){box=document.createElement("section");box.id="lbFlow";box.className="lb-flow"}
+  // phones: right under the description, before the buttons (the flow is the point of the piece); desktop: a full row below
+  const col=document.body.classList.contains("game-mode")||matchMedia("(max-width:760px)").matches,desc=document.getElementById("lbDesc");
+  if(col&&box.previousElementSibling!==desc)desc.after(box);else if(!col&&box.parentElement!==lbBody)lbBody.appendChild(box);
+  const steps=stepsOf(p);box.hidden=!steps.length;box.classList.toggle("fl-col",col);lb.classList.toggle("has-flow",!!steps.length);
   if(!steps.length){box.innerHTML="";return}
   const title=t(p.flow==="series"?"flow.series":"flow.process");
   box.setAttribute("aria-label",title);
