@@ -102,6 +102,7 @@ function groundHTML(V){const L=V.layers;if(!L)return `<img class="v-ground" src=
   return im("sky","v-skyimg")+im("mid","v-isle")+im("north","v-isle")+im("south","v-isle")+
     (u?`<img class="v-ground v-isle v-ufo" data-isle="north" src="${u.src}" alt="" decoding="async" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}">`:"")}
 let mapTok=0;
+const LABEL_NUDGE={studio:[50,0]};   // a2: image px to move a label off its baked spot where it would touch a villager
 function renderMap(){
   const V=window.VILLAGE,W=$("gMapWrap");if(!V)return;
   const places=PLACES.filter(p=>!p.feature||feature(p.feature));
@@ -113,7 +114,7 @@ function renderMap(){
   W.innerHTML=`<div class="v-zoom" id="gMapZoom">${groundHTML(V)}`+
     V.frames.map((f,k)=>{const p=art[k];if(!p)return "";const deg=(Math.atan(f.slope)*180/Math.PI).toFixed(2);
       return `<img class="v-frame" src="${thumbOf(p)}" alt="" decoding="async" style="left:${pct(f.x,V.w)};top:${pct(f.y,V.h)};width:${pct(f.w,V.w)};height:${pct(f.h,V.h)};transform:skewY(${deg}deg)">`}).join("")+
-    places.map(p=>{const b=V.places[p.id].box,l=V.places[p.id].label;
+    places.map(p=>{const b=V.places[p.id].box,n=LABEL_NUDGE[p.id]||[0,0],l=[V.places[p.id].label[0]+n[0],V.places[p.id].label[1]+n[1]];
       return `<button class="v-place${p.hire?" hire":""}" data-place="${p.id}" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}" aria-label="${esc(t(p.key))}"></button>
       <span class="v-label${p.hire?" hire":""}" data-place="${p.id}" aria-hidden="true" style="left:${pct(l[0],V.w)};top:${pct(l[1],V.h)}">${esc(t(p.key))}</span>`}).join("");
   // the villagers and scenery come a moment later, in an idle slice: the first visit lays out the island and the places only
