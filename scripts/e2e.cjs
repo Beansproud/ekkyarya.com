@@ -220,10 +220,11 @@ async function runConfig(browser,url,scheme,lang){
   // --- Catch stars ---
   await T('stars: play, result, Share, Download, Hire',async p=>{await boot(p);await p.tap('#g-start [data-arcade]');await must(p,'#gArcade.open','arcade did not open',5000);await sleep(5000);
     await audit(p,'arcade');
-    if(!await vis(p,'#gResult.show',60000))throw new Error('no result screen within 65 s');await sleep(800);await audit(p,'star result');
-    if(!await vis(p,'#gResult [data-hire]',500))throw new Error('no Hire chip on star result');
+    if(!await vis(p,'#gResult.show',110000))throw new Error('no result screen within 115 s')   // game time follows frames: slower than wall time on a loaded runner
+    ;await sleep(800);await audit(p,'star result');
+    if(!await vis(p,'#gResult [data-hire]',4000))throw new Error('no Hire chip on star result');
     const sh=await p.$('#gResult [data-share],#gResShare,#gResult button[aria-label*=hare i]');if(!sh)throw new Error('no Share button on star result');await sh.evaluate(e=>e.click());await sleep(1200);await p.keyboard.press('Escape');await p.evaluate(()=>document.querySelectorAll('.g-sheet.open,dialog[open]').forEach(e=>{e.classList.remove('open');if(e.close)e.close()}));
-    const dl=p.waitForEvent('download',{timeout:5000}).then(()=>1,()=>0);const dlg=p.waitForSelector('.g-sheet.open,dialog[open],[class*=share]:visible',{state:'visible',timeout:5000}).then(()=>1,()=>0);
+    const dl=p.waitForEvent('download',{timeout:15000}).then(()=>1,()=>0);const dlg=p.waitForSelector('.g-sheet.open,dialog[open],[class*=share]:visible',{state:'visible',timeout:15000}).then(()=>1,()=>0);   // the card is 1080 x 1920: encoding it takes seconds on a loaded runner
     await p.$eval('#gResDl',e=>e.click());if(!(await dl)&&!(await dlg))throw new Error('Download on star result: no file and no dialog');});
 
   // --- Art ---
