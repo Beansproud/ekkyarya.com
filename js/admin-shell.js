@@ -95,6 +95,11 @@
     get data() { return data; },
     get lang() { return lang(); },
     getData: () => data,
+    // the built-in values before the site.json merge (a copy, safe to keep): {config, features, copy}
+    get builtin() {
+      const b = typeof SiteData !== "undefined" && SiteData.builtin;
+      return JSON.parse(JSON.stringify(b || { config: CONFIG, features: FEATURES, copy: COPY }));
+    },
     get canPublish() { return !!store.get(TOKEN_KEY); },
     t: pick,
     setData(x) {
