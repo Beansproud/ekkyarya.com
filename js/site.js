@@ -216,11 +216,18 @@ document.getElementById("themeToggle").onclick=()=>{const t=isDark()?"light":"da
 /* ===== Contact ===== */
 const toast=document.getElementById("toast");
 function say(m,icon){toast.textContent=m;if(icon)toast.insertAdjacentHTML("afterbegin",ico(icon));toast.classList.add("show");clearTimeout(say.t);say.t=setTimeout(()=>toast.classList.remove("show"),document.body.classList.contains("game-mode")?1500:2400)}   // D14: 1.5 s in the game
-const mail=document.getElementById("mailLink");mail.textContent=CONFIG.email;mail.href="mailto:"+CONFIG.email;
+const mail=document.getElementById("mailLink");
 // B15 safe default: a placeholder email or a link to a bare home page (no profile path) stays hidden until CONFIG is filled in.
 const realLink=u=>{try{return new URL(u).pathname.replace(/\/+$/,"").length>0}catch{return false}};
-document.querySelectorAll("[data-link]").forEach(a=>{const u=CONFIG.links[a.dataset.link];if(realLink(u))a.href=u;else a.remove()});
-if(!CONFIG.email){document.querySelector(".mail").remove();document.querySelector('.socials a[href="#contact"]')?.remove()}
+// Applied at start-up and again when js/site-data.js merges data/site.json (admin changes to links and email). Hidden, not removed, so a later value can bring them back.
+function applyContact(){
+  mail.textContent=CONFIG.email;mail.href="mailto:"+CONFIG.email;
+  document.querySelectorAll("[data-link]").forEach(a=>{const u=CONFIG.links[a.dataset.link];const ok=realLink(u);if(ok)a.href=u;a.style.display=ok?"":"none"});
+  const noMail=!CONFIG.email;
+  document.querySelector(".mail").style.display=noMail?"none":"";
+  const em=document.querySelector('.socials a[href="#contact"]');if(em)em.style.display=noMail?"none":"";
+}
+applyContact();addEventListener("sitedata",applyContact);
 const copyMail=document.getElementById("copyMail");if(copyMail)copyMail.onclick=async()=>{try{await navigator.clipboard.writeText(CONFIG.email);say(t("hire.copied"),"i-check")}catch{say(CONFIG.email)}};
 document.getElementById("form").addEventListener("submit",e=>{e.preventDefault();const f=e.target;let ok=true;
   f.querySelectorAll("[required]").forEach(i=>{const err=i.parentElement.querySelector(".err");

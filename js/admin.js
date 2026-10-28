@@ -21,7 +21,7 @@ window.Admin = (() => {
   }
 
   const CSS = `
-dialog.adm-pad{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;z-index:100000;display:none;border-radius:0;box-shadow:none;animation:none;overflow:hidden;align-items:center;justify-content:center;background:rgba(43,19,66,.55);font-family:Fredoka,Poppins,sans-serif;--ink:#2B1342;--paper:#FFF8EC;--line:#e5d8bd;--accent:#FFB400}
+dialog.adm-pad{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;z-index:100000;display:none;border-radius:0;box-shadow:none;animation:none;overflow:hidden;align-items:center;justify-content:center;background:rgba(43,19,66,.55);font-family:Fredoka,Poppins,sans-serif;--ink:#2B1342;--paper:#FFF8EC;--line:#e5d8bd;--accent:#FFB400;--text:#4b4655;--muted:#645F70;color-scheme:light}
 dialog.adm-pad[open]{display:flex;animation:none}.adm-pad::backdrop{background:transparent}
 .adm-pad *{box-sizing:border-box}
 .adm-card:focus{outline:none}
