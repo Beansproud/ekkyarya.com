@@ -747,6 +747,23 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 .t-popin{animation:t-pop .4s ease-out}
 @media (prefers-reduced-motion:reduce){.t-popin{animation:none}}
 
+/* Done reveal ("Yours and Ekky's"): the view and the two pictures rise in with opacity and translate only, then a gentle
+   one-shot glint crosses each picture. Runs once each time the reveal opens; never loops. */
+@keyframes t-revealin{from{opacity:0;translate:0 14px;scale:.96}}
+@keyframes t-glint{0%{opacity:0;scale:.2;rotate:-30deg}45%{opacity:1;scale:1}100%{opacity:0;scale:.6;rotate:20deg}}
+.c-pair figure{position:relative}
+.c-pair figure::before,.c-pair figure::after{content:"";position:absolute;width:20px;height:20px;background:#FFB400;opacity:0;pointer-events:none;
+  clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%)}
+.c-pair figure::before{top:8px;right:10px}
+.c-pair figure::after{left:12px;bottom:46px;width:14px;height:14px}
+.c-reveal.active .c-pair figure{animation:t-revealin .36s ease-out backwards}
+.c-reveal.active .c-pair figure:nth-child(2){animation-delay:.08s}
+.c-reveal.active .c-pair figure::before{animation:t-glint .6s ease-out .5s backwards}
+.c-reveal.active .c-pair figure::after{animation:t-glint .6s ease-out .75s backwards}
+.c-reveal.active .c-pair figure:nth-child(2)::before{animation-delay:.65s}
+.c-reveal.active .c-pair figure:nth-child(2)::after{animation-delay:.9s}
+@media (prefers-reduced-motion:reduce){.c-reveal.active .c-pair figure,.c-reveal.active .c-pair figure::before,.c-reveal.active .c-pair figure::after{animation:none}}
+
 /* Developer 3: touch */
 /* Touch response, added by js/site.js on pointerdown (touch only, once, removed on animationend). Uses the individual
    scale and rotate properties so a tile's own tilt in transform is untouched. */
