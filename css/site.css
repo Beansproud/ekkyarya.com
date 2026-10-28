@@ -598,7 +598,7 @@ body.game-mode .cursor,body.game-mode .cursor-dot{display:none}
 .fl-sh{fill:#DCD6EA}
 .fl-num{background:#FFFDF8}
 .fl-node[aria-current="true"] .fl-sh,.fl-node[aria-current="true"] .fl-num{fill:#FFB400;background:#FFB400}
-.fl-col .fl-node img{width:58%;max-width:220px}
+
 @container (min-width:600px){.fl-col .fl-node img{width:100%;max-width:none}}
 /* a step's picture: an on-screen one-step Back and the step's own caption (the phone has no back button) */
 .lb-art{position:relative}
