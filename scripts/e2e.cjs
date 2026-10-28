@@ -203,8 +203,18 @@ async function runConfig(browser,url,scheme,lang){
     for(let i=1;i<=10;i++){await tp('touchMove',[[r[0]-20-i*8,r[1]+i*2],[r[0]+20+i*8,r[1]+i*2]]);await sleep(20)}await tp('touchEnd',[]);await cdp.detach().catch(()=>{});await sleep(300);
     const z=await p.$eval('#cStage',e=>new DOMMatrix(getComputedStyle(e).transform).a);if(!(z>1.5))throw new Error('pinch did not zoom: scale '+z);
     if(await p.evaluate(()=>Color.state.ink.length))throw new Error('the pinch left a stroke');
+    if(!await vis(p,'#cZoomOut',1000))throw new Error('no visible zoom-out control while zoomed');await audit(p,'zoomed editor');
+    // reversible: the zoom-out button, Esc and the phone's Back each return to 1x and leave the editor open
+    const scale=()=>p.$eval('#cStage',e=>{const t=getComputedStyle(e).transform;return t==='none'?1:new DOMMatrix(t).a});
+    await p.tap('#cZoomOut');await sleep(500);if(await scale()!==1)throw new Error('zoom-out button did not return to 1x');if(await vis(p,'#cZoomOut',300))throw new Error('zoom-out control stayed after 1x');
+    const pinchOut=async()=>{const c2=await p.context().newCDPSession(p),tq=(type,pts)=>c2.send('Input.dispatchTouchEvent',{type,touchPoints:pts.map(([x,y],id)=>({x,y,id}))});
+      await tq('touchStart',[[r[0]-20,r[1]]]);await sleep(30);await tq('touchStart',[[r[0]-20,r[1]],[r[0]+20,r[1]]]);for(let i=1;i<=10;i++){await tq('touchMove',[[r[0]-20-i*8,r[1]],[r[0]+20+i*8,r[1]]]);await sleep(20)}await tq('touchEnd',[]);await c2.detach().catch(()=>{});await sleep(300)};
+    await pinchOut();if(await scale()<1.5)throw new Error('second pinch did not zoom: '+await scale());await p.keyboard.press('Escape');await sleep(500);if(await scale()!==1)throw new Error('Esc did not return to 1x');if(!await vis(p,'#cEdit #cCanvas',300))throw new Error('Esc while zoomed left the editor');
+    await pinchOut();await p.evaluate(()=>history.back());await sleep(800);if(await scale()!==1)throw new Error('Back did not return to 1x');if(!await vis(p,'#cEdit #cCanvas',1500))throw new Error('Back while zoomed left the editor: '+await p.evaluate(()=>document.getElementById('gColor').className+' | '+document.querySelector('#gColor .c-view.active')?.id+' | '+JSON.stringify(history.state)));
+    await pinchOut();await p.tap('#cBack');await sleep(500);if(await scale()!==1)throw new Error('editor Back did not return to 1x');if(!await vis(p,'#cEdit #cCanvas',300))throw new Error('editor Back while zoomed left the editor');
+    await pinchOut();
     await tool(p,'fill');const t=await p.$eval('.c-stage-wrap',e=>{const b=e.getBoundingClientRect();return {x:b.left+b.width*.5,y:b.top+b.height*.5}});const h0=await hash(p);await p.touchscreen.tap(t.x,t.y);if(await settled(p)===h0)throw new Error('a tap while zoomed did not fill');
-    await p.tap('#cBack');await sleep(800);await p.tap(`#cPages .c-page[data-page="${id}"]`);await must(p,'#cEdit #cCanvas','editor did not reopen',8000);await sleep(600);if(await p.$eval('#cStage',e=>getComputedStyle(e).transform)!=='none')throw new Error('zoom not reset when a page opens')});
+    await p.tap('#cBack');await sleep(500);await p.tap('#cBack');await sleep(800);await p.tap(`#cPages .c-page[data-page="${id}"]`);await must(p,'#cEdit #cCanvas','editor did not reopen',8000);await sleep(600);if(await p.$eval('#cStage',e=>getComputedStyle(e).transform)!=='none')throw new Error('zoom not reset when a page opens')});
 
   await T('doodle: sticker drag, drop on bin, undo',async p=>{await boot(p);await p.tap('[data-go=color]');await must(p,'#cPages .c-scratch','no Doodle Scene entry');await p.tap('#cPages .c-scratch');await must(p,'#cEdit #cCanvas','scratch editor did not open',8000);await sleep(800);
     await p.tap('#cStickBtn');await must(p,'#cTray [data-n]','no stickers');await p.tap('#cTray [data-n]');await sleep(1000);
