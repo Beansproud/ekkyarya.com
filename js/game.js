@@ -505,6 +505,9 @@ function draw(){const a=A;if(!a)return;const sx=(Math.random()-.5)*a.shake,sy=(M
   ctx.save();ctx.translate(a.px,py+bob);ctx.rotate(Math.max(-.3,Math.min(.3,tilt)));if(heroImg.complete&&heroImg.naturalWidth)ctx.drawImage(heroImg,-pw/2,-ph*.55,pw,ph);ctx.restore();
   ctx.restore()}
 function aim(e){if(!A)return;const r=cv.getBoundingClientRect(),x=(e.touches?e.touches[0].clientX:e.clientX)-r.left;A.tx=Math.max(40,Math.min(A.W-40,x))}
+// a11y: arrow keys (and A/D) move the catcher too, a tenth of the field per press; holding a key repeats
+addEventListener("keydown",e=>{if(!A||!$("gArcade").classList.contains("open"))return;const d={ArrowLeft:-1,a:-1,ArrowRight:1,d:1}[e.key];if(!d)return;
+  e.preventDefault();A.tx=Math.max(40,Math.min(A.W-40,(A.tx??A.W/2)+d*A.W/10))});
 if(cv){cv.addEventListener("pointerdown",aim);cv.addEventListener("pointermove",aim);cv.addEventListener("touchmove",e=>{aim(e);e.preventDefault()},{passive:false})}
 // "New best!" only when there was a best to beat (the first round is just "Time's up!")
 function endArcade(){const a=A;a.run=false;lastScore=a.score;const rec=(st.best||0)>0&&a.score>st.best;st.best=Math.max(st.best||0,a.score);save();
