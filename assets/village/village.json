@@ -269,6 +269,42 @@
      629
     ]
    ]
+  },
+  {
+   "name": "mm-popstar",
+   "piece": "morumelons",
+   "src": "assets/projects/morumelons/sticker-08.png",
+   "h": 50,
+   "face": 0,
+   "aspect": 1.0,
+   "route": [
+    [
+     195,
+     141
+    ],
+    [
+     229,
+     151
+    ]
+   ]
+  },
+  {
+   "name": "mm-clown",
+   "piece": "morumelons",
+   "src": "assets/projects/morumelons/sticker-11.png",
+   "h": 52,
+   "face": 0,
+   "aspect": 1.0,
+   "route": [
+    [
+     381,
+     493
+    ],
+    [
+     423,
+     485
+    ]
+   ]
   }
  ],
  "scenery": [],

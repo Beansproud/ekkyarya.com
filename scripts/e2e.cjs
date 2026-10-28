@@ -356,6 +356,8 @@ async function runConfig(browser,url,scheme,lang){
     if(!s.open||s.step||!/morumelons\.jpg$/.test(s.src)||s.l!=='lb')throw new Error('Back from a step did not return to the flow '+JSON.stringify(s));
     await node(2);await p.keyboard.press('Escape');await sleep(500);s=await st();if(!s.open||s.step)throw new Error('Esc from a step did not return to the flow '+JSON.stringify(s));
     await sleep(300);if((await st()).l!=='lb')throw new Error('Esc left a stale history entry');
+    await node(2);if(!await vis(p,'#lbArt .fl-back',1500))throw new Error('no on-screen Back in the step view');await p.tap('#lbArt .fl-back');await sleep(500);s=await st();
+    if(!s.open||s.step||s.l!=='lb')throw new Error('the on-screen Back did not return to the flow '+JSON.stringify(s));
     await node(2);await p.tap('#lbClose');await sleep(700);s=await st();
     if(s.open||s.step||s.tab!==s0.tab||Math.abs(s.top-s0.top)>2)throw new Error('close from a step did not return to where it opened '+JSON.stringify({s0,s}));
     if(s.l)throw new Error('a history entry was left behind: '+s.l);
@@ -369,6 +371,8 @@ async function runConfig(browser,url,scheme,lang){
       const f=await d.evaluate(()=>{const r=[...document.querySelectorAll('#lbFlow .fl-node')].map(e=>e.getBoundingClientRect());
         return {n:r.length,row:r.every((x,k)=>!k||x.left>r[k-1].right-1),cur:[...document.querySelectorAll('#lbFlow .fl-node')].findIndex(e=>e.getAttribute('aria-current')==='true')}});
       if(f.n!==3||!f.row||f.cur!==0)throw new Error('desktop flow '+JSON.stringify(f));
+      const fold=await d.evaluate(()=>{const lb=document.getElementById('lightbox').getBoundingClientRect().bottom;return [...document.querySelectorAll('#lbFlow .fl-node')].every(n=>n.getBoundingClientRect().bottom<=Math.min(innerHeight,lb)+1)});
+      if(!fold)throw new Error('desktop 1440x900: the flow is not fully above the fold');
       await d.click('#lbFlow .fl-node[data-step="2"]');await sleep(300);
       if(!/^(blob:|assets\/projects\/morumelons\/)/.test(await d.$eval('#lbArt img',e=>e.getAttribute('src'))))throw new Error('desktop node did not open its picture');
       await d.keyboard.press('Escape');await sleep(300);
@@ -418,6 +422,19 @@ async function runConfig(browser,url,scheme,lang){
     await p.$eval('#lbSet .mm-ch',e=>e.scrollIntoView({block:'center'}));await p.tap('#lbSet .mm-ch');await sleep(800);
     if(req.some(u=>/-anim\.webp$/.test(u)))throw new Error('an animation was fetched under reduced motion');
     await p.tap('#lbClose');await sleep(600);if(await p.evaluate(()=>document.getElementById('lightbox').open))throw new Error('close did not close')});
+  // owner: "Add the characters to stickers and the village too": the tray has the Morumelons stickers, one can be placed,
+  // and two characters stand in the village and open the Morumelons piece
+  await T('morumelons: stickers in Color, characters in the village',async p=>{await boot(p);await openColor(p);await p.tap('#cStickBtn');await must(p,'#cTray [data-n]','sticker tray empty');
+    const mm=await p.$$eval('#cTray img',l=>l.filter(i=>/morumelons\/sticker-/.test(i.getAttribute('src'))).map(i=>i.closest('[data-n]').dataset.n));
+    if(mm.length!==10)throw new Error('Morumelons stickers in the tray: '+mm.length);
+    const n0=await p.$$eval('#cStickers .c-st',e=>e.length);await p.$eval(`#cTray [data-n="${mm[0]}"]`,e=>e.scrollIntoView({block:'center'}));await p.tap(`#cTray [data-n="${mm[0]}"]`);await sleep(500);
+    if(await p.$$eval('#cStickers .c-st',e=>e.length)<=n0)throw new Error('a Morumelons sticker was not placed');
+    await p.goto(url+'?game=1');await must(p,'#g-start.active','game mode did not open',8000);await tab(p,'map');
+    await p.waitForSelector('#gMapWrap .v-walker[data-sprite*="morumelons/sticker-"]',{state:'attached',timeout:8000}).catch(()=>{});
+    const w=await p.$$eval('#gMapWrap .v-walker[data-sprite*="morumelons/sticker-"]',l=>l.map(e=>PROJECTS[+e.dataset.piece].slug));
+    if(w.length!==2||w.some(s=>s!=='morumelons'))throw new Error('Morumelons villagers: '+JSON.stringify(w));
+    await p.evaluate(()=>document.querySelector('#gMapWrap .v-walker[data-sprite*="morumelons/sticker-"]').click());await sleep(900);
+    if(!await p.evaluate(()=>document.getElementById('gSheet').classList.contains('open')))throw new Error('a Morumelons villager did not open its card')});
   await T('morumelons: desktop set, hover plays once, Esc returns',async p=>{const c=await p.context().browser().newContext({viewport:{width:1440,height:900},colorScheme:scheme});
     await c.addInitScript(l=>{try{localStorage.setItem('lang',l)}catch(e){}},lang);
     try{const d=await c.newPage();const errs=[];d.on('pageerror',e=>errs.push(e.message));const req=mmReq(d);await d.goto(url);await sleep(800);

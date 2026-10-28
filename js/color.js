@@ -25,6 +25,17 @@ const STICKERS=[
   {n:11,src:"assets/ui/virus.png",from:"virus-and-war"},
   {n:12,src:"assets/ui/astronaut.png",from:"nft-3"},
   {n:13,src:"assets/ui/radio-explorer.png",from:"nft-9"},
+  // Morumelons characters (sprint 3, scripts/morumelons-stickers.py); Kaiju Costume and Dark Wizard wait for a clean cut
+  {n:14,src:"assets/projects/morumelons/sticker-01.png",from:"morumelons"},
+  {n:15,src:"assets/projects/morumelons/sticker-02.png",from:"morumelons"},
+  {n:16,src:"assets/projects/morumelons/sticker-03.png",from:"morumelons"},
+  {n:17,src:"assets/projects/morumelons/sticker-04.png",from:"morumelons"},
+  {n:18,src:"assets/projects/morumelons/sticker-06.png",from:"morumelons"},
+  {n:19,src:"assets/projects/morumelons/sticker-07.png",from:"morumelons"},
+  {n:20,src:"assets/projects/morumelons/sticker-08.png",from:"morumelons"},
+  {n:21,src:"assets/projects/morumelons/sticker-09.png",from:"morumelons"},
+  {n:22,src:"assets/projects/morumelons/sticker-11.png",from:"morumelons"},
+  {n:23,src:"assets/projects/morumelons/sticker-12.png",from:"morumelons"},
 ];
 const MAX_STICKERS=12, MAX_CUSTOM=3;
 const bySlug=s=>PROJECTS.find(p=>p.slug===s);

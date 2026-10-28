@@ -488,6 +488,8 @@ WALKERS = [   # at most 2 from one piece (UX review): a client meets several pie
     ("plug-hero", 66, -1, [(432, 482), (500, 472)]),
     ("orange-monster", 44, 1, [(360, 236), (360, 270), (360, 318)]),
     ("crab", 30, 0, [(292, 752), (328, 734)]),
+    ("mm-popstar", 50, 0, [(262, 246), (296, 256)]),   # Morumelons: on the north island's free left side
+    ("mm-clown", 52, 0, [(448, 598), (490, 590)]),     # and on the grass between Ekky's home and the Gallery
 ]
 
 # V5, client scenery (switch clientScenery, off): (sprite name, piece slug, foot, height). Each is a separate image over

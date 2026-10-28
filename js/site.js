@@ -180,7 +180,6 @@ lb.addEventListener("keydown",e=>{if(e.key==="ArrowRight")step(1);if(e.key==="Ar
 /* ===== Project flow (docs/flow.md): a piece's steps as a hand-inked diagram in the lightbox (desktop and game) ===== */
 // Sticker bubbles with a wobbly ink outline (the same wobble on every visit, seeded by the step), a numbered badge and
 // a hand-drawn arrow to the next step. Vertical on phones, a zigzag row on the desktop. A node shows its picture big.
-const FLOW_INK=["#FFB400","#FF6B6B","#7ED9B0","#B8D5FF"];
 const escH=v=>String(v==null?"":v).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function wobPath(seed){const n=24,pts=[];
   for(let k=0;k<n;k++){const a=k/n*2*Math.PI,c=Math.cos(a),s=Math.sin(a),j=1.3*Math.sin(seed*7.1+k*2.3)+.7*Math.sin(seed*3.7+k*5.1);
@@ -205,7 +204,7 @@ function renderFlow(p){
   const title=t(p.flow==="series"?"flow.series":"flow.process");
   box.setAttribute("aria-label",title);
   box.innerHTML=`<h4 class="fl-title">${escH(title)}</h4><ol class="fl-list">${steps.map((st,k)=>{const me=st.full===p.full,cap=flowCap(st,k);
-    return `<li class="fl-step" style="--i:${k};--c:${FLOW_INK[k%FLOW_INK.length]}"><button class="fl-node" type="button" data-step="${k}" aria-label="${escH(t("flow.open",{n:k+1,caption:cap}))}"${me?' aria-current="true"':""}>
+    return `<li class="fl-step" style="--i:${k}"><button class="fl-node" type="button" data-step="${k}" aria-label="${escH(t("flow.open",{n:k+1,caption:cap}))}"${me?' aria-current="true"':""}>
       <svg class="fl-bub" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path class="fl-sh" d="${wobPath(k+1)}"/><path class="fl-bg" d="${wobPath(k+1)}"/></svg>
       <span class="fl-num" aria-hidden="true">${k+1}</span><img src="${escH(flowThumb(st.img))}" alt="" width="160" height="120" loading="lazy" decoding="async" fetchpriority="low">
       <span class="fl-cap">${escH(cap)}${me?`<small class="fl-this">${escH(t("flow.this"))}</small>`:""}</span></button>${k<steps.length-1?flowArrow(k):""}</li>`}).join("")}</ol>`;
@@ -213,14 +212,16 @@ function renderFlow(p){
   // the stable hook (docs/flow.md): extra blocks (e.g. Morumelons' sets and animations) render after the diagram
   (window.FlowHooks||[]).forEach(h=>{try{h(box,p,steps)}catch(e){}})}
 // a node shows that step's full picture in the lightbox; the piece's own step brings the piece back
-lb.addEventListener("click",e=>{const b=e.target.closest(".fl-node");if(!b)return;const p=PROJECTS[cur],st=stepsOf(p)[+b.dataset.step];if(!st)return;
+lb.addEventListener("click",e=>{if(e.target.closest("[data-flow-back]"))return flowBack();const b=e.target.closest(".fl-node");if(!b)return;const p=PROJECTS[cur],st=stepsOf(p)[+b.dataset.step];if(!st)return;
   // a hook may take over a step (a set grid, an animation): it calls preventDefault() on "flowstep"
   if(!lb.dispatchEvent(new CustomEvent("flowstep",{cancelable:true,detail:{piece:p,step:st,index:+b.dataset.step,node:b}})))return;
   if(st.full===p.full)return flowBack();
   // a step's picture is a layer of its own (class fl-viewing; js/game.js LAYERS gives it a history entry):
   // Back, Esc or the piece's own node return to the piece with the flow, the lightbox stays open
   const art=document.getElementById("lbArt");
-  art.innerHTML=`<img class="ok" src="${escH(st.full)}" alt="${escH(flowCap(st,+b.dataset.step))}" decoding="async">`;
+  const k=+b.dataset.step,cap=flowCap(st,k);
+  art.innerHTML=`<img class="ok" src="${escH(st.full)}" alt="${escH(cap)}" decoding="async"><div class="fl-bar"><button type="button" class="fl-back" data-flow-back>`+
+    `<svg class="ico" aria-hidden="true"><use href="#i-back"/></svg><span>${escH(t("flow.back"))}</span></button><span class="fl-bar-cap">${escH(t("flow.step",{n:k+1}))}: ${escH(cap)}</span></div>`;
   lb.querySelectorAll(".fl-node").forEach(n=>n.removeAttribute("aria-current"));b.setAttribute("aria-current","true");
   flowBack.from=+b.dataset.step;lb.classList.add("fl-viewing");
   art.scrollIntoView&&art.scrollIntoView({block:"nearest",behavior:reduceFlow()?"auto":"smooth"})});
@@ -254,6 +255,7 @@ function mmPlay(img){const anim=img&&img.dataset.anim;if(!anim||reduceFlow()||im
     img.mmStop=()=>{clearTimeout(img.mmT);img.mmStop=null;if(img.getAttribute("src")===u)img.src=still;URL.revokeObjectURL(u);host.classList.remove("mm-on");delete img.dataset.mmOn};
     img.mmT=setTimeout(img.mmStop,ms+60)},()=>{delete img.dataset.mmOn})}
 const mmStopAll=()=>lb.querySelectorAll("img[data-mm-on]").forEach(i=>i.mmStop&&i.mmStop());
+const MM_INK=["#FFB400","#FF6B6B","#7ED9B0","#B8D5FF"];   // each character sticker's offset shadow, in turn
 const mmName=c=>(c.name&&(c.name[LANG]||c.name.en))||"";
 // the hook (docs/flow.md): a step with a set gets its grid inside the flow box, under the diagram
 function mmRenderSet(box,p,steps){mmStopAll();
@@ -263,7 +265,7 @@ function mmRenderSet(box,p,steps){mmStopAll();
   sec.innerHTML=`<h4 class="fl-title">${escH(cap)} <small class="mm-n">${escH(t("flow.count",{n:st.set.length}))}</small></h4>`+
     (still?"":`<p class="mm-hint">${escH(t(document.body.classList.contains("game-mode")||!matchMedia("(hover:hover)").matches?"mm.hintTap":"mm.hint"))}</p>`)+
     `<ul class="mm-grid">${st.set.map((c,j)=>{const nm=mmName(c);
-      return `<li style="--j:${j};--c:${FLOW_INK[j%FLOW_INK.length]}"><${tag} class="mm-ch"${still?"":` type="button" aria-label="${escH(t("mm.play",{name:nm}))}"`}>`+
+      return `<li style="--j:${j};--c:${MM_INK[j%MM_INK.length]}"><${tag} class="mm-ch"${still?"":` type="button" aria-label="${escH(t("mm.play",{name:nm}))}"`}>`+
         `<img src="${escH(c.img)}" alt="${still?escH(nm):""}" width="160" height="160" loading="lazy" decoding="async"${c.anim&&!still?` data-anim="${escH(c.anim)}"`:""}><span aria-hidden="true">${escH(nm)}</span></${tag}></li>`}).join("")}</ul>`;
   box.appendChild(sec)}
 (window.FlowHooks=window.FlowHooks||[]).push(mmRenderSet);

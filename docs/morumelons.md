@@ -148,6 +148,15 @@ its roles and its tile:
   first view, one tap fetches exactly one animation and it settles back, reduced motion fetches none, Back and Esc
   return.
 
+### Stickers and village (owner, 10-28 16:2x: "Add the characters to stickers and the village too")
+
+- `scripts/morumelons-stickers.py` cuts each poster along Ekky's dark outline into `sticker-NN.png` (128 px). 10 of the
+  12 are in Color's sticker tray (stickers 14 to 23, `from: "morumelons"`). Kaiju Costume (its fire breath opens the face
+  to the background) and Dark Wizard (scarf and night sky are one dark mass) need a hand-drawn mask first.
+- Ekky's Village: Popstar on the north island and Clown on the grass between Ekky's home and the Gallery (walkers in
+  `scripts/village.py`, sprites in `scripts/sprites.py`; the game shows at most 2 walkers per piece). Both open the
+  Morumelons card. The rebuild changed only the village data, not the island pictures.
+
 ## Open questions for the owner
 
 1. **Answered** (owner, 10-28 15:1x, relayed by the lead): "its ekky own collection, can be shown publicly".
@@ -155,6 +164,8 @@ its roles and its tile:
    roles; the 12 characters may take creative roles where they fit (sticker, game, village; coloring only if a
    clean line version exists). None is wired this sprint: they show in the portfolio and the Art card's viewer.
 2. **Answered** (same message): the 12 characters may be shown publicly. No client to name.
-3. Are the working names fine (Robot Pilot, Dino Hoodie and so on), or do the characters have official names? None
-   given yet; the site uses the working names (and Bahasa versions such as Pilot Robot, Hoodie Dino).
+3. **Answered** (owner, 10-28 16:2x, a screen recording of the collection's listing): the official names, used in
+   both languages: 01 Astro, 02 Destroyer Mech, 03 Mermaid Princess, 04 Samurai Warrior, 05 Kaiju Costume,
+   06 Invisible, 07 Fishbowl Head, 08 Popstar, 09 Living Puppet, 10 Dark Wizard, 11 Clown, 12 Dark Lord (each
+   followed by "Melon").
 4. Keep 12, or swap any for the alternates above?
