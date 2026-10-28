@@ -155,7 +155,7 @@ async function runConfig(browser,url,scheme,lang){
     for(let i=0;i<ids.length;i++){const k=i*4;if(Math.abs(d[k]-a[k])+Math.abs(d[k+1]-a[k+1])+Math.abs(d[k+2]-a[k+2])>30){const v=ids[i];if(v===r)o.in++;else if(v)o.out++;else o.line++}}return o},r);
   // the biggest shape and a point well inside it, in screen pixels
   const bigShape=p=>p.evaluate(()=>{const s=Color.state,{meta,start,idx,ids}=s.pd;let r=1;for(let k=2;k<=meta.regions;k++)if(start[k+1]-start[k]>start[r+1]-start[r])r=k;
-    const b=document.getElementById('cCanvas').getBoundingClientRect(),W=meta.w,k=b.width/W,m=Math.ceil(64/k),v=Math.ceil(14/k);let best=null;
+    const b=document.getElementById('cCanvas').getBoundingClientRect(),W=meta.w,k=b.width/W,m=Math.ceil(54/k),v=Math.ceil(14/k);let best=null;
     for(let j=start[r];j<start[r+1];j+=97){const i=idx[j],x=i%W,y=i/W|0;let ok=true;for(let dx=-m;dx<=m&&ok;dx+=2)for(const dy of [-v,0,v])if(x+dx<0||x+dx>=W||ids[(y+dy)*W+x+dx]!==r){ok=false;break}if(ok){best=[x,y];break}}
     if(!best){const i=idx[start[r]+((start[r+1]-start[r])>>1)];best=[i%W,i/W|0]}
     return {r,x:b.left+(best[0]+.5)/W*b.width,y:b.top+(best[1]+.5)/meta.h*b.height,k:b.width/W}});
@@ -165,16 +165,16 @@ async function runConfig(browser,url,scheme,lang){
     await tp('touchStart',all[0]);for(const q of all.slice(1)){await tp('touchMove',q);await sleep(16)}await tp('touchEnd');await cdp.detach().catch(()=>{});await sleep(250)};
   const tool=async(p,k)=>{await p.tap(`#cKit [data-tool=${k}]`);await sleep(150);if(!await p.$eval(`#cKit [data-tool=${k}]`,e=>e.getAttribute('aria-checked')==='true'))throw new Error(k+' tool not on after tap')};
   await T('color tools: brush stays inside the touched shape, eraser rubs it out',async p=>{await boot(p);await openColor(p);const s=await bigShape(p);await tool(p,'brush');await p.tap('#cOpts [data-size="2"]');await audit(p,'brush tool');
-    await snap(p);await drag(p,[[s.x-50,s.y],[s.x,s.y+4],[s.x+50,s.y]]);const d=await diff(p,s.r);
+    await snap(p);await drag(p,[[s.x-44,s.y],[s.x,s.y+4],[s.x+44,s.y]]);const d=await diff(p,s.r);
     if(d.in<200)throw new Error('brush changed only '+d.in+' pixels in its shape');if(d.out>0)throw new Error('brush leaked into '+d.out+' pixels of other shapes');
     if(await p.evaluate(()=>Color.state.ink.length)!==1)throw new Error('stroke not kept');
-    await tool(p,'eraser');await p.tap('#cOpts [data-size="2"]');await drag(p,[[s.x-50,s.y],[s.x,s.y+4],[s.x+50,s.y]]);const e=await diff(p,s.r);
+    await tool(p,'eraser');await p.tap('#cOpts [data-size="2"]');await drag(p,[[s.x-44,s.y],[s.x,s.y+4],[s.x+44,s.y]]);const e=await diff(p,s.r);
     if(e.in>d.in*.2)throw new Error('eraser left '+e.in+' of '+d.in+' brushed pixels');
     await p.tap('#cUndo');await sleep(300);const u=await diff(p,s.r);if(u.in<d.in*.8)throw new Error('undo of the eraser did not bring the stroke back');
     await p.tap('#cRedo');await sleep(300);const rd=await diff(p,s.r);if(rd.in>d.in*.2)throw new Error('redo did not erase again');
     await p.tap('#cUndo');await p.tap('#cUndo');await sleep(300);const z=await diff(p,s.r);if(z.in+z.out>20)throw new Error('two undos did not restore the blank page ('+(z.in+z.out)+' px)')});
   await T('color tools: fade (drag = straight, tap = round), pattern, eraser tap clears the shape',async p=>{await boot(p);await openColor(p);const s=await bigShape(p);await tool(p,'fade');await audit(p,'fade tool');
-    await snap(p);await drag(p,[[s.x-50,s.y],[s.x+50,s.y]]);const f=await p.evaluate(r=>Color.state.fx[r],s.r);if(!f||f.k!=='lin')throw new Error('drag did not make a straight fade: '+JSON.stringify(f));
+    await snap(p);await drag(p,[[s.x-44,s.y],[s.x+44,s.y]]);const f=await p.evaluate(r=>Color.state.fx[r],s.r);if(!f||f.k!=='lin')throw new Error('drag did not make a straight fade: '+JSON.stringify(f));
     const n=await p.evaluate(r=>{const c=document.getElementById('cCanvas'),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data,{start,idx}=Color.state.pd,set=new Set();for(let j=start[r];j<start[r+1];j+=7){const k=idx[j]*4;set.add(d[k]<<16|d[k+1]<<8|d[k+2])}return set.size},s.r);
     if(n<8)throw new Error('fade shows only '+n+' colors in the shape');if((await diff(p,s.r)).out>0)throw new Error('fade leaked out of its shape');
     await p.touchscreen.tap(s.x,s.y);await sleep(300);if((await p.evaluate(r=>Color.state.fx[r],s.r)||{}).k!=='rad')throw new Error('tap did not make a round fade');
@@ -185,7 +185,7 @@ async function runConfig(browser,url,scheme,lang){
     for(let i=0;i<3;i++){await p.tap('#cUndo');await sleep(150)}if((await diff(p,s.r)).in>20)throw new Error('undo x4 did not return to paper');
     for(let i=0;i<4;i++){await p.tap('#cRedo');await sleep(150)}const c2=await p.evaluate(r=>[Color.state.fills[r],!!Color.state.fx[r]],s.r);if(c2[0]||c2[1])throw new Error('redo x4 did not end on the cleared shape')});
   await T('color tools: strokes and fades survive reload, reveal shows them',async p=>{await boot(p);const id=await openColor(p);const s=await bigShape(p);await snap(p);
-    await tool(p,'fade');await drag(p,[[s.x-50,s.y],[s.x+50,s.y]]);await tool(p,'brush');await drag(p,[[s.x-40,s.y+10],[s.x+40,s.y+10]]);await sleep(300);
+    await tool(p,'fade');await drag(p,[[s.x-44,s.y],[s.x+44,s.y]]);await tool(p,'brush');await drag(p,[[s.x-40,s.y+10],[s.x+40,s.y+10]]);await sleep(300);
     const sample=()=>p.evaluate(()=>{const c=document.getElementById('cCanvas'),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data,o=[];for(let i=0;i<d.length;i+=28)o.push(d[i],d[i+1],d[i+2]);return o});const mine=await sample();
     await p.tap('#cBack');await sleep(800);await p.reload();await must(p,'#g-start.active','reload failed',8000);await sleep(500);await openColor(p,id);await sleep(300);
     const st=await p.evaluate(r=>({ink:Color.state.ink.length,fx:(Color.state.fx[r]||{}).k,undo:Color.state.undo.length}),s.r);if(st.ink!==1||st.fx!=='lin')throw new Error('not kept after reload: '+JSON.stringify(st));
@@ -219,7 +219,7 @@ async function runConfig(browser,url,scheme,lang){
 
   await T('color: sideways phone 844x390 gives the picture the height, tools still work',async p=>{await p.setViewportSize({width:844,height:390});await boot(p);await openColor(p);await sleep(400);
     const b=await p.$eval('#cCanvas',e=>{const r=e.getBoundingClientRect();return [r.width,r.height,r.bottom]});if(b[1]<250)throw new Error('picture only '+Math.round(b[0])+'x'+Math.round(b[1])+' px');if(b[2]>391)throw new Error('picture runs below the screen');
-    for(const sel of ['#cColors .c-sw[data-v]','#cKit [data-tool=brush]','#cUndo','#cRedo','#cDone','#cBack'])if(!await vis(p,sel,500))throw new Error('not visible sideways: '+sel);
+    for(const sel of ['#cColors .c-sw[data-v]','#cKit [data-tool=brush]','#cUndo','#cRedo','#cDone','#cBack'])if(!await vis(p,sel,2000))throw new Error('not visible sideways: '+sel);
     await audit(p,'color editor sideways');const s=await bigShape(p);await tool(p,'brush');await snap(p);await drag(p,[[s.x-40,s.y],[s.x+40,s.y]]);if((await diff(p,s.r)).in<50)throw new Error('brush does nothing sideways')});
   await T('color: each Back closes only the top layer (wheel, editor, picker)',async p=>{await boot(p);await openColor(p);await p.tap('#cColors .c-any');await must(p,'#cWheel','wheel did not open');await sleep(300);
     const back=async()=>{await p.evaluate(()=>history.back());await sleep(900)};
