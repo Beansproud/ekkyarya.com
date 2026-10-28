@@ -1,5 +1,12 @@
 {
   "appId": "com.ekkyarya.app",
   "appName": "Ekky Arya",
-  "webDir": "www"
+  "webDir": "www",
+  "backgroundColor": "#120a1f",
+  "plugins": {
+    "SystemBars": {
+      "style": "DARK",
+      "insetsHandling": "css"
+    }
+  }
 }
