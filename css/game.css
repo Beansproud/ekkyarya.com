@@ -985,8 +985,11 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 .c-scratch .ico{display:block;box-sizing:border-box;width:100%;height:auto;aspect-ratio:1;margin:0;padding:26%;color:#2B1342}
 .c-scratch b{padding:8px 10px 2px}
 .c-scratch small{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
-/* the editor's top bar is one row: back, title, Done (Hire stays on the picker and the reveal) */
-#cEdit .g-hire,#game:has(#cEdit.active) .g-home{display:none}
+/* the editor's top bar is one row: back, title, Hire (icon only), Done; Home is hidden here */
+#game:has(#cEdit.active) .g-home{display:none}
+#cEdit .g-hire{min-width:44px;height:44px;padding:0;justify-content:center;flex:none}
+#cEdit .g-hire span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+#cEdit .g-hire img{margin:0}
 #game:has(.c-over.open) #cEdit .c-top{padding-left:0}
 
 #g-map .v-map{align-self:center;margin:auto 0;max-width:460px;border-radius:0}   /* centred in the band under the title, edge to edge on a phone */
@@ -1117,6 +1120,8 @@ body:has(#g-map.active) .idle-buddy{bottom:calc(env(safe-area-inset-bottom) + 96
 .g-sheet.open .g-sheet-in{transform:none}
 #game:has(.c-over.open) .g-sheet .g-sheet-in{bottom:calc(env(safe-area-inset-bottom) + 12px);max-height:calc(100% - env(safe-area-inset-top) - 80px)}
 
+/* 360 px in Bahasa: Back, "Hubungi Ekky" and "Selesai" must fit beside the Home button (Done ran 17 px off screen) */
+@media (max-width:380px){.c-top{gap:6px}.c-top .g-hire.sm{padding-right:8px;font-size:.8rem}.c-top .g-btn.sm{padding-left:10px;padding-right:10px}}
 /* on a phone the Home button (about 76 px) sits left of the title: the title clears it and shrinks to stay on one line ("Mewarnai bareng Ekky") */
 @media (max-width:480px){.c-pick .g-title,.c-reveal .g-title,.c-arrive .g-title{margin:0 52px 0 84px;font-size:min(1.4rem,5.2vw)}}
 /* World squad */
