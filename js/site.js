@@ -219,7 +219,10 @@ function say(m,icon){toast.textContent=m;if(icon)toast.insertAdjacentHTML("after
 const mail=document.getElementById("mailLink");mail.textContent=CONFIG.email;mail.href="mailto:"+CONFIG.email;
 // B15 safe default: a placeholder email or a link to a bare home page (no profile path) stays hidden until CONFIG is filled in.
 const realLink=u=>{try{return new URL(u).pathname.replace(/\/+$/,"").length>0}catch{return false}};
-document.querySelectorAll("[data-link]").forEach(a=>{const u=CONFIG.links[a.dataset.link];if(realLink(u))a.href=u;else a.remove()});
+// The profile anchors show only when set, and again after data/site.json (admin) changes a link.
+const applyLinks=()=>document.querySelectorAll("[data-link]").forEach(a=>{const k=a.dataset.link,u=k==="website"?(CONFIG.links.website||CONFIG.website):CONFIG.links[k];
+  const ok=k==="website"?/^https?:\/\//.test(u||""):realLink(u);if(ok)a.href=u;a.hidden=!ok});
+applyLinks();addEventListener("sitedata",applyLinks);
 if(!CONFIG.email){document.querySelector(".mail").remove();document.querySelector('.socials a[href="#contact"]')?.remove()}
 const copyMail=document.getElementById("copyMail");if(copyMail)copyMail.onclick=async()=>{try{await navigator.clipboard.writeText(CONFIG.email);say(t("hire.copied"),"i-check")}catch{say(CONFIG.email)}};
 document.getElementById("form").addEventListener("submit",e=>{e.preventDefault();const f=e.target;let ok=true;
