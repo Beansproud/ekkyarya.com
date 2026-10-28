@@ -214,7 +214,7 @@
 
   // ---- the screen ----
   const CSS = `
-#adminRoot{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;z-index:99999;display:none;border-radius:0;box-shadow:none;animation:none;overflow:hidden;flex-direction:column;background:var(--paper);color:var(--ink);font-family:Fredoka,Poppins,sans-serif;--ink:#2B1342;--paper:#FFF8EC;--line:#e5d8bd;--accent:#FFB400;--card:#fff;--mute:#6b5a80}
+#adminRoot{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;z-index:99999;display:none;border-radius:0;box-shadow:none;animation:none;overflow:hidden;flex-direction:column;background:var(--paper);color:var(--ink);font-family:Fredoka,Poppins,sans-serif;--ink:#2B1342;--paper:#FFF8EC;--line:#e5d8bd;--accent:#FFB400;--card:#fff;--mute:#6b5a80;--text:#4b4655;--muted:#645F70;--bg:#FFF8EC;--side:#F4F4F4;--ink-soft:#4a2f66;--paper-line:#e5d8bd;color-scheme:light}
 #adminRoot *{box-sizing:border-box}
 #adminRoot[open]{display:flex;animation:none}#adminRoot::backdrop{background:transparent}
 #adminRoot button{font-family:inherit;cursor:pointer}
@@ -241,7 +241,7 @@
 .adm-status[data-kind=ok]{color:#1f7a3d}.adm-status[data-kind=err]{color:#b3261e}.adm-status a{color:inherit;text-decoration:underline;display:inline-block;padding:12px 0}
 .adm-main{flex:1;overflow:auto;padding:16px;-webkit-overflow-scrolling:touch}
 .adm-main .adm-note{color:var(--mute)}
-@media (prefers-color-scheme:dark){.adm-status[data-kind=ok]{color:#7ddc9a}.adm-status[data-kind=err]{color:#ff9a92}#adminRoot{--ink:#f3ecff;--paper:#1b1028;--line:#3e2a5c;--card:#2f1f47;--mute:#b9a9d4}.adm-btn.pri{color:#2B1342}}
+/* The admin screen stays light paper in dark mode too, like the game and the PIN pad (the tab scripts draw on light cards). */
 `;
   function build() {
     if (!document.getElementById("admShellCss")) { const st = document.createElement("style"); st.id = "admShellCss"; st.textContent = CSS; document.head.appendChild(st); }
