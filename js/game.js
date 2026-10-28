@@ -102,17 +102,19 @@ function groundHTML(V){const L=V.layers;if(!L)return `<img class="v-ground" src=
   return im("sky","v-skyimg")+im("mid","v-isle")+im("north","v-isle")+im("south","v-isle")+
     (u?`<img class="v-ground v-isle v-ufo" data-isle="north" src="${u.src}" alt="" decoding="async" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}">`:"")}
 let mapTok=0;
+const LABEL_NUDGE={studio:[50,0]};   // a2: image px to move a label off its baked spot where it would touch a villager
 function renderMap(){
   const V=window.VILLAGE,W=$("gMapWrap");if(!V)return;
   const places=PLACES.filter(p=>!p.feature||feature(p.feature));
   const art=featuredSix(4);
   W.style.height="";W.className="g-map-wrap v-map";W.style.aspectRatio=`${V.w}/${V.h}`;
-  // the whole village fits between the header and the tab bar: the width follows the height left on screen
-  W.style.width=`min(100%, calc((100dvh - 300px) * ${(V.w/V.h).toFixed(4)}))`;
+  // the village fills the screen width, edge to edge through the side gutters (art critic a1), unless the height left
+  // between the header and the tab bar is shorter: then the width follows that height
+  W.style.width=`min(100% + 32px, 520px, calc((100dvh - 196px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) * ${(V.w/V.h).toFixed(4)}))`;
   W.innerHTML=`<div class="v-zoom" id="gMapZoom">${groundHTML(V)}`+
     V.frames.map((f,k)=>{const p=art[k];if(!p)return "";const deg=(Math.atan(f.slope)*180/Math.PI).toFixed(2);
       return `<img class="v-frame" src="${thumbOf(p)}" alt="" decoding="async" style="left:${pct(f.x,V.w)};top:${pct(f.y,V.h)};width:${pct(f.w,V.w)};height:${pct(f.h,V.h)};transform:skewY(${deg}deg)">`}).join("")+
-    places.map(p=>{const b=V.places[p.id].box,l=V.places[p.id].label;
+    places.map(p=>{const b=V.places[p.id].box,n=LABEL_NUDGE[p.id]||[0,0],l=[V.places[p.id].label[0]+n[0],V.places[p.id].label[1]+n[1]];
       return `<button class="v-place${p.hire?" hire":""}" data-place="${p.id}" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}" aria-label="${esc(t(p.key))}"></button>
       <span class="v-label${p.hire?" hire":""}" data-place="${p.id}" aria-hidden="true" style="left:${pct(l[0],V.w)};top:${pct(l[1],V.h)}">${esc(t(p.key))}</span>`}).join("");
   // the villagers and scenery come a moment later, in an idle slice: the first visit lays out the island and the places only
@@ -217,6 +219,8 @@ function lifeSpawn(){const busy=new Set([...Life.live.values()].map(m=>m.r)),ids
 function lifeTick(){clearTimeout(Life.tm);if(!Life.run)return;
   if(!Z.pts.size&&Life.live.size<3+Math.floor(Math.random()*3))lifeSpawn();   // nothing new starts under a finger
   Life.tm=setTimeout(lifeTick,rnd(1000,3000))}
+// while a finger pans or pinches, the village's motion holds still and resumes when it lets go
+function lifeHold(on){if(on===!!Life.held||!Life.fx)return;Life.held=on;if(on)lifeAnims(a=>a.pause());else if(Life.run)lifeAnims(a=>{if(a.playState==="paused")a.play()})}
 function lifeAnims(f){const z=$("gMapZoom");if(z)z.getAnimations({subtree:true}).forEach(a=>{try{f(a)}catch(e){}})}
 function lifeSet(on){on=on&&!document.hidden&&!calm();if(on===Life.run)return;Life.run=on;
   if(on){lifeAnims(a=>{if(a.playState==="paused")a.play()});lifeTick()}else{clearTimeout(Life.tm);lifeAnims(a=>a.pause())}}
@@ -262,7 +266,7 @@ const Z={s:1,x:0,y:0,pts:new Map(),moved:false,start:null,raf:0,zs:null,r:{l:0,t
 function widen(on){const W=$("gMapWrap"),L=$("gMapZoom");
   if(on&&!Z.base){Z.base={w:L.clientWidth,h:L.clientHeight,css:W.style.width};
     Object.assign(L.style,{width:Z.base.w+"px",height:Z.base.h+"px",inset:"0 auto auto 0"});
-    Object.assign(W.style,{width:"100%",height:Z.base.h+"px",aspectRatio:"auto"});Z.x=(W.clientWidth-Z.base.w)/2;Z.y=0}
+    Object.assign(W.style,{width:"min(100vw,460px)",height:Z.base.h+"px",aspectRatio:"auto"});Z.x=(W.clientWidth-Z.base.w)/2;Z.y=0}
   if(!on&&Z.base){Object.assign(L.style,{width:"",height:"",inset:""});
     Object.assign(W.style,{width:Z.base.css,height:"",aspectRatio:`${window.VILLAGE.w}/${window.VILLAGE.h}`});Z.base=null}}
 // Pan and zoom: gesture math runs on cached numbers (Z.r = the frame's rect, Z.cw = its width, both read once per gesture
@@ -285,10 +289,10 @@ function zoomAt(k,cx,cy){const ns=Math.max(1,Math.min(2,Z.s*k));if(ns>1&&!Z.base
     if(Z.pts.size===1){Z.moved=false;Z.start={x:e.clientX,y:e.clientY,zx:Z.x,zy:Z.y}}
     else if(Z.pts.size===2){const [a,b]=[...Z.pts.values()];Z.pinch={d:Math.hypot(a.x-b.x,a.y-b.y),s:Z.s};Z.moved=true}});
   W.addEventListener("pointermove",e=>{if(!Z.pts.has(e.pointerId))return;Z.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
-    if(Z.pts.size===2&&Z.pinch){const [a,b]=[...Z.pts.values()],d=Math.hypot(a.x-b.x,a.y-b.y);zoomAt(Z.pinch.s*d/Z.pinch.d/Z.s,(a.x+b.x)/2,(a.y+b.y)/2)}
+    if(Z.pts.size===2&&Z.pinch){lifeHold(true);const [a,b]=[...Z.pts.values()],d=Math.hypot(a.x-b.x,a.y-b.y);zoomAt(Z.pinch.s*d/Z.pinch.d/Z.s,(a.x+b.x)/2,(a.y+b.y)/2)}
     else if(Z.pts.size===1&&Z.start&&Z.s>1){const dx=e.clientX-Z.start.x,dy=e.clientY-Z.start.y;
-      if(Math.hypot(dx,dy)>8)Z.moved=true;if(Z.moved)zoomTo(Z.s,Z.start.zx+dx,Z.start.zy+dy)}});
-  const up=e=>{Z.pts.delete(e.pointerId);if(Z.pts.size<2)Z.pinch=null;if(!Z.pts.size)Z.start=null};
+      if(Math.hypot(dx,dy)>8)Z.moved=true;if(Z.moved){lifeHold(true);zoomTo(Z.s,Z.start.zx+dx,Z.start.zy+dy)}}});
+  const up=e=>{Z.pts.delete(e.pointerId);if(Z.pts.size<2)Z.pinch=null;if(!Z.pts.size){Z.start=null;lifeHold(false)}};
   W.addEventListener("pointerup",up);W.addEventListener("pointercancel",up);
   // a pan or pinch is not a tap on whatever was under the finger
   W.addEventListener("click",e=>{if(Z.moved&&!e.target.closest(".v-zoomctl")){e.stopPropagation();e.preventDefault();Z.moved=false}},true);
@@ -517,6 +521,8 @@ document.addEventListener("visibilitychange",()=>{if(!A)return;if(document.hidde
   else if(pausedByHide){pausedByHide=false;setTimeout(()=>{if(A&&!document.hidden&&A.t>0)A.run=true},600)}});
 
 // A friend's link draws their coloring first; the start thumbnails and the Art cards load after it (share playtest).
+// The village's pictures (about 1 MB at 2x) are fetched only when the Map tab opens (go("map")), never at load, so a
+// slow phone spends its first seconds on the start screen and a desktop visit never fetches them (sprint 2, first load).
 let artDone=false,mapBuilt=false;const dirty={start:false,art:false,map:false};   // screens are built once and kept; a language switch redraws only the one in view
 // The village (village.png and its sprites, about 1 MB) is built when the map opens (go("map")), not at load, so the
 // start screen's drawings come first on a slow phone (S5, Developer B).
@@ -550,8 +556,7 @@ function prewarm(){if(!document.body.classList.contains("game-mode"))return;
   const idle=window.requestIdleCallback||(f=>setTimeout(f,50));
   const when=job=>{if(Date.now()-lastTouch<1500)return setTimeout(()=>when(job),1500);idle(()=>Date.now()-lastTouch<1500?when(job):job(),{timeout:4000})};
   when(()=>{if(!artDone){artDone=true;renderArt()}
-    $("gCards").querySelectorAll("img[loading=lazy]").forEach(im=>{im.loading="eager";im.decode&&im.decode().catch(()=>{})});   // the first Art visit shows decoded thumbnails, not a fetch
-    setTimeout(()=>when(()=>{if(!mapBuilt&&window.VILLAGE){mapBuilt=true;renderMap()}}),1200)})}
+    })}   // the Art thumbnails stay lazy and the village waits for the Map tab: only the start screen's six load up front
 addEventListener("load",()=>{setTimeout(prewarm,2000);warmT=setTimeout(warmWhenIdle,2500)});
 function renderAll(){if(deep)setTimeout(renderStart,2500);else renderStart();renderMine();setTimeout(moveInd,60)}
 // Shared with js/color.js, js/share.js and js/links.js.
