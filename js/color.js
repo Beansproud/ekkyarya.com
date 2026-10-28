@@ -334,11 +334,13 @@ function relang(){
     const n=[...el.childNodes].reverse().find(x=>x.nodeType===3&&x.textContent.trim());
     if(n)n.textContent=(/^\s/.test(n.textContent)?" ":"")+w;else if(!el.children.length)el.textContent=w})});
   over.setAttribute("aria-label",t("color.title"));
-  if($("cPick").classList.contains("active"))openPicker();
+  // A closed overlay keeps "active" on its last view, so only redraw views while the overlay is open.
+  const shown=over.classList.contains("open");
+  if(shown&&$("cPick").classList.contains("active"))openPicker();
   if(cur){const pr=bySlug(cur.pd.meta.slug);cur.title=cur.pd.id==="scratch"?t("color.scratch"):pr?ptitle(pr):cur.pd.meta.title;$("cTitle").textContent=cur.title;
     $("cRevTitle").textContent=cur.pd.id==="scratch"?t("color.scratch"):t("reveal.title");renderColors();
     if(!$("cTray").hidden)$("cTray").innerHTML=stickers().map(s=>`<button class="c-tray-st" data-n="${s.n}" aria-label="${esc(nm("color.sticker","Sticker {n}",s.n))}"><img src="${s.src}" alt=""></button>`).join("")}
-  if(arriveRe&&$("cArrive").classList.contains("active"))arriveRe()}
+  if(shown&&arriveRe&&$("cArrive").classList.contains("active"))arriveRe()}
 addEventListener("ekky:lang",relang);
 
 return {openPicker,open,close,showArrival,pages,stickers,PAGES,STICKERS,SCRATCH,get state(){return cur},compose,pageData,makeState};
