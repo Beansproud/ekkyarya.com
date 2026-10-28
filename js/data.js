@@ -90,11 +90,23 @@ const PROJECTS = [
 ];
 // Project flow (docs/flow.md): a piece may carry steps, the ordered pictures of its project, each {img, full, caption {en, id}};
 // flow "process" (sketch to final) or "series" (other pictures from the same project). Fewer than 2 steps = no flow.
-// Morumelons is the one honest grouping in assets/work/ today: the landing page art and two characters from the collection.
+// Morumelons: the landing page art, then its characters as a set and one of them moving (Sprint 3: morumelons below).
+/* ---- Sprint 3: morumelons ---- */
+// The 12 characters the Color squad picked from the owner's 48 GIFs (docs/morumelons.md): a 320 px thumb (first view),
+// an 800 px poster and a play-once animated WebP each, fetched only on tap or hover (js/site.js mmPlay). Owner (10-28 15:1x,
+// via the lead): "its ekky own collection, can be shown publicly". They live inside the project (portfolio and the Art
+// card's viewer); creative roles (sticker, game, village) can follow where a character fits.
+const MM_DIR="assets/projects/morumelons/morumelons-";
+const MORUMELONS_CAST=[   // working names (no official names yet, docs/morumelons.md)
+  ["Astronaut","Astronaut"],["Robot Pilot","Pilot Robot"],["Mermaid","Putri Duyung"],["Samurai","Samurai"],
+  ["Dino Hoodie","Hoodie Dino"],["Mummy","Mumi"],["Fishbowl Diver","Penyelam Akuarium"],["Unicorn Girl","Gadis Unicorn"],
+  ["Wooden Boy","Bocah Kayu"],["Wizard","Penyihir"],["Clown","Badut"],["Dark Knight","Ksatria Gelap"]
+].map(([en,id],k)=>{const n=MM_DIR+String(k+1).padStart(2,"0");return {img:n+"-thumb.webp",full:n+".webp",anim:n+"-anim.webp",name:{en,id}}});
+const MM_STAR=MORUMELONS_CAST[4];   // the Animation step: the dino's fire breath; the Characters step's cover is 02 Robot Pilot (docs/morumelons.md)
 const MORUMELONS_FLOW={flow:"series",steps:[
   {img:"assets/work/thumb/morumelons.jpg",full:"assets/work/morumelons.jpg",caption:{en:"The landing page",id:"Halaman utama"}},
-  {img:"assets/work/thumb/nft-3.jpg",full:"assets/work/nft-3.jpg",caption:{en:"Astronaut",id:"Astronaut"}},
-  {img:"assets/work/thumb/nft-9.jpg",full:"assets/work/nft-9.jpg",caption:{en:"Radio Explorer",id:"Penjelajah Radio"}}]};
+  {img:MORUMELONS_CAST[1].img,full:MORUMELONS_CAST[1].full,caption:{en:"The characters",id:"Para karakter"},set:MORUMELONS_CAST},
+  {img:MM_STAR.img,full:MM_STAR.full,anim:MM_STAR.anim,caption:{en:"Animation",id:"Animasi"}}]};
 const FLOWS={morumelons:MORUMELONS_FLOW,"nft-3":MORUMELONS_FLOW,"nft-9":MORUMELONS_FLOW};
 const stepsOf=p=>{const s=Array.isArray(p&&p.steps)?p.steps.filter(x=>x&&x.img&&x.full):[];return s.length>=2?s.slice(0,8):[]};
 // slug = file name; own = may take creative roles. Pieces that may not lose every role but portfolio and card.
@@ -269,6 +281,9 @@ const COPY = {
     "flow.this": "This picture",
     "flow.open": "Open step {n}: {caption}",
     "flow.count": "{n} pictures",
+    "mm.play": "Play {name}",
+    "mm.hint": "Point at a character. They have been practicing.",
+    "mm.hintTap": "Tap a character. They have been practicing.",
     "lb.downloadNote": "A small copy for you. Credit Ekky Arya if you post it.",
     // Share and download (B11, B12, B40, D9, D10)
     "share.button": "Share",
@@ -584,6 +599,9 @@ const COPY = {
     "flow.this": "Gambar ini",
     "flow.open": "Buka langkah {n}: {caption}",
     "flow.count": "{n} gambar",
+    "mm.play": "Putar {name}",
+    "mm.hint": "Arahkan ke karakternya. Mereka sudah latihan.",
+    "mm.hintTap": "Ketuk karakternya. Mereka sudah latihan.",
     "lb.downloadNote": "Versi kecil buat kamu. Kalau diunggah, sebut Ekky Arya, ya.",
     "share.button": "Bagikan",
     "dl.button": "Unduh",
