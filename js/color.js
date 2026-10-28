@@ -68,7 +68,7 @@ G.insertAdjacentHTML("beforeend",`<div class="c-over" id="gColor" role="dialog" 
     <div class="c-pair"><figure><canvas id="cYours"></canvas><figcaption>${esc(t("reveal.yours"))}</figcaption></figure>
       <figure id="cEkkyFig"><img id="cEkky" alt=""><figcaption>${esc(t("reveal.ekky"))}</figcaption></figure></div>
     <div class="c-actions">${feature("shareCards")?`<div class="s-row"><button class="g-btn" id="cShare">${ico("i-share")} ${esc(t("reveal.share"))}</button><button class="g-btn alt" id="cDl">${ico("i-download")} ${esc(t("dl.button"))}</button></div>`:""}
-      <button class="g-btn alt" id="cAgain">${esc(t("reveal.again"))}</button><button class="g-link" id="cAnother">${esc(t("reveal.another"))}</button>
+      <button class="g-btn alt" id="cAgain">${esc(t("reveal.again"))}</button>
       <button class="g-hire" data-hire aria-label="${esc(t("hire.chip.aria"))}"><img src="assets/ui/monster-head.png" alt=""><span>${esc(t("hire.chip"))}</span></button></div>
   </section>
   <section class="c-view c-arrive" id="cArrive">
@@ -172,7 +172,8 @@ const cv=$("cCanvas"),stage=$("cStage");
 async function open(id,opts={}){
   let pd;try{pd=await pageData(id)}catch{return openPicker()}
   const saved=opts.fresh?null:(Game.st.colorings||{})[id];
-  cur=makeState(pd,saved);color=pd.id==="scratch"?4:1;
+  cur=makeState(pd,saved);color=pd.id==="scratch"?2:1;   // the Doodle Scene starts on white paper with a soft cream brush; yellow stays a swatch
+  
   const pr=bySlug(pd.meta.slug),title=id==="scratch"?t("color.scratch"):pr?ptitle(pr):pd.meta.title;cur.title=title;
   $("cTitle").textContent=title;$("cCanvas").setAttribute("aria-label",title+". "+t("color.hint"));stage.style.aspectRatio=`${pd.meta.w}/${pd.meta.h}`;
   $("cPeek").src=id==="scratch"?"":pd.meta.original||(bySlug(pd.meta.slug)||{}).full||"";$("cPeekBtn").hidden=id==="scratch";
@@ -302,7 +303,7 @@ function reveal(){const s=cur,scratch=s.pd.id==="scratch",c=$("cYours"),{w,h}=s.
   if(scratch){ek.removeAttribute("src");return}
   ek.style.opacity=0;ek.src=s.pd.meta.original||(bySlug(s.pd.meta.slug)||{}).full||"";
   ek.decode().catch(()=>{}).then(()=>{ek.style.opacity=""})}
-$("cClose").onclick=close;$("cAgain").onclick=()=>{view("cEdit");sizeStage()};$("cAnother").onclick=openPicker;
+$("cClose").onclick=close;$("cAgain").onclick=()=>{view("cEdit");sizeStage()};
 if($("cShare"))$("cShare").onclick=()=>typeof Share!=="undefined"&&Share.openPreview(shareData());
 if($("cDl"))$("cDl").onclick=()=>typeof Share!=="undefined"&&Share.download({...shareData(),name:Game.st.name||""});
 function shareData(){const s=cur;return {art:s.pd.meta.slug||null,page:s.pd.id,get title(){return s.title},stickers:s.stickers.map(x=>x.n),
@@ -328,7 +329,7 @@ const LBL=[["#cPick .g-title","color.title"],["#cPick .g-sub","color.intro"],["#
   ["#cWheel","color.any","aria"],["#cWheel .c-wheel-top b","color.any"],['#cWheel [data-k="h"]',"wheel.hue","aria","Hue"],['#cWheel [data-k="s"]',"wheel.sat","aria","Strength"],
   ['#cWheel [data-k="l"]',"wheel.light","aria","Light"],["#cWNo","wheel.cancel","text","Cancel"],["#cWYes","wheel.add","text","Use this color"],
   ["#cReveal figure:first-child figcaption","reveal.yours"],["#cEkkyFig figcaption","reveal.ekky"],["#cShare","reveal.share"],["#cDl","dl.button"],["#cAgain","reveal.again"],
-  ["#cAnother","reveal.another"],["#cArriveColor","arrive.mine"],["#cArriveExplore","arrive.explore"]];
+  ["#cArriveColor","arrive.mine"],["#cArriveExplore","arrive.explore"]];
 function relang(){
   LBL.forEach(([sel,k,kind,en])=>{const w=en?tt(k,en):t(k);over.querySelectorAll(sel).forEach(el=>{
     if(kind==="aria")return el.setAttribute("aria-label",w);
