@@ -27,6 +27,9 @@
     saved: { en: "Token saved on this device only. It is sent to api.github.com and nowhere else.", id: "Token hanya tersimpan di perangkat ini. Hanya dikirim ke api.github.com." },
     bad: { en: "GitHub did not accept this token for the repository.", id: "GitHub tidak menerima token ini untuk repositori." },
     working: { en: "Publishing...", id: "Menerbitkan..." },
+    commit: { en: "See the commit", id: "Lihat commit" },
+    offline: { en: "No connection to GitHub.", id: "Tidak ada koneksi ke GitHub." },
+    auth: { en: "GitHub refused the token. Check that it has Contents read and write for this repository.", id: "GitHub menolak token. Pastikan token punya akses Contents baca dan tulis untuk repositori ini." },
     live: { en: "Published. Live in about a minute.", id: "Terbit. Tayang sekitar satu menit lagi." },
     fail: { en: "Could not publish: ", id: "Gagal menerbitkan: " },
     changes: { en: "{n} change(s) waiting", id: "{n} perubahan menunggu" },
@@ -35,7 +38,7 @@
     language: { en: "Bahasa Indonesia", id: "English" }
   };
 
-  let root = null, active = TABS[0], data = null, base = "", staged = new Map(), busy = false, status = "";
+  let root = null, active = TABS[0], data = null, base = "", staged = new Map(), busy = false, status = null;   // status: {kind: "busy"|"ok"|"err", text, sha?}
   const tabs = {}, listeners = new Set();
   const lang = () => (typeof LANG !== "undefined" && LANG === "id") ? "id" : "en";
   const pick = v => typeof v === "string" ? v : v ? (v[lang()] || v.en || "") : "";
@@ -62,6 +65,13 @@
   }
   const post = (path, body, method = "POST") => gh(path, { method, body: JSON.stringify(body) });
 
+  // A short, plain reason for the owner (never the raw HTTP text).
+  const friendly = e => {
+    const m = String(e && e.message || e);
+    if (e instanceof TypeError) return s("offline");
+    if (/bad credentials|resource not accessible|not found|requires authentication|no write access|HTTP 40[134]/i.test(m)) return s("auth");
+    return m;
+  };
   async function checkToken() {
     const r = await gh("/repos/" + REPO);
     if (!r.permissions || !r.permissions.push) throw new Error("no write access");
@@ -113,19 +123,19 @@
     staged: () => [...staged.keys()],
     onChange(fn) { listeners.add(fn); return () => listeners.delete(fn); },
     publish: async message => {
-      status = s("working"); busy = true; paintBar();
-      try { await publish(message); status = s("live"); }
-      catch (e) { status = s("fail") + (e && e.message || e); throw e; }
+      status = { kind: "busy", text: s("working") }; busy = true; paintBar();
+      try { const sha = await publish(message); status = { kind: "ok", text: s("live"), sha }; }
+      catch (e) { status = { kind: "err", text: s("fail") + friendly(e) }; throw e; }
       finally { busy = false; paintBar(); }
     }
   };
-  const changed = () => { paintBar(); listeners.forEach(f => { try { f(); } catch (e) {} }); };
+  const changed = () => { if (status && status.kind !== "busy") status = null; paintBar(); listeners.forEach(f => { try { f(); } catch (e) {} }); };
 
   // ---- the screen ----
   const CSS = `
-#adminRoot{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;z-index:99999;display:none;flex-direction:column;background:var(--paper);color:var(--ink);font-family:Fredoka,Poppins,sans-serif;--ink:#2B1342;--paper:#FFF8EC;--line:#e5d8bd;--accent:#FFB400;--card:#fff;--mute:#6b5a80}
+#adminRoot{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;z-index:99999;display:none;border-radius:0;box-shadow:none;animation:none;overflow:hidden;flex-direction:column;background:var(--paper);color:var(--ink);font-family:Fredoka,Poppins,sans-serif;--ink:#2B1342;--paper:#FFF8EC;--line:#e5d8bd;--accent:#FFB400;--card:#fff;--mute:#6b5a80}
 #adminRoot *{box-sizing:border-box}
-#adminRoot[open]{display:flex}#adminRoot::backdrop{background:transparent}
+#adminRoot[open]{display:flex;animation:none}#adminRoot::backdrop{background:transparent}
 #adminRoot button{font-family:inherit;cursor:pointer}
 .adm-top{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:2px solid var(--line);flex-wrap:wrap}
 .adm-top h1{margin:0;font-size:1.3rem;flex:1;min-width:80px}
@@ -137,10 +147,11 @@
 .adm-tabs button[aria-selected=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .adm-bar{padding:8px 16px;font-size:.9rem;color:var(--mute);display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-bottom:2px solid var(--line)}
 .adm-bar input{flex:1;min-width:180px;min-height:44px;padding:8px 12px;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--ink);font:inherit}
-.adm-bar .adm-status{flex-basis:100%}
+.adm-bar .adm-status{flex-basis:100%;font-weight:600}
+.adm-status[data-kind=ok]{color:#1f7a3d}.adm-status[data-kind=err]{color:#b3261e}.adm-status a{color:inherit;text-decoration:underline;display:inline-block;padding:12px 0}
 .adm-main{flex:1;overflow:auto;padding:16px;-webkit-overflow-scrolling:touch}
 .adm-main .adm-note{color:var(--mute)}
-@media (prefers-color-scheme:dark){#adminRoot{--ink:#f3ecff;--paper:#1b1028;--line:#3e2a5c;--card:#2f1f47;--mute:#b9a9d4}.adm-btn.pri{color:#2B1342}}
+@media (prefers-color-scheme:dark){.adm-status[data-kind=ok]{color:#7ddc9a}.adm-status[data-kind=err]{color:#ff9a92}#adminRoot{--ink:#f3ecff;--paper:#1b1028;--line:#3e2a5c;--card:#2f1f47;--mute:#b9a9d4}.adm-btn.pri{color:#2B1342}}
 `;
   function build() {
     if (!document.getElementById("admShellCss")) { const st = document.createElement("style"); st.id = "admShellCss"; st.textContent = CSS; document.head.appendChild(st); }
@@ -163,10 +174,9 @@
   function paintBar() {
     if (!root) return;
     const n = dirtyCount(), can = ctx.canPublish;
-    root.querySelector("[data-adm=publish]").textContent = s("publish");
     root.querySelector("[data-adm=publish]").disabled = busy || !can || !n;
     const bar = root.querySelector(".adm-bar");
-    const msg = status || (!can ? s("readonly") : n ? s("changes").replace("{n}", n) : "");
+    const st = status || { kind: "", text: !can ? s("readonly") : n ? s("changes").replace("{n}", n) : "" };
     const esc = x => String(x).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
     if (!bar.dataset.built || bar.dataset.can !== String(can) || bar.dataset.lang !== lang()) {
       bar.dataset.built = "1"; bar.dataset.can = String(can); bar.dataset.lang = lang();
@@ -174,7 +184,10 @@
         ? `<span class="adm-status" role="status"></span><button type="button" class="adm-btn" data-adm="forget">${esc(s("forget"))}</button>`
         : `<input type="password" autocomplete="off" aria-label="${esc(s("tokenLabel"))}" placeholder="${esc(s("tokenLabel"))}"><button type="button" class="adm-btn" data-adm="save">${esc(s("save"))}</button><span class="adm-status" role="status"></span>`;
     }
-    bar.querySelector(".adm-status").textContent = msg;
+    const el = bar.querySelector(".adm-status");
+    el.textContent = st.text; el.dataset.kind = st.kind; el.setAttribute("role", st.kind === "err" ? "alert" : "status");
+    if (st.sha) { const a = document.createElement("a"); a.href = `https://github.com/${REPO}/commit/${st.sha}`; a.target = "_blank"; a.rel = "noopener"; a.textContent = " " + s("commit"); el.appendChild(a); }
+    root.querySelector("[data-adm=publish]").textContent = busy ? s("working") : s("publish");
   }
 
   function paintTabs() {
@@ -203,13 +216,13 @@
     const input = root.querySelector(".adm-bar input"), tok = input && input.value.trim();
     if (!tok) return;
     store.set(TOKEN_KEY, tok);
-    try { await checkToken(); status = s("saved"); }
-    catch (e) { store.del(TOKEN_KEY); status = s("bad"); }
+    try { await checkToken(); status = { kind: "ok", text: s("saved") }; }
+    catch (e) { store.del(TOKEN_KEY); status = { kind: "err", text: s("bad") }; }
     root.querySelector(".adm-bar").dataset.built = ""; paintBar();
   }
 
   function forgetDevice() {
-    store.del(TOKEN_KEY); status = s("forgot");
+    store.del(TOKEN_KEY); status = { kind: "ok", text: s("forgot") };
     ["admLock", "admTries"].forEach(store.del);
     root.querySelector(".adm-bar").dataset.built = ""; paintBar();
   }
