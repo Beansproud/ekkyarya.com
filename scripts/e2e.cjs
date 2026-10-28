@@ -249,8 +249,10 @@ async function runConfig(browser,url,scheme,lang){
     const a=await tf();await p.tap('[data-zoom="1"]');await sleep(600);const b=await tf();if(a===b)throw new Error('zoom + changed nothing');await p.tap('[data-zoom="-1"]');await sleep(600);const c=await tf();if(c===b)throw new Error('zoom - changed nothing')});
 
   // --- Hire chip on every screen ---
-  const hireOn=async(p,what)=>{if(!await vis(p,'[data-hire]:visible',500))throw new Error('no Hire chip on '+what);
-    await p.evaluate(()=>{const e=[...document.querySelectorAll('[data-hire]')].find(x=>x.offsetParent&&x.getBoundingClientRect().height>0);e.click()});await sleep(900);
+  const hireOn=async(p,what)=>{if(!await vis(p,'[data-hire]:visible',4000))throw new Error('no Hire chip on '+what);
+    await p.evaluate(()=>{const e=[...document.querySelectorAll('[data-hire]')].find(x=>x.offsetParent&&x.getBoundingClientRect().height>0);e.click()});
+    // wait for the sheet to open (state), then let it finish sliding in before the audit
+    await p.waitForFunction(()=>document.getElementById('gSheet').classList.contains('open')||document.querySelectorAll('dialog[open]').length>0,null,{timeout:4000,polling:50}).catch(()=>{});await sleep(600);
     if(!await p.evaluate(()=>document.getElementById('gSheet').classList.contains('open')||[...document.querySelectorAll('dialog[open]')].length>0))throw new Error('Hire sheet did not open from '+what);
     await audit(p,'hire sheet')};
   for(const t of ['start','art','map','mine'])await T('hire chip: '+t,async p=>{await boot(p);if(t!=='start')await tab(p,t);await hireOn(p,t)});
