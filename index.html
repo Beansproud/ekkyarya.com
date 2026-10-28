@@ -127,7 +127,7 @@
     </div>
 
     <div class="scene reveal" id="scene" aria-hidden="true">
-      <picture><source type="image/webp" data-srcset="assets/hero.webp"><img class="hero-art" data-src="assets/hero.png" alt="" width="540" height="780" decoding="async" onload="this.closest('.scene').classList.add('has-art')" onerror="this.remove()"></picture>
+      <picture><source type="image/webp" data-srcset="assets/hero.webp"><img class="hero-art" data-src="assets/hero.png" alt="" width="540" height="780" decoding="async" onload="this.closest('.scene').classList.add('has-art')" onerror="this.remove()"></picture><script>/* desktop: start the hero while the page parses, not after the deferred scripts; phones (pre-game) skip it */(function(){if(document.documentElement.classList.contains("pre-game"))return;var i=document.querySelector(".hero-art[data-src]"),w=i&&i.previousElementSibling;if(!i)return;if(w&&w.dataset.srcset){w.srcset=w.dataset.srcset;w.removeAttribute("data-srcset")}i.src=i.dataset.src;i.removeAttribute("data-src")})();</script>
       <svg class="planet" viewBox="0 0 600 640">
         <defs>
           <radialGradient id="pg" cx="38%" cy="35%" r="70%">
