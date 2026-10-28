@@ -39,7 +39,7 @@
     previewStop: { en: "Stop preview", id: "Hentikan pratinjau" },
     ribbon: { en: "Preview, not published", id: "Pratinjau, belum diterbitkan" },
     back: { en: "Back to admin", id: "Kembali ke admin" },
-    undo: { en: "Undo last publish", id: "Batalkan terbitan terakhir" },
+    undo: { en: "Undo publish", id: "Batalkan terbitan" },
     help: { en: "Help", id: "Bantuan" },
     helpClose: { en: "Hide help", id: "Tutup bantuan" },
     looking: { en: "Looking for the last publish...", id: "Mencari terbitan terakhir..." },
@@ -53,7 +53,8 @@
     undoFail: { en: "Could not undo: ", id: "Gagal membatalkan: " },
     moved: { en: "A file was changed after that publish, so undoing it could lose newer work. Nothing was changed.", id: "Ada berkas yang berubah setelah terbitan itu, jadi membatalkannya bisa menghilangkan pekerjaan yang lebih baru. Tidak ada yang diubah." },
     files: { en: "{n} file(s)", id: "{n} berkas" },
-    language: { en: "Bahasa Indonesia", id: "English" }
+    language: { en: "ID", id: "EN" },
+    languageAria: { en: "Switch to Bahasa Indonesia", id: "Switch to English" }
   };
 
   let root = null, active = TABS[0], data = null, base = "", staged = new Map(), busy = false, status = null;   // status: {kind: "busy"|"ok"|"err", text, sha?}
@@ -217,15 +218,17 @@
 #adminRoot *{box-sizing:border-box}
 #adminRoot[open]{display:flex;animation:none}#adminRoot::backdrop{background:transparent}
 #adminRoot button{font-family:inherit;cursor:pointer}
-.adm-top{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:2px solid var(--line);flex-wrap:wrap}
-.adm-top h1{margin:0;font-size:1.3rem;flex:1;min-width:80px}
+.adm-top{display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:2px solid var(--line);flex-wrap:nowrap}
+.adm-top .adm-btn{padding:8px 12px;flex:none}
+.adm-top h1{margin:0;font-size:1.2rem;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
 .adm-btn{min-height:44px;padding:8px 16px;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-weight:600;font-size:.95rem}
 .adm-btn.pri{background:var(--accent);border-color:#b77e00;box-shadow:0 3px 0 #b77e00}
 .adm-btn:disabled{opacity:.5;cursor:default}
-.adm-tabs{display:flex;gap:6px;padding:8px 16px;overflow-x:auto;border-bottom:2px solid var(--line)}
-.adm-tabs button{flex:none;min-height:44px;padding:8px 16px;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-weight:600}
+.adm-tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;padding:8px 12px;border-bottom:2px solid var(--line)}
+.adm-tabs button{min-height:44px;padding:6px 2px;font-size:.8rem;white-space:nowrap;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-weight:600}
 .adm-tabs button[aria-selected=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-.adm-tools{display:flex;gap:8px;padding:8px 16px;flex-wrap:wrap;border-bottom:2px solid var(--line)}
+.adm-tools{display:flex;gap:6px;padding:8px 12px;flex-wrap:nowrap;border-bottom:2px solid var(--line)}
+.adm-tools .adm-btn{padding:8px 10px;font-size:.9rem;white-space:nowrap;min-width:0}
 .adm-btn[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .adm-pop{max-height:55vh;overflow:auto;margin:8px 16px;padding:12px 14px;border-radius:14px;border:2px solid var(--line);background:var(--card);font-size:.95rem;line-height:1.45}
 .adm-pop[hidden]{display:none}.adm-pop ol{margin:6px 0;padding-left:20px}.adm-pop h2{margin:0 0 6px;font-size:1.05rem}.adm-pop .adm-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
@@ -347,7 +350,7 @@
   function paintAll() {
     root.querySelector("[data-adm=title]").textContent = s("title");
     root.querySelector("[data-adm=close]").textContent = s("close");
-    root.querySelector("[data-adm=lang]").textContent = s("language");
+    const lb = root.querySelector("[data-adm=lang]"); lb.textContent = s("language"); lb.setAttribute("aria-label", s("languageAria"));
     paintTools(); paintPop(); paintTabs(); paintBar(); paintPanel();
     if (ribbon && ribbon.open) paintRibbon();
   }
