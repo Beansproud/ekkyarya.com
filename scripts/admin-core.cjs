@@ -1,6 +1,6 @@
 const {chromium,devices}=require('playwright');const http=require('http'),fs=require('fs'),px=require('path');
 // Usage: ADMIN_PIN=<pin> node scripts/admin-core.cjs   (skips when ADMIN_PIN is unset)
-const SITE=px.resolve(__dirname,'..');
+const SITE=px.resolve(process.argv[2]||px.join(__dirname,'..'));
 const MIME={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json'};
 const srv=http.createServer((q,r)=>{let f=px.join(SITE,q.url.split('?')[0]);if(fs.existsSync(f)&&fs.statSync(f).isDirectory())f=px.join(f,'index.html');if(!fs.existsSync(f)){r.writeHead(404);return r.end()}r.writeHead(200,{'content-type':MIME[px.extname(f)]||'application/octet-stream'});fs.createReadStream(f).pipe(r)});
 (async()=>{const PIN=process.env.ADMIN_PIN;if(!PIN){console.log('skip: ADMIN_PIN unset');return}
@@ -15,6 +15,7 @@ for(const d of '111111')await p.keyboard.press(d);await p.waitForTimeout(300);
 console.log('wrong msg:',await p.textContent('.adm-card p'));
 for(const d of PIN)await p.keyboard.press(d);await p.waitForSelector('#adminRoot:not([hidden])');
 console.log('tabs:',await p.$$eval('.adm-tabs button',e=>e.map(x=>x.textContent)));
+for(const t of ['art','links','settings','text','messages']){await p.click('#adminRoot [data-tab='+t+']');await p.waitForTimeout(250);console.log('tab',t,(await p.textContent('.adm-main')).trim().length>20?'ok':'EMPTY')}
 console.log('readonly bar:',await p.textContent('.adm-status'));
 console.log('errs',errs);await p.close();
 // lockout
@@ -25,4 +26,4 @@ console.log('lock:',await p.textContent('.adm-card p'),await p.evaluate(()=>JSON
 const {defaultBrowserType,...IP}=devices['iPhone 13'];const c=await b.newContext(IP);p=await c.newPage();await p.goto(url+'?game');await p.waitForTimeout(800);
 const logo=await p.$('#g-start .g-logo, #g-start .g-logo-text');for(let i=0;i<6;i++)await logo.click();
 console.log('6 taps pad:',!!await p.$('.adm-pad'));await logo.click();await p.waitForSelector('.adm-pad');console.log('7 taps pad ok');
-await p.keyboard.type('x');await b.close();srv.close()})();
+await b.close();srv.close()})();
