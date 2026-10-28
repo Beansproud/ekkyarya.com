@@ -116,3 +116,5 @@ change is written in the rubric above in the same commit.
 | 2026-10-28 | "some of it is very clunky" | Owner | Question 5: stutter counts as bad motion, even when the idea is good |
 | 2026-10-28 | "no need download button" on the tiles | Owner | Question 1: every badge on the art must earn its place; the art leads |
 | 2026-10-28 | Round 1 notes 2 (idle effects pile and mirror the pictures) and 3 (Hire sheet jam-packed): the owner agreed with both | Owner | Questions 1 and 5 hold for owner-requested features too: keep the feature, shrink how much it moves or shows |
+| 2026-10-28 | The owner asked for "a lot of animation, even when idle, multiple random animations" on the map | Owner | On the map, the amount of motion is the owner's call: judge only how it moves (soft, slow, one moment at a time), never ask to remove it |
+| 2026-10-28 | A hard diagonal edge of a background layer in the zoomed map galaxy "really bugs" the owner | Owner | Question 3: a visible layer edge, seam or clip line breaks the hand-made page; check every zoom level, not just 1x |

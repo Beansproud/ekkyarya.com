@@ -1,6 +1,36 @@
 {
  "w": 601,
  "h": 827,
+ "layers": {
+  "sky": {
+   "src": "assets/village/sky.png",
+   "x": 0,
+   "y": 0,
+   "w": 601,
+   "h": 827
+  },
+  "north": {
+   "src": "assets/village/island-north.png",
+   "x": 149,
+   "y": 27,
+   "w": 282,
+   "h": 223
+  },
+  "mid": {
+   "src": "assets/village/island-mid.png",
+   "x": 14,
+   "y": 167,
+   "w": 584,
+   "h": 508
+  },
+  "south": {
+   "src": "assets/village/island-south.png",
+   "x": 176,
+   "y": 501,
+   "w": 336,
+   "h": 323
+  }
+ },
  "frames": [
   {
    "wall": "left",
@@ -74,13 +104,13 @@
   },
   "home": {
    "box": [
-    239,
+    238,
     215,
-    372,
+    371,
     415
    ],
    "label": [
-    305.5,
+    304.5,
     419
    ]
   },
@@ -98,18 +128,36 @@
   },
   "hire": {
    "box": [
-    265,
+    264,
     501,
-    402,
+    401,
     673
    ],
    "label": [
-    333.5,
+    332.5,
     677
    ]
   }
  },
  "folk": {
+  "fire-spirit": {
+   "piece": "rpg",
+   "box": [
+    504,
+    311,
+    537,
+    363
+   ]
+  },
+  "noodle-bath": {
+   "piece": "noodles",
+   "box": [
+    14,
+    323,
+    75,
+    397
+   ]
+  },
   "ufo": {
    "piece": "doodles",
    "box": [
@@ -117,24 +165,6 @@
     35,
     178,
     91
-   ]
-  },
-  "fire-spirit": {
-   "piece": "rpg",
-   "box": [
-    505,
-    311,
-    538,
-    363
-   ]
-  },
-  "noodle-bath": {
-   "piece": "noodles",
-   "box": [
-    15,
-    323,
-    76,
-    397
    ]
   }
  },
@@ -236,12 +266,22 @@
  ],
  "scenery": [],
  "lantern": [
-  321.4,
+  320.4,
   617.1
  ],
+ "ufo": {
+  "src": "assets/sprites/ufo.png",
+  "box": [
+   116,
+   35,
+   178,
+   91
+  ],
+  "layer": "north"
+ },
  "smoke": [
   [
-   45.5,
+   44.5,
    341
   ]
  ]

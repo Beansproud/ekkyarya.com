@@ -95,7 +95,13 @@ const PLACES=[
   {id:"hire",        key:"town.hire",    icon:"assets/sprites/gate.png",      open:p=>openHire("",p), hire:true},
 ];
 const pct=(v,of)=>(v/of*100).toFixed(3)+"%";
-let mapTok=0,mapRO=null;
+// the ground is the galaxy plus one picture per island (so each can bob on its own), then the UFO; one picture if the layers are missing
+function groundHTML(V){const L=V.layers;if(!L)return `<img class="v-ground" src="assets/village/village.png" alt="" decoding="async" fetchpriority="high">`;
+  const im=(n,cls)=>{const l=L[n];return `<img class="v-ground ${cls}" data-isle="${n}" src="${l.src}" alt="" decoding="async"${n==="sky"?' fetchpriority="high"':""} style="left:${pct(l.x,V.w)};top:${pct(l.y,V.h)};width:${pct(l.w,V.w)};height:${pct(l.h,V.h)}">`};
+  const u=V.ufo,b=u&&u.box;
+  return im("sky","v-skyimg")+im("mid","v-isle")+im("north","v-isle")+im("south","v-isle")+
+    (u?`<img class="v-ground v-isle v-ufo" data-isle="north" src="${u.src}" alt="" decoding="async" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}">`:"")}
+let mapTok=0;
 function renderMap(){
   const V=window.VILLAGE,W=$("gMapWrap");if(!V)return;
   const places=PLACES.filter(p=>!p.feature||feature(p.feature));
@@ -103,19 +109,16 @@ function renderMap(){
   W.style.height="";W.className="g-map-wrap v-map";W.style.aspectRatio=`${V.w}/${V.h}`;
   // the whole village fits between the header and the tab bar: the width follows the height left on screen
   W.style.width=`min(100%, calc((100dvh - 300px) * ${(V.w/V.h).toFixed(4)}))`;
-  W.innerHTML=`<div class="v-zoom" id="gMapZoom"><img class="v-ground" src="assets/village/village.png" alt="" decoding="async" fetchpriority="high">`+
+  W.innerHTML=`<div class="v-zoom" id="gMapZoom">${groundHTML(V)}`+
     V.frames.map((f,k)=>{const p=art[k];if(!p)return "";const deg=(Math.atan(f.slope)*180/Math.PI).toFixed(2);
       return `<img class="v-frame" src="${thumbOf(p)}" alt="" decoding="async" style="left:${pct(f.x,V.w)};top:${pct(f.y,V.h)};width:${pct(f.w,V.w)};height:${pct(f.h,V.h)};transform:skewY(${deg}deg)">`}).join("")+
     places.map(p=>{const b=V.places[p.id].box,l=V.places[p.id].label;
       return `<button class="v-place${p.hire?" hire":""}" data-place="${p.id}" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}" aria-label="${esc(t(p.key))}"></button>
       <span class="v-label${p.hire?" hire":""}" data-place="${p.id}" aria-hidden="true" style="left:${pct(l[0],V.w)};top:${pct(l[1],V.h)}">${esc(t(p.key))}</span>`}).join("");
   // the villagers and scenery come a moment later, in an idle slice: the first visit lays out the island and the places only
-  const mt=++mapTok;(window.requestIdleCallback||(f=>setTimeout(f,30)))(()=>{const z=$("gMapZoom");if(mt===mapTok&&z)z.insertAdjacentHTML("beforeend",villageLife(V)+"</div>")},{timeout:500});
+  const mt=++mapTok;(window.requestIdleCallback||(f=>setTimeout(f,30)))(()=>{const z=$("gMapZoom");if(mt===mapTok&&z){z.insertAdjacentHTML("beforeend",villageLife(V)+`<div class="v-fx" aria-hidden="true"></div>`);lifeStart(z,V)}},{timeout:500});
   W.insertAdjacentHTML("beforeend",`<div class="v-zoomctl"><button class="g-round" data-zoom="1" aria-label="${esc(tt("town.zoomIn","Zoom in"))}">${ico("i-plus")}</button><button class="g-round" data-zoom="-1" aria-label="${esc(tt("town.zoomOut","Zoom out"))}"><b aria-hidden="true">&minus;</b></button></div>`);
   Z.base=null;Z.s=1;zoomTo(1,0,0);
-  if(!mapRO&&window.ResizeObserver){mapRO=new ResizeObserver(([e])=>e.target.style.setProperty("--vw",e.contentRect.width+"px"));mapRO.observe($("gMapZoom"))}   // the island's width in px, so nothing needs a container query
-  else if(mapRO){mapRO.disconnect();mapRO.observe($("gMapZoom"))}
-  const gr=W.querySelector(".v-ground");if(gr&&gr.decode)gr.decode().catch(()=>{});   // decoded now, in the idle slice, not on the first tap
   $("gMapList").innerHTML=places.map(p=>`<li><button class="v-row${p.hire?" hire":""}" data-place="${p.id}"><img src="${p.icon}" alt="" loading="lazy">${esc(t(p.key))}</button></li>`).join("");
 }
 // a revisit hangs four new pieces on the gallery walls without rebuilding the village
@@ -137,11 +140,119 @@ function villageLife(V){
   if(feature("clientScenery"))(V.scenery||[]).forEach(c=>{const p=PROJECTS.find(q=>q.slug===c.piece);
     if(p&&p.kind==="client"&&hasRole(p,"village"))html+=btn("v-folk v-scenery",p,c.src,box(c.box),`<img src="${esc(c.src)}" alt="">`)});
   const perPiece={};   // at most 8 villagers, and at most 2 from one piece (UX review)
-  (V.walkers||[]).filter(w=>(perPiece[w.piece]=(perPiece[w.piece]||0)+1)<=2).slice(0,8).forEach(w=>{const p=card(w.piece);if(!p)return;
+  (V.walkers||[]).map((w,wi)=>[w,wi]).filter(([w])=>(perPiece[w.piece]=(perPiece[w.piece]||0)+1)<=2).slice(0,8).forEach(([w,wi])=>{const p=card(w.piece);if(!p)return;
     const [a,b]=w.route,face=w.face===0?1:Math.sign(b[0]-a[0]||1)*w.face;
-    html+=`<div class="v-walk" style="transform:translate(${pct(a[0],V.w)},${pct(a[1],V.h)})">`+
-      btn("v-walker",p,w.src,"",`<img src="${w.src}" alt="" decoding="async" style="height:calc(var(--vw,0px)*${(w.h/V.w).toFixed(4)});transform:scaleX(${face})">`)+`</div>`});
+    html+=`<div class="v-walk" data-w="${wi}" style="transform:translate(${pct(a[0],V.w)},${pct(a[1],V.h)})">`+
+      btn("v-walker",p,w.src,"",`<img src="${w.src}" alt="" decoding="async" style="height:${(w.h/V.w*100).toFixed(2)}cqw;transform:scaleX(${face})">`)+`</div>`});
   return html}
+
+/* ---- Village alive (Map squad; owner 10-28: "a lot of animation, even when idle", "like 20 different animation that
+   changes simultaniously"). Under the always-on life (walkers, clouds, twinkle, lantern, steam, islands bobbing) a
+   scheduler starts a new short moment every 1-3 s, so 3 to 5 play at once, each in a different part of the map.
+   Every moment is a Web Animation on transform and opacity of Ekky's own sprites or a plain gold or paper shape,
+   removed when it ends. Nothing runs when the map is off screen or the tab is hidden; reduced motion shows a still map. ---- */
+const Life={tok:0,run:false,tm:0,live:new Map(),recent:[],io:null,V:null,fx:null,ctl:null};
+const rnd=(a,b)=>a+Math.random()*(b-a),pick=a=>a[Math.floor(Math.random()*a.length)];
+const EZ="cubic-bezier(.4,0,.2,1)",EZI="cubic-bezier(.22,.61,.36,1)";
+const calm=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
+// a moment's kit: elements it adds (removed at the end) and animations it starts; map units (601 wide) become cqw
+function lifeKit(){const V=Life.V,u=v=>(v/V.w*100).toFixed(3)+"cqw",k={els:[],anims:[]};
+  k.at=(x,y)=>`left:${pct(x,V.w)};top:${pct(y,V.h)}`;
+  k.add=el=>{Life.fx.appendChild(el);k.els.push(el);return el};
+  k.img=(src,x,y,h,cls="")=>{const e=document.createElement("img");e.src=src;e.alt="";e.decoding="async";e.className="v-fxi "+cls;e.style.cssText=`${k.at(x,y)};height:${u(h*1.6)}`;return k.add(e)};   // h is for a small sprite; they read at 1.6x on a phone
+  k.dot=(cls,x,y,w,h)=>{const e=document.createElement("i");e.className=cls;e.style.cssText=`${k.at(x,y)};width:${u(w)};height:${u(h||w)}`;return k.add(e)};
+  // steps: {t offset 0-1, x, y (map units from the start spot), r deg, s scale, o opacity}
+  // a step that leaves x, y, r, s or o out keeps the one before it
+  k.mv=(el,steps,dur,ease=EZ)=>{const c={x:0,y:0,r:0,s:1,o:1},a=el.animate(steps.map(s=>{Object.assign(c,{...s,t:undefined});
+    return {offset:s.t,transform:`translate(${u(c.x)},${u(c.y)}) rotate(${c.r}deg) scale(${c.s})`,opacity:c.o}}),{duration:dur,easing:ease,fill:"both"});k.anims.push(a);return a};
+  return k}
+const inBox=(id,fx,fy)=>{const b=Life.V.places[id].box;return [b[0]+(b[2]-b[0])*fx,b[1]+(b[3]-b[1])*fy]};
+const SK="assets/sprites/",UI="assets/ui/";
+// the 20 moments: id, region (two moments in one region never overlap), length in ms, what happens
+const MOMENTS=[
+ {id:"shoot",r:"skyT",d:1600,run:k=>{const x=rnd(40,260),y=rnd(10,110),e=k.dot("v-shoot",x,y,9,.5);k.mv(e,[{t:0,o:0,r:32},{t:.12,o:1,x:12,y:8},{t:1,x:250,y:160,o:0}],1600,EZI)}},
+ {id:"comet",r:"skyR",d:7000,run:k=>{const x=Life.V.w+20,y=rnd(40,120),e=k.dot("v-comet",x,y,16,2.6);k.mv(e,[{t:0,o:0,r:160},{t:.1,o:.9,x:-30,y:12},{t:.85,o:.7,x:-420,y:150},{t:1,o:0,x:-470,y:170}],7000,"linear")}},
+ {id:"beam",r:"N",d:4200,run:k=>{const U=Life.V.folk.ufo.box,x=(U[0]+U[2])/2,y=U[3]-6,
+   b=k.dot("v-beam",x,y+35,26,70),c=k.img(SK+"doodle-cat.png",x,y+72,15,"foot");
+   k.mv(b,[{t:0,o:0},{t:.2,o:1},{t:.8,o:1},{t:1,o:0}],4200);
+   k.mv(c,[{t:0,y:0,s:1,o:0},{t:.12,y:0,o:1},{t:.45,y:-58,s:.55},{t:.55,y:-58,s:.55},{t:.88,y:0,s:1,o:1},{t:1,y:0,o:0}],4200)}},
+ {id:"astro",r:"skyL",d:11000,run:k=>{const e=k.img(UI+"astronaut.png",-20,rnd(380,520),30);k.mv(e,[{t:0,x:0,y:0,r:-20,o:0},{t:.1,o:1},{t:.5,x:130,y:-50,r:15},{t:.9,o:1},{t:1,x:260,y:-120,r:-10,o:0}],11000,"linear")}},
+ {id:"crab",r:"S",d:3000,run:k=>{const e=k.img(SK+"crab.png",190,650,26,"foot");
+   k.mv(e,[{t:0,x:0,o:0},{t:.08,o:1},{t:.2,y:-5},{t:.3,y:0,x:30},{t:.45,y:-5,x:60},{t:.55,y:0,x:80},{t:.7,y:-5,x:110},{t:.8,y:0,x:130},{t:.92,o:1,x:150},{t:1,x:160,o:0}],3000,"linear")}},
+ {id:"wave",r:"C",d:3200,run:k=>{const [x,y]=inBox("home",.18,1.02),e=k.img(SK+"waver.png",x,y,38,"foot");
+   k.mv(e,[{t:0,y:10,o:0,s:.8},{t:.15,y:0,o:1,s:1},{t:.3,r:-8},{t:.45,r:8},{t:.6,r:-8},{t:.75,r:5},{t:.85,r:0,o:1},{t:1,y:6,o:0}],3200)}},
+ {id:"plane",r:"skyL",d:6500,run:k=>{const e=k.dot("v-plane",-20,rnd(560,720),11,6);k.mv(e,[{t:0,o:0,r:-14},{t:.1,o:.95},{t:.4,x:150,y:-40,r:-8},{t:.7,x:300,y:-20,r:-18},{t:.92,o:.95},{t:1,x:420,y:-90,r:-10,o:0}],6500,"linear")}},
+ {id:"flies",r:"S",d:5200,run:k=>{const L=Life.V.lantern;for(let i=0;i<5;i++){const e=k.dot("v-fly",L[0]+rnd(-30,30),L[1]+rnd(-18,18),3.4),dx=rnd(-26,26),dy=rnd(-30,-6);
+   k.mv(e,[{t:0,o:0},{t:.25,o:1,x:dx*.4,y:dy*.3},{t:.6,o:.5,x:-dx*.5,y:dy*.8},{t:1,o:0,x:dx,y:dy-14}],rnd(4000,5200)*1)}}},
+ {id:"cat",r:"E",d:2600,run:k=>{const [x,y]=inBox("gallery",.1,.02),e=k.img(UI+"cat.png",x,y,26,"foot");
+   k.mv(e,[{t:0,y:0,o:0},{t:.06,o:1},{t:.2,y:-14,x:28},{t:.3,y:0,x:50},{t:.5,y:-14,x:78},{t:.6,y:0,x:100},{t:.8,y:-14,x:128},{t:.9,y:0,x:150,o:1},{t:1,x:150,o:0}],2600,"linear")}},
+ {id:"ghost",r:"W",d:4800,run:k=>{const [x,y]=inBox("doodle",.5,.2),e=k.img(UI+"ghost.png",x,y,20,"foot");
+   k.mv(e,[{t:0,y:0,o:0,s:.7},{t:.2,o:.9,s:1,x:6,y:-14},{t:.5,x:-8,y:-34},{t:.8,o:.7,x:8,y:-54},{t:1,x:0,y:-66,o:0,s:1.1}],4800)}},
+ {id:"honk",r:"C",d:1400,run:k=>{const c=Life.fx.parentNode.querySelector('.v-walker[data-sprite*="car"] img');if(!c)return;
+   k.anims.push(c.animate([{translate:"0 0"},{translate:"0 -.9cqw"},{translate:"0 0"},{translate:"0 -.9cqw"},{translate:"0 0"}],{duration:1400,easing:EZ}))}},
+ {id:"orbit",r:"N",d:9000,run:k=>{const O=Life.V.places.observatory.box,cx=(O[0]+O[2])/2,cy=O[1]+30,e=k.img(UI+"planet.png",cx,cy,16);
+   const st=[];for(let i=0;i<=12;i++){const a=i/12*Math.PI*2;st.push({t:i/12,x:Math.cos(a)*110,y:Math.sin(a)*22,s:Math.sin(a)>0?1.1:.8,o:.95})}k.mv(e,st,9000,"linear")}},
+ {id:"flare",r:"E",d:2200,run:k=>{const b=Life.V.folk["fire-spirit"].box,e=k.dot("v-flare",(b[0]+b[2])/2,(b[1]+b[3])/2,28);k.mv(e,[{t:0,o:0,s:.4},{t:.3,o:.85,s:1},{t:1,o:0,s:1.5}],2200,EZI)}},
+ {id:"steam",r:"W",d:3600,run:k=>{const S=Life.V.smoke[0];for(let i=0;i<3;i++){const e=k.dot("v-puff",S[0]+rnd(-6,6),S[1]-30,8);
+   setTimeout(()=>{if(e.isConnected)k.mv(e,[{t:0,o:0,s:.5},{t:.2,o:.8},{t:1,x:rnd(-8,10),y:-52,s:1.8,o:0}],2400,EZI)},i*500);e.style.opacity=0}}},
+ {id:"glint",r:"skyR",d:3200,run:k=>{[[505,95],[548,150],[470,140],[560,640],[490,610]].slice(0,3+(Math.random()*3|0)).forEach(([x,y],i)=>{
+   const e=k.dot("v-spark",x+rnd(-8,8),y+rnd(-8,8),7);setTimeout(()=>{if(e.isConnected)k.mv(e,[{t:0,o:0,s:.2,r:-30},{t:.45,o:1,s:1},{t:1,o:0,s:.5,r:20}],1400)},i*420);e.style.opacity=0})}},
+ {id:"pickle",r:"S",d:2800,run:k=>{const e=k.img(SK+"pickle.png",430,668,26,"foot");
+   k.mv(e,[{t:0,o:0},{t:.08,o:1},{t:.2,y:-18,x:-14,r:-8},{t:.35,y:0,x:-28,r:0},{t:.55,y:-18,x:-46,r:-8},{t:.7,y:0,x:-62,r:0},{t:.92,o:1,x:-72},{t:1,x:-72,o:0}],2800,"linear")}},
+ {id:"frame",r:"E",d:1400,run:k=>{const fr=[...Life.fx.parentNode.querySelectorAll(".v-frame")];if(!fr.length)return;const f=pick(fr),n=nextWallPiece();
+   if(!n)return;const a=f.animate([{opacity:1},{opacity:.05,offset:.4},{opacity:.05,offset:.55},{opacity:1}],{duration:1400,easing:EZ});k.anims.push(a);setTimeout(()=>{f.src=thumbOf(n)},560)}},
+ {id:"cloudride",r:"skyT",d:14000,run:k=>{const y=rnd(30,90),c=k.dot("v-rcloud",-90,y,80,22),m=k.img(SK+"orange-monster.png",-60,y+8,26,"foot");
+   k.mv(c,[{t:0,o:0},{t:.08,o:.4},{t:.92,o:.4,x:700},{t:1,x:760,o:0}],14000,"linear");k.mv(m,[{t:0,o:0},{t:.08,o:1},{t:.5,y:-3},{t:.92,o:1,x:700},{t:1,x:760,o:0}],14000,"linear")}},
+ {id:"palette",r:"W",d:3200,run:k=>{const [x,y]=inBox("studio",.5,.05),e=k.img(UI+"palette.png",x,y,22,"foot");
+   k.mv(e,[{t:0,y:6,o:0,s:.5,r:0},{t:.25,y:-8,o:1,s:1,r:120},{t:.6,y:-20,r:300},{t:1,y:-36,o:0,r:420}],3200)}},
+ {id:"lantern",r:"S",d:2600,run:k=>{const L=Life.V.lantern,e=k.dot("v-flare warm",L[0],L[1],30);k.mv(e,[{t:0,o:.1,s:.7},{t:.3,o:.9,s:1.15},{t:.5,o:.5,s:1},{t:.7,o:.85,s:1.1},{t:1,o:0,s:1.3}],2600,EZ)}}
+];
+function nextWallPiece(){const shown=new Set([...$("gMapWrap").querySelectorAll(".v-frame")].map(i=>i.getAttribute("src")));
+  const o=PROJECTS.filter(p=>creative(p)&&p.kind==="original"&&!shown.has(thumbOf(p)));return o.length?pick(o):null}
+function lifeSpawn(){const busy=new Set([...Life.live.values()].map(m=>m.r)),ids=Life.recent;
+  const ok=MOMENTS.filter(m=>!Life.live.has(m.id)&&!busy.has(m.r)&&!ids.includes(m.id));if(!ok.length)return;
+  const m=pick(ok),k=lifeKit();Life.recent=[...ids,m.id].slice(-6);Life.live.set(m.id,m);
+  try{m.run(k)}catch(e){}
+  setTimeout(()=>{k.els.forEach(e=>e.remove());k.anims.forEach(a=>{try{a.cancel()}catch(e){}});Life.live.delete(m.id)},m.d+100)}
+function lifeTick(){clearTimeout(Life.tm);if(!Life.run)return;
+  if(!Z.pts.size&&Life.live.size<3+Math.floor(Math.random()*3))lifeSpawn();   // nothing new starts under a finger
+  Life.tm=setTimeout(lifeTick,rnd(1000,3000))}
+function lifeAnims(f){const z=$("gMapZoom");if(z)z.getAnimations({subtree:true}).forEach(a=>{try{f(a)}catch(e){}})}
+function lifeSet(on){on=on&&!document.hidden&&!calm();if(on===Life.run)return;Life.run=on;
+  if(on){lifeAnims(a=>{if(a.playState==="paused")a.play()});lifeTick()}else{clearTimeout(Life.tm);lifeAnims(a=>a.pause())}}
+// always on: walkers walk their routes, clouds drift, stars twinkle, islands bob; started once per drawn village
+function lifeStart(z,V){Life.V=V;Life.fx=z.querySelector(".v-fx");Life.live.clear();if(!Life.fx||calm())return;
+  const u=v=>(v/V.w*100).toFixed(3)+"cqw",tok=++Life.tok,stage=(ms,f)=>setTimeout(()=>{if(tok===Life.tok&&z.isConnected)f()},ms);   // a few frames apart: the first visit never does it all at once
+  stage(160,()=>z.querySelectorAll(".v-walk").forEach(w=>{const r=V.walkers[+w.dataset.w];if(!r)return;
+    const route=r.route,pts=[...route,...route.slice(0,-1).reverse()],T=36/1600;   // 1 tile (36 px) per 1.6 s
+    const segs=pts.slice(1).map((p,j)=>Math.hypot(p[0]-pts[j][0],p[1]-pts[j][1])/T),pause=j=>j===0||j===pts.length-1?2000:800;
+    const dur=segs.reduce((a,b)=>a+b,0)+pts.reduce((a,_,j)=>a+pause(j),0),delay=-rnd(0,dur);
+    const at=p=>`translate(${pct(p[0],V.w)},${pct(p[1],V.h)})`,kf=[],turns=[];let t=0,side=Math.sign(route[1][0]-route[0][0])||1;
+    pts.forEach((p,j)=>{kf.push({offset:t/dur,transform:at(p)});t+=pause(j);kf.push({offset:Math.min(1,t/dur),transform:at(p)});
+      if(j<segs.length){const dx=Math.sign(pts[j+1][0]-p[0]);if(dx)side=dx;turns.push({offset:t/dur,side});t+=segs[j]}});
+    kf[kf.length-1].offset=1;w.animate(kf,{duration:dur,iterations:Infinity,easing:"linear",delay});
+    // the picture turns to face where it goes, flipping while it waits
+    const img=w.querySelector("img"),first=turns[0].side;if(img&&r.face!==0&&turns.some(x=>x.side!==first)){
+      const fk=[{offset:0,scale:"1 1"},...turns.map(x=>({offset:x.offset,scale:x.side===first?"1 1":"-1 1"})),{offset:1,scale:"1 1"}];
+      img.animate(fk.map(f=>({...f,easing:"step-end"})),{duration:dur,iterations:Infinity,delay})}}));
+  // islands bob a few px, each at its own pace; what stands on an island (frames, villagers, the UFO) bobs with it
+  const BOB={north:[6900,.9,0],mid:[8200,.6,-2300],south:[7400,.8,-4100]},isleAt=y=>y<260?"north":y>=500?"south":"mid";
+  const bob=(el,n)=>{const [d,amp,delay]=BOB[n]||BOB.mid;el.animate([{translate:"0 0"},{translate:`0 ${u(-amp)}`}],{duration:d,delay,iterations:Infinity,direction:"alternate",easing:"ease-in-out"})};
+  stage(320,()=>{z.querySelectorAll(".v-isle").forEach(e=>bob(e,e.dataset.isle));z.querySelectorAll(".v-frame").forEach(e=>bob(e,"mid"));
+    z.querySelectorAll(".v-walk").forEach(e=>{const r=V.walkers[+e.dataset.w];if(r)bob(e,isleAt(r.route[0][1]))});
+    const uf=z.querySelector(".v-ufo");if(uf)uf.animate([{transform:"translate(0,0) rotate(-3deg)"},{transform:`translate(${u(1.4)},${u(-1.6)}) rotate(3deg)`}],{duration:4600,iterations:Infinity,direction:"alternate",easing:"ease-in-out"})});
+  // clouds drift, the gate's lantern flickers, the noodle bath steams
+  Life.fx.insertAdjacentHTML("beforebegin",`<div class="v-cloudrow" style="top:4%"><span class="v-cloud"></span></div><div class="v-cloudrow" style="top:80%"><span class="v-cloud small" style="animation-delay:-36s"></span></div>`);
+  Life.fx.insertAdjacentHTML("beforebegin",`<i class="v-lantern" style="left:${pct(V.lantern[0],V.w)};top:${pct(V.lantern[1],V.h)}"></i>`+(V.smoke||[]).map(s=>`<i class="v-smoke" style="left:${pct(s[0],V.w)};top:${pct(s[1]-24,V.h)}"></i>`).join(""));
+  // twinkle and constellation glints
+  stage(80,()=>{for(let i=0;i<16;i++){const e=document.createElement("i"),x=((i*137+41)%100)/100*V.w,y=((i*89+23)%100)/100*V.h;
+    e.className="v-tw"+(i%4===0?" gold":"");e.style.cssText=`left:${pct(x,V.w)};top:${pct(y,V.h)};animation-duration:${3+i%5*.9}s;animation-delay:${-i*.7}s`;Life.fx.appendChild(e)}});
+  // the moments' sprites are decoded one by one beforehand, so none hitches when it first appears
+  Life.cache=Life.cache||[];[...new Set(["doodle-cat","crab","waver","pickle","orange-monster"].map(n=>SK+n+".png").concat(["astronaut","cat","ghost","planet","palette"].map(n=>UI+n+".png")))].forEach((s,i)=>
+    stage(500+i*140,()=>{const im=new Image();im.src=s;im.decode().catch(()=>{});Life.cache.push(im)}));
+  stage(2000,()=>{if(!Life.io){Life.io=new IntersectionObserver(es=>lifeSet(es[es.length-1].isIntersecting),{threshold:.05});Life.io.observe($("gMapWrap"));
+    document.addEventListener("visibilitychange",()=>lifeSet(!document.hidden&&$("gMapWrap").offsetParent!==null))}
+  Life.run=null;lifeSet($("gMapWrap").offsetParent!==null)})}   // null: re-sync play or pause for the freshly drawn village
 
 /* ---- Zoom (G1): pinch or drag with a finger, or the +/- buttons; 1x to 2x. A place is still one tap: a touch
    that moved more than 8 px is a pan, not a tap. Nothing animates; the view follows the finger. ---- */
@@ -422,12 +533,15 @@ let artDone=false,mapBuilt=false;const dirty={start:false,art:false,map:false}; 
 let sheetRe=null;
 const remember=f=>(...a)=>{sheetRe=()=>f(...a);return f(...a)};   // the sheet's opener, so a language switch can draw it again
 const hireRaw=openHire;openVillager=remember(openVillager);openLevel=remember(openLevel);openHire=remember(openHire);
-addEventListener("ekky:lang",()=>{
+function redrawScreens(){   // the screen in view is drawn again; the others are marked and drawn when opened
   renderMine();
-  const rs=$("gResShare");if(rs)rs.querySelector("span").textContent=t("reveal.share");
   if(screen==="start")renderStart();else dirty.start=true;
   if(artDone){if(screen==="art")renderArt();else dirty.art=true}
-  if(mapBuilt){if(screen==="map"){const sv={s:Z.s,x:Z.x,y:Z.y};renderMap();if(sv.s>1){widen(true);zoomTo(sv.s,sv.x,sv.y)}}else dirty.map=true}
+  if(mapBuilt){if(screen==="map"){const sv={s:Z.s,x:Z.x,y:Z.y};renderMap();if(sv.s>1){widen(true);zoomTo(sv.s,sv.x,sv.y)}}else dirty.map=true}}
+addEventListener("sitedata",redrawScreens);   // js/site-data.js merged data/site.json: new, hidden or reordered art and links show without a reload
+addEventListener("ekky:lang",()=>{
+  redrawScreens();
+  const rs=$("gResShare");if(rs)rs.querySelector("span").textContent=t("reveal.share");
   const l=$("gMapList"),b=$("gMapListBtn");if(!l.hidden)b.textContent=tt("town.showVillage","Show the village");
   if(sheet.classList.contains("open")&&sheetRe){
     const body=sheet.firstElementChild,top=body.scrollTop,from=sheetFrom,f=$("gForm"),v=f&&[f.name.value,f.type.selectedIndex,f.message.value];
