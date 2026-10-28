@@ -537,3 +537,49 @@ body:not(.game-mode){padding-left:env(safe-area-inset-left);padding-right:env(sa
 @keyframes sparkFly{to{transform:translate(var(--dx),var(--dy)) rotate(180deg) scale(.2);opacity:0}}
 .float{transition:translate .4s ease-out}
 body.game-mode .cursor,body.game-mode .cursor-dot{display:none}
+
+/* ---- Sprint 3: flow ---- */
+/* Project flow (docs/flow.md, js/site.js renderFlow): sticker bubbles with a wobbly ink outline, numbered badges and
+   hand-drawn arrows. Desktop: a zigzag row. Phones and game mode: a column (css/game.css). */
+.lb-flow{flex:1 1 100%;order:3;margin-top:4px;--fl-ink:#2B1342;--fl-paper:#FFFDF8}
+.lb-flow[hidden]{display:none}
+.fl-title{margin:0 0 10px;font-family:Fredoka,Poppins,sans-serif;font-weight:700;font-size:1.05rem;color:var(--ink)}
+.fl-list{list-style:none;margin:0;padding:6px 4px 14px;display:flex;flex-direction:row;align-items:flex-start;gap:0;overflow-x:auto;scrollbar-width:thin}
+.fl-step{display:flex;flex-direction:row;align-items:center;flex:none}
+.fl-step:nth-child(even){padding-top:26px}   /* the zigzag */
+.fl-node{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;width:150px;min-height:44px;padding:12px 12px 10px;border:0;background:none;color:var(--fl-ink);
+  font:inherit;cursor:pointer;rotate:calc((var(--i) - 1.5) * 1.2deg);transition:transform .2s var(--ease-in,ease)}
+.fl-node:hover{transform:translateY(-3px) rotate(-1deg)}
+.fl-node:active{transform:scale(.97)}
+.fl-bub{position:absolute;inset:0;width:100%;height:100%;overflow:visible;z-index:0}
+.fl-bub path{vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.fl-sh{fill:var(--c);stroke:var(--fl-ink);stroke-width:2.5;transform:translate(4px,5px)}
+.fl-bg{fill:var(--fl-paper);stroke:var(--fl-ink);stroke-width:3}
+.fl-node[aria-current="true"] .fl-bg{fill:#FFF3DC}
+.fl-node[aria-current="true"] .fl-sh{stroke-width:3.5}
+.fl-node img{position:relative;z-index:1;display:block;width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px;border:2px solid var(--fl-ink);background:#F1EBDD}
+.fl-num{position:absolute;z-index:2;top:-10px;left:-8px;width:32px;height:32px;display:grid;place-items:center;border-radius:50% 46% 52% 48%;background:var(--c);color:#2B1342;
+  border:2.5px solid var(--fl-ink);font-family:Fredoka,Poppins,sans-serif;font-weight:700;font-size:1rem;rotate:-8deg;box-shadow:2px 2px 0 var(--fl-ink)}
+.fl-cap{position:relative;z-index:1;font-family:Fredoka,Poppins,sans-serif;font-weight:600;font-size:.9rem;line-height:1.2;text-align:center;color:#2B1342}
+.fl-this{display:block;margin-top:2px;font-family:Poppins,sans-serif;font-weight:600;font-size:.72rem;color:#7a3d00;text-transform:uppercase;letter-spacing:.04em}
+.fl-arrow{flex:none;width:40px;height:44px;margin:0 2px;rotate:-90deg;overflow:visible}
+.fl-arrow path{fill:none;stroke:var(--ink);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+/* entrance: once per open, finite */
+.lb-flow.fl-in .fl-node{animation:flPop .42s var(--ease-in,cubic-bezier(.34,1.56,.64,1)) both;animation-delay:calc(var(--i) * 90ms)}
+.lb-flow.fl-in .fl-arrow path{stroke-dasharray:80;animation:flDraw .38s ease-out both;animation-delay:calc(var(--i) * 90ms + 200ms)}
+@keyframes flPop{from{opacity:0;transform:translateY(10px) scale(.92)}}
+@keyframes flDraw{from{stroke-dashoffset:80}to{stroke-dashoffset:0}}
+@media (prefers-reduced-motion:reduce){.lb-flow.fl-in .fl-node,.lb-flow.fl-in .fl-arrow path{animation:none}.fl-node,.fl-node:hover{transition:none;transform:none}}
+/* phones and game mode (class set by renderFlow): a column, the picture beside its caption */
+.fl-col .fl-list{flex-direction:column;align-items:stretch;overflow:visible;padding:6px 6px 8px 10px}
+.fl-col .fl-step{flex-direction:column;align-items:center}
+.fl-col .fl-step:nth-child(even){padding-top:0}
+.fl-col .fl-node{flex-direction:row;width:100%;max-width:340px;gap:12px;padding:10px 14px 10px 12px;text-align:left;rotate:calc((var(--i) - 1) * .6deg)}
+.fl-col .fl-node img{width:96px;flex:none}
+.fl-col .fl-cap{text-align:left;flex:1}
+.fl-col .fl-arrow{rotate:0deg;margin:2px 0}
+.fl-col.lb-flow{margin:14px 0 4px}
+/* a narrow column (a phone on its side puts the text beside the art): the picture above its caption */
+.fl-col.lb-flow{container-type:inline-size}
+.fl-cap{min-width:0;overflow-wrap:anywhere}
+@container (max-width:320px){.fl-col .fl-node{flex-direction:column;align-items:stretch;text-align:center}.fl-col .fl-node img{width:100%}.fl-col .fl-cap{text-align:center}}

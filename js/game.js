@@ -75,12 +75,17 @@ function go(to,fromPop){
 }
 try{history.replaceState({s:"start"},"")}catch(e){}
 /* Back closes what is on top (the lightbox, Color, a sheet, the share overlay): each open layer has its own history entry */
-const LAYERS=[["lb",()=>$("lightbox"),e=>e.open,e=>e.close()],["color",()=>$("gColor"),e=>e.classList.contains("open"),()=>Color.close()],
+const LAYERS=[["lb",()=>$("lightbox"),e=>e.open,e=>e.close()],["flstep",()=>$("lightbox"),e=>e.open&&e.classList.contains("fl-viewing"),()=>window.flowBack&&flowBack()],["color",()=>$("gColor"),e=>e.classList.contains("open"),()=>Color.close()],
   ["sheet",()=>$("gSheet"),e=>e.classList.contains("open"),()=>closeSheet()],["share",()=>$("gShare"),e=>e.classList.contains("open"),()=>{const x=$("sX");if(x)x.click()}]];
 const lstack=[];let skipPop=0;
-function syncLayers(){LAYERS.forEach(([id,get,isOpen])=>{const el=get();if(!el)return;const on=!!isOpen(el),at=lstack.indexOf(id);
-  if(on&&at<0){lstack.push(id);try{history.pushState({s:screen,l:id},"")}catch(e){}}
-  else if(!on&&at>=0){lstack.splice(at,1);if(history.state&&history.state.l===id){skipPop++;history.back()}}})}   // closed with its own button: drop its entry
+function syncLayers(){
+  // closed with its own button: drop its entry; layers that close together (the lightbox over a flow step) go back in one step
+  const closed=lstack.filter(id=>{const L=LAYERS.find(x=>x[0]===id),el=L[1]();return !el||!L[2](el)});
+  if(closed.length){let n=0;while(lstack.length&&closed.includes(lstack[lstack.length-1])){lstack.pop();n++}
+    closed.forEach(id=>{const at=lstack.indexOf(id);if(at>=0)lstack.splice(at,1)});
+    if(n&&history.state&&closed.includes(history.state.l)){skipPop++;history.go(-n)}}
+  LAYERS.forEach(([id,get,isOpen])=>{const el=get();if(!el)return;
+    if(isOpen(el)&&lstack.indexOf(id)<0){lstack.push(id);try{history.pushState({s:screen,l:id},"")}catch(e){}}})}
 addEventListener("load",()=>{const mo=new MutationObserver(syncLayers);
   LAYERS.forEach(([,get])=>{const el=get();if(el)mo.observe(el,{attributes:true,attributeFilter:["class","open"]})});syncLayers()});
 addEventListener("popstate",e=>{if(skipPop){skipPop--;return}
@@ -93,7 +98,7 @@ G.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(g){buzz(
 /* ---- start screen: the featured six open the lightbox ---- */
 function renderStart(){if(window.fitWebPin)fitWebPin();const six=featuredSix().map(p=>({p,i:PROJECTS.indexOf(p)}));
   // each drawing opens big on tap; Download lives in the viewer, not on the tile (owner, 10-28)
-  $("gFeatured").innerHTML=six.map(({p,i})=>`<div class="g-feat-cell"><button class="g-feat" data-i="${i}" aria-label="${esc(ptitle(p))}"><img src="${thumbOf(p)}" alt="" decoding="async" fetchpriority="high"><b>${esc(ptitle(p))}</b></button>`+
+  $("gFeatured").innerHTML=six.map(({p,i})=>`<div class="g-feat-cell"><button class="g-feat" data-i="${i}" aria-label="${esc(ptitle(p))}${stepsOf(p).length?", "+esc(t("flow.count",{n:stepsOf(p).length})):""}"><img src="${thumbOf(p)}" alt="" decoding="async" fetchpriority="high"><b>${esc(ptitle(p))}</b>${flowMark(p,true)}</button>`+
     `</div>`).join("")}
 $("gFeatured").addEventListener("click",e=>{const b=e.target.closest(".g-feat");if(b){buzz(10);show(+b.dataset.i)}});
 
@@ -449,6 +454,8 @@ $("gSheetBody").addEventListener("submit",e=>{e.preventDefault();const f=e.targe
   sheetHtml="";   // the sheet is drawn fresh the next time it opens
   setTimeout(()=>{if(go.startsWith("mailto:"))location.href=go;else open(go,"_blank","noopener")},900)});
 
+/* Project flow (docs/flow.md): a piece with steps says how many pictures its project has; the diagram is in the lightbox */
+const flowMark=(p,quiet)=>{const n=stepsOf(p).length;return n?`<span class="g-flow-mark"${quiet?' aria-hidden="true"':""}><i></i><i></i>${esc(t("flow.count",{n}))}</span>`:""};
 /* ---- Art: every piece, free to view; rarity is only a frame color ---- */
 let gFilter="all";
 let artTok=0;
@@ -458,7 +465,7 @@ function renderArt(){
   const list=PROJECTS.map((p,i)=>({p,i})).filter(x=>gFilter==="all"||x.p.cat===gFilter);
   // eight cards now, the rest in idle slices: the first visit lays out a screenful, not the whole grid
   const card=({p,i},k)=>`<button class="g-card" data-i="${i}" style="--tilt:${typeof tiltOf==="function"?tiltOf(p):"-1deg"}"><div class="inner">
-      <span class="gcat">${catImg(p.cat,"")}</span><div class="art" aria-hidden="true">${artOf(p)}</div><div class="info"><b>${esc(ptitle(p))}</b>${p.label?`<span class="g-tag">${esc(plabel(p))}</span>`:""}</div></div></button>`;
+      <span class="gcat">${catImg(p.cat,"")}</span><div class="art" aria-hidden="true">${artOf(p)}</div><div class="info"><b>${esc(ptitle(p))}</b>${p.label?`<span class="g-tag">${esc(plabel(p))}</span>`:""}${flowMark(p)}</div></div></button>`;
   const tok=++artTok,rest=list.slice(8),idle=window.requestIdleCallback||(f=>setTimeout(f,30));
   $("gCards").innerHTML=list.slice(0,8).map(card).join("");
   (function more(){if(tok!==artTok||!rest.length)return;idle(()=>{if(tok!==artTok)return;$("gCards").insertAdjacentHTML("beforeend",rest.splice(0,10).map(card).join(""));more()},{timeout:600})})();

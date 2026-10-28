@@ -80,7 +80,7 @@ if(feature("handLettering")||feature("aboutPhoto"))fetch("assets/hand/index.json
 /* ===== Procedural placeholder art ===== */
 function rng(seed){return()=>((seed=Math.imul(seed^seed>>>15,seed|1)+0x6D2B79F5|0,(seed^seed>>>13)>>>0)%1e4)/1e4}
 function makeArt(p){
-  const r=rng(p.seed*9973), [bg,ink,a,b]=p.pal; let s="";
+  const r=rng((p.seed||(p.slug||p.title||"").length+7)*9973), [bg,ink,a,b]=p.pal||["#F1EBDD","#2B1342","#FFB400","#7ED9B0"]; let s="";   // added pieces (data/site.json) have no seed or palette
   for(let i=0;i<7;i++){const x=r()*400,y=r()*300,rad=10+r()*40;s+=`<circle cx="${x}" cy="${y}" r="${rad}" fill="${r()>.5?a:b}" opacity=".35"/>`}
   for(let i=0;i<5;i++){const x=20+r()*360,y=20+r()*260;s+=`<path d="M${x} ${y-8}l2.5 5.5 6 .5-4.5 4 1.5 6-5.5-3-5.5 3 1.5-6-4.5-4 6-.5z" fill="${ink}" opacity=".8"/>`}
   // a little original blob character
@@ -155,6 +155,7 @@ const lb=document.getElementById("lightbox");let cur=0;
 function visible(){return [...grid.querySelectorAll(".tile:not(.hide)")].map(t=>+t.dataset.i)}
 function show(i){cur=i;const p=PROJECTS[i];
   document.getElementById("lbArt").innerHTML=artOf(p,true);
+  renderFlow(p);
   document.getElementById("lbCat").innerHTML=catImg(p.cat,"")+catName(p.cat);
   document.getElementById("lbTitle").textContent=ptitle(p);
   document.getElementById("lbDesc").textContent=pdesc(p)||"";
@@ -175,6 +176,61 @@ document.getElementById("lbHire").onclick=()=>{const note=t("lb.prefill",{title:
   const m=document.querySelector("#form [name=message]");m.value=note;document.getElementById("contact").scrollIntoView({behavior:"smooth"});setTimeout(()=>m.focus({preventScroll:true}),600)};
 lb.addEventListener("click",e=>{if(e.target===lb)lb.close()});
 lb.addEventListener("keydown",e=>{if(e.key==="ArrowRight")step(1);if(e.key==="ArrowLeft")step(-1)});
+
+/* ===== Project flow (docs/flow.md): a piece's steps as a hand-inked diagram in the lightbox (desktop and game) ===== */
+// Sticker bubbles with a wobbly ink outline (the same wobble on every visit, seeded by the step), a numbered badge and
+// a hand-drawn arrow to the next step. Vertical on phones, a zigzag row on the desktop. A node shows its picture big.
+const FLOW_INK=["#FFB400","#FF6B6B","#7ED9B0","#B8D5FF"];
+const escH=v=>String(v==null?"":v).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function wobPath(seed){const n=24,pts=[];
+  for(let k=0;k<n;k++){const a=k/n*2*Math.PI,c=Math.cos(a),s=Math.sin(a),j=1.3*Math.sin(seed*7.1+k*2.3)+.7*Math.sin(seed*3.7+k*5.1);
+    pts.push([50+(46+j)*Math.sign(c)*Math.pow(Math.abs(c),.22),50+(45+j)*Math.sign(s)*Math.pow(Math.abs(s),.22)])}
+  const m=(a,b)=>((a[0]+b[0])/2).toFixed(1)+" "+((a[1]+b[1])/2).toFixed(1);
+  let d="M"+m(pts[n-1],pts[0]);for(let k=0;k<n;k++){const q=pts[k],r=pts[(k+1)%n];d+=`Q${q[0].toFixed(1)} ${q[1].toFixed(1)} ${m(q,r)}`}
+  return d+"Z"}
+const flowArrow=k=>{const j=4+3*Math.sin(k*2.7);
+  return `<svg class="fl-arrow" viewBox="0 0 40 44" aria-hidden="true"><path d="M20 3C${(12+j).toFixed(1)} 14 ${(28-j).toFixed(1)} 24 20 35M11.5 27.5L20 38.5L28.5 28.5"/></svg>`};
+const flowCap=(st,k)=>(st.caption&&(st.caption[LANG]||st.caption.en))||t("flow.step",{n:k+1});
+function renderFlow(p){
+  lb.classList.remove("fl-viewing");
+  const lbBody=lb.querySelector(".lb-body");let box=document.getElementById("lbFlow");
+  if(!box){box=document.createElement("section");box.id="lbFlow";box.className="lb-flow"}
+  // phones: right under the description, before the buttons (the flow is the point of the piece); desktop: a full row below
+  const col=document.body.classList.contains("game-mode")||matchMedia("(max-width:760px)").matches,desc=document.getElementById("lbDesc");
+  if(col&&box.previousElementSibling!==desc)desc.after(box);else if(!col&&box.parentElement!==lbBody)lbBody.appendChild(box);
+  const steps=stepsOf(p);box.hidden=!steps.length;box.classList.toggle("fl-col",col);lb.classList.toggle("has-flow",!!steps.length);
+  if(!steps.length){box.innerHTML="";return}
+  const title=t(p.flow==="series"?"flow.series":"flow.process");
+  box.setAttribute("aria-label",title);
+  box.innerHTML=`<h4 class="fl-title">${escH(title)}</h4><ol class="fl-list">${steps.map((st,k)=>{const me=st.full===p.full,cap=flowCap(st,k);
+    return `<li class="fl-step" style="--i:${k};--c:${FLOW_INK[k%FLOW_INK.length]}"><button class="fl-node" type="button" data-step="${k}" aria-label="${escH(t("flow.open",{n:k+1,caption:cap}))}"${me?' aria-current="true"':""}>
+      <svg class="fl-bub" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path class="fl-sh" d="${wobPath(k+1)}"/><path class="fl-bg" d="${wobPath(k+1)}"/></svg>
+      <span class="fl-num" aria-hidden="true">${k+1}</span><img src="${escH(st.img)}" alt="" loading="lazy" decoding="async">
+      <span class="fl-cap">${escH(cap)}${me?`<small class="fl-this">${escH(t("flow.this"))}</small>`:""}</span></button>${k<steps.length-1?flowArrow(k):""}</li>`}).join("")}</ol>`;
+  box.classList.remove("fl-in");void box.offsetWidth;box.classList.add("fl-in");
+  // the stable hook (docs/flow.md): extra blocks (e.g. Morumelons' sets and animations) render after the diagram
+  (window.FlowHooks||[]).forEach(h=>{try{h(box,p,steps)}catch(e){}})}
+// a node shows that step's full picture in the lightbox; the piece's own step brings the piece back
+lb.addEventListener("click",e=>{const b=e.target.closest(".fl-node");if(!b)return;const p=PROJECTS[cur],st=stepsOf(p)[+b.dataset.step];if(!st)return;
+  // a hook may take over a step (a set grid, an animation): it calls preventDefault() on "flowstep"
+  if(!lb.dispatchEvent(new CustomEvent("flowstep",{cancelable:true,detail:{piece:p,step:st,index:+b.dataset.step,node:b}})))return;
+  if(st.full===p.full)return flowBack();
+  // a step's picture is a layer of its own (class fl-viewing; js/game.js LAYERS gives it a history entry):
+  // Back, Esc or the piece's own node return to the piece with the flow, the lightbox stays open
+  const art=document.getElementById("lbArt");
+  art.innerHTML=`<img class="ok" src="${escH(st.full)}" alt="${escH(flowCap(st,+b.dataset.step))}" decoding="async">`;
+  lb.querySelectorAll(".fl-node").forEach(n=>n.removeAttribute("aria-current"));b.setAttribute("aria-current","true");
+  flowBack.from=+b.dataset.step;lb.classList.add("fl-viewing");
+  art.scrollIntoView&&art.scrollIntoView({block:"nearest",behavior:reduceFlow()?"auto":"smooth"})});
+function flowBack(){if(!lb.classList.contains("fl-viewing"))return;const p=PROJECTS[cur];
+  document.getElementById("lbArt").innerHTML=artOf(p,true);lb.classList.remove("fl-viewing");
+  const nodes=[...lb.querySelectorAll(".fl-node")],own=stepsOf(p).findIndex(x=>x.full===p.full);
+  nodes.forEach(n=>n.removeAttribute("aria-current"));if(nodes[own])nodes[own].setAttribute("aria-current","true");
+  const back=nodes[flowBack.from];if(back){back.focus({preventScroll:true});back.scrollIntoView({block:"nearest"})}}
+window.flowBack=flowBack;
+lb.addEventListener("cancel",e=>{if(lb.classList.contains("fl-viewing")){e.preventDefault();flowBack()}});   // Esc: back to the flow, not out of the lightbox
+lb.addEventListener("close",()=>lb.classList.remove("fl-viewing"));
+const reduceFlow=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /* ===== Typed words ===== */
 const typedWord=()=>{const el=document.getElementById("typed");if(el)el.textContent=t("hero.words").split("|")[0]};

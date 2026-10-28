@@ -1185,3 +1185,47 @@ body.game-mode #lightbox .lb-actions .btn.ghost.lb-dl{border:1.5px solid #2B1342
 }
 /* the way back to the game must never hide: where the sidebar stays open (wider than 980 px, e.g. a sideways iPad), Play sits beside it, not under it */
 @media (min-width:981px) and (pointer:coarse){body:not(.game-mode) .g-mode-fab{left:calc(var(--side-w) + 16px)}}
+
+/* ---- Sprint 3: flow ---- */
+/* The project flow in the game's lightbox (light paper in both themes): ink title and arrows. Layout in css/site.css. */
+body.game-mode #lightbox .fl-title{color:#2B1342}
+body.game-mode #lightbox .fl-arrow path{stroke:#2B1342}
+body.game-mode #lightbox .lb-flow{margin-top:2px}
+/* "3 pictures": a small sticker on Art cards and start tiles of a piece with steps (two stacked frames, then the count) */
+.g-flow-mark{display:inline-flex;align-items:center;gap:5px;margin-top:5px;padding:2px 8px 2px 6px;border-radius:10px 12px 9px 11px;background:#FFB400;color:#2B1342;
+  border:2px solid #2B1342;font-family:Fredoka,Poppins,sans-serif;font-weight:700;font-size:.7rem;line-height:1.2;rotate:-2deg;box-shadow:1px 2px 0 #2B1342;white-space:nowrap}
+.g-flow-mark i{display:block;width:9px;height:7px;border:1.5px solid #2B1342;border-radius:2px;background:#FFFDF8}
+.g-flow-mark i+i{margin-left:-10px;translate:3px -3px}
+.g-feat{position:relative}
+.g-feat .g-flow-mark{position:absolute;top:6px;right:6px;margin:0}
+/* Admin, Art tab: the project flow's steps editor (js/admin-art.js stepsHtml) */
+.aa-steps{border:1.5px dashed #2B1342;border-radius:2px;padding:10px;margin:0 0 12px;display:grid;gap:8px}
+.aa-steps legend{font-size:14px;font-weight:600;padding:0 4px}
+.aa-steps>small{font-size:13px;opacity:.75}
+.aa-step .aa-meta input{width:100%;box-sizing:border-box;min-height:44px;padding:8px 10px;font:inherit;font-size:16px;color:#2B1342;background:#FFFDF8;border:1.5px solid #E4DCCB;border-radius:2px}
+
+
+/* ---- Sprint 3: color tools ---- */
+/* one row of tools (one on, filled yellow), one strip of options above it, Undo and Redo always in the action row (docs/color-tools.md) */
+.c-kit{display:flex;gap:6px;flex:none}
+.c-kt{flex:1;min-width:0;min-height:52px;border-radius:14px;background:#FFFDF8;color:#2B1342;border:2px solid var(--paper-line,#E4DCCB);box-shadow:var(--paper-shadow,0 2px 6px rgba(0,0,0,.12));
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-family:Fredoka;font-weight:600;font-size:.75rem;line-height:1.1;padding:3px 2px}
+.c-kt .ico{width:24px;height:24px;vertical-align:0}
+.c-kt span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.c-kt.on{background:#FFB400;border-color:#FFB400;color:#2B1342}
+.c-opts{display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;flex:none}
+.c-opts>div{display:flex;gap:6px}
+.c-op{min-width:44px;height:44px;border-radius:12px;background:#FFFDF8;color:#2B1342;border:2px solid var(--paper-line,#E4DCCB);display:grid;place-items:center;padding:0 6px;font-family:Fredoka;font-weight:600;font-size:.8rem}
+.c-op.on{border-color:#FFB400;box-shadow:0 0 0 2px #FFB400}
+.c-op .c-dot{width:var(--z);height:var(--z);border-radius:50%;background:#2B1342}
+.c-op[data-fade] i{width:30px;height:30px;border-radius:50%;background:var(--g);box-shadow:inset 0 0 0 2px rgba(0,0,0,.12)}
+.c-op[data-pat]{display:flex;gap:4px}
+.c-op[data-pat] i{width:26px;height:26px;border-radius:50%;background-size:48px;box-shadow:inset 0 0 0 2px rgba(0,0,0,.12)}
+.c-free{padding:0 12px}
+.c-free.on{background:#FFB400;border-color:#FFB400}
+.c-tip{margin:0;font-family:Poppins;font-size:.82rem;color:#645F70}
+@media (hover:hover){.c-kt,.c-op{transition:translate .24s ease-out,scale .24s ease-out}.c-kt:hover,.c-op:hover{translate:0 -2px;scale:1.04}}
+@media (prefers-reduced-motion:reduce){.c-kt,.c-op{transition:none}}
+/* pinch zoom: the page scales inside its frame */
+.c-stage-wrap{overflow:hidden}
+.c-stage{transform-origin:0 0}

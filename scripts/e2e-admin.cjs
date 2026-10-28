@@ -292,6 +292,42 @@ async function runConfig(browser,url,dev,lang){
     await route(c,JSON.stringify({version:1,projects:[{id:'u-qa-emoji',cat:'illustration',title:'QA Emoji \u{1F600}',desc:'x',img:'assets/work/thumb/u/qa-emoji.jpg',full:'assets/work/u/qa-emoji.jpg',kind:'original',roles:['portfolio','card']}]}));await boot(p);await sleep(1200);
     const bad=await p.evaluate(()=>PROJECTS.some(x=>/\p{Extended_Pictographic}/u.test(x.title+x.desc)));if(bad)throw new Error('an emoji reached the site through data/site.json')});
 
+  // 7. project flow (docs/flow.md): steps in data/site.json show the diagram; the Art tab's steps editor (no PIN needed: the tab is driven directly)
+  T('merged: steps in site.json show the flow, bad steps are dropped',async p=>{const c=p.context();if(!SITEDATA)skip('js/site-data.js not landed yet');
+    await route(c,JSON.stringify({version:1,projects:[{id:'u-qa-flow',cat:'illustration',title:'QA Flow Piece',desc:'Has steps.',img:'assets/work/thumb/u/qa-flow.jpg',full:'assets/work/u/qa-flow.jpg',kind:'original',roles:['portfolio','card'],flow:'process',
+      steps:[{img:'assets/work/thumb/giraffe.jpg',full:'assets/work/giraffe.jpg',caption:{en:'Sketch',id:'Sketsa'}},{img:'javascript:alert(1)',full:'x'},{img:'assets/work/thumb/u/qa-flow.jpg',full:'assets/work/u/qa-flow.jpg',caption:{en:'Final',id:'Final'}}]}],
+      flows:{'RPG':{flow:'series',steps:[{img:'assets/work/thumb/rpg.jpg',full:'assets/work/rpg.jpg'},{img:'assets/work/thumb/shark.jpg',full:'assets/work/shark.jpg'}]}}}));
+    await boot(p);if(!await waitFor(()=>p.evaluate(()=>PROJECTS.some(x=>x.title==='QA Flow Piece')),5000))throw new Error('the piece with steps was not merged');
+    const r=await p.evaluate(()=>{const q=PROJECTS.find(x=>x.title==='QA Flow Piece'),g=PROJECTS.find(x=>x.title==='RPG');show(PROJECTS.indexOf(q));
+      return {n:stepsOf(q).length,bad:q.steps.some(x=>!/^assets\/work\//.test(x.img)),rpg:stepsOf(g).length,flow:g.flow}});
+    if(r.n!==2||r.bad)throw new Error('steps not cleaned: '+JSON.stringify(r));if(r.rpg!==2||r.flow!=='series')throw new Error('flows for a built-in piece not merged: '+JSON.stringify(r));
+    if(!await vis(p,'#lbFlow .fl-node',3000))throw new Error('no flow diagram for the merged piece');
+    if(await p.$$eval('#lbFlow .fl-node',n=>n.length)!==2)throw new Error('wrong number of flow nodes')});
+  if(!phone)T('admin art: steps editor adds, reorders, removes and publishes steps',async p=>{needAdmin();await boot(p);
+    await p.addScriptTag({url:url+'js/admin-art.js'});
+    await p.evaluate(()=>{const tab=(window.AdminTabs||[]).find(x=>x[0]==='art')[1];window.__qa={data:{version:1,projects:[],hidden:[],order:[]},files:{}};
+      const el=document.createElement('div');el.id='qaArt';el.style.cssText='position:fixed;inset:0;overflow:auto;background:#fff;z-index:9999;padding:12px';document.body.appendChild(el);
+      tab.render(el,{get data(){return __qa.data},getData:()=>__qa.data,setData:d=>{__qa.data=d},addFile:(k,b)=>{__qa.files[k]=b.length},canPublish:true})});
+    const img=px.join(SITE,'assets/work/giraffe.jpg'),img2=px.join(SITE,'assets/work/shark.jpg');
+    await p.click('#qaArt #aaAdd');await p.fill('#aaTe','QA Steps');await p.fill('#aaDe','A piece with a flow.');await p.fill('#aaTi','QA Langkah');await p.fill('#aaDi','Karya dengan alur.');
+    await p.setInputFiles('#aaFile',img);if(!await waitFor(()=>p.evaluate(()=>!!document.querySelector('#qaArt .aa-big')),6000))throw new Error('main picture did not load');
+    await p.fill('#aaTe','QA Steps');
+    await p.setInputFiles('#aaStepFile',[img2,img]);if(!await waitFor(()=>p.evaluate(()=>document.querySelectorAll('#qaArt .aa-step').length===2),8000))throw new Error('two step pictures were not added');
+    await p.click('#aaStepSelf');if(await p.$$eval('#qaArt .aa-step',n=>n.length)!==3)throw new Error('the piece itself was not added as a step');
+    await p.fill('[data-cap-en="0"]','First sketch');await p.fill('[data-cap-id="0"]','Sketsa pertama');
+    await p.click('[data-sdel="1"]');if(await p.$$eval('#qaArt .aa-step',n=>n.length)!==2)throw new Error('remove did not remove');
+    if(await p.inputValue('[data-cap-en="0"]')!=='First sketch')throw new Error('a caption was lost on redraw');
+    await p.click('[data-sup="1"]');await p.click('[data-sdown="0"]');   // up then down: back to the same order
+    await p.fill('[data-cap-en="1"]','Final');   // English only: must be refused
+    await p.click('#aaForm [type=submit]');if(!await vis(p,'#aaForm .aa-err',2000))throw new Error('a caption in one language only was accepted');
+    await p.fill('[data-cap-id="1"]','Final');await p.click('#aaForm [type=submit]');await sleep(300);
+    const r=await p.evaluate(()=>({d:__qa.data,f:__qa.files}));const pc=(r.d.projects||[])[0];
+    if(!pc||!pc.steps)throw new Error('no steps saved: '+JSON.stringify(r.d).slice(0,200));
+    if(pc.steps.length!==2||pc.steps[0].caption.en!=='First sketch'||pc.steps[1].full!==pc.full)throw new Error('steps wrong: '+JSON.stringify(pc.steps));
+    if(!/^assets\/work\/u\/qa-steps-s\d\.jpg$/.test(pc.steps[0].full)||!r.f[pc.steps[0].full]||!r.f[pc.steps[0].img])throw new Error('step picture not queued for publish: '+JSON.stringify(Object.keys(r.f)));
+    if(pc.flow!=='process')throw new Error('flow kind missing');
+    const v=await p.evaluate(()=>AdminArt.validateSteps([{img:'a',full:'b',caption:{en:'x',id:''}}]).length);if(v<2)throw new Error('validateSteps lets one step and a one-language caption through')});
+
   const q=jobs.slice();await Promise.all(Array.from({length:+process.env.POOL||3},async()=>{for(let j;(j=q.shift());)await runJob(j)}));return rows}
 
 srv.listen(0,async()=>{
