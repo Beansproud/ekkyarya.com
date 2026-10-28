@@ -224,8 +224,8 @@
 .adm-btn{min-height:44px;padding:8px 16px;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-weight:600;font-size:.95rem}
 .adm-btn.pri{background:var(--accent);border-color:#b77e00;box-shadow:0 3px 0 #b77e00}
 .adm-btn:disabled{opacity:.5;cursor:default}
-.adm-tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;padding:8px 12px;border-bottom:2px solid var(--line)}
-.adm-tabs button{min-height:44px;padding:6px 2px;font-size:.8rem;white-space:nowrap;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-weight:600}
+.adm-tabs{display:flex;gap:4px;padding:8px 12px;border-bottom:2px solid var(--line)}
+.adm-tabs button{min-height:44px;flex:1 1 auto;padding:6px 6px;font-size:.78rem;white-space:nowrap;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-weight:600}
 .adm-tabs button[aria-selected=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .adm-tools{display:flex;gap:6px;padding:8px 12px;flex-wrap:nowrap;border-bottom:2px solid var(--line)}
 .adm-tools .adm-btn{padding:8px 10px;font-size:.9rem;white-space:nowrap;min-width:0}
@@ -282,7 +282,7 @@
 
   function paintTabs() {
     const bar = root.querySelector(".adm-tabs");
-    bar.innerHTML = TABS.map(id => `<button type="button" role="tab" data-tab="${id}" aria-selected="${id === active}">${pick((tabs[id] && tabs[id].title) || TAB_TITLE[id])}</button>`).join("");
+    bar.innerHTML = TABS.map(id => `<button type="button" role="tab" data-tab="${id}" aria-selected="${id === active}">${pick(TAB_TITLE[id])}</button>`).join("");
   }
 
   function paintPanel() {
