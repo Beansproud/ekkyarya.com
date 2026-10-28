@@ -398,12 +398,14 @@ $("gFilters").addEventListener("click",e=>{const b=e.target.closest("button");if
 $("gCards").addEventListener("click",e=>{const c=e.target.closest(".g-card");if(!c)return;buzz(15);sfx("flip");show(+c.dataset.i)});
 
 /* ---- Mine: things you made, never rewards ---- */
+// Mine is drawn again on every visit: the markup is written only when it changed, so a tab switch rebuilds, restyles and repaints nothing
+const setHTML=(el,h)=>{if(el.__h!==h){el.__h=h;el.innerHTML=h}};
 function renderMine(){
   const list=Object.entries(st.colorings||{}).sort((a,b)=>(b[1].at||0)-(a[1].at||0));
-  $("gMineList").innerHTML=list.length?list.map(([id,c])=>`<button class="g-mine-item" data-page="${esc(id)}" aria-label="${esc(c.title||id)}" style="--tilt:${typeof tiltOf==="function"?tiltOf({slug:id}):"-1deg"}">${c.thumb?`<img src="${c.thumb}" alt="">`:""}<b>${esc(c.title||id)}</b></button>`).join(""):`<p class="g-small">${esc(t("mine.empty"))}</p>`;
+  setHTML($("gMineList"),list.length?list.map(([id,c])=>`<button class="g-mine-item" data-page="${esc(id)}" aria-label="${esc(c.title||id)}" style="--tilt:${typeof tiltOf==="function"?tiltOf({slug:id}):"-1deg"}">${c.thumb?`<img src="${c.thumb}" alt="">`:""}<b>${esc(c.title||id)}</b></button>`).join(""):`<p class="g-small">${esc(t("mine.empty"))}</p>`);
   if($("gMineLinks")){const ls=[["linkedin","hire.linkedin"],["behance","hire.behance"]].filter(([k])=>CONFIG.links[k]).map(([k,c])=>[CONFIG.links[k],t(c)]);if(CONFIG.website)ls.push([CONFIG.website,t("hire.website")]);
-    $("gMineLinks").innerHTML=ls.map(([h,n])=>`<a class="g-link" href="${esc(h)}" target="_blank" rel="noopener">${esc(n)}</a>`).join("");$("gMineLinks").parentElement.hidden=!ls.length}
-  if($("gBest"))$("gBest").innerHTML=st.best?`${ico("s-star")} ${esc(t("mine.best",{n:st.best}))}`:esc(t("mine.best.none"));
+    setHTML($("gMineLinks"),ls.map(([h,n])=>`<a class="g-link" href="${esc(h)}" target="_blank" rel="noopener">${esc(n)}</a>`).join(""));$("gMineLinks").parentElement.hidden=!ls.length}
+  if($("gBest"))setHTML($("gBest"),st.best?`${ico("s-star")} ${esc(t("mine.best",{n:st.best}))}`:esc(t("mine.best.none")));
   syncToggles();
 }
 $("gMineList").addEventListener("click",e=>{const b=e.target.closest("[data-page]");if(b&&typeof Color!=="undefined")Color.open(b.dataset.page)});
@@ -556,7 +558,7 @@ function prewarm(){if(!document.body.classList.contains("game-mode"))return;
   when(()=>{if(!artDone){artDone=true;renderArt()}
     })}   // the Art thumbnails stay lazy and the village waits for the Map tab: only the start screen's six load up front
 addEventListener("load",()=>{setTimeout(prewarm,2000);warmT=setTimeout(warmWhenIdle,2500)});
-function renderAll(){if(deep)setTimeout(renderStart,2500);else renderStart();renderMine();setTimeout(moveInd,60)}
+function renderAll(){if(deep)setTimeout(renderStart,2500);else renderStart();renderMine();setTimeout(()=>{measureTabs();moveInd()},60)}   // measured now, not on the first tab switch
 // Shared with js/color.js, js/share.js and js/links.js.
 window.Game={go,openHire,openSheet,closeSheet,sfx,buzz,save,get st(){return st},esc,contactReady,screen:()=>screen};
 window.openHire=openHire;

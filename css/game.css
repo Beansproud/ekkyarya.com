@@ -908,6 +908,9 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 #game.at-start .g-sky,#game.at-start .g-planet-bg,#game.at-paper .g-sky,#game.at-paper .g-planet-bg{display:block;opacity:0}
 /* ink on paper is set on the screens and on #game's other children, not on #game: a colour that changes on #game is inherited, so every tab switch restyled all 800+ elements (about 30 ms at 4x) */
 #g-start,#g-art,#g-mine,#game.at-start>:not(.g-screen),#game.at-paper>:not(.g-screen){color:#2B1342}
+/* the sky, planet, tab bar and sheet keep that ink on every screen (their visible colours are all set on their insides), so the
+   at-paper switch changes nothing they pass down: Map <> Art or Mine no longer restyles their 120+ elements */
+#game>.g-sky,#game>.g-planet-bg,#game>.g-tabs,#game>.g-sheet{color:#2B1342}
 .g-screen{contain:strict}
 
 /* Admin art */
