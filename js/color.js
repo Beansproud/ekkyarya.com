@@ -226,7 +226,7 @@ function fillPop(e){const r=stage.getBoundingClientRect(),d=document.createEleme
   stage.appendChild(d);setTimeout(()=>d.remove(),400);
   const sw=$("cColors").querySelector(".c-sw.on");if(sw){sw.classList.remove("pop");void sw.offsetWidth;sw.classList.add("pop")}}
 function pagePoint(e){const r=cv.getBoundingClientRect();return [Math.floor((e.clientX-r.left)/r.width*cur.pd.meta.w),Math.floor((e.clientY-r.top)/r.height*cur.pd.meta.h)]}
-stage.addEventListener("pointerdown",e=>{if(!cur||e.target.closest(".c-st"))return;
+stage.addEventListener("pointerdown",e=>{if(!cur)return;if(gest){joinGesture(e);return}if(e.target.closest(".c-st"))return;
   const [x,y]=pagePoint(e);if(x<0||y<0||x>=cur.pd.meta.w||y>=cur.pd.meta.h)return;const r=cur.pd.ids[y*cur.pd.meta.w+x];if(!r||cur.fills[r]===color)return;
   cur.undo.push([r,cur.fills[r]]);cur.fills[r]=color;paintRegion(cur,cv,r,true);Game.sfx("fill");Game.buzz(8);save();if(e.pointerType!=="mouse")fillPop(e)});
 // Undo history survives leaving and reopening a page (the owner: "undo button is not working in mewarnai": the colors came
@@ -253,9 +253,12 @@ if($("cStickBtn")){
 function renderStickers(){$("cStickers").innerHTML=cur.stickers.map((s,k)=>{const im=STICKERS.find(x=>x.n===s.n);imgOf(s.n);
   return `<img class="c-st" data-k="${k}" src="${im.src}" alt="" draggable="false" style="left:${s.x*100}%;top:${s.y*100}%;width:${s.s*100}%;transform:translate(-50%,-50%) rotate(${s.r}rad)">`}).join("")}
 const pts=new Map();let gest=null;
+function rebase(){if(dragRaf){cancelAnimationFrame(dragRaf);dragFrame()}gest.base={...cur.stickers[gest.k]};gest.start=[...pts.values()].map(p=>p.slice())}
+function joinGesture(e){if(pts.has(e.pointerId))return;e.preventDefault();pts.set(e.pointerId,[e.clientX,e.clientY]);try{stage.setPointerCapture(e.pointerId)}catch{}rebase()}
 $("cStickers").addEventListener("pointerdown",e=>{const el=e.target.closest(".c-st");if(!el||!cur)return;e.preventDefault();el.setPointerCapture(e.pointerId);
+  if(gest)return joinGesture(e);   // a second finger on any sticker pinches the sticker already held
   pts.set(e.pointerId,[e.clientX,e.clientY]);const k=+el.dataset.k;
-  if(!gest||gest.k!==k){gest={k,el,before:cur.stickers.map(x=>({...x})),orig:{...cur.stickers[k]},rect:stage.getBoundingClientRect(),bin:null,hot:false};$("cBin").classList.add("show");setTimeout(()=>{if(gest&&gest.el===el)gest.bin=$("cBin").getBoundingClientRect()},260)}
+  {gest={k,el,before:cur.stickers.map(x=>({...x})),orig:{...cur.stickers[k]},rect:stage.getBoundingClientRect(),bin:null,hot:false};$("cBin").classList.add("show");setTimeout(()=>{if(gest&&gest.el===el)gest.bin=$("cBin").getBoundingClientRect()},260)}
   el.classList.add("drag");
   gest.base={...cur.stickers[k]};gest.start=[...pts.values()].map(p=>p.slice())});
 /* Dragging runs on requestAnimationFrame and moves the sticker with a transform only: the stage and bin rectangles are read once, never per move. */
@@ -270,14 +273,14 @@ function dragFrame(){dragRaf=0;if(!gest||!cur)return;const r=gest.rect,s=cur.sti
   gest.el.style.transform=`translate(-50%,-50%) translate3d(${(s.x-o.x)*r.width}px,${(s.y-o.y)*r.height}px,0) rotate(${s.r}rad) scale(${s.s/o.s})`;
   const bn=gest.bin,p=now[now.length-1],hot=!!bn&&p[0]>bn.left&&p[0]<bn.right&&p[1]>bn.top&&p[1]<bn.bottom;
   if(hot!==gest.hot){gest.hot=hot;$("cBin").classList.toggle("hot",hot)}}
-$("cStickers").addEventListener("pointermove",e=>{if(!gest||!pts.has(e.pointerId))return;pts.set(e.pointerId,[e.clientX,e.clientY]);if(!dragRaf)dragRaf=requestAnimationFrame(dragFrame)});
+stage.addEventListener("pointermove",e=>{if(!gest||!pts.has(e.pointerId))return;pts.set(e.pointerId,[e.clientX,e.clientY]);if(!dragRaf)dragRaf=requestAnimationFrame(dragFrame)});
 function endGesture(e){if(!gest||!pts.has(e.pointerId))return;if(dragRaf){cancelAnimationFrame(dragRaf);dragFrame()}pts.delete(e.pointerId);
-  if(pts.size){gest.base={...cur.stickers[gest.k]};gest.start=[...pts.values()].map(p=>p.slice());return}
+  if(pts.size){rebase();return}
   const hot=$("cBin").classList.contains("hot");$("cBin").classList.remove("show","hot");
   const k=gest.k,moved=JSON.stringify(gest.before[k])!==JSON.stringify(cur.stickers[k]);   // a plain tap on a sticker is not an edit: no Undo step
   if(moved||hot)cur.undo.push(["st",gest.before]);if(hot){cur.stickers.splice(k,1);Game.buzz(15)}gest=null;renderStickers();if(!hot&&moved)popSticker(k);save()}
 function popSticker(k){const el=$("cStickers").children[k];if(el){el.classList.add("pop");setTimeout(()=>el.classList.remove("pop"),300)}}
-["pointerup","pointercancel"].forEach(ev=>$("cStickers").addEventListener(ev,endGesture));
+["pointerup","pointercancel"].forEach(ev=>stage.addEventListener(ev,endGesture));
 
 /* ---- autosave to Mine ---- */
 let saveT=0;
