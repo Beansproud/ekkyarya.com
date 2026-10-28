@@ -370,7 +370,7 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 /* ===== Ekky's Village (B42 V1): the map ===== */
 #g-map .g-head{margin-bottom:0}
 #g-map .g-title{font-size:1.5rem}
-.v-map{position:relative;width:100%;max-width:420px;margin:0 auto;container-type:inline-size}
+.v-map{position:relative;width:100%;max-width:420px;margin:0 auto}
 .v-ground{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;user-select:none}
 .v-frame{position:absolute;object-fit:cover;transform-origin:0 0;pointer-events:none;box-shadow:0 0 0 1px #2B1342}
 .v-place{position:absolute;background:none;border-radius:16px;min-width:44px;min-height:44px}
@@ -468,7 +468,7 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 .v-map .v-folk{z-index:2}    /* the still villagers are small and sit on top of the place boxes */
 .v-walker{position:absolute;left:0;top:0;min-width:44px;min-height:44px;transform:translate(-50%,-100%);padding:0;background:none;border:0;
   display:flex;align-items:flex-end;justify-content:center;pointer-events:auto;cursor:pointer}
-.v-walker img{display:block;width:auto;pointer-events:none}   /* height in cqw: the walker's own size, the button keeps 44 px to tap */
+.v-walker img{display:block;width:auto;pointer-events:none}   /* height from --vw (the layer's width in px, set in renderMap): the walker's own size, the button keeps 44 px to tap */
 .v-walker:focus-visible,.v-folk:focus-visible{outline:3px solid #FFB400;outline-offset:2px;border-radius:12px}
 .v-folk{position:absolute;min-width:44px;min-height:44px;background:none;border:0;padding:0;cursor:pointer}
 .v-map.night .v-ground{filter:brightness(.7) saturate(.85)}
@@ -521,7 +521,7 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 /* G1: the village zooms (1x to 2x) with a finger or the +/- buttons; nothing animates, the view follows the finger */
 .v-map{overflow:hidden;touch-action:pan-y;border-radius:18px}
 .v-map.zoomed{touch-action:none}
-.v-zoom{position:absolute;inset:0;transform-origin:0 0;container-type:inline-size}
+.v-zoom{position:absolute;inset:0;transform-origin:0 0}
 .zoomed .v-zoom{will-change:transform}   /* the zoomed island is one compositor layer: pan and pinch only move it */
 #gMapWrap.zoomed{touch-action:none}   /* zoomed, the finger pans the map (in JS); at 1x a vertical drag still scrolls the page */
 .v-walk{transition:none}
@@ -535,7 +535,7 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
    The start screen is a page of Ekky's sketchbook: off-white paper with a faint grain (tokens from css/site.css),
    the six drawings taped on at a fixed 1 to 2 degree tilt, flat paper tiles, ink text. Nothing moves.
    The other screens keep the night sky for now; the HUD follows whichever page it sits on. */
-body.game-mode #game.at-start{background:var(--paper,#FBF7EE) var(--grain);color:#2B1342}
+body.game-mode #game.at-start{background:var(--paper,#FBF7EE) var(--grain)}
 #game.at-start .g-player b{color:#2B1342}
 #game.at-start .g-sky,#game.at-start .g-planet-bg{display:none}
 #game.at-start .g-hud{background:none}
@@ -618,7 +618,7 @@ body.game-mode #game.at-start{background:var(--paper,#FBF7EE) var(--grain);color
 /* ===== Developer A: S1 paper for the Art and Mine tabs =====
    Same sketchbook page as the start screen (Developer B's tokens): off-white paper, ink text, the drawings taped on
    at a fixed per-piece tilt (tiltOf), flat paper tiles, no rarity borders, badge circles or foil. Nothing moves. */
-body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color:#2B1342}
+body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain)}
 #game.at-paper .g-sky,#game.at-paper .g-planet-bg{display:none}
 #game.at-paper .g-title{color:#2B1342;text-shadow:none}
 #game.at-paper .g-sub,#game.at-paper .g-small{color:#645F70}
@@ -876,3 +876,11 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 /* sheet header: the title row and the close button share one centre line and one 20 px inset */
 .g-sheet h2{margin:0 0 10px;min-height:44px;padding-right:64px}
 .g-sheet .g-x{top:var(--xtop,31px);right:20px}
+
+/* World squad */
+#g-map{contain:layout paint}   /* the village screen is its own box: its layout and paint never reach the other screens */
+/* the galaxy sky and planet stay laid out and are faded, not display:none, so leaving the paper screens costs no style or layout work */
+.g-sky,.g-planet-bg{will-change:opacity;transition:opacity var(--dur-fast) var(--ease-in)}
+#game.at-start .g-sky,#game.at-start .g-planet-bg,#game.at-paper .g-sky,#game.at-paper .g-planet-bg{display:block;opacity:0}
+/* ink on paper is set on the screens and on #game's other children, not on #game: a colour that changes on #game is inherited, so every tab switch restyled all 800+ elements (about 30 ms at 4x) */
+#g-start,#g-art,#g-mine,#game.at-start>:not(.g-screen),#game.at-paper>:not(.g-screen){color:#2B1342}
