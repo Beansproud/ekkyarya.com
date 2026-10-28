@@ -12,9 +12,12 @@ Undo all then Redo all (picture identical), pinch zoom in and out, Stickers tray
 reopen (work kept), Web chip then reload then Play then reload, admin editor (opened as `scripts/e2e-admin.cjs` does,
 no PIN) with every tool, the phone Panel, Cancel button.
 
-What is not covered: the PIN path, real Safari, a real finger, sound/haptics, Doodle Scene Back chain (my script's own
-step broke there, so it is not claimed), editor Cancel with unsaved edits (only tested with none; code shows a native
-`confirm`).
+Checked by hand after the matrix: editor Cancel with unsaved edits asks "Leave the editor without your changes?"; dismissing
+keeps the editor and the edit (reversible), accepting closes it and returns `null`. Doodle Scene: Back to the picker and the
+picker's close to Start both work.
+
+What is not covered: the PIN path, real Safari, a real finger, sound and haptics. Main was still `cca4ff0` at 16:16, so every
+finding is against that commit.
 
 Result in one line: the owner's reversibility rule holds for the flow, Web/Play, Undo/Redo and zoom. Two P1s remain: Color
 is unusable on a sideways phone, and the editor's Back leaves the site.
