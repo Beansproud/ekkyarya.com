@@ -36,6 +36,8 @@ const PAGES = {
   "day-in-life": { slug: "day-in-life", lineMax: 128, inkSoft: 140 },
   "noodles": { slug: "noodles", lineMax: 110, inkSoft: 130 },
   // blueFillR: dark blue areas wider than 2 x this many px are paint, not outline (the shark's back; the water outline is a thin blue stroke)
+  "summertime": { slug: "summertime", lineMax: 55, inkSoft: 65 },
+  "virus-and-war": { slug: "virus-and-war", lineMax: 78, inkSoft: 92 },
   "shark": { slug: "shark", lineMax: 110, inkSoft: 130, blueFillR: 8 },
 };
 const MIN_AREA = 40, COLORS = 12;
