@@ -196,9 +196,16 @@ $("gMapListBtn").onclick=()=>{const l=$("gMapList"),open=l.hidden,b=$("gMapListB
 
 /* ---- sheets ---- */
 const sheet=$("gSheet");let sheetFrom=null;
-function openSheet(html){$("gSheetBody").innerHTML=html;sheetFrom=document.activeElement;sheet.classList.add("open");sheet.firstElementChild.scrollTop=0;
+// The Hire sheet is the heaviest one (form inputs: first style and layout), so it is built hidden while the app is idle
+// (warmHire) and opening it only slides the finished sheet in. sheetHtml is what the body holds now; a different html
+// (another language, another place) is simply drawn again, as before.
+let sheetHtml="",warming=false;
+function openSheet(html){let fresh=false;
+  if(html!==sheetHtml){$("gSheetBody").innerHTML=html;sheetHtml=html;fresh=true}
+  if(warming){if(fresh)sheet.firstElementChild.scrollTop=0;return}
+  sheetFrom=document.activeElement;sheet.classList.add("open");if(fresh)sheet.firstElementChild.scrollTop=0;
   setTimeout(()=>$("gSheetX").focus({preventScroll:true}),50)}
-function closeSheet(){sheet.classList.remove("open");if(sheetFrom&&sheetFrom.focus)sheetFrom.focus({preventScroll:true})}
+function closeSheet(){sheet.classList.remove("open");sheetHtml="";clearTimeout(warmT);warmT=setTimeout(()=>warmWhenIdle(),900);if(sheetFrom&&sheetFrom.focus)sheetFrom.focus({preventScroll:true})}
 $("gSheetX").onclick=closeSheet;sheet.addEventListener("click",e=>{if(e.target===sheet)closeSheet()});
 addEventListener("keydown",e=>{if(e.key==="Escape"&&sheet.classList.contains("open"))closeSheet()});
 let sy=null;sheet.firstElementChild.addEventListener("touchstart",e=>{sy=sheet.firstElementChild.scrollTop>0?null:e.touches[0].clientY},{passive:true});
@@ -393,7 +400,7 @@ let artDone=false,mapBuilt=false;const dirty={start:false,art:false,map:false}; 
 /* ---- Language switched in place (js/site.js dispatches "ekky:lang" at the dim point): redraw what was built with t() ---- */
 let sheetRe=null;
 const remember=f=>(...a)=>{sheetRe=()=>f(...a);return f(...a)};   // the sheet's opener, so a language switch can draw it again
-openVillager=remember(openVillager);openLevel=remember(openLevel);openHire=remember(openHire);
+const hireRaw=openHire;openVillager=remember(openVillager);openLevel=remember(openLevel);openHire=remember(openHire);
 addEventListener("ekky:lang",()=>{
   renderMine();
   const rs=$("gResShare");if(rs)rs.querySelector("span").textContent=t("reveal.share");
@@ -404,14 +411,20 @@ addEventListener("ekky:lang",()=>{
   if(sheet.classList.contains("open")&&sheetRe){
     const body=sheet.firstElementChild,top=body.scrollTop,from=sheetFrom,f=$("gForm"),v=f&&[f.name.value,f.type.selectedIndex,f.message.value];
     sheetRe();body.scrollTop=top;sheetFrom=from;
-    const g=$("gForm");if(g&&v){g.name.value=v[0];g.type.selectedIndex=v[1];g.message.value=v[2]}}});
+    const g=$("gForm");if(g&&v){g.name.value=v[0];g.type.selectedIndex=v[1];g.message.value=v[2]}}
+  else{$("gSheetBody").innerHTML="";sheetHtml="";clearTimeout(warmT);warmT=setTimeout(warmWhenIdle,900)}});   // a hidden, warmed sheet must not keep the old language
 // Build Art and the village once the start screen has settled and nobody is tapping, off the tap: the first visit then only shows them.
 let lastTouch=0;addEventListener("pointerdown",()=>{lastTouch=Date.now()},{passive:true,capture:true});
+let warmT=0;
+function warmHire(){if(sheet.classList.contains("open")||!hireRaw)return;warming=true;try{hireRaw()}finally{warming=false}}
+function warmWhenIdle(){if(!document.body.classList.contains("game-mode")||sheet.classList.contains("open"))return;
+  if(Date.now()-lastTouch<1500)return void(warmT=setTimeout(warmWhenIdle,1500));
+  (window.requestIdleCallback||(f=>setTimeout(f,50)))(()=>{if(Date.now()-lastTouch>=1500)warmHire();else warmT=setTimeout(warmWhenIdle,1500)},{timeout:4000})}
 function prewarm(){if(!document.body.classList.contains("game-mode"))return;
   const idle=window.requestIdleCallback||(f=>setTimeout(f,50));
   const when=job=>{if(Date.now()-lastTouch<1500)return setTimeout(()=>when(job),1500);idle(()=>Date.now()-lastTouch<1500?when(job):job(),{timeout:4000})};
   when(()=>{if(!artDone){artDone=true;renderArt()}setTimeout(()=>when(()=>{if(!mapBuilt&&window.VILLAGE){mapBuilt=true;renderMap()}}),1200)})}
-addEventListener("load",()=>setTimeout(prewarm,5000));
+addEventListener("load",()=>{setTimeout(prewarm,5000);warmT=setTimeout(warmWhenIdle,2500)});
 function renderAll(){if(deep)setTimeout(renderStart,2500);else renderStart();renderMine();setTimeout(moveInd,60)}
 // Shared with js/color.js, js/share.js and js/links.js.
 window.Game={go,openHire,openSheet,closeSheet,sfx,buzz,save,get st(){return st},esc,contactReady,screen:()=>screen};
