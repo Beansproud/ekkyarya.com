@@ -203,7 +203,8 @@ const sheet=$("gSheet");let sheetFrom=null;
 // (another language, another place) is simply drawn again, as before.
 let sheetHtml="",warming=false;
 function openSheet(html){let fresh=false;
-  if(html!==sheetHtml){$("gSheetBody").innerHTML=html;sheetHtml=html;fresh=true}
+  if(html!==sheetHtml){$("gSheetBody").innerHTML=html;sheetHtml=html;fresh=true;
+    const h=$("gSheetTitle");if(h)sheet.firstElementChild.style.setProperty("--xtop",Math.round(h.offsetTop+(h.offsetHeight-44)/2)+"px")}   // the close button sits on the title's centre line, even for a two-line title
   if(warming){if(fresh)sheet.firstElementChild.scrollTop=0;return}
   sheetFrom=document.activeElement;sheet.classList.add("open");if(fresh)sheet.firstElementChild.scrollTop=0;
   setTimeout(()=>$("gSheetX").focus({preventScroll:true}),50)}
