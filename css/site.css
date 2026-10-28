@@ -374,6 +374,7 @@ dialog[open]{animation:fadeIn var(--dur) var(--ease-in)}
 body{background:var(--paper) var(--grain)}
 .sidebar{background:var(--paper-2) var(--grain);border-right:1.5px solid var(--paper-line)}
 .topbar{background:color-mix(in srgb,var(--paper) 92%,transparent)}
+@supports not (color:color-mix(in srgb,red 50%,blue)){.topbar{background:var(--paper)}}   /* Safari 16.0-16.1: color-mix with var() would end up transparent */
 
 /* taped art: a paper print with a strip of tape, a fixed 1 to 2 degree tilt per tile */
 .tile,.feat{--tilt:-1.5deg;border-radius:3px;border:0;background:var(--card);padding:8px 8px 0;overflow:visible;
@@ -482,3 +483,11 @@ body.game-mode .idle-buddy{left:16px;right:auto;flex-direction:row;bottom:calc(e
 }
 @media (prefers-reduced-motion:reduce){.g-mode-fab.t-squash img{animation:none}
   .nav a:hover,.cats button:hover,.g-mode-fab:hover,.g-mode-fab:hover img{scale:none;translate:none;rotate:none}}
+
+/* iPhone safe areas (viewport-fit=cover in index.html): keep the classic site off the notch in landscape and the fixed
+   buttons above the home bar. env() is 0 on every other device, so nothing moves there. Game mode has its own insets. */
+body:not(.game-mode){padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
+.sidebar{padding-left:calc(34px + env(safe-area-inset-left))}
+.toast{bottom:calc(24px + env(safe-area-inset-bottom))}
+.to-top{right:calc(22px + env(safe-area-inset-right));bottom:calc(22px + env(safe-area-inset-bottom))}
+.idle-buddy{right:calc(24px + env(safe-area-inset-right));bottom:calc(24px + env(safe-area-inset-bottom))}

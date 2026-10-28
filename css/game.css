@@ -951,3 +951,4 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 .v-map .v-label{font-size:clamp(12px,2.35cqw,13.5px);padding:2px 8px;border-radius:6px;background:#FFF3DC;border:2px solid #2B1342;color:#2B1342;box-shadow:0 2px 0 rgba(43,19,66,.55);rotate:-1.6deg}
 .v-map span.v-label:nth-of-type(even){rotate:1.4deg}   /* paper tags, each at its own fixed tilt */
 .v-map .v-label.hire{background:#FFB400;border-color:#2B1342;color:#2B1342}
+@media (max-width:760px){body:not(.game-mode) .g-mode-fab{left:calc(16px + env(safe-area-inset-left));bottom:calc(22px + env(safe-area-inset-bottom))}}   /* iPhone safe areas, see site.css */
