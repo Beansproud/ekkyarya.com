@@ -548,13 +548,22 @@ function endArcade(){const a=A;a.run=false;lastScore=a.score;const rec=(st.best|
   $("gResTitle").textContent=rec?t("stars.record"):t("stars.end");$("gResScore").innerHTML=ico("s-star")+a.score;
   // the score counts points (a palette is 3, a glowing star 5, a virus minus 2), so the line says points, not stars
   $("gResText").textContent=tt("stars.resultPoints","{n} points. Your best: {best} points.",{n:a.score,best:st.best});$("gResult").classList.add("show");G.classList.remove("playing");
+  if(typeof Share!=="undefined")setTimeout(starBlob,500);
   sfx(rec?"legend":"level");if(rec&&typeof confetti==="function")confetti()}
 function quitArcade(){cancelAnimationFrame(raf);A=null;pausedByHide=false;$("gArcade").classList.remove("open");G.classList.remove("playing");$("gCount").innerHTML=""}
-let lastScore=0;
+let lastScore=0,starCard=null;
+// The stars card (1080 x 1920) is drawn and PNG-encoded once, a moment after the result shows, so Share and Download answer at
+// once instead of each drawing and encoding it (seconds on a busy phone, and the second tap queued behind the first).
+function starBlob(){if(starCard&&starCard.score===lastScore)return starCard.p;
+  const score=lastScore,p=(async()=>{try{const c=await Share.renderCard("stars",{score});return await new Promise(ok=>c.toBlob(ok,"image/png"))}catch(e){return null}})();
+  starCard={score,p};return p}
+addEventListener("ekky:lang",()=>{starCard=null});   // the card is written in the current language
+async function downloadStars(){if(typeof Share==="undefined")return;const blob=await starBlob();if(!blob)return Share.downloadStars(lastScore);
+  if(await Share.save(blob,`ekkyarya-stars-${lastScore}.png`)==="saved"&&typeof say==="function")say(t("dl.saved"),"i-check")}
 // G3: Share on the result, next to Download. It shares the same stars card (Share.renderCard) through the phone's
 // share sheet; where that can't take a file it falls back to the Download path (Share.downloadStars).
 async function shareStars(){if(typeof Share==="undefined")return;
-  try{const c=await Share.renderCard("stars",{score:lastScore}),blob=await new Promise(ok=>c.toBlob(ok,"image/png"));
+  try{const blob=await starBlob();if(!blob)throw new Error("no card");
     const file=new File([blob],`ekkyarya-stars-${lastScore}.png`,{type:"image/png"});
     if(navigator.canShare&&navigator.canShare({files:[file]})){const url=siteBase();   // a friend can open the game from the share
       await navigator.share({files:[file],text:tt("stars.shareText","I caught {n} points in Ekky's Star Catcher.",{n:lastScore}).replace("{n}",lastScore)+" "+url,url});return}
@@ -562,7 +571,7 @@ async function shareStars(){if(typeof Share==="undefined")return;
   Share.downloadStars(lastScore)}
 if(cv&&feature("shareCards")&&!$("gResShare")){$("gAgain").insertAdjacentHTML("afterend",`<button class="g-btn alt sm" id="gResShare">${ico("i-share")} <span>${esc(t("reveal.share"))}</span></button>`);
   $("gResShare").onclick=()=>{buzz(10);shareStars()}}
-if(cv){$("gResDl").onclick=()=>typeof Share!=="undefined"&&Share.downloadStars(lastScore);$("gArcadeX").onclick=quitArcade;$("gResBack").onclick=()=>{quitArcade();go("start")};$("gAgain").onclick=startArcade}
+if(cv){$("gResDl").onclick=downloadStars;$("gArcadeX").onclick=quitArcade;$("gResBack").onclick=()=>{quitArcade();go("start")};$("gAgain").onclick=startArcade}
 G.addEventListener("click",e=>{if(e.target.closest("[data-arcade]")){sfx("tap");startArcade()}});
 {const play=q.get("play");   // desktop "Play with Ekky's art" cards: ?game&play=color|stars
   if(play){try{const u=new URL(location);u.searchParams.delete("play");history.replaceState(history.state,"",u)}catch(e){}}   // the address bar drops ?play= once it is acted on

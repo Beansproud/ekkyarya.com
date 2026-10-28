@@ -897,13 +897,6 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 .v-lantern{animation-duration:3.4s}
 @media (prefers-reduced-motion:reduce){.v-fx,.v-tw,.v-lantern,.v-smoke,.v-cloudrow{display:none}}
 
-/* World squad */
-#g-map{contain:layout paint}   /* the village screen is its own box: its layout and paint never reach the other screens */
-/* the galaxy sky and planet stay laid out and are faded, not display:none, so leaving the paper screens costs no style or layout work */
-.g-sky,.g-planet-bg{will-change:opacity;transition:opacity var(--dur-fast) var(--ease-in)}
-#game.at-start .g-sky,#game.at-start .g-planet-bg,#game.at-paper .g-sky,#game.at-paper .g-planet-bg{display:block;opacity:0}
-/* ink on paper is set on the screens and on #game's other children, not on #game: a colour that changes on #game is inherited, so every tab switch restyled all 800+ elements (about 30 ms at 4x) */
-#g-start,#g-art,#g-mine,#game.at-start>:not(.g-screen),#game.at-paper>:not(.g-screen){color:#2B1342}
 /* Admin settings */
 .as-intro{margin:0 0 14px;font-size:1rem;line-height:1.45}
 .as-field{margin:0 0 16px}
@@ -1095,3 +1088,17 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 .c-scratch small{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 /* on a phone the title shrank to "B." between Back and the Hire chip: the picture is the title there */
 @media (max-width:480px){.c-top b{display:none}.c-top .g-hire{margin-left:auto}}
+/* World squad */
+#g-map{contain:layout paint}   /* the village screen is its own box: its layout and paint never reach the other screens */
+/* the galaxy sky and planet stay laid out and are faded, not display:none, so leaving the paper screens costs no style or layout work */
+.g-sky,.g-planet-bg{will-change:opacity;transition:opacity var(--dur-fast) var(--ease-in)}
+#game.at-start .g-sky,#game.at-start .g-planet-bg,#game.at-paper .g-sky,#game.at-paper .g-planet-bg{display:block;opacity:0}
+/* ink on paper is set on the screens and on #game's other children, not on #game: a colour that changes on #game is inherited, so every tab switch restyled all 800+ elements (about 30 ms at 4x) */
+#g-start,#g-art,#g-mine,#game.at-start>:not(.g-screen),#game.at-paper>:not(.g-screen){color:#2B1342}
+/* start page at 360 px: one 16 px gutter and one 12 px gap for the grid, the tiles and the Hire chip (Visual QA) */
+#game .g-start{padding-left:var(--gut,16px);padding-right:var(--gut,16px)}
+#g-start .g-featured{column-gap:var(--gap,12px)}
+/* the idle doodle on the start page sits in the free paper just above the tab bar, small, so it never covers a polaroid or a caption */
+body.game-mode .idle-buddy.on-start{left:16px;right:16px;max-width:none;align-items:flex-end;gap:6px}
+.idle-buddy.on-start img{width:36px;height:36px}
+.idle-buddy.on-start .idle-bubble{margin:0;padding:0 9px;font-size:.75rem;line-height:1.5;box-shadow:0 2px 0 #2B1342;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
