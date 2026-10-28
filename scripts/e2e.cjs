@@ -217,6 +217,16 @@ async function runConfig(browser,url,scheme,lang){
     await tool(p,'fill');const t=await p.$eval('.c-stage-wrap',e=>{const b=e.getBoundingClientRect();return {x:b.left+b.width*.5,y:b.top+b.height*.5}});const h0=await hash(p);await p.touchscreen.tap(t.x,t.y);if(await settled(p)===h0)throw new Error('a tap while zoomed did not fill');
     await p.tap('#cBack');await sleep(500);await p.tap('#cBack');await sleep(800);await p.tap(`#cPages .c-page[data-page="${id}"]`);await must(p,'#cEdit #cCanvas','editor did not reopen',8000);await sleep(600);if(await p.$eval('#cStage',e=>getComputedStyle(e).transform)!=='none')throw new Error('zoom not reset when a page opens')});
 
+  await T('color: sideways phone 844x390 gives the picture the height, tools still work',async p=>{await p.setViewportSize({width:844,height:390});await boot(p);await openColor(p);await sleep(400);
+    const b=await p.$eval('#cCanvas',e=>{const r=e.getBoundingClientRect();return [r.width,r.height,r.bottom]});if(b[1]<250)throw new Error('picture only '+Math.round(b[0])+'x'+Math.round(b[1])+' px');if(b[2]>391)throw new Error('picture runs below the screen');
+    for(const sel of ['#cColors .c-sw[data-v]','#cKit [data-tool=brush]','#cUndo','#cRedo','#cDone','#cBack'])if(!await vis(p,sel,500))throw new Error('not visible sideways: '+sel);
+    await audit(p,'color editor sideways');const s=await bigShape(p);await tool(p,'brush');await snap(p);await drag(p,[[s.x-40,s.y],[s.x+40,s.y]]);if((await diff(p,s.r)).in<50)throw new Error('brush does nothing sideways')});
+  await T('color: each Back closes only the top layer (wheel, editor, picker)',async p=>{await boot(p);await openColor(p);await p.tap('#cColors .c-any');await must(p,'#cWheel','wheel did not open');await sleep(300);
+    const back=async()=>{await p.evaluate(()=>history.back());await sleep(900)};
+    await back();if(await p.isVisible('#cWheel'))throw new Error('Back did not close the colour wheel');if(!await vis(p,'#cEdit #cCanvas',1000))throw new Error('Back with the wheel open left the editor');
+    await back();if(!await vis(p,'#cPick',1500))throw new Error('Back from the editor did not go to the picker');
+    await back();if(await p.isVisible('#cPick'))throw new Error('Back from the picker did not close Color');if(!p.url().includes('localhost'))throw new Error('Back left the app')});
+
   await T('doodle: sticker drag, drop on bin, undo',async p=>{await boot(p);await p.tap('[data-go=color]');await must(p,'#cPages .c-scratch','no Doodle Scene entry');await p.tap('#cPages .c-scratch');await must(p,'#cEdit #cCanvas','scratch editor did not open',8000);await sleep(800);
     await p.tap('#cStickBtn');await must(p,'#cTray [data-n]','no stickers');await p.tap('#cTray [data-n]');await sleep(1000);
     const pos=()=>p.$eval('#cStickers .c-st:last-child',e=>{const b=e.getBoundingClientRect();return [b.left+b.width/2,b.top+b.height/2]});

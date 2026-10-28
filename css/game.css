@@ -1235,3 +1235,18 @@ body.game-mode #lightbox .lb-flow{margin-top:2px}
 .c-zoomout .ico{width:24px;height:24px;vertical-align:0}
 .c-zoomout[hidden]{display:none}
 @media (prefers-reduced-motion:reduce){.c-stage.zback{transition:none}}
+/* QA P1-1: a sideways phone (short screen) puts colours, options, tools and actions in a side column, so the picture gets the height */
+@media (orientation:landscape) and (max-height:500px){
+  .c-edit.active{display:grid;grid-template-columns:minmax(0,1fr) 332px;grid-template-rows:auto auto auto auto auto minmax(0,1fr);column-gap:12px;row-gap:6px;padding-top:calc(env(safe-area-inset-top) + 6px);padding-bottom:calc(env(safe-area-inset-bottom) + 6px)}
+  .c-edit>.c-top{grid-column:1/-1;min-height:44px}
+  .c-edit>.c-stage-wrap{grid-column:1;grid-row:2/-1;min-height:0}
+  .c-edit>.c-colors,.c-edit>.c-opts,.c-edit>.c-kit,.c-edit>.c-tools{grid-column:2}
+  .c-edit>.c-colors{grid-template-columns:repeat(7,44px);justify-content:start}
+  .c-edit>.c-opts{justify-content:start}
+  .c-kt{min-height:46px}.c-tool{min-height:44px}
+}
+/* critic (sprint 3 round 1): the actions are icons only (their names stay for screen readers), and the active tool is a yellow outline and tint, quieter than the drawing */
+.c-tools .c-tool span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.c-tools .c-tool .ico{width:26px;height:26px}
+.c-kt.on{background:#FFF1C7;border-color:#FFB400;box-shadow:0 0 0 2px #FFB400}
+.c-stage-wrap{padding:6px}
