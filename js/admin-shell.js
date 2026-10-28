@@ -27,15 +27,36 @@
     saved: { en: "Token saved on this device only. It is sent to api.github.com and nowhere else.", id: "Token hanya tersimpan di perangkat ini. Hanya dikirim ke api.github.com." },
     bad: { en: "GitHub did not accept this token for the repository.", id: "GitHub tidak menerima token ini untuk repositori." },
     working: { en: "Publishing...", id: "Menerbitkan..." },
+    commit: { en: "See the commit", id: "Lihat commit" },
+    offline: { en: "No connection to GitHub.", id: "Tidak ada koneksi ke GitHub." },
+    auth: { en: "GitHub refused the token. Check that it has Contents read and write for this repository.", id: "GitHub menolak token. Pastikan token punya akses Contents baca dan tulis untuk repositori ini." },
     live: { en: "Published. Live in about a minute.", id: "Terbit. Tayang sekitar satu menit lagi." },
     fail: { en: "Could not publish: ", id: "Gagal menerbitkan: " },
     changes: { en: "{n} change(s) waiting", id: "{n} perubahan menunggu" },
     none: { en: "This tab is not ready yet.", id: "Tab ini belum siap." },
     forgot: { en: "This device is forgotten.", id: "Perangkat ini sudah dilupakan." },
+    preview: { en: "Preview", id: "Pratinjau" },
+    previewStop: { en: "Stop preview", id: "Hentikan pratinjau" },
+    ribbon: { en: "Preview, not published", id: "Pratinjau, belum diterbitkan" },
+    back: { en: "Back to admin", id: "Kembali ke admin" },
+    undo: { en: "Undo last publish", id: "Batalkan terbitan terakhir" },
+    help: { en: "Help", id: "Bantuan" },
+    helpClose: { en: "Hide help", id: "Tutup bantuan" },
+    looking: { en: "Looking for the last publish...", id: "Mencari terbitan terakhir..." },
+    noAdmin: { en: "There is no admin publish to undo.", id: "Tidak ada terbitan admin untuk dibatalkan." },
+    undoNeed: { en: "Publish or finish your waiting changes first.", id: "Terbitkan atau selesaikan dulu perubahan yang menunggu." },
+    undoAsk: { en: "Undo this publish? The site goes back to how it was before it.", id: "Batalkan terbitan ini? Situs kembali seperti sebelum terbitan itu." },
+    undoYes: { en: "Yes, undo it", id: "Ya, batalkan" },
+    cancel: { en: "Cancel", id: "Batal" },
+    undoing: { en: "Undoing...", id: "Membatalkan..." },
+    undone: { en: "Undone. Live in about a minute.", id: "Dibatalkan. Tayang sekitar satu menit lagi." },
+    undoFail: { en: "Could not undo: ", id: "Gagal membatalkan: " },
+    moved: { en: "A file was changed after that publish, so undoing it could lose newer work. Nothing was changed.", id: "Ada berkas yang berubah setelah terbitan itu, jadi membatalkannya bisa menghilangkan pekerjaan yang lebih baru. Tidak ada yang diubah." },
+    files: { en: "{n} file(s)", id: "{n} berkas" },
     language: { en: "Bahasa Indonesia", id: "English" }
   };
 
-  let root = null, active = TABS[0], data = null, base = "", staged = new Map(), busy = false, status = "";
+  let root = null, active = TABS[0], data = null, base = "", staged = new Map(), busy = false, status = null;   // status: {kind: "busy"|"ok"|"err", text, sha?}
   const tabs = {}, listeners = new Set();
   const lang = () => (typeof LANG !== "undefined" && LANG === "id") ? "id" : "en";
   const pick = v => typeof v === "string" ? v : v ? (v[lang()] || v.en || "") : "";
@@ -62,6 +83,13 @@
   }
   const post = (path, body, method = "POST") => gh(path, { method, body: JSON.stringify(body) });
 
+  // A short, plain reason for the owner (never the raw HTTP text).
+  const friendly = e => {
+    const m = String(e && e.message || e);
+    if (e instanceof TypeError && /fetch|network|load failed/i.test(m)) return s("offline");
+    if (/bad credentials|resource not accessible|not found|requires authentication|no write access|HTTP 40[134]/i.test(m)) return s("auth");
+    return m;
+  };
   async function checkToken() {
     const r = await gh("/repos/" + REPO);
     if (!r.permissions || !r.permissions.push) throw new Error("no write access");
@@ -90,6 +118,68 @@
     return made.sha;
   }
 
+  // ---- undo the last admin publish: one new commit that puts the files back ----
+  const dec = b64s => new TextDecoder().decode(Uint8Array.from(atob(b64s.replace(/\s/g, "")), c => c.charCodeAt(0)));
+  async function blobAt(path, ref) {
+    try { return await gh(`/repos/${REPO}/contents/${path.split("/").map(encodeURIComponent).join("/")}?ref=${ref}`); }
+    catch (e) { if (/not found|HTTP 404/i.test(e.message)) return null; throw e; }
+  }
+  async function lastAdmin() {
+    const branch = await checkToken();
+    const list = await gh(`/repos/${REPO}/commits?sha=${branch}&per_page=30`);
+    const hit = list.find(c => /^Admin:/.test(c.commit.message));
+    if (!hit) return null;
+    const c = await gh(`/repos/${REPO}/commits/${hit.sha}`);
+    return { branch, head: list[0].sha, sha: c.sha, parent: c.parents[0].sha, message: c.commit.message.split("\n")[0], date: c.commit.author.date, files: c.files || [] };
+  }
+  async function undoLast(info) {
+    const entries = []; let siteJson = null;
+    for (const f of info.files) {
+      if (f.status === "renamed") throw new Error("renamed file");
+      const now = await blobAt(f.filename, info.branch);
+      if (f.status === "added") {
+        if (!now) continue;
+        if (now.sha !== f.sha) throw new Error("MOVED");
+        entries.push({ path: f.filename, mode: "100644", type: "blob", sha: null });
+      } else {
+        if (now && now.sha !== f.sha) throw new Error("MOVED");
+        const before = await blobAt(f.filename, info.parent);
+        if (!before) { if (now) entries.push({ path: f.filename, mode: "100644", type: "blob", sha: null }); continue; }
+        entries.push({ path: f.filename, mode: "100644", type: "blob", sha: before.sha });
+        if (f.filename === "data/site.json") siteJson = before.content;
+      }
+      if (f.status === "added" && f.filename === "data/site.json") siteJson = "";
+    }
+    if (!entries.length) throw new Error(s("noAdmin"));
+    const head = (await gh(`/repos/${REPO}/git/ref/heads/${info.branch}`)).object.sha;
+    if (head !== info.head) throw new Error("MOVED");
+    const headCommit = await gh(`/repos/${REPO}/git/commits/${head}`);
+    const tree = await post(`/repos/${REPO}/git/trees`, { base_tree: headCommit.tree.sha, tree: entries });
+    const made = await post(`/repos/${REPO}/git/commits`, { message: "Admin: undo " + info.message.replace(/^Admin:\s*/, ""), tree: tree.sha, parents: [head] });
+    await post(`/repos/${REPO}/git/refs/heads/${info.branch}`, { sha: made.sha }, "PATCH");
+    if (siteJson !== null) { try { data = siteJson ? { ...blank(), ...JSON.parse(dec(siteJson)) } : blank(); } catch (e) { data = blank(); } base = JSON.stringify(data); }
+    return made.sha;
+  }
+
+  // ---- preview: the unpublished changes shown on the live page, in memory only ----
+  let previewOn = false, previewTimer = 0, ribbon = null, pop = null;
+  const syncPreview = () => { if (previewOn && typeof SiteData !== "undefined") SiteData.preview(data); };
+  function paintRibbon() {
+    if (!ribbon) {
+      ribbon = document.createElement("dialog"); ribbon.id = "adminRibbon";   // a dialog: game mode hides other children of body
+      ribbon.addEventListener("click", e => { const b = e.target.closest("[data-rb]"); if (!b) return; if (b.dataset.rb === "back") show(); else { setPreview(false); show(); } });
+      document.body.appendChild(ribbon);
+    }
+    ribbon.innerHTML = `<b role="status">${s("ribbon")}</b><button type="button" class="adm-btn" data-rb="back">${s("back")}</button><button type="button" class="adm-btn" data-rb="stop">${s("previewStop")}</button>`;
+  }
+  function setPreview(on) {
+    previewOn = on;
+    if (typeof SiteData !== "undefined") SiteData.preview(on ? data : null);
+    if (on) { paintRibbon(); if (root && root.open) root.close(); ribbon.show(); }
+    else if (ribbon) ribbon.close();
+    paintTools();
+  }
+
   // ---- the context the tabs get ----
   const ctx = {
     get data() { return data; },
@@ -113,19 +203,19 @@
     staged: () => [...staged.keys()],
     onChange(fn) { listeners.add(fn); return () => listeners.delete(fn); },
     publish: async message => {
-      status = s("working"); busy = true; paintBar();
-      try { await publish(message); status = s("live"); }
-      catch (e) { status = s("fail") + (e && e.message || e); throw e; }
+      status = { kind: "busy", text: s("working") }; busy = true; paintBar();
+      try { const sha = await publish(message); status = { kind: "ok", text: s("live"), sha }; }
+      catch (e) { status = { kind: "err", text: s("fail") + friendly(e) }; throw e; }
       finally { busy = false; paintBar(); }
     }
   };
-  const changed = () => { paintBar(); listeners.forEach(f => { try { f(); } catch (e) {} }); };
+  const changed = () => { if (status && status.kind !== "busy") status = null; paintBar(); clearTimeout(previewTimer); previewTimer = setTimeout(syncPreview, 200); listeners.forEach(f => { try { f(); } catch (e) {} }); };
 
   // ---- the screen ----
   const CSS = `
-#adminRoot{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;z-index:99999;display:none;flex-direction:column;background:var(--paper);color:var(--ink);font-family:Fredoka,Poppins,sans-serif;--ink:#2B1342;--paper:#FFF8EC;--line:#e5d8bd;--accent:#FFB400;--card:#fff;--mute:#6b5a80}
+#adminRoot{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;z-index:99999;display:none;border-radius:0;box-shadow:none;animation:none;overflow:hidden;flex-direction:column;background:var(--paper);color:var(--ink);font-family:Fredoka,Poppins,sans-serif;--ink:#2B1342;--paper:#FFF8EC;--line:#e5d8bd;--accent:#FFB400;--card:#fff;--mute:#6b5a80}
 #adminRoot *{box-sizing:border-box}
-#adminRoot[open]{display:flex}#adminRoot::backdrop{background:transparent}
+#adminRoot[open]{display:flex;animation:none}#adminRoot::backdrop{background:transparent}
 #adminRoot button{font-family:inherit;cursor:pointer}
 .adm-top{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:2px solid var(--line);flex-wrap:wrap}
 .adm-top h1{margin:0;font-size:1.3rem;flex:1;min-width:80px}
@@ -135,38 +225,45 @@
 .adm-tabs{display:flex;gap:6px;padding:8px 16px;overflow-x:auto;border-bottom:2px solid var(--line)}
 .adm-tabs button{flex:none;min-height:44px;padding:8px 16px;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-weight:600}
 .adm-tabs button[aria-selected=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.adm-tools{display:flex;gap:8px;padding:8px 16px;flex-wrap:wrap;border-bottom:2px solid var(--line)}
+.adm-btn[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.adm-pop{max-height:55vh;overflow:auto;margin:8px 16px;padding:12px 14px;border-radius:14px;border:2px solid var(--line);background:var(--card);font-size:.95rem;line-height:1.45}
+.adm-pop[hidden]{display:none}.adm-pop ol{margin:6px 0;padding-left:20px}.adm-pop h2{margin:0 0 6px;font-size:1.05rem}.adm-pop .adm-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+#adminRibbon{position:fixed;inset:max(8px,env(safe-area-inset-top)) 8px auto 8px;width:auto;max-width:none;margin:0;padding:6px 10px;border:2px solid #b77e00;border-radius:16px;background:#FFB400;color:#2B1342;display:none;align-items:center;gap:8px;flex-wrap:wrap;z-index:100001;font-family:Fredoka,Poppins,sans-serif;box-shadow:0 4px 0 #b77e00;animation:none;overflow:visible}
+#adminRibbon[open]{display:flex;animation:none}#adminRibbon::backdrop{display:none}#adminRibbon b{flex:1;min-width:140px}
+#adminRibbon .adm-btn{background:#fff;color:#2B1342;border-color:#b77e00;min-height:44px}
 .adm-bar{padding:8px 16px;font-size:.9rem;color:var(--mute);display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-bottom:2px solid var(--line)}
 .adm-bar input{flex:1;min-width:180px;min-height:44px;padding:8px 12px;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--ink);font:inherit}
-.adm-bar .adm-status{flex-basis:100%}
+.adm-bar .adm-status{flex-basis:100%;font-weight:600}
+.adm-status[data-kind=ok]{color:#1f7a3d}.adm-status[data-kind=err]{color:#b3261e}.adm-status a{color:inherit;text-decoration:underline;display:inline-block;padding:12px 0}
 .adm-main{flex:1;overflow:auto;padding:16px;-webkit-overflow-scrolling:touch}
 .adm-main .adm-note{color:var(--mute)}
-@media (prefers-color-scheme:dark){#adminRoot{--ink:#f3ecff;--paper:#1b1028;--line:#3e2a5c;--card:#2f1f47;--mute:#b9a9d4}.adm-btn.pri{color:#2B1342}}
+@media (prefers-color-scheme:dark){.adm-status[data-kind=ok]{color:#7ddc9a}.adm-status[data-kind=err]{color:#ff9a92}#adminRoot{--ink:#f3ecff;--paper:#1b1028;--line:#3e2a5c;--card:#2f1f47;--mute:#b9a9d4}.adm-btn.pri{color:#2B1342}}
 `;
   function build() {
     if (!document.getElementById("admShellCss")) { const st = document.createElement("style"); st.id = "admShellCss"; st.textContent = CSS; document.head.appendChild(st); }
     root = document.createElement("dialog"); root.id = "adminRoot";   // a dialog: game mode hides every other child of body
     root.innerHTML = `<div class="adm-top"><h1 data-adm="title"></h1><button type="button" class="adm-btn" data-adm="lang"></button>
       <button type="button" class="adm-btn pri" data-adm="publish"></button><button type="button" class="adm-btn" data-adm="close"></button></div>
-      <div class="adm-tabs" role="tablist"></div><div class="adm-bar"></div><div class="adm-main" role="tabpanel"></div>`;
+      <div class="adm-tools"></div><div class="adm-pop" hidden role="region"></div><div class="adm-tabs" role="tablist"></div><div class="adm-bar"></div><div class="adm-main" role="tabpanel"></div>`;
     document.body.appendChild(root);
     root.addEventListener("click", e => {
       const b = e.target.closest("[data-adm],[data-tab]"); if (!b) return;
       if (b.dataset.tab) return show(b.dataset.tab);
       ({ close, lang: switchLang, publish: () => ctx.publish().catch(() => {}),
-        save: saveToken, forget: forgetDevice })[b.dataset.adm]?.();
+        save: saveToken, forget: forgetDevice, preview: () => setPreview(!previewOn), help: () => togglePop("help"), undo: startUndo, undoYes: confirmUndo, popClose: () => togglePop(null) })[b.dataset.adm]?.();
     });
     root.addEventListener("cancel", e => { e.preventDefault(); close(); });
-    addEventListener("ekky:lang", () => { if (root.open) paintAll(); });
+    addEventListener("ekky:lang", () => { if (root.open) paintAll(); else if (ribbon && ribbon.open) paintRibbon(); });
     paintAll();
   }
 
   function paintBar() {
     if (!root) return;
     const n = dirtyCount(), can = ctx.canPublish;
-    root.querySelector("[data-adm=publish]").textContent = s("publish");
     root.querySelector("[data-adm=publish]").disabled = busy || !can || !n;
     const bar = root.querySelector(".adm-bar");
-    const msg = status || (!can ? s("readonly") : n ? s("changes").replace("{n}", n) : "");
+    const st = status || { kind: "", text: !can ? s("readonly") : n ? s("changes").replace("{n}", n) : "" };
     const esc = x => String(x).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
     if (!bar.dataset.built || bar.dataset.can !== String(can) || bar.dataset.lang !== lang()) {
       bar.dataset.built = "1"; bar.dataset.can = String(can); bar.dataset.lang = lang();
@@ -174,7 +271,10 @@
         ? `<span class="adm-status" role="status"></span><button type="button" class="adm-btn" data-adm="forget">${esc(s("forget"))}</button>`
         : `<input type="password" autocomplete="off" aria-label="${esc(s("tokenLabel"))}" placeholder="${esc(s("tokenLabel"))}"><button type="button" class="adm-btn" data-adm="save">${esc(s("save"))}</button><span class="adm-status" role="status"></span>`;
     }
-    bar.querySelector(".adm-status").textContent = msg;
+    const el = bar.querySelector(".adm-status");
+    el.textContent = st.text; el.dataset.kind = st.kind; el.setAttribute("role", st.kind === "err" ? "alert" : "status");
+    if (st.sha) { const a = document.createElement("a"); a.href = `https://github.com/${REPO}/commit/${st.sha}`; a.target = "_blank"; a.rel = "noopener"; a.textContent = " " + s("commit"); el.appendChild(a); }
+    root.querySelector("[data-adm=publish]").textContent = busy ? s("working") : s("publish");
   }
 
   function paintTabs() {
@@ -190,11 +290,66 @@
     try { t.render(el, ctx); } catch (e) { const p = document.createElement("p"); p.className = "adm-note"; p.textContent = String(e && e.message || e); el.appendChild(p); }
   }
 
+  function paintTools() {
+    if (!root) return;
+    const t = root.querySelector(".adm-tools");
+    t.innerHTML = `<button type="button" class="adm-btn" data-adm="preview" aria-pressed="${previewOn}">${s("preview")}</button>
+      <button type="button" class="adm-btn" data-adm="undo"${ctx.canPublish ? "" : " disabled"}>${s("undo")}</button>
+      <button type="button" class="adm-btn" data-adm="help" aria-pressed="${!!(pop && pop.kind === "help")}">${s("help")}</button>`;
+  }
+
+  const HELP = {
+    en: `<h2>Help</h2><p><b>PIN and token.</b> The PIN only opens this screen. To publish you also need a GitHub token.</p>
+      <ol><li>On github.com open Settings, Developer settings, Personal access tokens, Fine-grained tokens, then Generate new token.</li>
+      <li>Repository access: only <b>rfim/ekkyarya.com</b>.</li><li>Permissions: <b>Contents</b>, Read and write. Nothing else.</li>
+      <li>Pick an expiry date, generate it, copy it and paste it in the box below, then Save token.</li></ol>
+      <p><b>Where it is kept.</b> Only in this browser, on this device. It is sent to api.github.com and nowhere else. Press <b>Forget this device</b> to remove it.</p>
+      <p>Publish makes one change on the site, live in about a minute. Preview shows your waiting changes on the site without publishing.</p>`,
+    id: `<h2>Bantuan</h2><p><b>PIN dan token.</b> PIN hanya membuka layar ini. Untuk menerbitkan kamu juga perlu token GitHub.</p>
+      <ol><li>Di github.com buka Settings, Developer settings, Personal access tokens, Fine-grained tokens, lalu Generate new token.</li>
+      <li>Repository access: hanya <b>rfim/ekkyarya.com</b>.</li><li>Permissions: <b>Contents</b>, Read and write. Tidak ada yang lain.</li>
+      <li>Pilih tanggal kedaluwarsa, buat tokennya, salin, tempel di kotak di bawah, lalu Simpan token.</li></ol>
+      <p><b>Disimpan di mana.</b> Hanya di browser ini, di perangkat ini. Token hanya dikirim ke api.github.com. Tekan <b>Lupakan perangkat ini</b> untuk menghapusnya.</p>
+      <p>Terbitkan membuat satu perubahan di situs, tayang sekitar satu menit. Pratinjau menampilkan perubahan yang menunggu di situs tanpa menerbitkan.</p>`
+  };
+  function togglePop(kind) { pop = pop && pop.kind === kind ? null : kind ? { kind } : null; paintPop(); paintTools(); const b = root.querySelector(`[data-adm=${kind || "help"}]`); if (b) b.focus(); }
+  function paintPop() {
+    if (!root) return;
+    const el = root.querySelector(".adm-pop");
+    el.hidden = !pop;
+    if (!pop) return;
+    const esc = x => String(x).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    if (pop.kind === "help") el.innerHTML = HELP[lang()] + `<div class="adm-row"><button type="button" class="adm-btn" data-adm="popClose">${s("helpClose")}</button></div>`;
+    else if (pop.kind === "undo") {
+      const i = pop.info;
+      el.innerHTML = `<h2>${esc(s("undo"))}</h2><p>${esc(s("undoAsk"))}</p><p><b>${esc(i.message)}</b><br>${esc(new Date(i.date).toLocaleString(lang() === "id" ? "id-ID" : "en-GB"))}, ${esc(s("files").replace("{n}", i.files.length))}</p>
+        <div class="adm-row"><button type="button" class="adm-btn pri" data-adm="undoYes"${busy ? " disabled" : ""}>${esc(s("undoYes"))}</button><button type="button" class="adm-btn" data-adm="popClose">${esc(s("cancel"))}</button></div>`;
+    }
+  }
+  async function startUndo() {
+    if (!ctx.canPublish) return;
+    if (dirtyCount()) { status = { kind: "err", text: s("undoNeed") }; paintBar(); return; }
+    status = { kind: "busy", text: s("looking") }; paintBar();
+    try {
+      const info = await lastAdmin();
+      if (!info) { status = { kind: "err", text: s("noAdmin") }; paintBar(); return; }
+      status = null; pop = { kind: "undo", info }; paintPop(); paintTools(); paintBar();
+    } catch (e) { status = { kind: "err", text: s("undoFail") + friendly(e) }; paintBar(); }
+  }
+  async function confirmUndo() {
+    const info = pop && pop.info; if (!info || busy) return;
+    busy = true; status = { kind: "busy", text: s("undoing") }; paintBar(); paintPop();
+    try { const sha = await undoLast(info); status = { kind: "ok", text: s("undone"), sha }; syncPreview(); }
+    catch (e) { status = { kind: "err", text: e && e.message === "MOVED" ? s("moved") : s("undoFail") + friendly(e) }; }
+    busy = false; pop = null; paintPop(); paintTools(); paintBar(); paintPanel();
+  }
+
   function paintAll() {
     root.querySelector("[data-adm=title]").textContent = s("title");
     root.querySelector("[data-adm=close]").textContent = s("close");
     root.querySelector("[data-adm=lang]").textContent = s("language");
-    paintTabs(); paintBar(); paintPanel();
+    paintTools(); paintPop(); paintTabs(); paintBar(); paintPanel();
+    if (ribbon && ribbon.open) paintRibbon();
   }
 
   function switchLang() { if (typeof setLang === "function") setLang(lang() === "id" ? "en" : "id"); paintAll(); }
@@ -203,20 +358,21 @@
     const input = root.querySelector(".adm-bar input"), tok = input && input.value.trim();
     if (!tok) return;
     store.set(TOKEN_KEY, tok);
-    try { await checkToken(); status = s("saved"); }
-    catch (e) { store.del(TOKEN_KEY); status = s("bad"); }
-    root.querySelector(".adm-bar").dataset.built = ""; paintBar();
+    try { await checkToken(); status = { kind: "ok", text: s("saved") }; }
+    catch (e) { store.del(TOKEN_KEY); status = { kind: "err", text: s("bad") }; }
+    root.querySelector(".adm-bar").dataset.built = ""; paintBar(); paintTools();
   }
 
   function forgetDevice() {
-    store.del(TOKEN_KEY); status = s("forgot");
+    store.del(TOKEN_KEY); status = { kind: "ok", text: s("forgot") };
     ["admLock", "admTries"].forEach(store.del);
-    root.querySelector(".adm-bar").dataset.built = ""; paintBar();
+    root.querySelector(".adm-bar").dataset.built = ""; paintBar(); paintTools();
   }
 
   function close() {
     if (!root) return;
     root.close();
+    if (previewOn) { paintRibbon(); ribbon.show(); }
     if (prevFocus && prevFocus.focus) try { prevFocus.focus(); } catch (e) {}
   }
 
@@ -235,6 +391,7 @@
     if (!data) await load();
     if (typeof tab === "string" && TABS.includes(tab)) active = tab;
     else { prevFocus = document.activeElement; }
+    if (ribbon && ribbon.open) ribbon.close();
     if (!root.open) root.showModal(); paintAll();
     const first = root.querySelector(".adm-tabs [aria-selected=true]"); if (first && typeof tab !== "string") first.focus();
   }
@@ -248,6 +405,6 @@
 
   // The tab scripts register themselves; a missing one only leaves its tab saying "not ready yet".
   ["js/admin-art.js", "js/admin-settings.js"].forEach(src => {
-    const el = document.createElement("script"); el.src = src; el.onerror = () => el.remove(); document.head.appendChild(el);
+    const el = document.createElement("script"); el.src = src + "?v=" + Date.now(); el.onerror = () => el.remove(); document.head.appendChild(el);
   });
 })();
