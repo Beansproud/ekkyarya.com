@@ -370,7 +370,7 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 /* ===== Ekky's Village (B42 V1): the map ===== */
 #g-map .g-head{margin-bottom:0}
 #g-map .g-title{font-size:1.5rem}
-.v-map{position:relative;width:100%;max-width:420px;margin:0 auto}
+.v-map{position:relative;width:100%;max-width:420px;margin:0 auto;container-type:inline-size}
 .v-ground{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;user-select:none}
 .v-frame{position:absolute;object-fit:cover;transform-origin:0 0;pointer-events:none;box-shadow:0 0 0 1px #2B1342}
 .v-place{position:absolute;background:none;border-radius:16px;min-width:44px;min-height:44px}
@@ -468,7 +468,7 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 .v-map .v-folk{z-index:2}    /* the still villagers are small and sit on top of the place boxes */
 .v-walker{position:absolute;left:0;top:0;min-width:44px;min-height:44px;transform:translate(-50%,-100%);padding:0;background:none;border:0;
   display:flex;align-items:flex-end;justify-content:center;pointer-events:auto;cursor:pointer}
-.v-walker img{display:block;width:auto;pointer-events:none}   /* height from --vw (the layer's width in px, set in renderMap): the walker's own size, the button keeps 44 px to tap */
+.v-walker img{display:block;width:auto;pointer-events:none}   /* height in cqw: the walker's own size, the button keeps 44 px to tap */
 .v-walker:focus-visible,.v-folk:focus-visible{outline:3px solid #FFB400;outline-offset:2px;border-radius:12px}
 .v-folk{position:absolute;min-width:44px;min-height:44px;background:none;border:0;padding:0;cursor:pointer}
 .v-map.night .v-ground{filter:brightness(.7) saturate(.85)}
@@ -513,15 +513,13 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
    Kept: tap press, plain fades for screens, sheets and overlays, the coloring fill, Star Catcher's own play. */
 .g-sky i,.g-logo,.g-card,.g-card.legendary .inner::after,.g-result h2{animation:none!important}
 .g-card.legendary .inner::after{display:none}
-/* the village stands still: villagers stay at their spots, no clouds, lantern, steam or shimmer */
-.v-walk,.v-walk *,.v-cloud,.v-shimmer,.v-lantern,.v-smoke,[class*="v-smoke"],[class*="v-lantern"]{animation:none!important}
-.v-cloud,.v-shimmer,.v-smoke{display:none}
+/* the village is alive again (owner 10-28, Map squad section at the end): its own motion rules live there */
 /* the turn-your-phone hint turns twice, then rests */
 
 /* G1: the village zooms (1x to 2x) with a finger or the +/- buttons; nothing animates, the view follows the finger */
 .v-map{overflow:hidden;touch-action:pan-y;border-radius:18px}
 .v-map.zoomed{touch-action:none}
-.v-zoom{position:absolute;inset:0;transform-origin:0 0}
+.v-zoom{position:absolute;inset:0;transform-origin:0 0;container-type:inline-size}
 .zoomed .v-zoom{will-change:transform}   /* the zoomed island is one compositor layer: pan and pinch only move it */
 #gMapWrap.zoomed{touch-action:none}   /* zoomed, the finger pans the map (in JS); at 1x a vertical drag still scrolls the page */
 .v-walk{transition:none}
@@ -535,7 +533,7 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
    The start screen is a page of Ekky's sketchbook: off-white paper with a faint grain (tokens from css/site.css),
    the six drawings taped on at a fixed 1 to 2 degree tilt, flat paper tiles, ink text. Nothing moves.
    The other screens keep the night sky for now; the HUD follows whichever page it sits on. */
-body.game-mode #game.at-start{background:var(--paper,#FBF7EE) var(--grain)}
+body.game-mode #game.at-start{background:var(--paper,#FBF7EE) var(--grain);color:#2B1342}
 #game.at-start .g-player b{color:#2B1342}
 #game.at-start .g-sky,#game.at-start .g-planet-bg{display:none}
 #game.at-start .g-hud{background:none}
@@ -618,7 +616,7 @@ body.game-mode #game.at-start{background:var(--paper,#FBF7EE) var(--grain)}
 /* ===== Developer A: S1 paper for the Art and Mine tabs =====
    Same sketchbook page as the start screen (Developer B's tokens): off-white paper, ink text, the drawings taped on
    at a fixed per-piece tilt (tiltOf), flat paper tiles, no rarity borders, badge circles or foil. Nothing moves. */
-body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain)}
+body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color:#2B1342}
 #game.at-paper .g-sky,#game.at-paper .g-planet-bg{display:none}
 #game.at-paper .g-title{color:#2B1342;text-shadow:none}
 #game.at-paper .g-sub,#game.at-paper .g-small{color:#645F70}
@@ -877,6 +875,32 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain)}
 .g-sheet h2{margin:0 0 10px;min-height:44px;padding-right:64px}
 .g-sheet .g-x{top:var(--xtop,31px);right:20px}
 
+/* Map squad: a living village (owner 10-28). Transform and opacity only; JS (Life in js/game.js) pauses all of it when the
+   map is off screen or the tab is hidden, and starts none of it under reduced motion. */
+.v-fx{position:absolute;inset:0;pointer-events:none;z-index:2}
+.v-fx i,.v-fx img{position:absolute;display:block;translate:-50% -50%;pointer-events:none}
+.v-fx img{width:auto}
+.v-fx img.foot{translate:-50% -100%}
+.v-shoot{border-radius:9px;background:linear-gradient(90deg,rgba(255,217,102,0),#FFE9A8)}
+.v-comet{border-radius:9px;background:linear-gradient(90deg,rgba(150,190,255,0),rgba(210,225,255,.9))}
+.v-beam{background:linear-gradient(rgba(190,255,230,.55),rgba(190,255,230,0));clip-path:polygon(38% 0,62% 0,100% 100%,0 100%)}
+.v-plane{background:#FFF3DC;clip-path:polygon(0 0,100% 50%,0 100%,22% 50%);filter:drop-shadow(0 1px 0 #2B1342)}
+.v-fly{border-radius:50%;background:radial-gradient(circle,#FFE9A8,rgba(255,200,80,0) 70%)}
+.v-puff{border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.9),rgba(255,255,255,0) 70%)}
+.v-flare{border-radius:50%;background:radial-gradient(circle,rgba(255,150,60,.9),rgba(255,120,40,0) 68%)}
+.v-flare.warm{background:radial-gradient(circle,rgba(255,226,140,.95),rgba(255,200,80,0) 68%)}
+.v-spark{background:#FFE9A8;clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%)}
+.v-rcloud{border-radius:999px;background:#fff}
+.v-rcloud::before,.v-rcloud::after{content:"";position:absolute;bottom:40%;border-radius:50%;background:inherit}
+.v-rcloud::before{left:18%;width:34%;aspect-ratio:1}
+.v-rcloud::after{left:44%;width:44%;aspect-ratio:1}
+.v-tw{position:absolute;width:.9cqw;height:.9cqw;border-radius:50%;background:#fff;pointer-events:none;translate:-50% -50%;opacity:.1;animation:vTw 4s ease-in-out infinite}
+.v-tw.gold{background:#FFD966;width:1.2cqw;height:1.2cqw}
+@keyframes vTw{50%{opacity:.85}}
+@keyframes vLantern{0%,100%{opacity:.4}18%{opacity:.8}32%{opacity:.5}55%{opacity:.85}78%{opacity:.55}}
+.v-lantern{animation-duration:3.4s}
+@media (prefers-reduced-motion:reduce){.v-fx,.v-tw,.v-lantern,.v-smoke,.v-cloudrow{display:none}}
+
 /* World squad */
 #g-map{contain:layout paint}   /* the village screen is its own box: its layout and paint never reach the other screens */
 /* the galaxy sky and planet stay laid out and are faded, not display:none, so leaving the paper screens costs no style or layout work */
@@ -906,3 +930,47 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain)}
 .as-btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;margin-top:10px;padding:10px 18px;border:2px solid #2B1342;border-radius:12px;background:#FFFDF6;color:#2B1342;font-family:Fredoka;font-weight:700;font-size:1rem;text-decoration:none}
 .as-primary{background:#FFB400}
 @media (min-width:700px){.as-cols{grid-template-columns:1fr 1fr}}
+
+.g-screen{contain:strict}
+
+/* Admin art */
+.aa{background:#FFFDF8;color:#2B1342;border-radius:2px;padding:14px;font-family:Fredoka,system-ui,sans-serif;max-width:640px;margin:0 auto}
+.aa h3{margin:18px 0 6px;font-size:18px}
+.aa-note{margin:0 0 10px;font-size:15px;line-height:1.4}
+.aa-warn{background:#FFF1C9;padding:8px 10px;border-radius:2px}
+.aa-ok{color:#1F6B3A}
+.aa-err{background:#FDE8E4;color:#7A1F12;padding:8px 12px;border-radius:2px;margin:10px 0;font-size:15px}
+.aa-err ul{margin:4px 0 0;padding-left:18px}
+.aa-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.aa-row{display:flex;align-items:center;gap:8px;background:#FBF8F1;border:1px solid #E4DCCB;border-radius:2px;padding:6px;flex-wrap:wrap}
+.aa-row.aa-off{opacity:.55}
+.aa-row.aa-drag{box-shadow:0 4px 12px rgba(43,19,66,.25);background:#FFFDF8}
+.aa-th{width:56px;height:56px;object-fit:cover;border-radius:2px;background:#E4DCCB;flex:none}
+.aa-big{width:120px;height:120px}
+.aa-meta{flex:1 1 140px;min-width:0;display:grid;gap:2px}
+.aa-meta b{font-weight:600;overflow-wrap:anywhere}
+.aa-meta small,.aa-f small{font-size:13px;opacity:.75}
+.aa-act{display:flex;flex-wrap:wrap;gap:4px;margin-left:auto}
+.aa-btn{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:0 12px;background:#FFFDF8;color:#2B1342;border:1.5px solid #2B1342;border-radius:22px;font:inherit;font-size:15px;cursor:pointer}
+.aa-btn:disabled{opacity:.35;cursor:default}
+.aa-btn:focus-visible{outline:3px solid #FFB400;outline-offset:2px}
+.aa-btn:active:not(:disabled){scale:.95}
+.aa-primary{background:#2B1342;color:#FFFDF8}
+.aa-grip{touch-action:none;cursor:grab;padding:0}
+.aa-bar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.aa-form{border:1px solid #E4DCCB;background:#FBF8F1;padding:12px;border-radius:2px;margin:10px 0}
+.aa-form h3{margin-top:0}
+.aa-f{display:grid;gap:4px;margin:0 0 12px;border:0;padding:0}
+.aa-f>span,.aa-roles legend{font-size:14px;font-weight:600}
+.aa-f input[type=text],.aa-f textarea,.aa-f select{width:100%;box-sizing:border-box;min-height:44px;padding:8px 10px;font:inherit;font-size:16px;color:#2B1342;background:#FFFDF8;border:1.5px solid #E4DCCB;border-radius:2px}
+.aa-pick{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.aa-file{position:relative;overflow:hidden}
+.aa-file input{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0}
+.aa-roles{border:0;padding:0;margin:0 0 12px;display:grid;gap:2px}
+.aa-chk{display:flex;align-items:center;gap:10px;min-height:44px;font-size:15px}
+.aa-chk input{width:24px;height:24px;flex:none;accent-color:#2B1342}
+.aa-dim{opacity:.55}
+#g-map .v-map{align-self:center;margin:auto 0;max-width:460px;border-radius:0}   /* centred in the band under the title, edge to edge on a phone */
+.v-map .v-label{font-size:clamp(12px,2.35cqw,13.5px);padding:2px 8px;border-radius:6px;background:#FFF3DC;border:2px solid #2B1342;color:#2B1342;box-shadow:0 2px 0 rgba(43,19,66,.55);rotate:-1.6deg}
+.v-map span.v-label:nth-of-type(even){rotate:1.4deg}   /* paper tags, each at its own fixed tilt */
+.v-map .v-label.hire{background:#FFB400;border-color:#2B1342;color:#2B1342}
