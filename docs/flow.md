@@ -31,7 +31,34 @@ A piece may carry **steps**: the ordered pictures of its project. A piece withou
 - The piece's own picture should be one of the steps (usually the last for a process). The diagram marks the step
   whose `full` equals the piece's `full` as "this picture". If it is not in the list, nothing is added.
 
-## Where steps live
+## Optional step extras: `anim` and `set` (additive; steps without them work exactly as above)
+
+```json
+{ "img": "assets/projects/morumelons/thumb/astro.jpg", "full": "assets/projects/morumelons/astro.jpg",
+  "anim": "assets/projects/morumelons/anim/astro.webp",
+  "caption": { "en": "The crew", "id": "Para kru" },
+  "set": [ { "img": "...thumb/a.jpg", "full": ".../a.jpg", "anim": ".../anim/a.webp", "name": { "en": "Astronaut", "id": "Astronaut" } } ] }
+```
+
+- `anim` (on a step or a set item): a play-once animated WebP. Fetched only when it plays (tap, or hover with a mouse),
+  plays once, then settles back on `full`. Never plays under `prefers-reduced-motion`; never loops.
+- `set` (on a step): 2 to 24 items `{img, full, anim?, name {en, id}}`. A step with a set opens as a grid of its pictures
+  (thumbnails first) instead of a single picture. Fewer than 2 valid items means no set.
+- Paths may also be under `assets/projects/<project>/` (one optional sub-folder, e.g. `thumb/`, `anim/`), extension
+  jpg, png, gif or webp. A bad `anim` or set item is dropped; the step stays.
+- **Who draws them:** the flow core (js/site.js) draws the diagram and, for a plain step, shows `full`. The `anim`
+  playback and the `set` grid are drawn by the project's own block through the hook below.
+
+## The hook (stable; js/site.js)
+
+- `window.FlowHooks = [fn, ...]`: after the diagram is drawn (every time the lightbox shows a piece, and on a language
+  switch), each `fn(box, piece, steps)` is called. `box` is `#lbFlow` (hidden when the piece has no steps), `steps` is
+  `stepsOf(piece)`. A hook adds its own block inside `box` and must not change the nodes.
+- Tapping a node fires a cancelable `flowstep` event on `#lightbox` with
+  `detail = {piece, step, index, node}`. A hook that handles the step (a set, an animation) calls `preventDefault()`;
+  otherwise the core shows `step.full`.
+
+## Where steps live## Where steps live
 
 | Piece | Where its steps are written |
 |---|---|
@@ -41,7 +68,7 @@ A piece may carry **steps**: the ordered pictures of its project. A piece withou
 
 ## Paths and validation (js/site-data.js merge, js/admin-art.js validatePiece)
 
-- A step path must match `^assets/work/(thumb/|s/)?(u/)?[a-z0-9-]+\.(jpg|jpeg|png|gif)$`. Anything else drops that
+- A step path must match `^assets/(work/(thumb/|s/)?(u/)?|projects/<project>/(<folder>/)?)[a-z0-9-]+\.(jpg|jpeg|png|gif|webp)$`. Anything else drops that
   step (never the whole piece).
 - Admin uploads step pictures with the same resize as a piece (1600 px full, 480 px thumb, JPEG 0.82) to
   `assets/work/u/<piece-slug>-s<n>.jpg` and `assets/work/thumb/u/<piece-slug>-s<n>.jpg`, through `ctx.addFile`.

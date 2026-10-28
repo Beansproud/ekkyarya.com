@@ -206,9 +206,13 @@ function renderFlow(p){
       <svg class="fl-bub" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path class="fl-sh" d="${wobPath(k+1)}"/><path class="fl-bg" d="${wobPath(k+1)}"/></svg>
       <span class="fl-num" aria-hidden="true">${k+1}</span><img src="${escH(st.img)}" alt="" loading="lazy" decoding="async">
       <span class="fl-cap">${escH(cap)}${me?`<small class="fl-this">${escH(t("flow.this"))}</small>`:""}</span></button>${k<steps.length-1?flowArrow(k):""}</li>`}).join("")}</ol>`;
-  box.classList.remove("fl-in");void box.offsetWidth;box.classList.add("fl-in")}
+  box.classList.remove("fl-in");void box.offsetWidth;box.classList.add("fl-in");
+  // the stable hook (docs/flow.md): extra blocks (e.g. Morumelons' sets and animations) render after the diagram
+  (window.FlowHooks||[]).forEach(h=>{try{h(box,p,steps)}catch(e){}})}
 // a node shows that step's full picture in the lightbox; the piece's own step brings the piece back
 lb.addEventListener("click",e=>{const b=e.target.closest(".fl-node");if(!b)return;const p=PROJECTS[cur],st=stepsOf(p)[+b.dataset.step];if(!st)return;
+  // a hook may take over a step (a set grid, an animation): it calls preventDefault() on "flowstep"
+  if(!lb.dispatchEvent(new CustomEvent("flowstep",{cancelable:true,detail:{piece:p,step:st,index:+b.dataset.step,node:b}})))return;
   const art=document.getElementById("lbArt");
   art.innerHTML=st.full===p.full?artOf(p,true):`<img class="ok" src="${escH(st.full)}" alt="${escH(flowCap(st,+b.dataset.step))}" decoding="async">`;
   lb.querySelectorAll(".fl-node").forEach(n=>n.removeAttribute("aria-current"));b.setAttribute("aria-current","true");

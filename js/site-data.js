@@ -11,13 +11,19 @@ const SiteData = (() => {
   const SAFE_URL = /^https:\/\/[^\s"'<>`\\]+$/, SAFE_MAIL = /^[^\s@"'<>`\\]+@[^\s@"'<>`\\]+$/, SAFE_UID = /^u-[a-z0-9-]+$/;
   const SAFE_PATH = /^assets\/work\/(?:thumb\/)?u\/[a-z0-9-]+\.jpe?g$/;
   // Project flow (docs/flow.md): steps of a piece. A bad step is dropped, never the piece; fewer than 2 means no flow.
-  const SAFE_STEP = /^assets\/work\/(?:thumb\/|s\/)?(?:u\/)?[a-z0-9-]+\.(?:jpe?g|png|gif)$/;
+  const SAFE_STEP = /^assets\/(?:work\/(?:thumb\/|s\/)?(?:u\/)?|projects\/[a-z0-9-]+\/(?:[a-z0-9-]+\/)?)[a-z0-9-]+\.(?:jpe?g|png|gif|webp)$/;
+  // a step's optional extras: anim (a play-once animated WebP) and set (a grid of 2 to 24 named pictures)
+  const anim = v => SAFE_STEP.test(str(v)) ? { anim: str(v) } : {};
+  const setOf = v => { if (!Array.isArray(v)) return {};
+    const set = v.filter(isObj).map(x => { const n = isObj(x.name) ? x.name : {}, img = str(x.img), full = str(x.full);
+      return SAFE_STEP.test(img) && SAFE_STEP.test(full) ? Object.assign({ img, full, name: { en: clean(n.en).slice(0, 60), id: clean(n.id).slice(0, 60) } }, anim(x.anim)) : null; }).filter(Boolean).slice(0, 24);
+    return set.length >= 2 ? { set } : {}; };
   const FLOW_KINDS = ["process", "series"];
   function flowOf(raw) {
     if (!isObj(raw) || !Array.isArray(raw.steps)) return null;
     const steps = raw.steps.filter(isObj).map(x => {
       const c = isObj(x.caption) ? x.caption : {}, img = str(x.img), full = str(x.full);
-      return SAFE_STEP.test(img) && SAFE_STEP.test(full) ? { img, full, caption: { en: clean(c.en).slice(0, 60), id: clean(c.id).slice(0, 60) } } : null;
+      return SAFE_STEP.test(img) && SAFE_STEP.test(full) ? Object.assign({ img, full, caption: { en: clean(c.en).slice(0, 60), id: clean(c.id).slice(0, 60) } }, anim(x.anim), setOf(x.set)) : null;
     }).filter(Boolean).slice(0, 8);
     return steps.length >= 2 ? { flow: FLOW_KINDS.includes(raw.flow) ? raw.flow : "process", steps } : null;
   }
