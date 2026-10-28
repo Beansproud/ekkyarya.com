@@ -37,6 +37,17 @@ const nm=(k,en,n)=>tt(k,en).replace("{n}",n);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const $=id=>document.getElementById(id);
 
+/* ---- sprint 3 tools (docs/color-tools.md): one row, one tool on at a time; their icons join the page's sprite ---- */
+const TOOLS=[["fill","i-bucket","Fill"],["brush","i-brush","Brush"],["fade","i-fade","Fade"],["pattern","i-pattern","Pattern"],["eraser","i-eraser","Eraser"]];
+{const sp=document.querySelector("symbol[id='i-undo']"),S=(id,b)=>`<symbol id="${id}" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">${b}</g></symbol>`;
+  if(sp&&!document.getElementById("i-redo"))sp.parentNode.insertAdjacentHTML("beforeend",
+    S("i-redo",'<path d="M15 14l5-5-5-5M20 9H10a6 6 0 0 0 0 12h3" stroke-width="2.6"/>')+
+    S("i-bucket",'<path d="M4.5 11.5 11 5l7.5 7.5L12 19z"/><path d="M8.5 7.5 6 5M4.5 11.5h14"/><path d="M20.5 15.5s1.5 2 1.5 3a1.5 1.5 0 0 1-3 0c0-1 1.5-3 1.5-3z" fill="currentColor"/>')+
+    S("i-brush",'<path d="M20 4 11 13"/><path d="M10.5 13.5c-2 0-3.5 1.4-3.5 3.3 0 1.3-.9 2.2-2.5 2.7 4.2 1.4 8.5-.4 8.5-3.4z" fill="currentColor"/>')+
+    S("i-fade",'<rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M8 4v16M12 4v16M16 4v16" stroke-dasharray="1.6 2.4" stroke-width="2"/><path d="M3.5 3.5h5v17h-5z" fill="currentColor" stroke="none"/>')+
+    S("i-pattern",'<rect x="3.5" y="3.5" width="17" height="17" rx="3"/><g fill="currentColor" stroke="none"><circle cx="8.5" cy="8.5" r="1.7"/><circle cx="15.5" cy="8.5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="8.5" cy="15.5" r="1.7"/><circle cx="15.5" cy="15.5" r="1.7"/></g>')+
+    S("i-eraser",'<path d="m14 4.5 6 6-9 9H6.5l-3-3z"/><path d="m9 9.5 6 6M11 19.5h9"/>'))}
+
 /* ---- overlay markup ---- */
 G.insertAdjacentHTML("beforeend",`<div class="c-over" id="gColor" role="dialog" aria-modal="true" aria-label="${esc(t("color.title"))}">
   <section class="c-view c-pick" id="cPick">
@@ -52,7 +63,10 @@ G.insertAdjacentHTML("beforeend",`<div class="c-over" id="gColor" role="dialog" 
     <div class="c-stage-wrap"><div class="c-stage" id="cStage"><canvas id="cCanvas" role="img"></canvas><img class="c-peek" id="cPeek" alt=""><div class="c-stickers" id="cStickers"></div>
       <div class="c-bin" id="cBin"><svg class="ico c-trash" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path class="c-lid" d="M4 7h16M9 7V4.5h6V7"/><path d="M6.5 7l1 13h9l1-13M10 11v5M14 11v5"/></svg><span>${esc(t("color.bin"))}</span></div><p class="c-hint" id="cHint"></p></div></div>
     <div class="c-colors" id="cColors" role="radiogroup" aria-label="${esc(tt("color.colors","Colors"))}"></div>
+    <div class="c-opts" id="cOpts"></div>
+    <div class="c-kit" id="cKit" role="radiogroup" aria-label="${esc(tt("tool.tools","Tools"))}">${TOOLS.map(([k,i,en])=>`<button class="c-kt${k==="fill"?" on":""}" data-tool="${k}" role="radio" aria-checked="${k==="fill"}">${ico(i)}<span>${esc(tt("tool."+k,en))}</span></button>`).join("")}</div>
     <div class="c-tools"><button class="c-tool" id="cUndo">${ico("i-undo")}<span>${esc(t("color.undo"))}</span></button>
+      <button class="c-tool" id="cRedo">${ico("i-redo")}<span>${esc(tt("color.redo","Redo"))}</span></button>
       <button class="c-tool" id="cPeekBtn">${ico("i-eye")}<span>${esc(t("color.peek"))}</span></button>
       ${feature("stickers")?`<button class="c-tool" id="cStickBtn" aria-expanded="false">${ico("i-plus")}<span>${esc(t("color.stickers"))}</span></button>`:""}</div>
     <div class="c-tray" id="cTray" hidden></div>
@@ -123,18 +137,77 @@ async function pageData(id){
 const hexRgb=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
 function colorOf(s,v){return v===0?"#FFFFFF":v<=12?s.pd.meta.colors[v-1]:s.custom[v-13]||"#FFFFFF"}
 const UNDO_KEEP=40;
-function makeState(pd,saved){const k=pd.meta.regions;bboxAll(pd);const s={pd,fills:new Uint8Array(k+1),custom:[],stickers:[],undo:[]};
+// Sprint 3 (docs/color-tools.md): a shape can also hold a gradient or a pattern (fx[r]; fills[r] keeps a plain color for older readers),
+// and brush and eraser strokes live on their own ink layer (ink: a list of ops), always under Ekky's lines.
+const FX_KINDS=["lin","rad","cray","glit","dots"],isHex=c=>typeof c==="string"&&/^#[0-9A-Fa-f]{6}$/.test(c);
+const okFx=f=>f&&FX_KINDS.includes(f.k)&&isHex(f.a)&&(f.k.length>3||isHex(f.b)&&Array.isArray(f.p)&&f.p.every(Number.isFinite));
+const okOp=(o,k)=>o&&(Number.isInteger(o.x)?o.x>0&&o.x<=k:isHex(o.c)&&o.w>0&&o.w<200&&Number.isInteger(o.r)&&o.r>=0&&o.r<=k&&Array.isArray(o.p)&&o.p.length>=2&&!(o.p.length%2)&&o.p.every(Number.isFinite));
+const okUndo=(u,k)=>Array.isArray(u)&&(u[0]==="st"?Array.isArray(u[1]):u[0]==="ink"?u[1]==="pop":u[0]==="m"?Array.isArray(u[1])&&u[1].every(v=>okUndo(v,k)):u[0]>0&&u[0]<=k&&(u[2]==null||!u[2]||okFx(u[2])));
+const INK_MAX=60000;   // coordinates kept per page (about 250 KB of JSON at most), so a long doodle never fills the device's storage
+function makeState(pd,saved){const k=pd.meta.regions;bboxAll(pd);const s={pd,fills:new Uint8Array(k+1),custom:[],stickers:[],undo:[],redo:[],fx:{},ink:[]};
   // fills saved for a different region map (the page was rebuilt) are dropped rather than painted onto the wrong shapes
-  if(saved){if((saved.fills||[]).length===k+1)saved.fills.forEach((v,r)=>{s.fills[r]=v});s.custom=(saved.custom||[]).slice(0,MAX_CUSTOM);s.stickers=(saved.stickers||[]).filter(x=>stickers().some(t=>t.n===x.n)).slice(0,MAX_STICKERS);
-    if((saved.fills||[]).length===k+1&&Array.isArray(saved.undo))s.undo=saved.undo.filter(u=>Array.isArray(u)&&(u[0]==="st"?Array.isArray(u[1]):u[0]>0&&u[0]<=k)).slice(-UNDO_KEEP)}
+  if(saved){const same=(saved.fills||[]).length===k+1;if(same)saved.fills.forEach((v,r)=>{s.fills[r]=v});s.custom=(saved.custom||[]).slice(0,MAX_CUSTOM);s.stickers=(saved.stickers||[]).filter(x=>stickers().some(t=>t.n===x.n)).slice(0,MAX_STICKERS);
+    if(same){if(saved.fx)Object.entries(saved.fx).forEach(([r,f])=>{r=+r;if(r>0&&r<=k&&okFx(f))s.fx[r]=f});
+      if(Array.isArray(saved.ink))s.ink=saved.ink.filter(o=>okOp(o,k));
+      if(Array.isArray(saved.undo))s.undo=saved.undo.filter(u=>okUndo(u,k)).slice(-UNDO_KEEP)}}
   if(pd.id==="scratch"&&!saved)s.fills[1]=1;
   return s}
-// Paint the fill layer of a state onto a canvas at the page's own size.
-function paint(s,cv){const {meta,start,idx,line}=s.pd;cv.width=meta.w;cv.height=meta.h;const x=cv.getContext("2d");
+const mk=(w,h)=>{const c=document.createElement("canvas");c.width=w;c.height=h;return c};
+// A shape's mask: opaque where the shape is, the size of its bounding box. Built from the region index on first use; the last few are kept.
+function mask(pd,r){const M=pd.masks||(pd.masks=new Map());let m=M.get(r);if(m){M.delete(r);M.set(r,m);return m}
+  const [x0,y0,x1,y1]=bboxOf(pd,r);if(x1<x0)return null;const w=x1-x0+1,h=y1-y0+1,c=mk(w,h),x=c.getContext("2d"),img=x.createImageData(w,h),d=new Uint32Array(img.data.buffer),W=pd.meta.w,{start,idx}=pd;
+  for(let j=start[r];j<start[r+1];j++){const i=idx[j],yy=(i/W|0)-y0;d[yy*w+i-(i/W|0)*W-x0]=0xffffffff}
+  x.putImageData(img,0,0);m={c,x0,y0,w,h};M.set(r,m);if(M.size>16)M.delete(M.keys().next().value);return m}
+// Patterns are drawn here, never loaded: a seeded 96 px tile per kind and color, so a page looks the same every time it opens.
+const tiles={};
+function tile(k,c){const key=k+c;if(tiles[key])return tiles[key];const T=96,t=mk(T,T),x=t.getContext("2d");let sd=7;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;
+  const [R,G2,B]=hexRgb(c),lum=(R*299+G2*587+B*114)/1000,mix=(a,v)=>`rgba(${v},${v},${v},${a})`;
+  x.fillStyle=c;x.fillRect(0,0,T,T);
+  if(k==="cray"){x.lineCap="round";for(let i=0;i<70;i++){const y=rnd()*T,a=rnd()*T;x.strokeStyle=rnd()<.6?mix(.18,255):mix(.12,0);x.lineWidth=.8+rnd()*1.6;
+      for(const o of [-T,0,T]){x.beginPath();x.moveTo(a+o-6,y+3);x.lineTo(a+o+10+rnd()*8,y-4);x.stroke()}}
+    for(let i=0;i<160;i++){x.fillStyle=mix(.55,255);x.fillRect(rnd()*T,rnd()*T,1.4,1.4)}}
+  else if(k==="glit"){for(let i=0;i<90;i++){const v=rnd();x.fillStyle=v<.5?mix(.85,255):v<.75?"rgba(255,226,122,.9)":lum>140?mix(.25,0):mix(.35,255);const z=.8+rnd()*1.8;x.beginPath();x.arc(rnd()*T,rnd()*T,z,0,7);x.fill()}
+    x.strokeStyle="#fff";x.lineWidth=1.4;x.lineCap="round";for(let i=0;i<7;i++){const a=rnd()*T,b=rnd()*T,z=3+rnd()*3;x.beginPath();x.moveTo(a-z,b);x.lineTo(a+z,b);x.moveTo(a,b-z);x.lineTo(a,b+z);x.stroke()}}
+  else{x.fillStyle=lum>180?"rgba(43,19,66,.22)":"rgba(255,255,255,.6)";for(const [a,b] of [[24,24],[72,72],[72,24],[24,72]].slice(0,4)){x.beginPath();x.arc(a,b,b===a?9:5,0,7);x.fill()}}
+  return tiles[key]=t}
+// The paint of a gradient or pattern, in page coordinates.
+function fxStyle(x,f){if(f.k==="lin"||f.k==="rad"){const p=f.p,g=f.k==="lin"?x.createLinearGradient(p[0],p[1],p[2],p[3]):x.createRadialGradient(p[0],p[1],0,p[0],p[1],Math.max(1,p[2]));
+  g.addColorStop(0,f.a);g.addColorStop(1,f.b);return g}return x.createPattern(tile(f.k,f.a),"repeat")}
+// Draw shape r's gradient or pattern onto a page-sized context.
+function fxOnto(pd,x,r,f){const m=mask(pd,r);if(!m)return;const t=mk(m.w,m.h),tx=t.getContext("2d");tx.drawImage(m.c,0,0);tx.globalCompositeOperation="source-in";
+  tx.translate(-m.x0,-m.y0);tx.fillStyle=fxStyle(tx,f);tx.fillRect(m.x0,m.y0,m.w,m.h);x.drawImage(t,m.x0,m.y0);t.width=t.height=0}
+// One ink op onto an ink layer: a stroke (points from index `from` on), clipped to its shape unless it was drawn Free, or a shape cleared back to paper.
+// Returns the page box it touched, so only that box is composed again.
+const scr=mk(1,1),scx=scr.getContext("2d");
+function inkOp(pd,x,o,from=0){const W=pd.meta.w,H=pd.meta.h;
+  if(o.x){const m=mask(pd,o.x);if(!m)return null;x.globalCompositeOperation="destination-out";x.drawImage(m.c,m.x0,m.y0);x.globalCompositeOperation="source-over";return [m.x0,m.y0,m.w,m.h]}
+  const p=o.p,n=p.length/2,s=Math.max(0,Math.min(from,n-1)),h=o.w/2+2;let bx0=1e9,by0=1e9,bx1=-1e9,by1=-1e9;
+  for(let i=s;i<n;i++){const a=p[2*i],b=p[2*i+1];if(a<bx0)bx0=a;if(a>bx1)bx1=a;if(b<by0)by0=b;if(b>by1)by1=b}
+  bx0=Math.max(0,Math.floor(bx0-h));by0=Math.max(0,Math.floor(by0-h));bx1=Math.min(W,Math.ceil(bx1+h));by1=Math.min(H,Math.ceil(by1+h));
+  const m=o.r?mask(pd,o.r):null;if(m){bx0=Math.max(bx0,m.x0);by0=Math.max(by0,m.y0);bx1=Math.min(bx1,m.x0+m.w);by1=Math.min(by1,m.y0+m.h)}
+  const w=bx1-bx0,hh=by1-by0;if(w<=0||hh<=0)return null;
+  if(scr.width<w||scr.height<hh){scr.width=Math.max(scr.width,w);scr.height=Math.max(scr.height,hh)}
+  scx.setTransform(1,0,0,1,0,0);scx.globalCompositeOperation="source-over";scx.clearRect(0,0,w,hh);scx.translate(-bx0,-by0);
+  scx.lineCap=scx.lineJoin="round";scx.lineWidth=o.w;scx.strokeStyle=o.c;scx.beginPath();scx.moveTo(p[2*s],p[2*s+1]);
+  if(n-s<2)scx.lineTo(p[2*s]+.01,p[2*s+1]);else for(let i=s+1;i<n;i++)scx.lineTo(p[2*i],p[2*i+1]);scx.stroke();
+  if(m){scx.globalCompositeOperation="destination-in";scx.drawImage(m.c,m.x0,m.y0)}   // the box lies inside the mask's box, so the mask covers all of it
+  x.globalCompositeOperation=o.e?"destination-out":"source-over";x.drawImage(scr,0,0,w,hh,bx0,by0,w,hh);x.globalCompositeOperation="source-over";return [bx0,by0,w,hh]}
+function inkAll(s,x,n=s.ink.length){for(let i=0;i<n&&i<s.ink.length;i++)inkOp(s.pd,x,s.ink[i])}
+// The shapes' colors, gradients and patterns (no ink, no lines) at the page's own size.
+function paintBase(s,cv){const {meta,start,idx}=s.pd;cv.width=meta.w;cv.height=meta.h;const x=cv.getContext("2d");
   const img=x.createImageData(meta.w,meta.h),d=img.data;d.fill(255);
   for(let r=1;r<=meta.regions;r++){const v=s.fills[r];if(!v)continue;const [R,G2,B]=hexRgb(colorOf(s,v));
     for(let j=start[r];j<start[r+1];j++){const o=idx[j]*4;d[o]=R;d[o+1]=G2;d[o+2]=B}}
-  x.putImageData(img,0,0);if(line)x.drawImage(line,0,0)}
+  x.putImageData(img,0,0);for(const r in s.fx)if(s.fills[r])fxOnto(s.pd,x,+r,s.fx[r])}
+// Paint the whole picture of a state (shapes, then the first nInk ink ops, then Ekky's lines) onto a canvas at the page's own size.
+function paint(s,cv,nInk){paintBase(s,cv);const x=cv.getContext("2d"),{meta,line}=s.pd;
+  if(s.ink.length&&nInk!==0){const k=mk(meta.w,meta.h);inkAll(s,k.getContext("2d"),nInk);x.drawImage(k,0,0);k.width=k.height=0}
+  if(line)x.drawImage(line,0,0)}
+// The live editor keeps the shapes (base) and the ink as their own canvases; a change composes only its box onto the screen canvas.
+function refresh(b){if(!cur||!b)return;const [x0,y0,w,h]=b.map(Math.round),x=cv.getContext("2d"),{line}=cur.pd;if(w<=0||h<=0)return;
+  x.drawImage(cur.base,x0,y0,w,h,x0,y0,w,h);x.drawImage(cur.inkC,x0,y0,w,h,x0,y0,w,h);if(line)x.drawImage(line,x0,y0,w,h,x0,y0,w,h)}
+function liveAll(){const {w,h}=cur.pd.meta;paintBase(cur,cur.base);cur.inkC.width=w;cur.inkC.height=h;inkAll(cur,cur.inkC.getContext("2d"));cv.width=w;cv.height=h;refresh([0,0,w,h])}
+function redrawInk(){const {w,h}=cur.pd.meta,x=cur.inkC.getContext("2d");x.clearRect(0,0,w,h);inkAll(cur,x);refresh([0,0,w,h])}
 // Repaint only the bounding box of region r: paper, then each pixel's region color, then Ekky's lines on top.
 // Smooth fills (owner: "some animation is very clunky"): the bounding box of each region is found once when the page opens, pixels are
 // written as 32-bit words, and a big region is built in slices of at most 10 ms so a 4x slower phone never stalls a frame.
@@ -148,12 +221,15 @@ function boxes(pd){const {meta,ids}=pd,W=meta.w,H=meta.h,k=meta.regions,n=k+1,x0
   const rank=pd.rank=new Int32Array(n);cy.sort((a,b)=>a[1]-b[1]).forEach(([r],i)=>rank[r]=i)}
 const bboxAll=pd=>pd.bb||(boxes(pd),pd.bb)
 function bboxOf(pd,r){const b=bboxAll(pd),o=r*4;return [b[o],b[o+1],b[o+2],b[o+3]]}
-function paintRegion(s,cv,r){const {meta,line,ids}=s.pd,W=meta.w,x=cv.getContext("2d"),[x0,y0,x1,y1]=bboxOf(s.pd,r);
-  if(x1<x0)return;const w=x1-x0+1,h=y1-y0+1,box=document.createElement("canvas");box.width=w;box.height=h;
-  const bx=box.getContext("2d"),img=bx.createImageData(w,h),d32=new Uint32Array(img.data.buffer),col=new Uint32Array(16),fills=s.fills;
-  for(let v=0;v<16;v++){const c=hexRgb(colorOf(s,v));col[v]=(255<<24|c[2]<<16|c[1]<<8|c[0])>>>0}
-  let yy=0;const rows=until=>{for(;yy<h&&performance.now()<until;yy++){const base=(y0+yy)*W+x0,o=yy*w;for(let xx=0;xx<w;xx++)d32[o+xx]=col[fills[ids[base+xx]]]}};
-  const done=()=>{bx.putImageData(img,0,0);if(line)bx.drawImage(line,x0,y0,w,h,0,0,w,h);x.drawImage(box,x0,y0);box.width=box.height=0};
+// Sprint 3: only shape r's own pixels are written (the rest of the box stays clear), so a neighbour's gradient or pattern is kept;
+// the shape goes onto the base layer and the box is composed again with the ink and Ekky's lines.
+function paintRegion(s,r){const {meta,ids}=s.pd,W=meta.w,[x0,y0,x1,y1]=bboxOf(s.pd,r);
+  if(x1<x0)return;const w=x1-x0+1,h=y1-y0+1,box=mk(w,h);
+  const bx=box.getContext("2d"),img=bx.createImageData(w,h),d32=new Uint32Array(img.data.buffer),c=hexRgb(colorOf(s,s.fills[r])),col=(255<<24|c[2]<<16|c[1]<<8|c[0])>>>0,f=s.fills[r]&&s.fx[r];
+  if(f&&s.base){const bx2=s.base.getContext("2d");box.width=box.height=0;fxOnto(s.pd,bx2,r,f);if(s===cur)refresh([x0,y0,w,h]);return}   // a gradient or pattern: the shape's cached mask, one draw
+  let yy=0;const rows=until=>{for(;yy<h&&performance.now()<until;yy++){const base=(y0+yy)*W+x0,o=yy*w;for(let xx=0;xx<w;xx++)if(ids[base+xx]===r)d32[o+xx]=col}};
+  const done=()=>{bx.putImageData(img,0,0);if(f){bx.globalCompositeOperation="source-atop";bx.translate(-x0,-y0);bx.fillStyle=fxStyle(bx,f);bx.fillRect(x0,y0,w,h)}
+    if(s.base){s.base.getContext("2d").drawImage(box,x0,y0);if(s===cur)refresh([x0,y0,w,h])}box.width=box.height=0};
   rows(performance.now()+10);if(yy>=h)return done();
   const tick=()=>{rows(performance.now()+10);yy>=h?done():requestAnimationFrame(tick)};requestAnimationFrame(tick)}
 // Draw the whole picture (fills, lines, stickers) into a box on any canvas: thumbnails, reveal, share card, arrival.
@@ -161,7 +237,7 @@ function paintRegion(s,cv,r){const {meta,line,ids}=s.pd,W=meta.w,x=cv.getContext
 function compose(s,ctx,X,Y,W,t=1,src){const {meta,rank}=s.pd,H=W*meta.h/meta.w,c=document.createElement("canvas");
   const fillT=Math.min(1,t/.8),stT=Math.max(0,Math.min(1,(t-.8)/.2)),pop=t>=1?1:1-Math.pow(1-stT,3);
   if(src&&t>=1)ctx.drawImage(src,X,Y,W,H);   // the live picture is already painted: a thumbnail is one scaled draw, not a repaint
-  else{paint(t>=1?s:{...s,fills:s.fills.map((v,r)=>rank[r]<fillT*meta.regions?v:0)},c);ctx.drawImage(c,X,Y,W,H)}
+  else{paint(t>=1?s:{...s,fills:s.fills.map((v,r)=>rank[r]<fillT*meta.regions?v:0)},c,t>=1?undefined:Math.ceil(fillT*s.ink.length));ctx.drawImage(c,X,Y,W,H);c.width=c.height=0}   // brush strokes play in with the fills
   if(!pop)return H;
   s.stickers.forEach(st=>{const im=imgOf(st.n);if(!im||!im.complete||!im.naturalWidth)return;const w=st.s*W*pop,h=w*im.naturalHeight/im.naturalWidth;
     ctx.save();ctx.translate(X+st.x*W,Y+st.y*H);ctx.rotate(st.r);ctx.drawImage(im,-w/2,-h/2,w,h);ctx.restore()});return H}
@@ -177,7 +253,7 @@ async function open(id,opts={}){
   const pr=bySlug(pd.meta.slug),title=id==="scratch"?t("color.scratch"):pr?ptitle(pr):pd.meta.title;cur.title=title;
   $("cTitle").textContent=title;$("cCanvas").setAttribute("aria-label",title+". "+t("color.hint"));stage.style.aspectRatio=`${pd.meta.w}/${pd.meta.h}`;
   $("cPeek").src=id==="scratch"?"":pd.meta.original||(bySlug(pd.meta.slug)||{}).full||"";$("cPeekBtn").hidden=id==="scratch";
-  paint(cur,cv);renderColors();renderStickers();$("cTray").hidden=true;
+  cur.base=mk(1,1);cur.inkC=mk(1,1);liveAll();renderColors();renderStickers();renderKit();$("cTray").hidden=true;
   view("cEdit");sizeStage();updUndo();
   // shared-element feel: the page grows from the card that was tapped (transform and opacity only, one shot)
   if(opts.from&&stage.animate&&!matchMedia("(prefers-reduced-motion:reduce)").matches){const r=stage.getBoundingClientRect(),k=opts.from.w/r.width;
@@ -197,10 +273,10 @@ $("cColors").addEventListener("click",e=>{const b=e.target.closest(".c-sw");if(!
   pickColor(+b.dataset.v)});
 // Choosing a swatch only moves the "on" ring; the buttons are not rebuilt, so a tap costs no layout.
 function pickColor(v){if(v===color)return;const sw=$("cColors");color=v;
-  sw.querySelectorAll(".c-sw[data-v]").forEach(b=>{const on=+b.dataset.v===v;b.classList.toggle("on",on);b.setAttribute("aria-checked",on)})}
+  sw.querySelectorAll(".c-sw[data-v]").forEach(b=>{const on=+b.dataset.v===v;b.classList.toggle("on",on);b.setAttribute("aria-checked",on)});if(tool==="fade"||tool==="pattern")renderOpts()}
 function addCustom(c){let i=cur.custom.indexOf(c);
-  if(i<0){if(cur.custom.length<MAX_CUSTOM){cur.custom.push(c);i=cur.custom.length-1}else{i=MAX_CUSTOM-1;cur.custom[i]=c;paint(cur,cv)}}
-  color=13+i;renderColors();save()}
+  if(i<0){if(cur.custom.length<MAX_CUSTOM){cur.custom.push(c);i=cur.custom.length-1}else{i=MAX_CUSTOM-1;cur.custom[i]=c;paintBase(cur,cur.base);refresh([0,0,cur.pd.meta.w,cur.pd.meta.h])}}
+  color=13+i;renderColors();renderOpts();save()}
 /* ---- our own color sheet: hue, strength and light strips drawn on canvases (a hidden <input type=color> cannot be opened by script on iOS Safari or in-app browsers) ---- */
 const hsl={h:0,s:100,l:50},wheel=$("cWheel");
 function hex2hsl(x){const n=parseInt(x.slice(1),16),r=(n>>16&255)/255,g=(n>>8&255)/255,b=(n&255)/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn,l=(mx+mn)/2;
@@ -230,15 +306,68 @@ wheel.addEventListener("keydown",e=>{if(e.key==="Escape"){e.stopPropagation();cl
 function fillPop(e){const r=stage.getBoundingClientRect(),d=document.createElement("i");d.className="c-ripple";d.style.cssText=`left:${e.clientX-r.left}px;top:${e.clientY-r.top}px;--c:${colorOf(cur,color)}`;
   stage.appendChild(d);setTimeout(()=>d.remove(),400);
   const sw=$("cColors").querySelector(".c-sw.on");if(sw&&sw.animate&&!reduce.matches)sw.animate([{transform:"scale(.8)"},{transform:"none"}],{duration:300,easing:"cubic-bezier(.34,1.56,.64,1)"})}
-function pagePoint(e){const r=cv.getBoundingClientRect();return [Math.floor((e.clientX-r.left)/r.width*cur.pd.meta.w),Math.floor((e.clientY-r.top)/r.height*cur.pd.meta.h)]}
+function pagePoint(e){const r=cv.getBoundingClientRect();return [(e.clientX-r.left)/r.width*cur.pd.meta.w,(e.clientY-r.top)/r.height*cur.pd.meta.h]}
+// The shape under a point; a touch that lands on one of Ekky's lines takes the nearest shape within a few pixels.
+function regionAt(x,y){const {w,h}=cur.pd.meta,ids=cur.pd.ids;x=Math.floor(x);y=Math.floor(y);
+  for(let d=0;d<=8;d+=2)for(let dy=-d;dy<=d;dy+=2)for(let dx=-d;dx<=d;dx+=2){const a=x+dx,b=y+dy;if(a>=0&&b>=0&&a<w&&b<h&&ids[b*w+a])return ids[b*w+a]}return 0}
+/* ---- tools: Fill, Brush, Fade (gradient), Pattern, Eraser; one on at a time, at most one strip of options ---- */
+const SIZES=[8,20,44],FADES=[["@","#FFFFFF"],["@","#FFE08A"],["@","#2B1342"],["#FFE08A","#FF6B6B"],["#B8D5FF","#C9A7FF"],["#7ED9B0","#3E7C6A"]],PATS=[["cray","Crayon"],["glit","Glitter"],["dots","Dots"]];
+let tool="fill",size=1,free=false,fade=0,pat="cray",draw=null;
+function renderKit(){$("cKit").querySelectorAll("[data-tool]").forEach(b=>{const on=b.dataset.tool===tool;b.classList.toggle("on",on);b.setAttribute("aria-checked",on)});renderOpts()}
+function renderOpts(){const o=$("cOpts"),c=cur?colorOf(cur,color):"#FFB400",chip=(on,attrs,lbl,inner="")=>`<button class="c-op${on?" on":""}" ${attrs} aria-label="${esc(lbl)}">${inner}</button>`;
+  o.dataset.tool=tool;
+  if(tool==="brush"||tool==="eraser")o.innerHTML=`<div role="radiogroup" aria-label="${esc(tt("tool.size","Size"))}">`+SIZES.map((z,i)=>chip(i===size,`data-size="${i}" role="radio" aria-checked="${i===size}"`,tt(["size.s","size.m","size.l"][i],["Small","Medium","Big"][i]),`<i class="c-dot" style="--z:${[8,16,26][i]}px"></i>`)).join("")+`</div>`+
+    `<button class="c-op c-free${free?" on":""}" id="cFree" aria-pressed="${free}">${esc(tt("tool.free","Free"))}</button>`;
+  else if(tool==="fade")o.innerHTML=`<div role="radiogroup" aria-label="${esc(tt("tool.fade","Fade"))}">`+FADES.map(([a,b],i)=>chip(i===fade,`data-fade="${i}" role="radio" aria-checked="${i===fade}" style="--g:linear-gradient(135deg,${a==="@"?c:a},${b})"`,nm("fade.n","Fade {n}",i+1),"<i></i>")).join("")+`</div>`;
+  else if(tool==="pattern")o.innerHTML=`<div role="radiogroup" aria-label="${esc(tt("tool.pattern","Pattern"))}">`+PATS.map(([k,en])=>chip(k===pat,`data-pat="${k}" role="radio" aria-checked="${k===pat}"`,tt("pat."+k,en),`<i style="background-image:url(${tile(k,c).toDataURL()})"></i><span>${esc(tt("pat."+k,en))}</span>`)).join("")+`</div>`;
+  else o.innerHTML=`<p class="c-tip">${esc(t("color.hint"))}</p>`}
+$("cKit").addEventListener("click",e=>{const b=e.target.closest("[data-tool]");if(!b||b.dataset.tool===tool)return;tool=b.dataset.tool;Game.buzz(6);Game.sfx("tap");renderKit();
+  if(b.animate&&!reduce.matches)b.animate([{transform:"scale(.85)"},{transform:"none"}],{duration:280,easing:"cubic-bezier(.34,1.56,.64,1)"})});
+$("cOpts").addEventListener("click",e=>{const b=e.target.closest(".c-op");if(!b)return;Game.buzz(6);
+  if(b.id==="cFree")free=!free;else if(b.dataset.size)size=+b.dataset.size;else if(b.dataset.fade)fade=+b.dataset.fade;else if(b.dataset.pat)pat=b.dataset.pat;renderOpts()});
+// Every change is one Undo step; a new change clears Redo.
+function push(u){cur.undo.push(u);cur.redo.length=0}
 stage.addEventListener("pointerdown",e=>{if(!cur)return;if(gest){joinGesture(e);return}if(e.target.closest(".c-st"))return;
-  const [x,y]=pagePoint(e);if(x<0||y<0||x>=cur.pd.meta.w||y>=cur.pd.meta.h)return;const r=cur.pd.ids[y*cur.pd.meta.w+x];if(!r||cur.fills[r]===color)return;
-  cur.undo.push([r,cur.fills[r]]);cur.fills[r]=color;paintRegion(cur,cv,r);Game.sfx("fill");Game.buzz(8);save();if(e.pointerType!=="mouse")fillPop(e)});
+  if(draw)return;   // one finger draws; a second finger on the page is ignored
+  const [x,y]=pagePoint(e),{w,h}=cur.pd.meta;if(x<0||y<0||x>=w||y>=h)return;const r=regionAt(x,y),c=colorOf(cur,color);
+  if(tool==="fill"||tool==="pattern"){if(!r)return;const f=tool==="pattern"?{k:pat,a:c}:null,old=cur.fx[r]||0;
+    if(cur.fills[r]===color&&JSON.stringify(old||null)===JSON.stringify(f))return;
+    push([r,cur.fills[r],old]);cur.fills[r]=color;if(f)cur.fx[r]=f;else delete cur.fx[r];paintRegion(cur,r);Game.sfx("fill");Game.buzz(8);save();if(e.pointerType!=="mouse")fillPop(e);return}
+  if(tool==="fade"){if(!r)return;mask(cur.pd,r)}
+  draw={id:e.pointerId,r,cx:e.clientX,cy:e.clientY,x,y,moved:false,done:0,k:cv.width/cv.getBoundingClientRect().width};
+  if(tool==="brush"||tool==="eraser"){const op={c:tool==="eraser"?"#000000":c,w:SIZES[size]*(tool==="eraser"?1.4:1),r:free?0:r,p:[Math.round(x),Math.round(y)]};if(tool==="eraser")op.e=1;draw.op=op;inkSoon()}
+  try{stage.setPointerCapture(e.pointerId)}catch{}e.preventDefault()});
+let inkRaf=0;const inkSoon=()=>{if(!inkRaf)inkRaf=requestAnimationFrame(inkFrame)};
+// Strokes draw once per frame, only the new points, and only their box is composed again (no full repaint per move).
+function inkFrame(){inkRaf=0;if(!draw||!draw.op||!cur)return;const n=draw.op.p.length/2;if(draw.done>=n)return;
+  refresh(inkOp(cur.pd,cur.inkC.getContext("2d"),draw.op,Math.max(0,draw.done-1)));draw.done=n}
+stage.addEventListener("pointermove",e=>{if(!draw||e.pointerId!==draw.id)return;if(Math.hypot(e.clientX-draw.cx,e.clientY-draw.cy)>8)draw.moved=true;
+  if(!draw.op)return;const p=draw.op.p,evs=e.getCoalescedEvents?e.getCoalescedEvents():[e];
+  for(const ev of (evs.length?evs:[e])){const [x,y]=pagePoint(ev),a=Math.round(x),b=Math.round(y);if(Math.hypot(a-p[p.length-2],b-p[p.length-1])>=2.5)p.push(a,b)}inkSoon()});
+function endDraw(e){if(!draw||e.pointerId!==draw.id)return;const d=draw;draw=null;if(inkRaf){cancelAnimationFrame(inkRaf);inkRaf=0}
+  if(d.op){const n=d.op.p.length/2;if(d.done<n)refresh(inkOp(cur.pd,cur.inkC.getContext("2d"),d.op,Math.max(0,d.done-1)));
+    if(d.op.e&&!d.moved&&d.r){   // a tap with the eraser clears the shape back to paper: its color, gradient or pattern and the ink inside it
+      const r=d.r;push(["m",[[r,cur.fills[r],cur.fx[r]||0],["ink","pop"]]]);cur.ink.push({x:r});cur.fills[r]=0;delete cur.fx[r];
+      redrawInk();paintRegion(cur,r);Game.sfx("tap");Game.buzz(10);save();return}
+    if(inkCount()+d.op.p.length>INK_MAX){redrawInk();say(tt("color.inkFull","This page is full of brush. Try Fill or Fade."));return}
+    cur.ink.push(d.op);push(["ink","pop"]);Game.buzz(6);save();return}
+  if(tool==="fade"&&d.r){const [x,y]=e.type==="pointercancel"?[d.x,d.y]:pagePoint(e),r=d.r,[a,b]=FADES[fade],A=a==="@"?colorOf(cur,color):a,[x0,y0,x1,y1]=bboxOf(cur.pd,r);
+    const f=d.moved?{k:"lin",a:A,b,p:[d.x,d.y,x,y].map(Math.round)}:{k:"rad",a:A,b,p:[Math.round(d.x),Math.round(d.y),Math.round(Math.max(...[[x0,y0],[x1,y0],[x0,y1],[x1,y1]].map(([u,v])=>Math.hypot(u-d.x,v-d.y))))]};
+    push([r,cur.fills[r],cur.fx[r]||0]);cur.fills[r]=color;cur.fx[r]=f;paintRegion(cur,r);Game.sfx("fill");Game.buzz(8);save();if(e.pointerType!=="mouse")fillPop(e)}}
+const inkCount=()=>cur.ink.reduce((n,o)=>n+(o.p?o.p.length:1),0);
+stage.addEventListener("pointerup",endDraw);stage.addEventListener("pointercancel",endDraw);
 // Undo history survives leaving and reopening a page (the owner: "undo button is not working in mewarnai": the colors came
 // back but the history did not, so Undo looked active and did nothing). The button is disabled when there is nothing to undo.
-function updUndo(){const b=$("cUndo");if(b)b.disabled=!(cur&&cur.undo.length)}
-$("cUndo").onclick=()=>{const u=cur&&cur.undo.pop();if(!u){updUndo();return}Game.buzz(6);
-  if(u[0]==="st"){cur.stickers=u[1];renderStickers()}else{cur.fills[u[0]]=u[1];paintRegion(cur,cv,u[0])}save()};
+function updUndo(){const b=$("cUndo"),rd=$("cRedo");if(b)b.disabled=!(cur&&cur.undo.length);if(rd)rd.disabled=!(cur&&cur.redo.length)}
+// Apply one history entry and return the entry that reverses it (Undo feeds Redo and back).
+function apply(u){
+  if(u[0]==="st"){const inv=["st",cur.stickers.map(x=>({...x}))];cur.stickers=u[1];renderStickers();return inv}
+  if(u[0]==="ink"){if(u[1]==="push"){cur.ink.push(u[2]);refresh(inkOp(cur.pd,cur.inkC.getContext("2d"),u[2]));return ["ink","pop"]}
+    const op=cur.ink.pop();redrawInk();return op?["ink","push",op]:null}
+  if(u[0]==="m"){const inv=[];for(let i=u[1].length-1;i>=0;i--){const v=apply(u[1][i]);if(v)inv.push(v)}return ["m",inv]}
+  const r=u[0],inv=[r,cur.fills[r],cur.fx[r]||0];cur.fills[r]=u[1];if(u[2])cur.fx[r]=u[2];else delete cur.fx[r];paintRegion(cur,r);return inv}
+function step(from,to){const u=cur&&cur[from].pop();if(!u){updUndo();return}Game.buzz(6);const inv=apply(u);if(inv)cur[to].push(inv);save()}
+$("cUndo").onclick=()=>step("undo","redo");$("cRedo").onclick=()=>step("redo","undo");
 // Peek: hold to see Ekky's own colors
 const peek=on=>{$("cPeek").classList.toggle("show",on&&!!$("cPeek").getAttribute("src"))};
 $("cPeekBtn").addEventListener("pointerdown",e=>{e.preventDefault();peek(true)});["pointerup","pointerleave","pointercancel"].forEach(ev=>$("cPeekBtn").addEventListener(ev,()=>peek(false)));
@@ -252,7 +381,7 @@ if($("cStickBtn")){
     if(open)tr.innerHTML=stickers().map(s=>`<button class="c-tray-st" data-n="${s.n}" aria-label="${esc(nm("color.sticker","Sticker {n}",s.n))}"><img src="${s.src}" alt=""></button>`).join("")};
   $("cTray").addEventListener("click",e=>{const b=e.target.closest("[data-n]");if(!b||!cur)return;
     if(cur.stickers.length>=MAX_STICKERS)return say(t("color.full"));
-    cur.undo.push(["st",cur.stickers.map(x=>({...x}))]);
+    push(["st",cur.stickers.map(x=>({...x}))]);
     cur.stickers.push({n:+b.dataset.n,x:.5+(Math.random()-.5)*.2,y:.45+(Math.random()-.5)*.2,s:.24,r:0});renderStickers();popSticker(cur.stickers.length-1);Game.sfx("tap");Game.buzz(8);save()});
 }
 function renderStickers(){$("cStickers").innerHTML=cur.stickers.map((s,k)=>{const im=STICKERS.find(x=>x.n===s.n);imgOf(s.n);
@@ -283,7 +412,7 @@ function endGesture(e){if(!gest||!pts.has(e.pointerId))return;if(dragRaf){cancel
   if(pts.size){rebase();return}
   const hot=$("cBin").classList.contains("hot");$("cBin").classList.remove("show","hot");
   const k=gest.k,moved=JSON.stringify(gest.before[k])!==JSON.stringify(cur.stickers[k]);   // a plain tap on a sticker is not an edit: no Undo step
-  if(moved||hot)cur.undo.push(["st",gest.before]);if(hot){cur.stickers.splice(k,1);Game.buzz(15)}gest=null;renderStickers();if(!hot&&moved)popSticker(k);save()}
+  if(moved||hot)push(["st",gest.before]);if(hot){cur.stickers.splice(k,1);Game.buzz(15)}gest=null;renderStickers();if(!hot&&moved)popSticker(k);save()}
 function popSticker(k){const el=$("cStickers").children[k];if(el){el.classList.add("pop");setTimeout(()=>el.classList.remove("pop"),300)}}
 ["pointerup","pointercancel"].forEach(ev=>stage.addEventListener(ev,endGesture));
 
@@ -291,7 +420,8 @@ function popSticker(k){const el=$("cStickers").children[k];if(el){el.classList.a
 let saveT=0;
 function save(now){updUndo();if(!cur)return;clearTimeout(saveT);const run=()=>{if(!cur)return;const st=Game.st;st.colorings=st.colorings||{};
   let thumb="";try{const c=document.createElement("canvas");c.width=240;c.height=Math.round(240*cur.pd.meta.h/cur.pd.meta.w);compose(cur,c.getContext("2d"),0,0,240,1,cv);thumb=c.toDataURL("image/jpeg",.7);c.width=c.height=0}catch{}
-  st.colorings[cur.pd.id]={title:cur.title,fills:[...cur.fills],custom:cur.custom,stickers:cur.stickers.map(s=>({n:s.n,x:+s.x.toFixed(4),y:+s.y.toFixed(4),s:+s.s.toFixed(4),r:+s.r.toFixed(4)})),undo:cur.undo.slice(-UNDO_KEEP),at:Date.now(),thumb};Game.save();updUndo()};
+  st.colorings[cur.pd.id]={title:cur.title,fills:[...cur.fills],custom:cur.custom,stickers:cur.stickers.map(s=>({n:s.n,x:+s.x.toFixed(4),y:+s.y.toFixed(4),s:+s.s.toFixed(4),r:+s.r.toFixed(4)})),undo:cur.undo.slice(-UNDO_KEEP),at:Date.now(),thumb};
+  if(Object.keys(cur.fx).length)st.colorings[cur.pd.id].fx=cur.fx;if(cur.ink.length)st.colorings[cur.pd.id].ink=cur.ink;Game.save();updUndo()};
   if(now)run();else saveT=setTimeout(()=>window.requestIdleCallback?requestIdleCallback(run,{timeout:1500}):run(),400)}
 
 /* ---- reveal: yours and Ekky's, then the share preview ---- */
@@ -325,7 +455,7 @@ let arriveRe=null;
 const LBL=[["#cPick .g-title","color.title"],["#cPick .g-sub","color.intro"],["#gColor [data-hire]","hire.chip.aria","aria"],
   ["#cPick .g-hire span","sheet.hire"],["#cEdit .g-hire span","hire.chip"],["#cReveal .g-hire span","hire.chip"],["#cArrive .g-hire span","hire.chip"],
   ["#cPickX","ui.close","aria","Close"],["#cClose","ui.close","aria","Close"],["#cArriveX","ui.close","aria","Close"],["#cBack","ui.back","aria","Back"],
-  ["#cDone","color.done"],["#cBin span","color.bin"],["#cColors","color.colors","aria","Colors"],["#cUndo span","color.undo"],["#cPeekBtn span","color.peek"],["#cStickBtn span","color.stickers"],
+  ["#cDone","color.done"],["#cRedo span","color.redo","text","Redo"],["#cKit","tool.tools","aria","Tools"],["[data-tool=fill] span","tool.fill","text","Fill"],["[data-tool=brush] span","tool.brush","text","Brush"],["[data-tool=fade] span","tool.fade","text","Fade"],["[data-tool=pattern] span","tool.pattern","text","Pattern"],["[data-tool=eraser] span","tool.eraser","text","Eraser"],["#cBin span","color.bin"],["#cColors","color.colors","aria","Colors"],["#cUndo span","color.undo"],["#cPeekBtn span","color.peek"],["#cStickBtn span","color.stickers"],
   ["#cWheel","color.any","aria"],["#cWheel .c-wheel-top b","color.any"],['#cWheel [data-k="h"]',"wheel.hue","aria","Hue"],['#cWheel [data-k="s"]',"wheel.sat","aria","Strength"],
   ['#cWheel [data-k="l"]',"wheel.light","aria","Light"],["#cWNo","wheel.cancel","text","Cancel"],["#cWYes","wheel.add","text","Use this color"],
   ["#cReveal figure:first-child figcaption","reveal.yours"],["#cEkkyFig figcaption","reveal.ekky"],["#cShare","reveal.share"],["#cDl","dl.button"],["#cAgain","reveal.again"],
@@ -340,7 +470,7 @@ function relang(){
   const shown=over.classList.contains("open");
   if(shown&&$("cPick").classList.contains("active"))openPicker();
   if(cur){const pr=bySlug(cur.pd.meta.slug);cur.title=cur.pd.id==="scratch"?t("color.scratch"):pr?ptitle(pr):cur.pd.meta.title;$("cTitle").textContent=cur.title;
-    $("cRevTitle").textContent=cur.pd.id==="scratch"?t("color.scratch"):t("reveal.title");renderColors();
+    $("cRevTitle").textContent=cur.pd.id==="scratch"?t("color.scratch"):t("reveal.title");renderColors();renderOpts();
     if(!$("cTray").hidden)$("cTray").innerHTML=stickers().map(s=>`<button class="c-tray-st" data-n="${s.n}" aria-label="${esc(nm("color.sticker","Sticker {n}",s.n))}"><img src="${s.src}" alt=""></button>`).join("")}
   if(shown&&arriveRe&&$("cArrive").classList.contains("active"))arriveRe()}
 addEventListener("ekky:lang",relang);
