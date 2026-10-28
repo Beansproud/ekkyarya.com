@@ -453,9 +453,10 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 .v-cloud::before{left:18%;width:34%;aspect-ratio:1}
 .v-cloud::after{left:44%;width:44%;aspect-ratio:1}
 .v-cloud.small{width:14%;opacity:.18}
-@keyframes vCloud{from{transform:translateX(-110%)}to{transform:translateX(560%)}}
+/* clouds fade in and out while they cross the frame edge, so no box ever cuts one flat */
+@keyframes vCloud{0%{transform:translateX(-110%);opacity:0}3%{opacity:0}16%{opacity:.22}76%{opacity:.22}91%{opacity:0}100%{transform:translateX(560%);opacity:0}}
 .v-cloud.small{animation-name:vCloudS}
-@keyframes vCloudS{from{transform:translateX(-110%)}to{transform:translateX(720%)}}
+@keyframes vCloudS{0%{transform:translateX(-110%);opacity:0}2%{opacity:0}14%{opacity:.18}86%{opacity:.18}99%{opacity:0}100%{transform:translateX(720%);opacity:0}}
 .v-lantern{position:absolute;width:9%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
   background:radial-gradient(circle,rgba(255,226,140,.85),rgba(255,200,80,0) 68%);opacity:.35;animation:vLantern 6s ease-in-out infinite}
 @keyframes vLantern{50%{opacity:.8}}
@@ -873,7 +874,7 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 
 /* Map squad: a living village (owner 10-28). Transform and opacity only; JS (Life in js/game.js) pauses all of it when the
    map is off screen or the tab is hidden, and starts none of it under reduced motion. */
-.v-fx{position:absolute;inset:0;pointer-events:none;z-index:2}
+.v-fx{position:absolute;inset:0;pointer-events:none;z-index:2;contain:layout paint style}   /* moments come and go in here without restyling the rest of the map */
 .v-fx i,.v-fx img{position:absolute;display:block;translate:-50% -50%;pointer-events:none}
 .v-fx img{width:auto}
 .v-fx img.foot{translate:-50% -100%}
@@ -964,6 +965,39 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 .aa-chk{display:flex;align-items:center;gap:10px;min-height:44px;font-size:15px}
 .aa-chk input{width:24px;height:24px;flex:none;accent-color:#2B1342}
 .aa-dim{opacity:.55}
+
+/* Play squad: Mewarnai, Doodle Scene, Done reveal, share. Light paper like the start page (owner: the game is on light paper), ink text. */
+.c-over,.c-over.s-over{background:var(--paper,#FBF8F1) var(--grain);color:#2B1342}
+.c-over .g-title{color:#2B1342;text-shadow:none}
+.c-over .g-sub,.c-over .g-link,.s-sign,.c-page small{color:#645F70}
+.s-secondary .g-link,.s-video{color:#2B1342}
+.c-top b,.c-pair figcaption,.c-page:not(.c-scratch) b{color:#2B1342}
+.c-view>.g-x,.c-icon,.c-tool,.c-tray-st{background:#FFFDF8;color:#2B1342;box-shadow:var(--paper-shadow,0 2px 6px rgba(0,0,0,.12))}
+.c-tool{border:2px solid var(--paper-line,#E4DCCB)}
+.c-tool[aria-expanded="true"]{background:#FFB400;border-color:#FFB400}
+.c-tray{background:#FFFDF8;border:2px solid var(--paper-line,#E4DCCB);box-shadow:0 -6px 18px rgba(43,19,66,.15)}
+.c-tray-st{box-shadow:none;background:var(--paper-2,#F6F1E6)}
+.s-sign input{background:#fff;border-color:var(--paper-line,#E4DCCB);color:#2B1342}
+.c-page{background:#FFFDF8;border:0;border-radius:10px;box-shadow:var(--paper-shadow,0 2px 6px rgba(0,0,0,.12))}
+.c-stage,.c-arrive-art canvas{box-shadow:0 0 0 4px #FFB400,0 6px 16px rgba(43,19,66,.18)}
+.s-preview canvas{box-shadow:0 6px 18px rgba(43,19,66,.25)}
+.c-sw.on::before{box-shadow:0 0 0 3px var(--paper,#FBF8F1),0 0 0 6px #FFB400}
+.c-wheel{background:#FFFDF8;color:#2B1342;box-shadow:0 -6px 24px rgba(43,19,66,.2)}
+.c-wheel-pre{box-shadow:inset 0 0 0 2px rgba(43,19,66,.25)}
+.c-strip canvas{box-shadow:inset 0 0 0 2px rgba(43,19,66,.25)}
+/* the picker header is one 44 px line: the title is centred on the close button, one line in both languages */
+.c-view>.g-x{top:calc(env(safe-area-inset-top) + 14px)}
+.c-pick .g-title,.c-reveal .g-title,.c-arrive .g-title{margin:0 52px;min-height:44px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;white-space:nowrap;overflow:hidden}
+.c-pick .g-sub{margin-top:6px}
+/* Doodle Scene card: a blank square and a title, the same size as a drawing card */
+.c-scratch{border:2px dashed #2B1342;padding:0;justify-content:flex-start;align-items:stretch;background:#FFFDF8}
+.c-scratch .ico{display:block;box-sizing:border-box;width:100%;height:auto;aspect-ratio:1;margin:0;padding:26%;color:#2B1342}
+.c-scratch b{padding:8px 10px 2px}
+.c-scratch small{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+/* the editor's top bar is one row: back, title, Done (Hire stays on the picker and the reveal) */
+#cEdit .g-hire,#game:has(#cEdit.active) .g-home{display:none}
+#game:has(.c-over.open) #cEdit .c-top{padding-left:0}
+
 #g-map .v-map{align-self:center;margin:auto 0;max-width:460px;border-radius:0}   /* centred in the band under the title, edge to edge on a phone */
 .v-map .v-label{font-size:clamp(12px,2.35cqw,13.5px);padding:2px 8px;border-radius:6px;background:#FFF3DC;border:2px solid #2B1342;color:#2B1342;box-shadow:0 2px 0 rgba(43,19,66,.55);rotate:-1.6deg}
 .v-map span.v-label:nth-of-type(even){rotate:1.4deg}   /* paper tags, each at its own fixed tilt */
@@ -982,9 +1016,31 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 .g-sent .g-fallback{margin-top:12px}
 .g-addr{display:flex;flex-direction:column;align-items:center;gap:6px;word-break:break-all}
 .g-addr b{color:#2B1342;font-size:.95rem}
+/* the picker shows each page as blank line art on white: that is what you will color */
+.c-page img{background:#fff;object-fit:contain}
+/* the title in the editor uses the full row between Back and Done: two lines allowed, never cut */
+.c-top b{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.15;overflow-wrap:anywhere}
+
+/* labels are hand-weight lettering straight on the picture: white with a thin dark ink outline, "Work with Ekky" gold */
+.v-map .v-label{font-size:clamp(12px,2.7cqw,14px);padding:0;border:0;border-radius:0;background:none;box-shadow:none;color:#fff;letter-spacing:.01em;
+  -webkit-text-stroke:2.6px #2B1342;paint-order:stroke fill;text-shadow:0 1px 3px rgba(43,19,66,.55);font-weight:800;rotate:-1.2deg}
+.v-map span.v-label:nth-of-type(even){rotate:1deg}
+.v-map .v-label.hire{color:#FFD23F;border:0;background:none;-webkit-text-stroke:3.4px #2B1342;text-shadow:0 0 6px rgba(43,19,66,.9)}
+.v-label{transition:transform var(--dur-fast) var(--ease-move),opacity .2s}
+.v-label.edge{opacity:0;pointer-events:none}
+@media (hover:none) and (pointer:coarse){.v-zoomctl{display:none}}   /* a touch screen pinches or double-taps; the +/- buttons are for a mouse */
+.v-burst{position:absolute;width:0;height:0;pointer-events:none;z-index:3}
+.v-burst i{position:absolute;left:0;top:0;width:2.2cqw;height:2.2cqw;margin:-1.1cqw 0 0 -1.1cqw;background:#FFD678;
+  clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%)}
+.v-map .v-label.go{translate:0 -4px;box-shadow:none}
 
 /* ===== Map fit (art critic a1): the village spans the screen width, through the 16 px side gutters ===== */
 #g-map .v-map{max-width:none;margin:auto 0;align-self:center;flex-shrink:0}
+/* the World idle fact bubble keeps off the gate and the island: above the tab bar, or under the title on a short phone */
+body:has(#g-map.active) .idle-buddy{bottom:calc(env(safe-area-inset-bottom) + 96px)}
+@media (max-height:700px){body:has(#g-map.active) .idle-buddy{bottom:auto;top:calc(env(safe-area-inset-top) + 112px)}}
+.v-isleg{position:absolute;inset:0;pointer-events:none;will-change:transform}
+
 
 /* Landscape: phones turned sideways (iPhone 13 is 844x390). The bottom tab bar becomes a slim rail on the left,
    the six polaroids sit in one row, the lightbox puts the art beside its controls, and sheets clear the rail.
