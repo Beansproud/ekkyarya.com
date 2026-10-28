@@ -28,8 +28,6 @@ const FEATURE_TEXT = {
   pageLittlePlanet: ["Coloring page: Little Planet", "Halaman mewarnai: Little Planet", "Show this page in the coloring list.", "Tampilkan halaman ini di daftar mewarnai."],
   pageHands: ["Coloring page: Tangled Hands", "Halaman mewarnai: Tangled Hands", "Show this page in the coloring list.", "Tampilkan halaman ini di daftar mewarnai."],
   pageNoodles: ["Coloring page: Noodle Bath", "Halaman mewarnai: Noodle Bath", "Show this page in the coloring list.", "Tampilkan halaman ini di daftar mewarnai."],
-  pageSummertime: ["Coloring page: Buried at the Beach", "Halaman mewarnai: Terkubur di Pantai", "Show this page in the coloring list.", "Tampilkan halaman ini di daftar mewarnai."],
-  pageVirusAndWar: ["Coloring page: Virus and War", "Halaman mewarnai: Virus dan Perang", "Show this page in the coloring list.", "Tampilkan halaman ini di daftar mewarnai."],
   pageShark: ["Coloring page: Big Catch", "Halaman mewarnai: Big Catch", "Show this page in the coloring list.", "Tampilkan halaman ini di daftar mewarnai."],
   apkDownload: ["Android app button", "Tombol aplikasi Android", "The APK chip on the start page, Android only.", "Chip APK di halaman awal, khusus Android."],
   artDownload: ["Download button on art", "Tombol unduh di karya", "Lets visitors save a small copy of a piece.", "Pengunjung bisa menyimpan salinan kecil karya."],
@@ -174,12 +172,10 @@ function messagesTab(el, ctx) {
     h("p", { class: "as-note" }, pick(ctx, "A real inbox inside admin needs a backend, which comes later.", "Kotak masuk sungguhan di admin butuh backend, nanti.")));
 }
 
-function register(Admin) {
-  Admin.registerTab("links", { title: "Links", render: linksTab });
-  Admin.registerTab("settings", { title: "Settings", render: settingsTab });
-  Admin.registerTab("text", { title: "Text", render: textTab });
-  Admin.registerTab("messages", { title: "Messages", render: messagesTab });
-}
+const TABS = [["links", "Links", linksTab], ["settings", "Settings", settingsTab], ["text", "Text", textTab], ["messages", "Messages", messagesTab]];
+function register(Admin) { TABS.forEach(([id, title, render]) => Admin.registerTab(id, { title, render })); }
+// Admin not loaded yet: queue the tabs on window.AdminTabs ({id, title, render}) for the shell to pick up
 if (typeof Admin !== "undefined" && Admin.registerTab) register(Admin);
+else (window.AdminTabs = window.AdminTabs || []).push(...TABS.map(([id, title, render]) => ({ id, title, render })));
 return { register, linksTab, settingsTab, textTab, messagesTab, HTTPS };
 })();
