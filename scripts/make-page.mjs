@@ -47,16 +47,21 @@ const PAGES = {
   const n = String(k + 1).padStart(2, "0");
   const dark = [1, 6, 10, 12].includes(k + 1);   // night and shadow backgrounds sit close to the ink: a tighter threshold keeps them colorable
   PAGES["mm-" + n] = { slug: "morumelons", src: `assets/projects/morumelons/morumelons-${n}.webp`, title: nm + " Melon",
-    lineMax: dark ? 44 : 66, inkSoft: dark ? 52 : 84 };
+    lineMax: dark ? 44 : 66, inkSoft: dark ? 52 : 84, inkLikeFill: [6, 10].includes(k + 1),   // the mummy's alley and the wizard's night are almost ink: any wide dark area is paint
+    // owner: "make it very very detail" (the samurai's scar and the dino's fire were lost): colored outlines are lines too
+    // (stroke: a pixel this much darker than its 7 px neighborhood), small painted shapes get their own region
+    // (area, speck), and every edge between two regions without one of Ekky's lines gets a fine ink edge (edge alpha)
+    detail: { area: 900, k: 6, merge: 30, speck: 60, stroke: 22, strokeFull: 55, edge: .9 } };
 });
 const MIN_AREA = 40, COLORS = 12;
 // Color split: areas above SPLIT_AREA px are divided by up to SPLIT_K of their own colors; patches under SPECK px fold
 // into the neighbor they touch, and colors closer than SPLIT_MERGE (RGB distance) count as one.
-const SPLIT_AREA = 12000, SPLIT_K = 5, SPLIT_MERGE = 34, SPECK = 600;
+let SPLIT_AREA = 12000, SPLIT_K = 5, SPLIT_MERGE = 34, SPECK = 600;
 
 const [, , name, flag] = process.argv;
 const page = PAGES[name];
 if (!page) { console.error(`Unknown page "${name}". Pages: ${Object.keys(PAGES).join(", ")}`); process.exit(1); }
+if (page.detail) ({ area: SPLIT_AREA, k: SPLIT_K, merge: SPLIT_MERGE, speck: SPECK } = page.detail);
 const data = vm.runInNewContext(readFileSync(join(ROOT, "js", "data.js"), "utf8") + ";({PROJECTS, shareable})", {});
 const piece = data.PROJECTS.find(p => p.slug === page.slug);
 if (!piece || !data.shareable(piece)) { console.error(`"${page.slug}" is not shareable (CONFIG.reuse / reuseBlock), so it can't be a coloring page.`); process.exit(1); }
@@ -109,26 +114,48 @@ function pngLines(w, h, rgba) {
 }
 
 // Sets lum to 255 on dark blue areas thicker than 2 * R px: an opening (erode R, dilate R) of the mask by chessboard distance.
-function thickToFill(lum, px, w, h, max, R) {
+function thickToFill(lum, px, w, h, max, R, dark = i => px[i * 4 + 2] - px[i * 4] > 8) {
   const n = w * h, INF = 1e9;
   const pass = (d) => { for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const i = y * w + x; if (!d[i]) continue;
       d[i] = Math.min(d[i], x ? d[i - 1] + 1 : 1, y ? d[i - w] + 1 : 1, x && y ? d[i - w - 1] + 1 : 1, x < w - 1 && y ? d[i - w + 1] + 1 : INF) }
     for (let y = h - 1; y >= 0; y--) for (let x = w - 1; x >= 0; x--) { const i = y * w + x; if (!d[i]) continue;
       d[i] = Math.min(d[i], x < w - 1 ? d[i + 1] + 1 : 1, y < h - 1 ? d[i + w] + 1 : 1, x < w - 1 && y < h - 1 ? d[i + w + 1] + 1 : INF, x && y < h - 1 ? d[i + w - 1] + 1 : INF) } };
-  const d = new Float32Array(n); for (let i = 0; i < n; i++) d[i] = lum[i] <= max && px[i * 4 + 2] - px[i * 4] > 8 ? INF : 0;
+  const d = new Float32Array(n); for (let i = 0; i < n; i++) d[i] = lum[i] <= max && dark(i) ? INF : 0;
   pass(d);                                   // distance to the nearest non-dark pixel
   const e = new Float32Array(n); for (let i = 0; i < n; i++) e[i] = d[i] >= R ? 0 : INF;   // core of thick areas
   pass(e);                                   // distance to the core
   for (let i = 0; i < n; i++) if (e[i] <= R && d[i] > 2) lum[i] = 255;
 }
 
+// Colored outlines (the fire's red edge, the scales' grey marks): a black top-hat, the 11 x 11 closing of the luminance
+// minus the luminance, is high on thin dark strokes of any color and low on flat areas. Returns 0..1 per pixel.
+function strokes(lum, w, h, { stroke: t0, strokeFull: t1 }) {
+  const n = w * h, R = 5, mx = new Float32Array(n), cl = new Float32Array(n), tmp = new Float32Array(n);
+  const run = (src, dst, op) => {   // separable 7 x 7 max or min
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { let v = src[y * w + x]; for (let d = -R; d <= R; d++) { const xx = x + d; if (xx >= 0 && xx < w) v = op(v, src[y * w + xx]) } tmp[y * w + x] = v }
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { let v = tmp[y * w + x]; for (let d = -R; d <= R; d++) { const yy = y + d; if (yy >= 0 && yy < h) v = op(v, tmp[yy * w + x]) } dst[y * w + x] = v } };
+  run(lum, mx, Math.max); run(mx, cl, Math.min);
+  const s = new Float32Array(n); for (let i = 0; i < n; i++) s[i] = Math.max(0, Math.min(1, (cl[i] - lum[i] - t0) / (t1 - t0)));
+  return s;
+}
+// A fine ink edge wherever two regions meet without one of Ekky's lines between them (shapes he painted without an
+// outline: a scar, a shadow, the city behind), so every shape a child can fill is drawn.
+function edges(line, own, onLine, w, h, a) {
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const i = y * w + x; if (onLine[i] || line[i * 4 + 3]) continue;
+    const r = x + 1 < w && !onLine[i + 1] && own[i + 1] !== own[i], d = y + 1 < h && !onLine[i + w] && own[i + w] !== own[i];
+    if (r || d) for (const j of [i, r ? i + 1 : d ? i + w : i]) if (!onLine[j] && line[j * 4 + 3] < a * 255) { line[j * 4] = 43; line[j * 4 + 1] = 19; line[j * 4 + 2] = 66; line[j * 4 + 3] = Math.round(a * 255) } }
+}
+
 function build({ w, h, px }) {
   const n = w * h, lum = new Float32Array(n);
   for (let i = 0; i < n; i++) lum[i] = px[i * 4] * .299 + px[i * 4 + 1] * .587 + px[i * 4 + 2] * .114;
   if (page.blueFillR) thickToFill(lum, px, w, h, page.lineMax, page.blueFillR);
+  // detail pages: dark paint that is not Ekky's ink (navy cloth, a night sky) and wider than a line is a shape to fill
+  if (page.detail) thickToFill(lum, px, w, h, page.inkSoft, 5, i => page.inkLikeFill || Math.hypot(px[i * 4] - 43, px[i * 4 + 1] - 19, px[i * 4 + 2] - 66) > 42);
+  const stroke = page.detail ? strokes(lum, w, h, page.detail) : null;   // 0..1 per pixel: a colored outline
   // regions: 4-connected areas of non-line pixels
   const id = new Int32Array(n).fill(-1), sizes = [0];
-  for (let i = 0; i < n; i++) if (lum[i] <= page.lineMax) id[i] = 0;
+  for (let i = 0; i < n; i++) if (lum[i] <= page.lineMax || stroke && stroke[i] >= .5) id[i] = 0;
   const stack = new Int32Array(n);
   for (let s = 0; s < n; s++) {
     if (id[s] !== -1) continue;
@@ -153,8 +180,9 @@ function build({ w, h, px }) {
   for (let i = 0; i < n; i++) { regions[i * 4] = own[i] & 255; regions[i * 4 + 1] = own[i] >> 8; regions[i * 4 + 2] = onLine[i]; regions[i * 4 + 3] = 255 }
   // Ekky's lines, in his own ink: alpha ramps from fully dark to inkSoft so edges stay smooth
   const line = Buffer.alloc(n * 4);
-  for (let i = 0; i < n; i++) { const a = Math.max(0, Math.min(1, (page.inkSoft - lum[i]) / (page.inkSoft - page.lineMax * .55)));
+  for (let i = 0; i < n; i++) { const a = Math.max(0, Math.min(1, (page.inkSoft - lum[i]) / (page.inkSoft - page.lineMax * .55)), stroke ? stroke[i] : 0);
     if (a > 0) { line[i * 4] = px[i * 4]; line[i * 4 + 1] = px[i * 4 + 1]; line[i * 4 + 2] = px[i * 4 + 2]; line[i * 4 + 3] = Math.round(a * 255) } }
+  if (page.detail) edges(line, own, onLine, w, h, page.detail.edge);
   // Ekky's colors: the mean color inside each region, weighted by area, clustered into 12 (k-means with a fixed start)
   const sum = Array.from({ length: k + 1 }, () => [0, 0, 0, 0]);
   for (let i = 0; i < n; i++) if (id[i]) { const s = sum[id[i]]; s[0] += px[i * 4]; s[1] += px[i * 4 + 1]; s[2] += px[i * 4 + 2]; s[3]++ }
