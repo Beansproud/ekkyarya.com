@@ -14,6 +14,11 @@ function check(data){
 async function fonts(){try{await Promise.all([document.fonts.load("700 56px Fredoka"),document.fonts.load("600 40px Fredoka"),document.fonts.load("400 36px Poppins")])}catch{}}
 // shrink the current font until the text fits the width
 function fit(x,str,max){let m=x.font.match(/(\d+)px/),size=m?+m[1]:40;while(size>24&&x.measureText(str).width>max){size-=2;x.font=x.font.replace(/\d+px/,size+"px")}}
+// a headline that would shrink below 52 px breaks into two balanced lines instead (long Indonesian titles)
+function wrap(x,str,max){if(x.measureText(str).width<=max)return [str];const w=str.split(" ");let best=null;
+  for(let i=1;i<w.length;i++){const a=w.slice(0,i).join(" "),b=w.slice(i).join(" "),m=Math.max(x.measureText(a).width,x.measureText(b).width);if(!best||m<best.m)best={m,l:[a,b]}}
+  const f=x.font;fit(x,str,max);const one=+x.font.match(/(\d+)px/)[1];x.font=f;
+  if(!best||one>=52){fit(x,str,max);return [str]}fit(x,best.l[0].length>best.l[1].length?best.l[0]:best.l[1],max);return best.l}
 function round(x,X,Y,w,h,r){x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+w,Y,X+w,Y+h,r);x.arcTo(X+w,Y+h,X,Y+h,r);x.arcTo(X,Y+h,X,Y,r);x.arcTo(X,Y,X+w,Y,r);x.closePath()}
 // Timeline in seconds (time = Infinity draws the finished card):
 //   0 to 0.4   the frame fades in with Ekky's lines on paper
@@ -30,12 +35,12 @@ function paintCard(x,data,time=Infinity){const done=time===Infinity;
   x.globalAlpha=done?1:ease((time-3.6)/.7);x.textAlign="center";x.textBaseline="alphabetic";let y=FREE_TOP+30+fh+110;
   // headline: "Colored by Rina" with the piece's name under it; with no name, one line that names the piece (UX review)
   const scene=data.page==="scratch",head=data.name?t("card.colored",{name:data.name}):scene?t("card.headline.scene"):t("card.headline",{title:data.title});
-  x.fillStyle="#FFB400";x.font="700 64px Fredoka, sans-serif";fit(x,head,W-120);x.fillText(head,W/2,y);y+=66;
+  x.fillStyle="#FFB400";x.font="700 64px Fredoka, sans-serif";wrap(x,head,W-120).forEach((l,i)=>{if(i)y+=72;x.fillText(l,W/2,y)});y+=66;
   if(data.name){x.fillStyle="#e6defa";x.font="400 38px Poppins, sans-serif";x.fillText(scene?t("card.scene"):t("card.title",{title:data.title}),W/2,y)}
   // the call to action names the host the link really points at (siteHost() in js/data.js), never a hard-coded domain
   const cy=Math.min(y+120,H-FREE_BOTTOM-120);x.font="700 44px Fredoka, sans-serif";const label=t("card.cta",{host:siteHost()}),lw=x.measureText(label).width+90;
   x.fillStyle="#FFB400";round(x,(W-lw)/2,cy-62,lw,88,44);x.fill();x.fillStyle="#2B1342";x.fillText(label,W/2,cy-4);
-  x.fillStyle="#fff";x.font="600 40px Fredoka, sans-serif";x.fillText(t("credit.full"),W/2,H-FREE_BOTTOM-36);x.globalAlpha=1}
+  x.fillStyle="#cbbfe3";x.font="500 32px Fredoka, sans-serif";x.fillText(t("credit.full"),W/2,H-FREE_BOTTOM-36);x.globalAlpha=1}
 // Star Catcher result card (B40): Ekky on his little planet (from Little Planet, an original), the score, the credit.
 const loadImg=src=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=src});
 async function paintStars(x,data){
@@ -48,7 +53,7 @@ async function paintStars(x,data){
   x.fillStyle="#e6defa";x.font="400 40px Poppins, sans-serif";x.fillText(t("stars.title"),W/2,y+64);
   const cy=H-FREE_BOTTOM-120;x.font="700 44px Fredoka, sans-serif";const label=t("card.cta",{host:siteHost()}),lw=x.measureText(label).width+90;
   x.fillStyle="#FFB400";round(x,(W-lw)/2,cy-62,lw,88,44);x.fill();x.fillStyle="#2B1342";x.fillText(label,W/2,cy-4);
-  x.fillStyle="#fff";x.font="600 40px Fredoka, sans-serif";x.fillText(t("credit.full"),W/2,H-FREE_BOTTOM-36)}
+  x.fillStyle="#cbbfe3";x.font="500 32px Fredoka, sans-serif";x.fillText(t("credit.full"),W/2,H-FREE_BOTTOM-36)}
 async function renderCard(kind,data){
   if(kind!=="coloring"&&kind!=="stars")throw new Error(`unknown card "${kind}"`);
   await fonts();const c=document.createElement("canvas");c.width=W;c.height=H;
