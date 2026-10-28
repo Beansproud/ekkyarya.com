@@ -226,6 +226,7 @@ function bboxOf(pd,r){const b=bboxAll(pd),o=r*4;return [b[o],b[o+1],b[o+2],b[o+3
 function paintRegion(s,r){const {meta,ids}=s.pd,W=meta.w,[x0,y0,x1,y1]=bboxOf(s.pd,r);
   if(x1<x0)return;const w=x1-x0+1,h=y1-y0+1,box=mk(w,h);
   const bx=box.getContext("2d"),img=bx.createImageData(w,h),d32=new Uint32Array(img.data.buffer),c=hexRgb(colorOf(s,s.fills[r])),col=(255<<24|c[2]<<16|c[1]<<8|c[0])>>>0,f=s.fills[r]&&s.fx[r];
+  if(f&&s.base){const bx2=s.base.getContext("2d");box.width=box.height=0;fxOnto(s.pd,bx2,r,f);if(s===cur)refresh([x0,y0,w,h]);return}   // a gradient or pattern: the shape's cached mask, one draw
   let yy=0;const rows=until=>{for(;yy<h&&performance.now()<until;yy++){const base=(y0+yy)*W+x0,o=yy*w;for(let xx=0;xx<w;xx++)if(ids[base+xx]===r)d32[o+xx]=col}};
   const done=()=>{bx.putImageData(img,0,0);if(f){bx.globalCompositeOperation="source-atop";bx.translate(-x0,-y0);bx.fillStyle=fxStyle(bx,f);bx.fillRect(x0,y0,w,h)}
     if(s.base){s.base.getContext("2d").drawImage(box,x0,y0);if(s===cur)refresh([x0,y0,w,h])}box.width=box.height=0};
@@ -332,7 +333,7 @@ stage.addEventListener("pointerdown",e=>{if(!cur)return;if(gest){joinGesture(e);
   if(tool==="fill"||tool==="pattern"){if(!r)return;const f=tool==="pattern"?{k:pat,a:c}:null,old=cur.fx[r]||0;
     if(cur.fills[r]===color&&JSON.stringify(old||null)===JSON.stringify(f))return;
     push([r,cur.fills[r],old]);cur.fills[r]=color;if(f)cur.fx[r]=f;else delete cur.fx[r];paintRegion(cur,r);Game.sfx("fill");Game.buzz(8);save();if(e.pointerType!=="mouse")fillPop(e);return}
-  if(tool==="fade"&&!r)return;
+  if(tool==="fade"){if(!r)return;mask(cur.pd,r)}
   draw={id:e.pointerId,r,cx:e.clientX,cy:e.clientY,x,y,moved:false,done:0,k:cv.width/cv.getBoundingClientRect().width};
   if(tool==="brush"||tool==="eraser"){const op={c:tool==="eraser"?"#000000":c,w:SIZES[size]*(tool==="eraser"?1.4:1),r:free?0:r,p:[Math.round(x),Math.round(y)]};if(tool==="eraser")op.e=1;draw.op=op;inkSoon()}
   try{stage.setPointerCapture(e.pointerId)}catch{}e.preventDefault()});
