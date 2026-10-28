@@ -31,27 +31,27 @@ function go(el,frames,dur,delay,opts){const a=el.animate(frames,{duration:dur,de
 function stopFx(){const r=running;running=[];r.forEach(a=>{try{a.cancel()}catch(e){}});document.querySelectorAll("#gFeatured .g-feat-cell").forEach(c=>c.style.willChange="")}
 function startCells(){if(!document.body.classList.contains("game-mode"))return null;const st=document.getElementById("g-start");
   if(!st||!st.classList.contains("active"))return null;const cells=[...document.querySelectorAll("#gFeatured .g-feat-cell")];return cells.length?cells:null}
-const EFFECTS=[
+const EFFECTS=[   // soft and in place (owner, 10-28): each picture stays in its own slot, at most 12 px of travel and 6 degrees, no flips
   ["wind",(c,R)=>c.forEach((el,i)=>{const d=(i%3)*110+(i/3|0)*70;
-    go(el,[{transform:T(),offset:0,easing:E_OUT},{transform:T(38,-4,6),offset:.3,easing:E_IO},{transform:T(-12,2,-4),offset:.58,easing:E_IO},{transform:T(7,0,2),offset:.8,easing:E_OUT},{transform:T()}],1500,d);
-    try{go(el,[{transform:"rotate(0deg)"},{transform:"rotate(16deg)",offset:.15},{transform:"rotate(-13deg)",offset:.3},{transform:"rotate(10deg)",offset:.45},{transform:"rotate(-7deg)",offset:.62},{transform:"rotate(3deg)",offset:.8},{transform:"rotate(0deg)"}],1500,d,{pseudoElement:"::before",easing:"ease-in-out"})}catch(e){}})],   // the tape flutters
-  ["gravity",(c,R)=>c.forEach((el,i)=>{const d=Math.min(R[i].cy+R[i].h/2,640),k=(i/3|0)*150+(i%3)*60;
-    go(el,[{transform:T(0,-d,(i%3-1)*5),offset:0,easing:E_IN},{transform:T(),offset:.4,easing:E_LAND},{transform:T(0,-26),offset:.58,easing:E_IN},{transform:T(),offset:.72,easing:E_LAND},{transform:T(0,-8),offset:.84,easing:E_IN},{transform:T()}],1500,k);
-    running.push(el.animate([{opacity:0},{opacity:1,offset:.1},{opacity:1}],{duration:1500,delay:k,fill:"backwards"}));})],
-  ["quake",(c)=>c.forEach(el=>{const f=[{transform:T(),offset:0,easing:E_IO}];for(let k=1;k<=15;k++){const a=Math.pow(1-k/16,1.3)*11;f.push({transform:T(sign()*a*rnd(.5,1),sign()*a*.5*rnd(.3,1),sign()*a*.35*rnd(.4,1)),offset:k/16,easing:E_IO})}f.push({transform:T()});go(el,f,1400,rnd(0,70))})],
+    go(el,[{transform:T(),offset:0,easing:E_OUT},{transform:T(10,-1,2),offset:.3,easing:E_IO},{transform:T(-4,1,-1.5),offset:.58,easing:E_IO},{transform:T(2,0,.6),offset:.8,easing:E_OUT},{transform:T()}],1500,d);
+    try{go(el,[{transform:"rotate(0deg)"},{transform:"rotate(10deg)",offset:.15},{transform:"rotate(-8deg)",offset:.3},{transform:"rotate(6deg)",offset:.45},{transform:"rotate(-4deg)",offset:.62},{transform:"rotate(2deg)",offset:.8},{transform:"rotate(0deg)"}],1500,d,{pseudoElement:"::before",easing:"ease-in-out"})}catch(e){}})],   // the tape flutters
+  ["gravity",(c,R)=>c.forEach((el,i)=>{const k=(i/3|0)*150+(i%3)*60;
+    go(el,[{transform:T(0,-12,(i%3-1)*2),offset:0,easing:E_IN},{transform:T(),offset:.4,easing:E_LAND},{transform:T(0,-5),offset:.58,easing:E_IN},{transform:T(),offset:.72,easing:E_LAND},{transform:T(0,-2),offset:.84,easing:E_IN},{transform:T()}],1500,k);
+    running.push(el.animate([{opacity:.4},{opacity:1,offset:.3},{opacity:1}],{duration:1500,delay:k,fill:"backwards"}));})],
+  ["quake",(c)=>c.forEach(el=>{const f=[{transform:T(),offset:0,easing:E_IO}];for(let k=1;k<=15;k++){const a=Math.pow(1-k/16,1.3)*4;f.push({transform:T(sign()*a*rnd(.5,1),sign()*a*.5*rnd(.3,1),sign()*a*.35*rnd(.4,1)),offset:k/16,easing:E_IO})}f.push({transform:T()});go(el,f,1400,rnd(0,70))})],
   ["ripple",(c,R)=>{const o=R[Math.random()*R.length|0];const dist=R.map(r=>Math.hypot(r.cx-o.cx,r.cy-o.cy)),mx=Math.max(...dist,1);
-    c.forEach((el,i)=>go(el,[{transform:T(),offset:0,easing:E_OUT},{transform:T(0,-16,(i%2?1:-1)*1.5,1.1),offset:.25,easing:E_IO},{transform:T(0,4,0,.97),offset:.55,easing:E_OUT},{transform:T(0,-2,0,1.02),offset:.78,easing:E_OUT},{transform:T()}],1200,dist[i]/mx*480))},],
-  ["jelly",(c,R)=>c.forEach((el,i)=>{const h=R[i].h,P=[[1,1],[1.16,.82],[.9,1.12],[1.07,.94],[.97,1.03],[1.01,.99],[1,1]],O=[0,.18,.38,.58,.76,.9,1];
+    c.forEach((el,i)=>go(el,[{transform:T(),offset:0,easing:E_OUT},{transform:T(0,-8,(i%2?1:-1)*1,1.04),offset:.25,easing:E_IO},{transform:T(0,2,0,.99),offset:.55,easing:E_OUT},{transform:T(0,-1,0,1.01),offset:.78,easing:E_OUT},{transform:T()}],1200,dist[i]/mx*480))},],
+  ["jelly",(c,R)=>c.forEach((el,i)=>{const h=R[i].h,P=[[1,1],[1.05,.94],[.97,1.04],[1.02,.98],[.99,1.01],[1,1],[1,1]],O=[0,.18,.38,.58,.76,.9,1];
     go(el,P.map(([sx,sy],k)=>({transform:T(0,(1-sy)*h/2,0,sx,sy),offset:O[k],easing:E_IO})),1500,i*70)})],   // the bottom edge stays put
   ["balloon",(c)=>c.forEach((el,i)=>{const s=i%2?1:-1;
-    go(el,[{transform:T(),offset:0,easing:E_OUT},{transform:T(s*6,-70,-s*3,1.03),offset:.45,easing:"cubic-bezier(.45,0,.55,1)"},{transform:T(-s*5,-64,s*2,1.03),offset:.62,easing:"cubic-bezier(.34,1.3,.64,1)"},{transform:T()}],1700,i*45)})],
-  ["magnet",(c,R,G)=>c.forEach((el,i)=>{const dx=G.cx-R[i].cx,dy=G.cy-R[i].cy,s=i%2?1:-1;
-    go(el,[{transform:T(),offset:0,easing:"cubic-bezier(.5,0,.75,0)"},{transform:T(dx*.9,dy*.9,s*7,.78),offset:.38},{transform:T(dx*.9,dy*.9,s*7,.78),offset:.5,easing:E_SPRING},{transform:T(-dx*.08,-dy*.08,0,1.02),offset:.78,easing:E_OUT},{transform:T()}],1700,i*25)})],
+    go(el,[{transform:T(),offset:0,easing:E_OUT},{transform:T(s*3,-12,-s*2,1.02),offset:.45,easing:"cubic-bezier(.45,0,.55,1)"},{transform:T(-s*2,-10,s*1.5,1.02),offset:.62,easing:"cubic-bezier(.34,1.3,.64,1)"},{transform:T()}],1700,i*45)})],
+  ["magnet",(c,R,G)=>c.forEach((el,i)=>{const dx=G.cx-R[i].cx,dy=G.cy-R[i].cy,m=Math.hypot(dx,dy)||1,x=dx/m*10,y=dy/m*10,s=i%2?1:-1;
+    go(el,[{transform:T(),offset:0,easing:"cubic-bezier(.5,0,.75,0)"},{transform:T(x,y,s*3,.96),offset:.38},{transform:T(x,y,s*3,.96),offset:.5,easing:E_SPRING},{transform:T(-x*.2,-y*.2,0,1.01),offset:.78,easing:E_OUT},{transform:T()}],1700,i*25)})],
   ["domino",(c,R)=>c.forEach((el,i)=>{const px=-R[i].w/2,py=R[i].h/2,F=r=>({transform:pivot(px,py,r)});
-    go(el,[{...F(0),offset:0,easing:E_OUT},{...F(16),offset:.35,easing:E_IO},{...F(-3),offset:.65,easing:E_OUT},{...F(0)}],1000,i*120)})],
-  ["flip",(c)=>c.forEach((el,i)=>go(el,[{transform:"perspective(700px) rotateY(0deg) scale(1)",offset:0,easing:E_IO},{transform:"perspective(700px) rotateY(180deg) scale(1.08)",offset:.5,easing:E_IO},{transform:"perspective(700px) rotateY(360deg) scale(1)"}],950,i*150))],
-  ["scatter",(c)=>c.forEach((el,i)=>{const dx=sign()*rnd(70,130),dy=sign()*rnd(60,120),r=sign()*rnd(12,30),sc=rnd(.85,1.1);
-    go(el,[{transform:T(),offset:0,easing:"cubic-bezier(.2,.8,.3,1)"},{transform:T(dx,dy,r,sc),offset:.36},{transform:T(dx*.96,dy*.96,r,sc),offset:.5,easing:E_SPRING},{transform:T(-dx*.06,-dy*.06,-r*.1,1.02),offset:.82,easing:E_OUT},{transform:T()}],1700,i*40)})],
+    go(el,[{...F(0),offset:0,easing:E_OUT},{...F(5),offset:.35,easing:E_IO},{...F(-1.5),offset:.65,easing:E_OUT},{...F(0)}],1000,i*120)})],
+  ["nod",(c)=>c.forEach((el,i)=>go(el,[{transform:T(),offset:0,easing:E_IO},{transform:T(0,3,(i%2?1:-1)*4,.98),offset:.3,easing:E_IO},{transform:T(0,-2,(i%2?-1:1)*2,1.01),offset:.62,easing:E_OUT},{transform:T()}],1100,i*150))],
+  ["scatter",(c)=>c.forEach((el,i)=>{const dx=sign()*rnd(6,12),dy=sign()*rnd(6,12),r=sign()*rnd(3,6),sc=rnd(.97,1.03);
+    go(el,[{transform:T(),offset:0,easing:"cubic-bezier(.2,.8,.3,1)"},{transform:T(dx,dy,r,sc),offset:.36},{transform:T(dx*.9,dy*.9,r,sc),offset:.5,easing:E_SPRING},{transform:T(-dx*.1,-dy*.1,-r*.1,1.01),offset:.82,easing:E_OUT},{transform:T()}],1700,i*40)})],
 ];
 let lastFx=-1;
 function playFx(cells,k){stopFx();const n=EFFECTS.length;
@@ -72,10 +72,10 @@ function show(){
   if(cells)playFx(cells);   // the start page: the pictures move, the doodle only appears (measured before it is added)
   const b0=buddy,add=()=>{if(buddy!==b0)return;document.body.appendChild(b0);shownAt=Date.now();
     const img=b0.firstChild,bub=b0.lastChild;
-    bub.animate([{opacity:0},{opacity:1}],{duration:260,delay:reduce.matches?0:700,fill:"backwards"});   // after the move has started
+    bub.animate([{opacity:0},{opacity:1}],{duration:260,delay:0,fill:"backwards"});   // after the move has started
     if(!cells&&!reduce.matches){const [frames,ms]=MOVES[Math.floor(Math.random()*MOVES.length)];img.animate(frames,{duration:ms,easing:"ease-in-out"})}};
-  if(cells){shownAt=Date.now();setTimeout(add,250)}else add();
-  clearTimeout(hideT);hideT=setTimeout(hide,6000);
+  if(cells){shownAt=Date.now();setTimeout(add,2000)}else add();   // the start page: the doodle and its fact come after the pictures have settled
+  clearTimeout(hideT);hideT=setTimeout(hide,cells?8000:6000);
 }
 function hide(){
   if(!buddy)return;const b=buddy;buddy=null;clearTimeout(hideT);
