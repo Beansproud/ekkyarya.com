@@ -127,7 +127,7 @@ dialog.adm-pad[open]{display:flex;animation:none}.adm-pad::backdrop{background:t
   function loadShell() {
     if (api.shell) return api.shell.show();
     const s = document.createElement("script");
-    s.src = "js/admin-shell.js";
+    s.src = "js/admin-shell.js?v=" + Date.now();
     s.onload = () => api.shell && api.shell.show();
     document.head.appendChild(s);
   }
