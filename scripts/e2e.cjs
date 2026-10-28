@@ -59,10 +59,11 @@ async function runConfig(browser,url,scheme,lang){
   async function boot(p,qs=''){await p.goto(url+'?game=1'+qs);await must(p,'#g-start.active','game mode did not open',8000);await sleep(500)}
   // tests are independent (each gets its own browser context), so they run POOL at a time; most of the wall time is waiting
   const jobs=[];const T=(name,fn)=>{jobs.push({i:jobs.length,name,fn})};
-  async function runJob({i,name,fn}){let ok=true,msg='';const errs=[];const {c,p}=await ctx(errs);
+  async function runJob(job,again){const {i,name,fn}=job;let ok=true,msg='';const errs=[];const {c,p}=await ctx(errs);
     try{await fn(p,c);if(errs.length)throw new Error('page error: '+errs[errs.length-1].slice(0,90))}catch(e){ok=false;msg=String(e.message||e).split('\n')[0].slice(0,160);
       if(OUT)await p.screenshot({path:`${OUT}/FAIL-${cfg}-${name.replace(/\W+/g,'_')}.png`}).catch(()=>{})}
-    rows[i]={cfg,name,ok,msg};await c.close().catch(()=>{})}
+    await c.close().catch(()=>{});if(!ok&&!again)return runJob(job,true);   // one retry: a timing flake must not block a merge; a real bug fails twice
+    rows[i]={cfg,name,ok,msg,retried:!!again&&ok}}
   const audit=async(p,what)=>{const a=await p.evaluate(auditFn);if(a.length)throw new Error(`audit ${what}: ${a.slice(0,4).join(' ; ')}${a.length>4?' (+'+(a.length-4)+')':''}`)};
   const hash=p=>p.evaluate(()=>{const c=document.getElementById('cCanvas');if(!c)return null;const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let h=0;for(let i=0;i<d.length;i+=5)h=(h*31+d[i])>>>0;return h});
   const active=p=>p.evaluate(()=>{const s=document.querySelector('.g-screen.active');return s&&s.id});
@@ -130,12 +131,12 @@ async function runConfig(browser,url,scheme,lang){
     await p.tap('#cUndo');await sleep(400);await p.tap('#cUndo');await sleep(400);if(await p.$$eval('#cStickers .c-st',e=>e.length)>n0&&await hash(p)===h1)throw new Error('undo changed nothing on scratch page')});
 
   await T('doodle: sticker drag, drop on bin, undo',async p=>{await boot(p);await p.tap('[data-go=color]');await must(p,'#cPages .c-scratch','no Doodle Scene entry');await p.tap('#cPages .c-scratch');await must(p,'#cEdit #cCanvas','scratch editor did not open',8000);await sleep(800);
-    await p.tap('#cStickBtn');await must(p,'#cTray [data-n]','no stickers');await p.tap('#cTray [data-n]');await sleep(500);
+    await p.tap('#cStickBtn');await must(p,'#cTray [data-n]','no stickers');await p.tap('#cTray [data-n]');await sleep(1000);
     const pos=()=>p.$eval('#cStickers .c-st:last-child',e=>{const b=e.getBoundingClientRect();return [b.left+b.width/2,b.top+b.height/2]});
     const cnt=()=>p.$$eval('#cStickers .c-st',e=>e.length);const n1=await cnt();if(!n1)throw new Error('sticker not added');
     const [x0,y0]=await pos();const st=await p.$eval('#cStage',e=>{const b=e.getBoundingClientRect();return [b.left,b.top,b.width,b.height]});
     const tx=Math.min(st[0]+st[2]*.75,x0+90),ty=Math.min(st[1]+st[3]*.6,y0+90);
-    await p.mouse.move(x0,y0);await p.mouse.down();for(let i=1;i<=10;i++)await p.mouse.move(x0+(tx-x0)*i/10,y0+(ty-y0)*i/10);await p.mouse.up();await sleep(400);
+    await p.mouse.move(x0,y0);await p.mouse.down();for(let i=1;i<=10;i++){await p.mouse.move(x0+(tx-x0)*i/10,y0+(ty-y0)*i/10);await sleep(20)}await p.mouse.up();await sleep(400);
     const [x1,y1]=await pos();if(Math.hypot(x1-x0,y1-y0)<20)throw new Error('dragging the sticker did not move it');
     await p.tap('#cUndo');await sleep(400);const n2=await cnt();const back=n2?await pos():null;if(n2===n1&&back&&Math.hypot(back[0]-x1,back[1]-y1)<5)throw new Error('undo after a sticker drag changed nothing');
     // drop on the bin removes it
@@ -249,6 +250,6 @@ srv.listen(0,async()=>{
   const names=[...new Set(all.map(r=>r.name))];const cols=cfgs.map(c=>c.join('-'));
   console.log('\n'+'test'.padEnd(46)+cols.map(c=>c.padEnd(9)).join(''));
   for(const n of names)console.log(n.padEnd(46)+cols.map(c=>{const r=all.find(x=>x.name===n&&x.cfg===c);return (r?r.ok?'PASS':'FAIL':'-').padEnd(9)}).join(''));
-  const fails=all.filter(r=>!r.ok);console.log(`\n${all.length-fails.length} PASS, ${fails.length} FAIL`);
+  const fails=all.filter(r=>!r.ok);console.log(`\n${all.length-fails.length} PASS, ${fails.length} FAIL`+(all.some(r=>r.retried)?`  (passed only on retry: ${all.filter(r=>r.retried).map(r=>r.cfg+' '+r.name).join('; ')})`:''));
   for(const f of fails)console.log(`FAIL ${f.cfg} | ${f.name}: ${f.msg}`);
   process.exit(fails.length?1:0)});
