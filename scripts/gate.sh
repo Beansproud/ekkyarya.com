@@ -13,7 +13,9 @@ links=$(git ls-files -s | awk '$1==120000{print $4}')
 [ -z "$links" ] && ok symlinks || no symlinks "$links"
 
 # 2. Content rules (emoji, fan art and client pieces only in PROJECTS).
-node scripts/check.mjs >"$OUT/check.txt" 2>&1 && grep -q '^check passed' "$OUT/check.txt" && ok check || no check "$(tail -1 "$OUT/check.txt")"
+chk(){ node scripts/check.mjs >"$OUT/check.txt" 2>&1 && grep -q '^check passed' "$OUT/check.txt"; }
+# A check that printed nothing at all (killed under load) is retried once; a real failure prints its reason.
+if chk || { [ ! -s "$OUT/check.txt" ] && sleep 2 && chk; }; then ok check; else no check "$(tail -1 "$OUT/check.txt")"; fi
 
 # 3. Accessibility: tap targets and text size; must print exactly {}.
 a=$(node scripts/a11y-scan.cjs 2>&1 | tail -1); [ "$a" = "{}" ] && ok a11y || no a11y "$a"
