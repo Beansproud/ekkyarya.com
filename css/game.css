@@ -965,3 +965,6 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 .g-sent .g-fallback{margin-top:12px}
 .g-addr{display:flex;flex-direction:column;align-items:center;gap:6px;word-break:break-all}
 .g-addr b{color:#2B1342;font-size:.95rem}
+
+/* ===== Map fit (art critic a1): the village spans the screen width, through the 16 px side gutters ===== */
+#g-map .v-map{max-width:none;margin:auto 0;align-self:center;flex-shrink:0}

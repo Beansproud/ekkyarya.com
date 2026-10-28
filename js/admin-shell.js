@@ -405,6 +405,6 @@
 
   // The tab scripts register themselves; a missing one only leaves its tab saying "not ready yet".
   ["js/admin-art.js", "js/admin-settings.js"].forEach(src => {
-    const el = document.createElement("script"); el.src = src; el.onerror = () => el.remove(); document.head.appendChild(el);
+    const el = document.createElement("script"); el.src = src + "?v=" + Date.now(); el.onerror = () => el.remove(); document.head.appendChild(el);
   });
 })();
