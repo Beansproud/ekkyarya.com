@@ -413,12 +413,15 @@ let artDone=false,mapBuilt=false;const dirty={start:false,art:false,map:false}; 
 let sheetRe=null;
 const remember=f=>(...a)=>{sheetRe=()=>f(...a);return f(...a)};   // the sheet's opener, so a language switch can draw it again
 const hireRaw=openHire;openVillager=remember(openVillager);openLevel=remember(openLevel);openHire=remember(openHire);
-addEventListener("ekky:lang",()=>{
+function redrawScreens(){   // the screen in view is drawn again; the others are marked and drawn when opened
   renderMine();
-  const rs=$("gResShare");if(rs)rs.querySelector("span").textContent=t("reveal.share");
   if(screen==="start")renderStart();else dirty.start=true;
   if(artDone){if(screen==="art")renderArt();else dirty.art=true}
-  if(mapBuilt){if(screen==="map"){const sv={s:Z.s,x:Z.x,y:Z.y};renderMap();if(sv.s>1){widen(true);zoomTo(sv.s,sv.x,sv.y)}}else dirty.map=true}
+  if(mapBuilt){if(screen==="map"){const sv={s:Z.s,x:Z.x,y:Z.y};renderMap();if(sv.s>1){widen(true);zoomTo(sv.s,sv.x,sv.y)}}else dirty.map=true}}
+addEventListener("sitedata",redrawScreens);   // js/site-data.js merged data/site.json: new, hidden or reordered art and links show without a reload
+addEventListener("ekky:lang",()=>{
+  redrawScreens();
+  const rs=$("gResShare");if(rs)rs.querySelector("span").textContent=t("reveal.share");
   const l=$("gMapList"),b=$("gMapListBtn");if(!l.hidden)b.textContent=tt("town.showVillage","Show the village");
   if(sheet.classList.contains("open")&&sheetRe){
     const body=sheet.firstElementChild,top=body.scrollTop,from=sheetFrom,f=$("gForm"),v=f&&[f.name.value,f.type.selectedIndex,f.message.value];
