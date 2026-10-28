@@ -264,7 +264,37 @@ stars.innerHTML=Array.from({length:40},()=>{const sz=2+Math.random()*4;
 // marquee
 const words=["Illustration","Character Design","Mascots","Branding","Web & UI","Social Media","Stickers","Picture Books"];
 // the services ticker only moves while it is on screen (the hero keeps a single loop)
-// B39: decorative motion removed (parallax, magnetic buttons, 3D tilt, click sparkles); hover keeps calm CSS transitions
+// Mouse effects (owner, 2026-10-28: "previous hover animation", "mouse animation please make it back"): the custom cursor,
+// hero parallax, magnetic buttons, 3D tilt with a shine, and click sparkles. Desktop site only (a fine pointer, not in
+// game mode, not under reduced motion). The cursor's frame loop stops once the ring has caught up with the mouse.
+const desk=()=>fine&&!reduce&&!document.body.classList.contains("game-mode");
+if(fine&&!reduce){
+  const c=document.createElement("div"),d=document.createElement("div");c.className="cursor";d.className="cursor-dot";document.body.append(c,d);
+  let x=-99,y=-99,cx=-99,cy=-99,raf=0;
+  const loop=()=>{cx+=(x-cx)*.18;cy+=(y-cy)*.18;c.style.transform=`translate(${cx}px,${cy}px)`;raf=Math.abs(x-cx)+Math.abs(y-cy)>.3?requestAnimationFrame(loop):0};
+  addEventListener("mousemove",e=>{x=e.clientX;y=e.clientY;d.style.transform=`translate(${x}px,${y}px)`;
+    const on=desk();c.hidden=d.hidden=!on;if(on&&!raf)raf=requestAnimationFrame(loop)},{passive:true});
+  document.addEventListener("mouseover",e=>c.classList.toggle("big",!!e.target.closest("a,button,.tile,.feat,input,select,textarea")));
+  document.addEventListener("mouseleave",()=>{c.hidden=d.hidden=true});
+  const scene=document.getElementById("scene");
+  if(scene)addEventListener("mousemove",e=>{if(!desk())return;const mx=e.clientX/innerWidth-.5,my=e.clientY/innerHeight-.5;
+    scene.querySelectorAll(".float").forEach(f=>{const k=+f.dataset.depth||0;f.style.translate=`${mx*k}px ${my*k}px`})},{passive:true});
+  document.querySelectorAll(".btn,.socials a,.to-top").forEach(b=>{
+    b.addEventListener("mousemove",e=>{if(!desk())return;const r=b.getBoundingClientRect();b.style.translate=`${(e.clientX-r.left-r.width/2)*.25}px ${(e.clientY-r.top-r.height/2)*.35}px`});
+    b.addEventListener("mouseleave",()=>b.style.translate="")});
+  // tilt: cards and taped prints lean toward the mouse and keep their own paper tilt; added tiles get it on first hover
+  const tilt=t=>{if(t.dataset.tilt)return;t.dataset.tilt=1;t.classList.add("tilt");t.insertAdjacentHTML("beforeend",'<span class="shine"></span>');
+    t.addEventListener("mousemove",e=>{if(!desk())return;const r=t.getBoundingClientRect(),px=(e.clientX-r.left)/r.width,py=(e.clientY-r.top)/r.height;
+      t.style.transform=`perspective(800px) rotateX(${(.5-py)*10}deg) rotateY(${(px-.5)*12}deg) translateY(-6px) rotate(var(--tilt,0deg))`;
+      t.style.setProperty("--mx",px*100+"%");t.style.setProperty("--my",py*100+"%")});
+    t.addEventListener("mouseleave",()=>t.style.transform="")};
+  document.addEventListener("mouseover",e=>{const t=e.target.closest(".card,.tile,.feat,.play-card");if(t&&desk())tilt(t)});
+  addEventListener("click",e=>{if(!desk()||!e.isTrusted||e.detail===0)return;const cols=["#FFB400","#FF6B6B","#7ED9B0","#B8D5FF","#9C91BD"];
+    for(let i=0;i<8;i++){const sp=document.createElement("span");sp.className=i%2?"spark":"spark dot";if(i%2)sp.innerHTML=ico("s-sparkle");
+      const a=Math.PI*2*i/8,dist=30+Math.random()*30;
+      sp.style.cssText=`left:${e.clientX-6}px;top:${e.clientY-8}px;color:${cols[i%5]};--dx:${Math.cos(a)*dist}px;--dy:${Math.sin(a)*dist}px`;
+      document.body.appendChild(sp);setTimeout(()=>sp.remove(),800)}});
+}
 // stagger chips
 document.querySelectorAll(".chip").forEach((c,i)=>c.style.animationDelay=i*60+"ms");
 // confetti

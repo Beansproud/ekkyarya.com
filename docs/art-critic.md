@@ -75,7 +75,8 @@ These are owner rules. A note that breaks one is discarded.
 - Emoji, or any art that isn't Ekky's. Fan art only in PROJECTS (portfolio and cards); client pieces portfolio only.
 - More than 3 items in the menu bar; Hire more than one tap away.
 - A dark game screen (the game stays on light paper; dark mode must stay readable).
-- Removing the touch and hover reactions or the idle effects outright (owner asked for them). Simplify how they move instead.
+- Removing the touch and hover reactions, the desktop mouse effects or the idle effects outright (owner asked for them). Simplify how they move instead.
+- Beige or off-white paper on the desktop site (owner: "make it white again").
 - Anything that loops forever outside a game being played.
 
 ## How a review runs
@@ -118,3 +119,5 @@ change is written in the rubric above in the same commit.
 | 2026-10-28 | Round 1 notes 2 (idle effects pile and mirror the pictures) and 3 (Hire sheet jam-packed): the owner agreed with both | Owner | Questions 1 and 5 hold for owner-requested features too: keep the feature, shrink how much it moves or shows |
 | 2026-10-28 | The owner asked for "a lot of animation, even when idle, multiple random animations" on the map | Owner | On the map, the amount of motion is the owner's call: judge only how it moves (soft, slow, one moment at a time), never ask to remove it |
 | 2026-10-28 | A hard diagonal edge of a background layer in the zoomed map galaxy "really bugs" the owner | Owner | Question 3: a visible layer edge, seam or clip line breaks the hand-made page; check every zoom level, not just 1x |
+| 2026-10-28 | The owner asked for the desktop site's original white colours back ("not beige") and for the earlier hover and mouse animations (cursor, tilt, parallax, sparkles) | Owner | On the desktop site, white paper and mouse motion are the owner's call: never suggest beige paper or removing the hover and mouse effects; judge only how smoothly they move |
+| 2026-10-28 | A thin pale line under the bottom island on a 430 px phone, from an opaque edge strip in an island image | Owner | Check every phone height (360, 390, 430) and the edges of every layer image, not only zoom levels |
