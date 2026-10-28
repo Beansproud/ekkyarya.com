@@ -849,3 +849,8 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 @keyframes apkGlow{0%,100%{opacity:.45;scale:1}50%{opacity:1;scale:1.3}}
 .g-apk:active b{scale:.92}
 @media (prefers-reduced-motion:reduce){.g-apk b::after{animation:none}}
+
+/* the page picker: the cards pop in one after another (30 ms apart, one shot; transform and opacity only) */
+@keyframes cPop{from{opacity:0;transform:translateY(14px) scale(.92)}}
+.c-pages .c-page{animation:cPop .28s var(--ease-move,ease-out) backwards;animation-delay:calc(var(--i,0) * 30ms)}
+@media (prefers-reduced-motion:reduce){.c-pages .c-page{animation:none}}

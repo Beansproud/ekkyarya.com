@@ -86,10 +86,10 @@ function close(){over.classList.remove("open");cur=null}
 
 /* ---- picker ---- */
 function openPicker(){
-  $("cPages").innerHTML=pages().map(p=>{const pr=bySlug(p.slug);return `<button class="c-page" data-page="${p.id}"><img src="${pr.img}" alt="" loading="lazy"><b>${esc(ptitle(pr))}</b></button>`}).join("")+
-    (feature("doodleScene")?`<button class="c-page c-scratch" data-page="scratch">${ico("i-plus")}<b>${esc(t("color.scratch"))}</b><small>${esc(t("color.scratch.sub"))}</small></button>`:"");
+  $("cPages").innerHTML=pages().map((p,i)=>{const pr=bySlug(p.slug);return `<button class="c-page" data-page="${p.id}" style="--i:${i}"><img src="${pr.img}" alt="" loading="lazy"><b>${esc(ptitle(pr))}</b></button>`}).join("")+
+    (feature("doodleScene")?`<button class="c-page c-scratch" data-page="scratch" style="--i:${pages().length}">${ico("i-plus")}<b>${esc(t("color.scratch"))}</b><small>${esc(t("color.scratch.sub"))}</small></button>`:"");
   view("cPick");setTimeout(()=>$("cPickX").focus({preventScroll:true}),50)}
-$("cPages").addEventListener("click",e=>{const b=e.target.closest("[data-page]");if(b){Game.buzz(10);Game.sfx("tap");open(b.dataset.page)}});
+$("cPages").addEventListener("click",e=>{const b=e.target.closest("[data-page]");if(b){Game.buzz(10);Game.sfx("tap");const im=b.querySelector("img"),r=(im||b).getBoundingClientRect();open(b.dataset.page,{from:{left:r.left,top:r.top,w:r.width}})}});
 $("cPickX").onclick=close;
 
 /* ---- page data ---- */
@@ -180,6 +180,9 @@ async function open(id,opts={}){
   $("cPeek").src=id==="scratch"?"":pd.meta.original||(bySlug(pd.meta.slug)||{}).full||"";$("cPeekBtn").hidden=id==="scratch";
   paint(cur,cv);renderColors();renderStickers();$("cTray").hidden=true;
   view("cEdit");sizeStage();updUndo();
+  // shared-element feel: the page grows from the card that was tapped (transform and opacity only, one shot)
+  if(opts.from&&stage.animate&&!matchMedia("(prefers-reduced-motion:reduce)").matches){const r=stage.getBoundingClientRect(),k=opts.from.w/r.width;
+    if(r.width&&isFinite(k))stage.animate([{transformOrigin:"0 0",transform:`translate(${opts.from.left-r.left}px,${opts.from.top-r.top}px) scale(${k})`,opacity:.4},{transformOrigin:"0 0",transform:"none",opacity:1}],{duration:320,easing:"cubic-bezier(.2,.8,.2,1)"})}
   if(!hintShown&&!(Game.st.hints||{}).color){hintShown=true;const h=$("cHint");h.textContent=t("color.hint");h.classList.add("show");setTimeout(()=>h.classList.remove("show"),2600);
     Game.st.hints=Object.assign({},Game.st.hints,{color:1});Game.save()}
 }
