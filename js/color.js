@@ -86,7 +86,7 @@ function close(){over.classList.remove("open");cur=null}
 
 /* ---- picker ---- */
 function openPicker(){
-  $("cPages").innerHTML=pages().map((p,i)=>{const pr=bySlug(p.slug);return `<button class="c-page" data-page="${p.id}" style="--i:${i}"><img src="${pr.img}" alt="" loading="lazy"><b>${esc(ptitle(pr))}</b></button>`}).join("")+
+  $("cPages").innerHTML=pages().map((p,i)=>{const pr=bySlug(p.slug);return `<button class="c-page" data-page="${p.id}" style="--i:${i}"><img src="assets/color/${p.id}/line.png" alt="" loading="lazy"><b>${esc(ptitle(pr))}</b></button>`}).join("")+
     (feature("doodleScene")?`<button class="c-page c-scratch" data-page="scratch" style="--i:${pages().length}">${ico("i-plus")}<b>${esc(t("color.scratch"))}</b><small>${esc(t("color.scratch.sub"))}</small></button>`:"");
   view("cPick");setTimeout(()=>$("cPickX").focus({preventScroll:true}),50)}
 $("cPages").addEventListener("click",e=>{const b=e.target.closest("[data-page]");if(b){Game.buzz(10);Game.sfx("tap");const im=b.querySelector("img"),r=(im||b).getBoundingClientRect();open(b.dataset.page,{from:{left:r.left,top:r.top,w:r.width}})}});

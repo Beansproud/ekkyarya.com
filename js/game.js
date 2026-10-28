@@ -554,8 +554,8 @@ if(cv){cv.addEventListener("pointerdown",aim);cv.addEventListener("pointermove",
 // "New best!" only when there was a best to beat (the first round is just "Time's up!")
 function endArcade(){const a=A;a.run=false;lastScore=a.score;const rec=(st.best||0)>0&&a.score>st.best;st.best=Math.max(st.best||0,a.score);save();
   $("gResTitle").textContent=rec?t("stars.record"):t("stars.end");$("gResScore").innerHTML=ico("s-star")+a.score;
-  // the score counts points (a palette is 3, a glowing star 5, a virus minus 2), so the line says points, not stars
-  $("gResText").textContent=tt("stars.resultPoints","{n} points. Your best: {best} points.",{n:a.score,best:st.best});$("gResult").classList.add("show");G.classList.remove("playing");
+  // the big number already says the score, so the line only names the best, and only when it is a different number
+  const rt=$("gResText");rt.textContent=st.best>a.score?tt("stars.resultBest","Your best: {best} points.",{best:st.best}):"";rt.hidden=!rt.textContent;$("gResult").classList.add("show");G.classList.remove("playing");
   if(typeof Share!=="undefined")setTimeout(starBlob,500);
   sfx(rec?"legend":"level");if(rec&&typeof confetti==="function")confetti()}
 function quitArcade(){cancelAnimationFrame(raf);A=null;pausedByHide=false;$("gArcade").classList.remove("open");G.classList.remove("playing");$("gCount").innerHTML=""}
