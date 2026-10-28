@@ -36,15 +36,19 @@ works exactly as today. It is merged over the built-in data in `js/data.js`:
   "contact": { "email": "", "priceLine": { "en": "", "id": "" } },
   "links": { "instagram": "", "behance": "", "linkedin": "", "website": "", "tiktok": "", "youtube": "", "x": "" },
   "features": { "pageShark": true },
-  "projects": [ { "id": "u-<slug>", "cat": "illustration", "title": "", "desc": "", "img": "assets/work/thumb/u/<slug>.jpg",
+  "projects": [ { "uid": "u-<slug>", "cat": "illustration", "title": "", "desc": "", "img": "assets/work/thumb/u/<slug>.jpg",
                   "full": "assets/work/u/<slug>.jpg", "kind": "original", "roles": ["portfolio", "card"],
                   "id": { "title": "", "desc": "" } } ],
-  "hidden": [ "<project title or id>" ],
-  "order": [ "<project title or id>" ],
+  "hidden": [ "<built-in title, or uid of an added piece>" ],
+  "order": [ "<built-in title, or uid of an added piece>" ],
   "copy": { "en": { "<COPY key>": "text" }, "id": { "<COPY key>": "text" } }
 }
 ```
 
+- Added pieces carry `uid` (`u-<slug>`); `id` stays the Indonesian `{title, desc}` as in `js/data.js`. `hidden` and
+  `order` name built-in pieces by title and added pieces by `uid`.
+- Admin tabs get `ctx = {data, getData(), setData(full), addFile(path, base64), publish(), canPublish, lang}`: `addFile`
+  queues an image for the next Publish commit.
 - Empty strings mean "use the built-in value".
 - `links` replace `CONFIG.links`, `features` override `FEATURES`, `projects` are added to `PROJECTS`, `hidden` removes
   pieces, `order` sets the featured order, and `copy` overrides `COPY` keys.
