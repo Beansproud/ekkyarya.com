@@ -255,6 +255,7 @@ function mmPlay(img){const anim=img&&img.dataset.anim;if(!anim||reduceFlow()||im
     img.mmStop=()=>{clearTimeout(img.mmT);img.mmStop=null;if(img.getAttribute("src")===u)img.src=still;URL.revokeObjectURL(u);host.classList.remove("mm-on");delete img.dataset.mmOn};
     img.mmT=setTimeout(img.mmStop,ms+60)},()=>{delete img.dataset.mmOn})}
 const mmStopAll=()=>lb.querySelectorAll("img[data-mm-on]").forEach(i=>i.mmStop&&i.mmStop());
+const MM_INK=["#FFB400","#FF6B6B","#7ED9B0","#B8D5FF"];   // each character sticker's offset shadow, in turn
 const mmName=c=>(c.name&&(c.name[LANG]||c.name.en))||"";
 // the hook (docs/flow.md): a step with a set gets its grid inside the flow box, under the diagram
 function mmRenderSet(box,p,steps){mmStopAll();
@@ -264,7 +265,7 @@ function mmRenderSet(box,p,steps){mmStopAll();
   sec.innerHTML=`<h4 class="fl-title">${escH(cap)} <small class="mm-n">${escH(t("flow.count",{n:st.set.length}))}</small></h4>`+
     (still?"":`<p class="mm-hint">${escH(t(document.body.classList.contains("game-mode")||!matchMedia("(hover:hover)").matches?"mm.hintTap":"mm.hint"))}</p>`)+
     `<ul class="mm-grid">${st.set.map((c,j)=>{const nm=mmName(c);
-      return `<li style="--j:${j};--c:${FLOW_INK[j%FLOW_INK.length]}"><${tag} class="mm-ch"${still?"":` type="button" aria-label="${escH(t("mm.play",{name:nm}))}"`}>`+
+      return `<li style="--j:${j};--c:${MM_INK[j%MM_INK.length]}"><${tag} class="mm-ch"${still?"":` type="button" aria-label="${escH(t("mm.play",{name:nm}))}"`}>`+
         `<img src="${escH(c.img)}" alt="${still?escH(nm):""}" width="160" height="160" loading="lazy" decoding="async"${c.anim&&!still?` data-anim="${escH(c.anim)}"`:""}><span aria-hidden="true">${escH(nm)}</span></${tag}></li>`}).join("")}</ul>`;
   box.appendChild(sec)}
 (window.FlowHooks=window.FlowHooks||[]).push(mmRenderSet);
