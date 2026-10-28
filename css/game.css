@@ -1185,3 +1185,16 @@ body.game-mode #lightbox .lb-actions .btn.ghost.lb-dl{border:1.5px solid #2B1342
 }
 /* the way back to the game must never hide: where the sidebar stays open (wider than 980 px, e.g. a sideways iPad), Play sits beside it, not under it */
 @media (min-width:981px) and (pointer:coarse){body:not(.game-mode) .g-mode-fab{left:calc(var(--side-w) + 16px)}}
+
+/* ---- Sprint 3: flow ---- */
+/* The project flow in the game's lightbox (light paper in both themes): ink title and arrows. Layout in css/site.css. */
+body.game-mode #lightbox .fl-title{color:#2B1342}
+body.game-mode #lightbox .fl-arrow path{stroke:#2B1342}
+body.game-mode #lightbox .lb-flow{margin-top:2px}
+/* "3 pictures": a small sticker on Art cards and start tiles of a piece with steps (two stacked frames, then the count) */
+.g-flow-mark{display:inline-flex;align-items:center;gap:5px;margin-top:5px;padding:2px 8px 2px 6px;border-radius:10px 12px 9px 11px;background:#FFB400;color:#2B1342;
+  border:2px solid #2B1342;font-family:Fredoka,Poppins,sans-serif;font-weight:700;font-size:.7rem;line-height:1.2;rotate:-2deg;box-shadow:1px 2px 0 #2B1342;white-space:nowrap}
+.g-flow-mark i{display:block;width:9px;height:7px;border:1.5px solid #2B1342;border-radius:2px;background:#FFFDF8}
+.g-flow-mark i+i{margin-left:-10px;translate:3px -3px}
+.g-feat{position:relative}
+.g-feat .g-flow-mark{position:absolute;top:6px;right:6px;margin:0}
