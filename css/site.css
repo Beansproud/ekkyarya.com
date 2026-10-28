@@ -610,3 +610,24 @@ body.game-mode .cursor,body.game-mode .cursor-dot{display:none}
 .fl-bar-cap{padding:4px 10px;border-radius:10px;background:#FFFDF8;color:#2B1342;border:1.5px solid #2B1342;font-family:Fredoka,Poppins,sans-serif;font-weight:600;font-size:.85rem}
 /* desktop: with a flow the picture is shorter, so the diagram's top shows without scrolling (QA P2-5) */
 body:not(.game-mode) #lightbox.has-flow .lb-art>img{display:block;width:100%;max-height:min(40vh,520px);object-fit:contain}
+
+/* ---- Sprint 3: morumelons ---- */
+/* A set step's characters (js/site.js mmRenderSet, through FlowHooks): small paper stickers in a grid under the diagram. Tap or hover plays the
+   character's animation once (img src swap, no CSS loop); the sticker only lifts while it plays. Desktop 6 across, phones 3. */
+.mm-set{margin-top:6px;scroll-margin-top:12px}
+.mm-n{font-family:Poppins,sans-serif;font-weight:600;font-size:.75rem;opacity:.75;margin-left:4px}
+.mm-hint{margin:-4px 0 10px;font-size:.85rem;line-height:1.35;color:var(--ink)}
+.mm-grid{list-style:none;margin:0;padding:4px 4px 10px;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px 12px}
+.mm-ch{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;width:100%;min-height:44px;padding:6px 6px 8px;box-sizing:border-box;
+  border:2.5px solid #2B1342;border-radius:14px 17px 13px 16px;background:#FFFDF8;color:#2B1342;font:inherit;box-shadow:3px 4px 0 var(--c);
+  rotate:calc((var(--j) % 3 - 1) * 1.4deg);transition:transform .2s var(--ease-in,ease),box-shadow .2s}
+button.mm-ch{cursor:pointer}
+.mm-ch img{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:contain;border-radius:9px;background:#F1EBDD}
+.mm-ch span{font-family:Fredoka,Poppins,sans-serif;font-weight:600;font-size:.8rem;line-height:1.15;text-align:center}
+button.mm-ch:hover,.mm-ch.mm-on{transform:translateY(-3px) rotate(-1deg);box-shadow:4px 6px 0 var(--c)}
+button.mm-ch:active{transform:scale(.97)}
+.mm-anim{cursor:pointer}
+.fl-col .mm-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 10px;padding:4px 2px 8px}
+@container (min-width:600px){.fl-col .mm-grid{grid-template-columns:repeat(6,minmax(0,1fr))}}   /* an iPad in game mode: the desktop row */
+body.game-mode #lightbox .mm-hint{color:#2B1342}
+@media (prefers-reduced-motion:reduce){.mm-ch,button.mm-ch:hover,.mm-ch.mm-on{transition:none;transform:none}}

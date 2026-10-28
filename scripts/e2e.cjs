@@ -155,7 +155,7 @@ async function runConfig(browser,url,scheme,lang){
     for(let i=0;i<ids.length;i++){const k=i*4;if(Math.abs(d[k]-a[k])+Math.abs(d[k+1]-a[k+1])+Math.abs(d[k+2]-a[k+2])>30){const v=ids[i];if(v===r)o.in++;else if(v)o.out++;else o.line++}}return o},r);
   // the biggest shape and a point well inside it, in screen pixels
   const bigShape=p=>p.evaluate(()=>{const s=Color.state,{meta,start,idx,ids}=s.pd;let r=1;for(let k=2;k<=meta.regions;k++)if(start[k+1]-start[k]>start[r+1]-start[r])r=k;
-    const b=document.getElementById('cCanvas').getBoundingClientRect(),W=meta.w,k=b.width/W,m=Math.ceil(64/k),v=Math.ceil(14/k);let best=null;
+    const b=document.getElementById('cCanvas').getBoundingClientRect(),W=meta.w,k=b.width/W,m=Math.ceil(54/k),v=Math.ceil(14/k);let best=null;
     for(let j=start[r];j<start[r+1];j+=97){const i=idx[j],x=i%W,y=i/W|0;let ok=true;for(let dx=-m;dx<=m&&ok;dx+=2)for(const dy of [-v,0,v])if(x+dx<0||x+dx>=W||ids[(y+dy)*W+x+dx]!==r){ok=false;break}if(ok){best=[x,y];break}}
     if(!best){const i=idx[start[r]+((start[r+1]-start[r])>>1)];best=[i%W,i/W|0]}
     return {r,x:b.left+(best[0]+.5)/W*b.width,y:b.top+(best[1]+.5)/meta.h*b.height,k:b.width/W}});
@@ -165,16 +165,16 @@ async function runConfig(browser,url,scheme,lang){
     await tp('touchStart',all[0]);for(const q of all.slice(1)){await tp('touchMove',q);await sleep(16)}await tp('touchEnd');await cdp.detach().catch(()=>{});await sleep(250)};
   const tool=async(p,k)=>{await p.tap(`#cKit [data-tool=${k}]`);await sleep(150);if(!await p.$eval(`#cKit [data-tool=${k}]`,e=>e.getAttribute('aria-checked')==='true'))throw new Error(k+' tool not on after tap')};
   await T('color tools: brush stays inside the touched shape, eraser rubs it out',async p=>{await boot(p);await openColor(p);const s=await bigShape(p);await tool(p,'brush');await p.tap('#cOpts [data-size="2"]');await audit(p,'brush tool');
-    await snap(p);await drag(p,[[s.x-50,s.y],[s.x,s.y+4],[s.x+50,s.y]]);const d=await diff(p,s.r);
+    await snap(p);await drag(p,[[s.x-44,s.y],[s.x,s.y+4],[s.x+44,s.y]]);const d=await diff(p,s.r);
     if(d.in<200)throw new Error('brush changed only '+d.in+' pixels in its shape');if(d.out>0)throw new Error('brush leaked into '+d.out+' pixels of other shapes');
     if(await p.evaluate(()=>Color.state.ink.length)!==1)throw new Error('stroke not kept');
-    await tool(p,'eraser');await p.tap('#cOpts [data-size="2"]');await drag(p,[[s.x-50,s.y],[s.x,s.y+4],[s.x+50,s.y]]);const e=await diff(p,s.r);
+    await tool(p,'eraser');await p.tap('#cOpts [data-size="2"]');await drag(p,[[s.x-44,s.y],[s.x,s.y+4],[s.x+44,s.y]]);const e=await diff(p,s.r);
     if(e.in>d.in*.2)throw new Error('eraser left '+e.in+' of '+d.in+' brushed pixels');
     await p.tap('#cUndo');await sleep(300);const u=await diff(p,s.r);if(u.in<d.in*.8)throw new Error('undo of the eraser did not bring the stroke back');
     await p.tap('#cRedo');await sleep(300);const rd=await diff(p,s.r);if(rd.in>d.in*.2)throw new Error('redo did not erase again');
     await p.tap('#cUndo');await p.tap('#cUndo');await sleep(300);const z=await diff(p,s.r);if(z.in+z.out>20)throw new Error('two undos did not restore the blank page ('+(z.in+z.out)+' px)')});
   await T('color tools: fade (drag = straight, tap = round), pattern, eraser tap clears the shape',async p=>{await boot(p);await openColor(p);const s=await bigShape(p);await tool(p,'fade');await audit(p,'fade tool');
-    await snap(p);await drag(p,[[s.x-50,s.y],[s.x+50,s.y]]);const f=await p.evaluate(r=>Color.state.fx[r],s.r);if(!f||f.k!=='lin')throw new Error('drag did not make a straight fade: '+JSON.stringify(f));
+    await snap(p);await drag(p,[[s.x-44,s.y],[s.x+44,s.y]]);const f=await p.evaluate(r=>Color.state.fx[r],s.r);if(!f||f.k!=='lin')throw new Error('drag did not make a straight fade: '+JSON.stringify(f));
     const n=await p.evaluate(r=>{const c=document.getElementById('cCanvas'),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data,{start,idx}=Color.state.pd,set=new Set();for(let j=start[r];j<start[r+1];j+=7){const k=idx[j]*4;set.add(d[k]<<16|d[k+1]<<8|d[k+2])}return set.size},s.r);
     if(n<8)throw new Error('fade shows only '+n+' colors in the shape');if((await diff(p,s.r)).out>0)throw new Error('fade leaked out of its shape');
     await p.touchscreen.tap(s.x,s.y);await sleep(300);if((await p.evaluate(r=>Color.state.fx[r],s.r)||{}).k!=='rad')throw new Error('tap did not make a round fade');
@@ -185,7 +185,7 @@ async function runConfig(browser,url,scheme,lang){
     for(let i=0;i<3;i++){await p.tap('#cUndo');await sleep(150)}if((await diff(p,s.r)).in>20)throw new Error('undo x4 did not return to paper');
     for(let i=0;i<4;i++){await p.tap('#cRedo');await sleep(150)}const c2=await p.evaluate(r=>[Color.state.fills[r],!!Color.state.fx[r]],s.r);if(c2[0]||c2[1])throw new Error('redo x4 did not end on the cleared shape')});
   await T('color tools: strokes and fades survive reload, reveal shows them',async p=>{await boot(p);const id=await openColor(p);const s=await bigShape(p);await snap(p);
-    await tool(p,'fade');await drag(p,[[s.x-50,s.y],[s.x+50,s.y]]);await tool(p,'brush');await drag(p,[[s.x-40,s.y+10],[s.x+40,s.y+10]]);await sleep(300);
+    await tool(p,'fade');await drag(p,[[s.x-44,s.y],[s.x+44,s.y]]);await tool(p,'brush');await drag(p,[[s.x-40,s.y+10],[s.x+40,s.y+10]]);await sleep(300);
     const sample=()=>p.evaluate(()=>{const c=document.getElementById('cCanvas'),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data,o=[];for(let i=0;i<d.length;i+=28)o.push(d[i],d[i+1],d[i+2]);return o});const mine=await sample();
     await p.tap('#cBack');await sleep(800);await p.reload();await must(p,'#g-start.active','reload failed',8000);await sleep(500);await openColor(p,id);await sleep(300);
     const st=await p.evaluate(r=>({ink:Color.state.ink.length,fx:(Color.state.fx[r]||{}).k,undo:Color.state.undo.length}),s.r);if(st.ink!==1||st.fx!=='lin')throw new Error('not kept after reload: '+JSON.stringify(st));
@@ -203,8 +203,29 @@ async function runConfig(browser,url,scheme,lang){
     for(let i=1;i<=10;i++){await tp('touchMove',[[r[0]-20-i*8,r[1]+i*2],[r[0]+20+i*8,r[1]+i*2]]);await sleep(20)}await tp('touchEnd',[]);await cdp.detach().catch(()=>{});await sleep(300);
     const z=await p.$eval('#cStage',e=>new DOMMatrix(getComputedStyle(e).transform).a);if(!(z>1.5))throw new Error('pinch did not zoom: scale '+z);
     if(await p.evaluate(()=>Color.state.ink.length))throw new Error('the pinch left a stroke');
+    if(!await vis(p,'#cZoomOut',1000))throw new Error('no visible zoom-out control while zoomed');await audit(p,'zoomed editor');
+    // reversible: the zoom-out button, Esc and the phone's Back each return to 1x and leave the editor open
+    const scale=()=>p.$eval('#cStage',e=>{const t=getComputedStyle(e).transform;return t==='none'?1:new DOMMatrix(t).a});
+    const at1=async()=>{for(let i=0;i<20;i++){if(await scale()===1)return true;await sleep(100)}return false};   // wait for the 1x spring-back instead of a fixed sleep
+    await p.tap('#cZoomOut');if(!await at1())throw new Error('zoom-out button did not return to 1x');if(await vis(p,'#cZoomOut',300))throw new Error('zoom-out control stayed after 1x');
+    const pinchOut=async()=>{const c2=await p.context().newCDPSession(p),tq=(type,pts)=>c2.send('Input.dispatchTouchEvent',{type,touchPoints:pts.map(([x,y],id)=>({x,y,id}))});
+      await tq('touchStart',[[r[0]-20,r[1]]]);await sleep(30);await tq('touchStart',[[r[0]-20,r[1]],[r[0]+20,r[1]]]);for(let i=1;i<=10;i++){await tq('touchMove',[[r[0]-20-i*8,r[1]],[r[0]+20+i*8,r[1]]]);await sleep(20)}await tq('touchEnd',[]);await c2.detach().catch(()=>{});await sleep(300)};
+    await pinchOut();for(let i=0;i<10&&await scale()<1.5;i++)await sleep(100);if(await scale()<1.5)throw new Error('second pinch did not zoom: '+await scale());await p.keyboard.press('Escape');if(!await at1())throw new Error('Esc did not return to 1x');if(!await vis(p,'#cEdit #cCanvas',300))throw new Error('Esc while zoomed left the editor');
+    await pinchOut();await p.evaluate(()=>history.back());if(!await at1())throw new Error('Back did not return to 1x');if(!await vis(p,'#cEdit #cCanvas',1500))throw new Error('Back while zoomed left the editor: '+await p.evaluate(()=>document.getElementById('gColor').className+' | '+document.querySelector('#gColor .c-view.active')?.id+' | '+JSON.stringify(history.state)));
+    await pinchOut();await p.tap('#cBack');if(!await at1())throw new Error('editor Back did not return to 1x');if(!await vis(p,'#cEdit #cCanvas',300))throw new Error('editor Back while zoomed left the editor');
+    await pinchOut();
     await tool(p,'fill');const t=await p.$eval('.c-stage-wrap',e=>{const b=e.getBoundingClientRect();return {x:b.left+b.width*.5,y:b.top+b.height*.5}});const h0=await hash(p);await p.touchscreen.tap(t.x,t.y);if(await settled(p)===h0)throw new Error('a tap while zoomed did not fill');
-    await p.tap('#cBack');await sleep(800);await p.tap(`#cPages .c-page[data-page="${id}"]`);await must(p,'#cEdit #cCanvas','editor did not reopen',8000);await sleep(600);if(await p.$eval('#cStage',e=>getComputedStyle(e).transform)!=='none')throw new Error('zoom not reset when a page opens')});
+    await p.tap('#cBack');await sleep(500);await p.tap('#cBack');await sleep(800);await p.tap(`#cPages .c-page[data-page="${id}"]`);await must(p,'#cEdit #cCanvas','editor did not reopen',8000);await sleep(600);if(await p.$eval('#cStage',e=>getComputedStyle(e).transform)!=='none')throw new Error('zoom not reset when a page opens')});
+
+  await T('color: sideways phone 844x390 gives the picture the height, tools still work',async p=>{await p.setViewportSize({width:844,height:390});await boot(p);await openColor(p);await sleep(400);
+    const b=await p.$eval('#cCanvas',e=>{const r=e.getBoundingClientRect();return [r.width,r.height,r.bottom]});if(b[1]<250)throw new Error('picture only '+Math.round(b[0])+'x'+Math.round(b[1])+' px');if(b[2]>391)throw new Error('picture runs below the screen');
+    for(const sel of ['#cColors .c-sw[data-v]','#cKit [data-tool=brush]','#cUndo','#cRedo','#cDone','#cBack'])if(!await vis(p,sel,2000))throw new Error('not visible sideways: '+sel);
+    await audit(p,'color editor sideways');const s=await bigShape(p);await tool(p,'brush');await snap(p);await drag(p,[[s.x-40,s.y],[s.x+40,s.y]]);if((await diff(p,s.r)).in<50)throw new Error('brush does nothing sideways')});
+  await T('color: each Back closes only the top layer (wheel, editor, picker)',async p=>{await boot(p);await openColor(p);await p.tap('#cColors .c-any');await must(p,'#cWheel','wheel did not open');await sleep(300);
+    const back=async()=>{await p.evaluate(()=>history.back());await sleep(900)};
+    await back();if(await p.isVisible('#cWheel'))throw new Error('Back did not close the colour wheel');if(!await vis(p,'#cEdit #cCanvas',1000))throw new Error('Back with the wheel open left the editor');
+    await back();if(!await vis(p,'#cPick',1500))throw new Error('Back from the editor did not go to the picker');
+    await back();if(await p.isVisible('#cPick'))throw new Error('Back from the picker did not close Color');if(!p.url().includes('localhost'))throw new Error('Back left the app')});
 
   await T('doodle: sticker drag, drop on bin, undo',async p=>{await boot(p);await p.tap('[data-go=color]');await must(p,'#cPages .c-scratch','no Doodle Scene entry');await p.tap('#cPages .c-scratch');await must(p,'#cEdit #cCanvas','scratch editor did not open',8000);await sleep(800);
     await p.tap('#cStickBtn');await must(p,'#cTray [data-n]','no stickers');await p.tap('#cTray [data-n]');await sleep(1000);
@@ -320,21 +341,24 @@ async function runConfig(browser,url,scheme,lang){
     if(f.n!==3||!f.col||f.small||!f.down||f.arrows!==2)throw new Error('flow layout '+JSON.stringify(f));
     if(f.cur!==0||f.title!==f.want)throw new Error('flow labels '+JSON.stringify(f));
     await p.$eval('#lbFlow .fl-node[data-step="2"]',e=>e.scrollIntoView({block:'center'}));await sleep(300);await p.tap('#lbFlow .fl-node[data-step="2"]');await sleep(500);
-    const src=await p.$eval('#lbArt img',e=>e.getAttribute('src'));if(!/nft-9\.jpg$/.test(src))throw new Error('step 3 did not open its picture: '+src);
+    // step 3 (Animation, Sprint 3: morumelons) opens its character's still, which plays once
+    const st3=await p.$eval('#lbArt img',e=>[e.getAttribute('src'),e.dataset.anim||'']);if(!/^(blob:|assets\/projects\/morumelons\/)/.test(st3[0])||!st3[1])throw new Error('step 3 did not open its picture: '+st3);
     await audit(p,'lightbox flow')});
   await T('flow: reversible path (step picture, Back, Esc, close)',async p=>{await boot(p);await openPiece(p,'morumelons');
     const st=()=>p.evaluate(()=>{const lb=document.getElementById('lightbox'),g=document.querySelector('.g-screen.active');return {open:lb.open,step:lb.classList.contains('fl-viewing'),
       src:(document.querySelector('#lbArt img')||{}).getAttribute?.('src')||'',tab:g&&g.id,top:g?Math.round(g.scrollTop):0,l:history.state&&history.state.l}});
     const s0=await st();if(!s0.open||s0.step||!/morumelons\.jpg$/.test(s0.src))throw new Error('start '+JSON.stringify(s0));
     const node=async k=>{await p.$eval(`#lbFlow .fl-node[data-step="${k}"]`,e=>e.scrollIntoView({block:'center'}));await sleep(200);await p.tap(`#lbFlow .fl-node[data-step="${k}"]`);await sleep(400)};
-    await node(1);let s=await st();if(!s.step||!/nft-3\.jpg$/.test(s.src)||s.l!=='flstep')throw new Error('step view '+JSON.stringify(s));
+    // step 1 is Morumelons' character set (Sprint 3: morumelons): it scrolls to the grid and opens no view of its own
+    await node(1);let s=await st();if(s.step||s.l!=='lb')throw new Error('the set step opened a view '+JSON.stringify(s));
+    await node(2);s=await st();if(!s.step||s.src===s0.src||s.l!=='flstep')throw new Error('step view '+JSON.stringify(s));
     await p.evaluate(()=>history.back());await sleep(600);s=await st();
     if(!s.open||s.step||!/morumelons\.jpg$/.test(s.src)||s.l!=='lb')throw new Error('Back from a step did not return to the flow '+JSON.stringify(s));
     await node(2);await p.keyboard.press('Escape');await sleep(500);s=await st();if(!s.open||s.step)throw new Error('Esc from a step did not return to the flow '+JSON.stringify(s));
     await sleep(300);if((await st()).l!=='lb')throw new Error('Esc left a stale history entry');
     await node(2);if(!await vis(p,'#lbArt .fl-back',1500))throw new Error('no on-screen Back in the step view');await p.tap('#lbArt .fl-back');await sleep(500);s=await st();
     if(!s.open||s.step||s.l!=='lb')throw new Error('the on-screen Back did not return to the flow '+JSON.stringify(s));
-    await node(1);await p.tap('#lbClose');await sleep(700);s=await st();
+    await node(2);await p.tap('#lbClose');await sleep(700);s=await st();
     if(s.open||s.step||s.tab!==s0.tab||Math.abs(s.top-s0.top)>2)throw new Error('close from a step did not return to where it opened '+JSON.stringify({s0,s}));
     if(s.l)throw new Error('a history entry was left behind: '+s.l);
     await p.evaluate(()=>history.back());await sleep(600);if((await st()).open)throw new Error('Back after closing reopened the lightbox')});
@@ -343,19 +367,74 @@ async function runConfig(browser,url,scheme,lang){
     if(!f.hidden||f.nodes||f.cls)throw new Error('flow shown on a piece without steps '+JSON.stringify(f))});
   await T('flow: desktop lightbox row, and none without steps',async p=>{const c=await p.context().browser().newContext({viewport:{width:1440,height:900},colorScheme:scheme});
     try{const d=await c.newPage();const errs=[];d.on('pageerror',e=>errs.push(e.message));await d.goto(url);await sleep(800);
-      await d.evaluate(()=>show(PROJECTS.findIndex(q=>q.slug==='nft-3')));await must(d,'#lbFlow .fl-node','no desktop flow',3000);
+      await d.evaluate(()=>show(PROJECTS.findIndex(q=>q.slug==='morumelons')));await must(d,'#lbFlow .fl-node','no desktop flow',3000);
       const f=await d.evaluate(()=>{const r=[...document.querySelectorAll('#lbFlow .fl-node')].map(e=>e.getBoundingClientRect());
         return {n:r.length,row:r.every((x,k)=>!k||x.left>r[k-1].right-1),cur:[...document.querySelectorAll('#lbFlow .fl-node')].findIndex(e=>e.getAttribute('aria-current')==='true')}});
-      if(f.n!==3||!f.row||f.cur!==1)throw new Error('desktop flow '+JSON.stringify(f));
+      if(f.n!==3||!f.row||f.cur!==0)throw new Error('desktop flow '+JSON.stringify(f));
       const fold=await d.evaluate(()=>{const lb=document.getElementById('lightbox').getBoundingClientRect().bottom;return [...document.querySelectorAll('#lbFlow .fl-node')].every(n=>n.getBoundingClientRect().bottom<=Math.min(innerHeight,lb)+1)});
       if(!fold)throw new Error('desktop 1440x900: the flow is not fully above the fold');
-      await d.click('#lbFlow .fl-node[data-step="0"]');await sleep(300);
-      if(!/morumelons\.jpg$/.test(await d.$eval('#lbArt img',e=>e.getAttribute('src'))))throw new Error('desktop node did not open its picture');
+      await d.click('#lbFlow .fl-node[data-step="2"]');await sleep(300);
+      if(!/^(blob:|assets\/projects\/morumelons\/)/.test(await d.$eval('#lbArt img',e=>e.getAttribute('src'))))throw new Error('desktop node did not open its picture');
       await d.keyboard.press('Escape');await sleep(300);
       const r=await d.evaluate(()=>({open:document.getElementById('lightbox').open,step:document.getElementById('lightbox').classList.contains('fl-viewing'),src:document.querySelector('#lbArt img').getAttribute('src')}));
-      if(!r.open||r.step||!/nft-3\.jpg$/.test(r.src))throw new Error('desktop Esc from a step did not return to the flow '+JSON.stringify(r));
+      if(!r.open||r.step||!/morumelons\.jpg$/.test(r.src))throw new Error('desktop Esc from a step did not return to the flow '+JSON.stringify(r));
       await d.evaluate(()=>show(PROJECTS.findIndex(q=>q.slug==='rpg')));await sleep(300);
       if(!await d.$eval('#lbFlow',e=>e.hidden))throw new Error('desktop flow shown on a piece without steps');
+      if(errs.length)throw new Error('page errors: '+errs.join(' | '))}finally{await c.close()}});
+
+  // --- Sprint 3: morumelons. The project opens with its 12 characters; first view loads thumbs only; a tap plays one
+  // animation once and settles back; Back returns to the Art card it came from (phone), Esc to the gallery (desktop) ---
+  const mmReq=pg=>{const seen=[];pg.on('request',r=>{const u=r.url();if(u.includes('/assets/projects/morumelons/'))seen.push(u.split('/assets/projects/morumelons/')[1])});return seen};
+  const mmState=pg=>pg.evaluate(()=>{const box=document.getElementById('lbSet'),ch=[...box.querySelectorAll('.mm-ch')],r=ch.map(e=>e.getBoundingClientRect());
+    return {shown:!box.hidden,n:ch.length,btn:ch.filter(e=>e.tagName==='BUTTON').length,small:r.filter(x=>x.width<44||x.height<44).length,
+      names:ch.filter(e=>e.textContent.trim()).length,hint:(box.querySelector('.mm-hint')||{}).textContent||'',lang:LANG,
+      wantHint:t(document.body.classList.contains('game-mode')||!matchMedia('(hover:hover)').matches?'mm.hintTap':'mm.hint'),
+      cols:new Set(r.map(x=>Math.round(x.left))).size,setNode:[...document.querySelectorAll('#lbFlow .fl-node')].findIndex(n=>!!(stepsOf(PROJECTS[cur])[+n.dataset.step]||{}).set)}});
+  const mmSettles=async(pg,sel)=>{const src0=await pg.$eval(sel,e=>e.getAttribute('src'));
+    const on=await pg.waitForFunction(s=>/^blob:/.test(document.querySelector(s).getAttribute('src')),sel,{timeout:6000,polling:50}).then(()=>true,()=>false);
+    if(!on)throw new Error('the animation did not start: '+sel);
+    const back=await pg.waitForFunction(([s,v])=>document.querySelector(s).getAttribute('src')===v,[sel,src0],{timeout:12000,polling:100}).then(()=>true,()=>false);
+    if(!back)throw new Error('the animation did not settle back on its still')};
+  await T('morumelons: 12 characters, thumbs first, tap plays once, Back returns (phone)',async p=>{const req=mmReq(p);await boot(p);await tab(p,'art');await must(p,'#gCards >*','no art cards');
+    const i=await p.evaluate(()=>PROJECTS.findIndex(q=>q.slug==='morumelons'));const card=`#gCards [data-i="${i}"]`;
+    await p.waitForSelector(card,{state:'attached',timeout:5000});await p.$eval(card,e=>e.scrollIntoView({block:'center'}));await sleep(300);
+    const at=()=>p.$eval(card,e=>{const r=e.getBoundingClientRect();return [Math.round(r.top),Math.round(r.bottom),innerHeight]});const y0=await at();
+    await p.tap(card);await sleep(900);if(!await p.evaluate(()=>document.getElementById('lightbox').open))throw new Error('Morumelons did not open');
+    await must(p,'#lbSet .mm-ch','no characters',3000);const f=await mmState(p);
+    if(!f.shown||f.n!==12||f.btn!==12||f.small||f.names!==12||f.cols!==3)throw new Error('character set '+JSON.stringify(f));
+    if(f.hint!==f.wantHint)throw new Error('hint in the wrong language '+JSON.stringify(f));
+    await p.tap(`#lbFlow .fl-node[data-step="${f.setNode}"]`);await sleep(700);
+    if(!await p.evaluate(()=>{const r=document.getElementById('lbSet').getBoundingClientRect();return r.top<innerHeight&&r.bottom>0}))throw new Error('the Characters node did not bring the set into view');
+    await p.$$eval('#lbSet img',l=>Promise.all(l.map(i=>i.complete?0:new Promise(r=>{i.onload=i.onerror=r;setTimeout(r,4000)}))));
+    if(req.some(u=>!/-thumb\.webp$/.test(u)))throw new Error('first view loaded more than thumbs: '+req.filter(u=>!/-thumb\.webp$/.test(u)).slice(0,3).join(', '));
+    await audit(p,'morumelons set');
+    await p.$eval('#lbSet li:nth-child(2) .mm-ch',e=>e.scrollIntoView({block:'center'}));await sleep(300);
+    await p.tap('#lbSet li:nth-child(2) .mm-ch');await mmSettles(p,'#lbSet li:nth-child(2) img');
+    const anims=req.filter(u=>/-anim\.webp$/.test(u));if(anims.length!==1)throw new Error('one tap should fetch exactly one animation, got '+anims.length);
+    await p.evaluate(()=>history.back());await sleep(900);
+    if(await p.evaluate(()=>document.getElementById('lightbox').open))throw new Error('Back did not close Morumelons');
+    if(await active(p)!=='g-art')throw new Error('Back left the Art tab: '+await active(p));
+    // the Art grid fills in idle slices and late images, so compare where the card sits on screen, not raw scroll offsets
+    const y1=await at();if(y1[0]<0||y1[1]>y1[2]||Math.abs(y1[0]-y0[0])>60)throw new Error('Back did not return to the Morumelons card on Art: '+y0+' -> '+y1)});
+  await T('morumelons: reduced motion shows still characters, fetches no animation',async p=>{const req=mmReq(p);await p.emulateMedia({reducedMotion:'reduce'});await boot(p);
+    await openPiece(p,'morumelons');await must(p,'#lbSet .mm-ch','no characters',3000);const f=await mmState(p);
+    if(f.n!==12||f.btn!==0||f.hint)throw new Error('reduced motion set '+JSON.stringify(f));
+    await p.$eval('#lbSet .mm-ch',e=>e.scrollIntoView({block:'center'}));await p.tap('#lbSet .mm-ch');await sleep(800);
+    if(req.some(u=>/-anim\.webp$/.test(u)))throw new Error('an animation was fetched under reduced motion');
+    await p.tap('#lbClose');await sleep(600);if(await p.evaluate(()=>document.getElementById('lightbox').open))throw new Error('close did not close')});
+  await T('morumelons: desktop set, hover plays once, Esc returns',async p=>{const c=await p.context().browser().newContext({viewport:{width:1440,height:900},colorScheme:scheme});
+    await c.addInitScript(l=>{try{localStorage.setItem('lang',l)}catch(e){}},lang);
+    try{const d=await c.newPage();const errs=[];d.on('pageerror',e=>errs.push(e.message));const req=mmReq(d);await d.goto(url);await sleep(800);
+      const i=await d.evaluate(()=>PROJECTS.findIndex(q=>q.slug==='morumelons'));const tile=`#grid .tile[data-i="${i}"]`;
+      await d.$eval(tile,e=>e.scrollIntoView({block:'center'}));await sleep(400);const y0=await d.evaluate(()=>scrollY);
+      await d.$eval(tile,e=>e.click());await must(d,'#lbSet .mm-ch','no desktop characters',3000);const f=await mmState(d);
+      if(f.n!==12||f.btn!==12||f.small||f.cols!==6)throw new Error('desktop set '+JSON.stringify(f));
+      if(f.hint!==f.wantHint)throw new Error('desktop hint '+JSON.stringify(f));
+      await d.$eval('#lbSet li:nth-child(3) .mm-ch',e=>e.scrollIntoView({block:'center'}));await sleep(200);
+      if(req.some(u=>/-anim\.webp$/.test(u)))throw new Error('an animation was fetched before any hover');
+      await d.hover('#lbSet li:nth-child(3) .mm-ch');await mmSettles(d,'#lbSet li:nth-child(3) img');
+      await d.keyboard.press('Escape');await sleep(500);if(await d.evaluate(()=>document.getElementById('lightbox').open))throw new Error('Esc did not close');
+      if(Math.abs(await d.evaluate(()=>scrollY)-y0)>4)throw new Error('Esc did not return to the same place in the gallery');
       if(errs.length)throw new Error('page errors: '+errs.join(' | '))}finally{await c.close()}});
 
   // --- Map ---

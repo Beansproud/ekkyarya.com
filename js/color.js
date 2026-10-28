@@ -46,6 +46,7 @@ const TOOLS=[["fill","i-bucket","Fill"],["brush","i-brush","Brush"],["fade","i-f
     S("i-brush",'<path d="M20 4 11 13"/><path d="M10.5 13.5c-2 0-3.5 1.4-3.5 3.3 0 1.3-.9 2.2-2.5 2.7 4.2 1.4 8.5-.4 8.5-3.4z" fill="currentColor"/>')+
     S("i-fade",'<rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M8 4v16M12 4v16M16 4v16" stroke-dasharray="1.6 2.4" stroke-width="2"/><path d="M3.5 3.5h5v17h-5z" fill="currentColor" stroke="none"/>')+
     S("i-pattern",'<rect x="3.5" y="3.5" width="17" height="17" rx="3"/><g fill="currentColor" stroke="none"><circle cx="8.5" cy="8.5" r="1.7"/><circle cx="15.5" cy="8.5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="8.5" cy="15.5" r="1.7"/><circle cx="15.5" cy="15.5" r="1.7"/></g>')+
+    S("i-zoomout",'<circle cx="10.5" cy="10.5" r="6.5"/><path d="M7.5 10.5h6M15.5 15.5 20 20"/>')+
     S("i-eraser",'<path d="m14 4.5 6 6-9 9H6.5l-3-3z"/><path d="m9 9.5 6 6M11 19.5h9"/>'))}
 
 /* ---- overlay markup ---- */
@@ -60,8 +61,9 @@ G.insertAdjacentHTML("beforeend",`<div class="c-over" id="gColor" role="dialog" 
     <div class="c-top"><button class="c-icon" id="cBack" aria-label="${tt("ui.back","Back")}">${ico("i-back")}</button><b id="cTitle"></b>
       <button class="g-hire sm" data-hire aria-label="${esc(t("hire.chip.aria"))}"><img src="assets/ui/monster-head.png" alt=""><span>${esc(t("hire.chip"))}</span></button>
       <button class="g-btn sm" id="cDone">${esc(t("color.done"))}</button></div>
-    <div class="c-stage-wrap"><div class="c-stage" id="cStage"><canvas id="cCanvas" role="img"></canvas><img class="c-peek" id="cPeek" alt=""><div class="c-stickers" id="cStickers"></div>
-      <div class="c-bin" id="cBin"><svg class="ico c-trash" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path class="c-lid" d="M4 7h16M9 7V4.5h6V7"/><path d="M6.5 7l1 13h9l1-13M10 11v5M14 11v5"/></svg><span>${esc(t("color.bin"))}</span></div><p class="c-hint" id="cHint"></p></div></div>
+    <div class="c-stage-wrap"><div class="c-stage" id="cStage"><canvas id="cCanvas" role="img"></canvas><img class="c-peek" id="cPeek" alt=""><div class="c-stickers" id="cStickers"></div></div>
+      <div class="c-bin" id="cBin"><svg class="ico c-trash" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path class="c-lid" d="M4 7h16M9 7V4.5h6V7"/><path d="M6.5 7l1 13h9l1-13M10 11v5M14 11v5"/></svg><span>${esc(t("color.bin"))}</span></div><p class="c-hint" id="cHint"></p>
+      <button class="c-zoomout" id="cZoomOut" hidden aria-label="${esc(tt("color.zoomOut","Zoom out"))}">${ico("i-zoomout")}</button></div>
     <div class="c-colors" id="cColors" role="radiogroup" aria-label="${esc(tt("color.colors","Colors"))}"></div>
     <div class="c-opts" id="cOpts"></div>
     <div class="c-kit" id="cKit" role="radiogroup" aria-label="${esc(tt("tool.tools","Tools"))}">${TOOLS.map(([k,i,en])=>`<button class="c-kt${k==="fill"?" on":""}" data-tool="${k}" role="radio" aria-checked="${k==="fill"}">${ico(i)}<span>${esc(tt("tool."+k,en))}</span></button>`).join("")}</div>
@@ -96,7 +98,19 @@ G.insertAdjacentHTML("beforeend",`<div class="c-over" id="gColor" role="dialog" 
 </div>`);
 const over=$("gColor");
 function view(name){if(typeof wheel!=="undefined")wheel.hidden=true;over.classList.add("open");over.querySelectorAll(".c-view").forEach(v=>v.classList.toggle("active",v.id===name))}
-function close(){over.classList.remove("open");cur=null}
+function close(){
+  // The phone's Back closes only the top layer (owner rule, QA P2-2 and P2-3): the colour wheel, then the sticker tray, then the zoom,
+  // then the editor (back to the picker), the reveal (back to the editor), and only then Color. js/game.js has already taken Color's
+  // history entry when this runs, so a class flip on the overlay makes it add the entry again.
+  if(window.event&&window.event.type==="popstate"&&over.classList.contains("open")){const on=id=>$(id).classList.contains("active");let step=true;
+    if(!wheel.hidden)closeWheel();
+    else if(!$("cTray").hidden&&$("cStickBtn"))$("cStickBtn").click();
+    else if(on("cEdit")&&typeof zoom!=="undefined"&&zoomed())zoomOut();
+    else if(on("cEdit")){save(true);openPicker()}
+    else if(on("cReveal")){view("cEdit");sizeStage()}
+    else step=false;
+    if(step){over.classList.add("re");requestAnimationFrame(()=>over.classList.remove("re"));return}}
+  over.classList.remove("open");cur=null;if(typeof zoom!=="undefined"&&zoomed())zReset()}
 
 /* ---- picker ---- */
 function openPicker(){
@@ -261,7 +275,7 @@ async function open(id,opts={}){
   if(!hintShown&&!(Game.st.hints||{}).color){hintShown=true;const h=$("cHint");h.textContent=t("color.hint");h.classList.add("show");setTimeout(()=>h.classList.remove("show"),2600);
     Game.st.hints=Object.assign({},Game.st.hints,{color:1});Game.save()}
 }
-function sizeStage(){if(!cur)return;const wrap=stage.parentElement,{w,h}=cur.pd.meta,aw=wrap.clientWidth,ah=wrap.clientHeight;
+function sizeStage(){if(!cur)return;const wrap=stage.parentElement,{w,h}=cur.pd.meta,aw=wrap.clientWidth-12,ah=wrap.clientHeight-12;   // room for the frame's yellow ring inside the clipping wrap
   const sc=Math.min(aw/w,ah/h);stage.style.width=w*sc+"px";stage.style.height=h*sc+"px"}
 addEventListener("resize",sizeStage);
 function renderColors(){const cols=cur.pd.meta.colors;
@@ -361,8 +375,16 @@ function endDraw(e){if(pinch){endPinch(e);return}if(!draw||e.pointerId!==draw.id
 const inkCount=()=>cur.ink.reduce((n,o)=>n+(o.p?o.p.length:1),0);
 /* ---- two fingers: pinch to zoom (1x to 4x) and pan; the page is moved with a transform only, once per frame, and comes back to 1x when let go near it ---- */
 let pinch=null,zoom={z:1,x:0,y:0},zRaf=0;
-const zApply=()=>{zRaf=0;stage.style.transform=zoom.z===1&&!zoom.x&&!zoom.y?"":`translate3d(${zoom.x}px,${zoom.y}px,0) scale(${zoom.z})`};
+const zApply=()=>{zRaf=0;stage.style.transform=zoom.z===1&&!zoom.x&&!zoom.y?"":`translate3d(${zoom.x}px,${zoom.y}px,0) scale(${zoom.z})`;zSync()};
 function zReset(){zoom={z:1,x:0,y:0};pinch=null;zApply()}
+// Every zoom level can be left (owner rule: every path is reversible): the zoom-out button, Esc, the editor's Back button and the
+// phone's Back each bring the page back to 1x first. No history entry is added for a zoom (Chrome skips entries pushed without a tap);
+// the phone's Back reaches close() below, which zooms out instead while zoomed.
+const zoomed=()=>zoom.z>1.001;
+function zSync(){const b=$("cZoomOut");if(b)b.hidden=!zoomed()}
+function zoomOut(){if(!zoomed())return false;stage.classList.add("zback");setTimeout(()=>stage.classList.remove("zback"),300);zoom={z:1,x:0,y:0};pinch=null;zApply();return true}
+$("cZoomOut").addEventListener("click",()=>{Game.buzz(6);zoomOut()});
+addEventListener("keydown",e=>{if(e.key==="Escape"&&over.classList.contains("open")&&$("cEdit").classList.contains("active")&&wheel.hidden&&zoomOut()){e.stopImmediatePropagation();e.preventDefault()}},true);   // before js/game.js, whose Esc closes Color
 function startPinch(e){const d=draw;draw=null;if(inkRaf){cancelAnimationFrame(inkRaf);inkRaf=0}if(d&&d.op)redrawInk();   // the first finger's unfinished stroke is dropped
   const P=new Map([[d.id,[d.lx??d.cx,d.ly??d.cy]],[e.pointerId,[e.clientX,e.clientY]]]);try{stage.setPointerCapture(e.pointerId)}catch{}
   const R=stage.getBoundingClientRect();pinch={P,a:[...P.values()].map(v=>v.slice()),z0:{...zoom},w:stage.offsetWidth,h:stage.offsetHeight,O:[R.left-zoom.x,R.top-zoom.y]}}
@@ -390,7 +412,7 @@ $("cUndo").onclick=()=>step("undo","redo");$("cRedo").onclick=()=>step("redo","u
 const peek=on=>{$("cPeek").classList.toggle("show",on&&!!$("cPeek").getAttribute("src"))};
 $("cPeekBtn").addEventListener("pointerdown",e=>{e.preventDefault();peek(true)});["pointerup","pointerleave","pointercancel"].forEach(ev=>$("cPeekBtn").addEventListener(ev,()=>peek(false)));
 $("cPeekBtn").addEventListener("keydown",e=>{if(e.key===" "||e.key==="Enter")peek(true)});$("cPeekBtn").addEventListener("keyup",()=>peek(false));
-$("cBack").onclick=()=>{save(true);openPicker()};
+$("cBack").onclick=()=>{if(zoomOut())return;save(true);openPicker()};
 $("cDone").onclick=reveal;   // the screen switches on the tap frame; the save (thumbnail, JSON) runs after the reveal has painted
 
 /* ---- stickers: tap one in the tray to add it; drag to move, pinch to scale and rotate, drag onto the bin to remove ---- */

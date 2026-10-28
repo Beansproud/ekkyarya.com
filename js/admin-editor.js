@@ -552,8 +552,26 @@
   }
 
   // ---- keys (desktop) ----
+  // Esc and Back close the innermost thing first: the phone panel, a crop frame in progress, then the editor (as Cancel)
+  function escape() {
+    if (!S || Date.now() - (S.escAt || 0) < 300) return; S.escAt = Date.now();
+    if (S.panelOpen && S.narrow) { S.panelOpen = false; paintPanel(); return paintTop(); }
+    const c = S.crop; if (S.tool === "crop" && c.W && (S.straight || c.x > 0 || c.y > 0 || c.w < S.W || c.h < S.H)) return ACTIONS.resetCrop();
+    ACTIONS.cancel();
+  }
+  // Back: the editor has its own history entry; Back closes it like Cancel and never reaches the page under it
+  function onPop(e) {
+    if (!S || !S.pushed) return;
+    e.stopImmediatePropagation();
+    if (S.skipPop) { S.skipPop = false; return; }
+    S.pushed = false;
+    if (S.hi > 0 && !confirm(T().discard)) return pushEntry();   // stay: the edits are kept
+    finish(null);
+  }
+  function pushEntry() { try { history.pushState(Object.assign({}, history.state, { ae: 1 }), ""); S.pushed = true; } catch (e) { S.pushed = false; } }
   function onKey(e) {
     if (!S) return;
+    if (e.key === "Escape") { e.preventDefault(); return escape(); }
     const tg = e.target, typing = tg && (tg.tagName === "TEXTAREA" || (tg.tagName === "INPUT" && /^(text|number|search)$/i.test(tg.type)));
     const mod = e.ctrlKey || e.metaKey, k = e.key.toLowerCase();
     if (mod && k === "z") { e.preventDefault(); return e.shiftKey ? redo() : undo(); }
@@ -727,10 +745,10 @@
 #aeRoot .ae-opts>*{flex:none}#aeRoot .ae-opts p{margin:0;color:var(--mute);font-size:.88rem;white-space:nowrap}
 #aeRoot .ae-sep{width:2px;height:32px;background:var(--line)}
 #aeRoot .ae-rng{display:flex;flex-direction:column;justify-content:center;min-height:44px;font-size:.78rem;color:var(--mute);min-width:130px}
-#aeRoot .ae-rng b{color:var(--ink)}#aeRoot input[type=range]{width:100%;min-height:28px;accent-color:#2B1342;margin:0}
-#aeRoot .ae-chk{display:flex;align-items:center;gap:6px;min-height:44px;padding:0 6px;font-size:.88rem;cursor:pointer}#aeRoot .ae-chk input{width:22px;height:22px;accent-color:#2B1342}
+#aeRoot .ae-rng b{color:var(--ink)}#aeRoot input[type=range]{width:100%;min-height:44px;accent-color:#2B1342;margin:0}
+#aeRoot .ae-chk{display:flex;align-items:center;gap:6px;min-height:44px;padding:0 6px;font-size:.88rem;cursor:pointer}#aeRoot .ae-chk input{width:22px;height:22px;accent-color:#2B1342}@media (pointer:coarse){#aeRoot .ae-chk input{width:44px;height:44px;margin:0}}
 #aeRoot .ae-sel,#aeRoot .ae-txt{display:flex;flex-direction:column;font-size:.78rem;color:var(--mute)}
-#aeRoot select,#aeRoot .ae-txt input{min-height:40px;border-radius:10px;border:2px solid var(--line);background:var(--card);font-size:.95rem;padding:4px 8px}
+#aeRoot select,#aeRoot .ae-txt input{min-height:44px;border-radius:10px;border:2px solid var(--line);background:var(--card);font-size:.95rem;padding:4px 8px}
 #aeRoot .ae-txt input{width:220px}
 #aeRoot .ae-stop{display:flex;align-items:center;gap:4px;padding:0 4px;border-left:2px solid var(--line)}#aeRoot .ae-stop input[type=range]{width:90px}
 #aeRoot .ae-chip{display:inline-block;width:32px;height:32px;border-radius:8px;border:2px solid var(--line)}
@@ -740,7 +758,7 @@
 #aeRoot .ae-tool span{font-size:.68rem;line-height:1.1;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #aeRoot .ae-tool:hover{border-color:var(--line)}#aeRoot .ae-tool[aria-pressed=true]{background:var(--ink);color:var(--paper)}
 #aeRoot .ae-colors{position:relative;width:62px;height:122px;margin-top:6px;flex:none}
-#aeRoot .ae-sw{position:absolute;left:0;top:0;width:44px;height:44px;border-radius:10px;border:3px solid #fff;box-shadow:0 0 0 2px var(--ink);cursor:pointer;z-index:2;overflow:hidden}
+#aeRoot .ae-sw{position:absolute;left:0;top:0;width:44px;height:44px;border-radius:10px;border:0;box-shadow:inset 0 0 0 3px #fff,0 0 0 2px var(--ink);cursor:pointer;z-index:2;overflow:hidden}
 #aeRoot .ae-sw input{opacity:0;width:100%;height:100%;cursor:pointer;border:0;padding:0}
 #aeRoot .ae-sw2{left:18px;top:26px;z-index:1}
 #aeRoot .ae-swsm{position:relative;left:auto;top:auto;width:44px;height:44px}
@@ -813,7 +831,7 @@
       S.stage = root.querySelector(".ae-stage"); S.cv = root.querySelector("canvas"); S.vx = S.cv.getContext("2d");
       S.comp = mk(1, 1); S.tmp = mk(1, 1); S.buf = mk(1, 1); S.checker = checker(S.vx);
       S.narrow = matchMedia("(max-width:759px)").matches;
-      root.addEventListener("cancel", e => { e.preventDefault(); if (S.tool === "crop") ACTIONS.resetCrop(); });
+      root.addEventListener("cancel", e => { e.preventDefault(); escape(); });
       root.addEventListener("click", e => {
         const b = e.target.closest("[data-a],[data-tool]"); if (!b || b.disabled) return;
         if (b.dataset.tool) return setTool(b.dataset.tool);
@@ -829,18 +847,20 @@
       S.cv.addEventListener("contextmenu", e => e.preventDefault());
       document.addEventListener("keydown", onKey); document.addEventListener("keyup", onKeyUp);
       S.ro = new ResizeObserver(() => { if (!S) return; const n = matchMedia("(max-width:759px)").matches; if (n !== S.narrow) S.narrow = n; render(); }); S.ro.observe(S.stage);
-      root.showModal();
+      root.showModal(); addEventListener("popstate", onPop, true); pushEntry();
       paintTop(); paintTools(); paintOpts(); paintPanel();
-      const msg = root.querySelector(".ae-msg"); msg.textContent = T().loading;
+      const msg = root.querySelector(".ae-msg"), me = S; msg.textContent = T().loading;
       try {
-        const bm = await loadSource(source), w0 = bm.width || bm.naturalWidth, h0 = bm.height || bm.naturalHeight, k = Math.min(1, MAX / Math.max(w0, h0));
+        const bm = await loadSource(source);
+        if (S !== me) { if (bm.close) bm.close(); return; }   // closed (Cancel, Esc, Back) while the picture was loading
+        const w0 = bm.width || bm.naturalWidth, h0 = bm.height || bm.naturalHeight, k = Math.min(1, MAX / Math.max(w0, h0));
         S.W = Math.max(1, Math.round(w0 * k)); S.H = Math.max(1, Math.round(h0 * k));
         const c = mk(S.W, S.H), x = c.getContext("2d"); x.imageSmoothingQuality = "high"; x.drawImage(bm, 0, 0, S.W, S.H); if (bm.close) bm.close();
         S.layers = [{ ...newLayer(T().names.photo, "photo", c) }]; S.active = S.layers[0].id;
         S.hist = [{ label: T().h.open, undo() {}, redo() {} }]; S.hi = 0;
         resetCrop(); msg.textContent = "";
         setTool("brush"); fit();
-      } catch (e) { msg.textContent = T().failed; S.failed = true; }
+      } catch (e) { if (S === me) { msg.textContent = T().failed; S.failed = true; } }
     });
   }
   function finish(blob) {
@@ -849,6 +869,11 @@
     try { s.ro.disconnect(); } catch (e) {}
     document.removeEventListener("keydown", onKey); document.removeEventListener("keyup", onKeyUp);
     if (s.root.open) s.root.close(); s.root.remove();
+    removeEventListener("popstate", onPop, true);
+    if (s.pushed && history.state && history.state.ae) {   // closed with a button: drop the editor's history entry, quietly
+      const quiet = e => { e.stopImmediatePropagation(); removeEventListener("popstate", quiet, true); };
+      addEventListener("popstate", quiet, true); history.back();
+    }
     s.resolve(blob);
   }
   function finishApply() {

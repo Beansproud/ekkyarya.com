@@ -235,6 +235,53 @@ lb.addEventListener("cancel",e=>{if(lb.classList.contains("fl-viewing")){e.preve
 lb.addEventListener("close",()=>lb.classList.remove("fl-viewing"));
 const reduceFlow=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+/* ===== Sprint 3: morumelons. A step may carry a set (characters shown as a grid) and an anim (a play-once animated WebP) ===== */
+// Thumbs only on first view; an animation is fetched on the first tap or hover, plays once and settles back on the still.
+// Never under prefers-reduced-motion (the grid is then plain pictures). Nothing here pushes history: Back, Esc and close
+// leave the lightbox exactly as for any other piece.
+const mmAnims=new Map();   // anim path -> Promise<{blob, ms}>
+function webpMs(buf){const v=new DataView(buf);let ms=0;   // an animated WebP's length: the sum of its ANMF frame durations
+  for(let o=12;o+8<=v.byteLength;){const id=String.fromCharCode(v.getUint8(o),v.getUint8(o+1),v.getUint8(o+2),v.getUint8(o+3)),n=v.getUint32(o+4,true);
+    if(id==="ANMF"&&o+23<=v.byteLength)ms+=v.getUint8(o+20)|v.getUint8(o+21)<<8|v.getUint8(o+22)<<16;o+=8+n+(n&1)}
+  return ms}
+function mmPlay(img){const anim=img&&img.dataset.anim;if(!anim||reduceFlow()||img.dataset.mmOn)return;
+  const still=img.getAttribute("src");img.dataset.mmOn="1";
+  let got=mmAnims.get(anim);
+  if(!got){got=fetch(anim).then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(b=>({blob:new Blob([b],{type:"image/webp"}),ms:webpMs(b)||2400}));
+    mmAnims.set(anim,got);got.catch(()=>mmAnims.delete(anim))}
+  got.then(({blob,ms})=>{if(!img.isConnected||!lb.open){delete img.dataset.mmOn;return}
+    const u=URL.createObjectURL(blob),host=img.closest(".mm-ch")||img;   // a fresh URL restarts the play-once animation
+    img.src=u;host.classList.add("mm-on");
+    img.mmStop=()=>{clearTimeout(img.mmT);img.mmStop=null;if(img.getAttribute("src")===u)img.src=still;URL.revokeObjectURL(u);host.classList.remove("mm-on");delete img.dataset.mmOn};
+    img.mmT=setTimeout(img.mmStop,ms+60)},()=>{delete img.dataset.mmOn})}
+const mmStopAll=()=>lb.querySelectorAll("img[data-mm-on]").forEach(i=>i.mmStop&&i.mmStop());
+const mmName=c=>(c.name&&(c.name[LANG]||c.name.en))||"";
+// the hook (docs/flow.md): a step with a set gets its grid inside the flow box, under the diagram
+const MM_INK=["#FFB400","#FF6B6B","#7ED9B0","#B8D5FF"];   // the character stickers' shadow colours (the flow plates are one lavender)
+function mmRenderSet(box,p,steps){mmStopAll();
+  const k=steps.findIndex(st=>Array.isArray(st.set)&&st.set.length>=2),st=k<0?null:steps[k];if(!st)return;
+  const still=reduceFlow(),cap=flowCap(st,k),tag=still?"div":"button",sec=document.createElement("section");
+  sec.id="lbSet";sec.className="mm-set";sec.setAttribute("aria-label",cap);
+  sec.innerHTML=`<h4 class="fl-title">${escH(cap)} <small class="mm-n">${escH(t("flow.count",{n:st.set.length}))}</small></h4>`+
+    (still?"":`<p class="mm-hint">${escH(t(document.body.classList.contains("game-mode")||!matchMedia("(hover:hover)").matches?"mm.hintTap":"mm.hint"))}</p>`)+
+    `<ul class="mm-grid">${st.set.map((c,j)=>{const nm=mmName(c);
+      return `<li style="--j:${j};--c:${MM_INK[j%MM_INK.length]}"><${tag} class="mm-ch"${still?"":` type="button" aria-label="${escH(t("mm.play",{name:nm}))}"`}>`+
+        `<img src="${escH(c.img)}" alt="${still?escH(nm):""}" width="160" height="160" loading="lazy" decoding="async"${c.anim&&!still?` data-anim="${escH(c.anim)}"`:""}><span aria-hidden="true">${escH(nm)}</span></${tag}></li>`}).join("")}</ul>`;
+  box.appendChild(sec)}
+(window.FlowHooks=window.FlowHooks||[]).push(mmRenderSet);
+// a node with a set scrolls to its grid (focus on the first character; no new view, so no layer). A node with an anim
+// is left to the core, which opens its still as the step layer (fl-viewing: Back and Esc return to the piece); right
+// after, the still plays once (the tap asked for it), and a tap or hover replays.
+lb.addEventListener("flowstep",e=>{const {step:st,node:b}=e.detail,box=document.getElementById("lbSet");
+  if(st.set&&box){e.preventDefault();
+    lb.querySelectorAll(".fl-node").forEach(n=>n.removeAttribute("aria-current"));b.setAttribute("aria-current","true");
+    box.scrollIntoView({block:"start",behavior:reduceFlow()?"auto":"smooth"});const f=box.querySelector("button.mm-ch");if(f)f.focus({preventScroll:true});return}
+  if(st.anim)queueMicrotask(()=>{const img=document.querySelector("#lbArt img");if(!img||img.getAttribute("src")!==st.full||reduceFlow())return;
+    img.dataset.anim=st.anim;img.classList.add("mm-anim");mmPlay(img)})});
+lb.addEventListener("click",e=>{const b=e.target.closest(".mm-ch,.mm-anim");if(b)mmPlay(b.matches("img")?b:b.querySelector("img"))});
+lb.addEventListener("pointerover",e=>{if(e.pointerType!=="mouse")return;const b=e.target.closest(".mm-ch,.mm-anim");if(b&&!b.contains(e.relatedTarget))mmPlay(b.matches("img")?b:b.querySelector("img"))});
+lb.addEventListener("close",mmStopAll);
+
 /* ===== Typed words ===== */
 const typedWord=()=>{const el=document.getElementById("typed");if(el)el.textContent=t("hero.words").split("|")[0]};
 typedWord();
