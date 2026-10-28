@@ -51,7 +51,7 @@ const PAGES = {
     // owner: "make it very very detail" (the samurai's scar and the dino's fire were lost): colored outlines are lines too
     // (stroke: a pixel this much darker than its 7 px neighborhood), small painted shapes get their own region
     // (area, speck), and every edge between two regions without one of Ekky's lines gets a fine ink edge (edge alpha)
-    detail: { area: 900, k: 6, merge: 30, speck: 60, stroke: 22, strokeFull: 55, edge: .9 } };
+    detail: { area: 900, k: 6, merge: 64, speck: 60, stroke: 22, strokeFull: 55, edge: .9 } };   // merge 64: a shade and its base color are one shape (owner: "remove the tiny line of shades")
 });
 const MIN_AREA = 40, COLORS = 12;
 // Color split: areas above SPLIT_AREA px are divided by up to SPLIT_K of their own colors; patches under SPECK px fold
