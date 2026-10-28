@@ -237,6 +237,37 @@ async function runConfig(browser,url,scheme,lang){
     const dl=p.waitForEvent('download',{timeout:5000}).then(()=>1,()=>0);const dlg=p.waitForSelector('.g-sheet.open,[class*=share]:visible,#toast.show',{state:'visible',timeout:5000}).then(()=>1,()=>0);
     await p.tap('#lbDl');if(!(await dl)&&!(await dlg))throw new Error('Art Download: no file and no dialog')});
 
+  // --- Project flow (docs/flow.md): a piece with steps shows the diagram; one without is unchanged ---
+  const openPiece=async(p,slug)=>{await tab(p,'art');await must(p,'#gCards >*','no art cards');
+    const i=await p.evaluate(s=>PROJECTS.findIndex(q=>q.slug===s),slug);
+    const card=`#gCards [data-i="${i}"]`;if(!await p.$(card)){await p.evaluate(i=>show(i),i)}else{await p.$eval(card,e=>e.scrollIntoView({block:'center'}));await sleep(200);await p.tap(card)}
+    await sleep(900);if(!await p.evaluate(()=>document.getElementById('lightbox').open))throw new Error('lightbox did not open for '+slug)};
+  await T('flow: piece with steps shows the diagram (phone)',async p=>{await boot(p);await openPiece(p,'morumelons');
+    await must(p,'#lbFlow .fl-node','no flow nodes',3000);
+    const f=await p.evaluate(()=>{const n=[...document.querySelectorAll('#lbFlow .fl-node')],r=n.map(e=>e.getBoundingClientRect());
+      return {n:n.length,col:document.getElementById('lbFlow').classList.contains('fl-col'),small:r.filter(x=>x.width<44||x.height<44).length,
+        down:r.every((x,k)=>!k||x.top>r[k-1].bottom-1),cur:n.findIndex(e=>e.getAttribute('aria-current')==='true'),title:document.querySelector('#lbFlow .fl-title').textContent,
+        arrows:document.querySelectorAll('#lbFlow .fl-arrow').length,lang:LANG,want:t('flow.series')}});
+    if(f.n!==3||!f.col||f.small||!f.down||f.arrows!==2)throw new Error('flow layout '+JSON.stringify(f));
+    if(f.cur!==0||f.title!==f.want)throw new Error('flow labels '+JSON.stringify(f));
+    await p.$eval('#lbFlow .fl-node[data-step="2"]',e=>e.scrollIntoView({block:'center'}));await sleep(300);await p.tap('#lbFlow .fl-node[data-step="2"]');await sleep(500);
+    const src=await p.$eval('#lbArt img',e=>e.getAttribute('src'));if(!/nft-9\.jpg$/.test(src))throw new Error('step 3 did not open its picture: '+src);
+    await audit(p,'lightbox flow')});
+  await T('flow: piece without steps is unchanged (phone)',async p=>{await boot(p);await openPiece(p,'giraffe');
+    const f=await p.evaluate(()=>({hidden:document.getElementById('lbFlow').hidden,nodes:document.querySelectorAll('#lbFlow .fl-node').length,cls:document.getElementById('lightbox').classList.contains('has-flow')}));
+    if(!f.hidden||f.nodes||f.cls)throw new Error('flow shown on a piece without steps '+JSON.stringify(f))});
+  await T('flow: desktop lightbox row, and none without steps',async p=>{const c=await p.context().browser().newContext({viewport:{width:1440,height:900},colorScheme:scheme});
+    try{const d=await c.newPage();const errs=[];d.on('pageerror',e=>errs.push(e.message));await d.goto(url);await sleep(800);
+      await d.evaluate(()=>show(PROJECTS.findIndex(q=>q.slug==='nft-3')));await must(d,'#lbFlow .fl-node','no desktop flow',3000);
+      const f=await d.evaluate(()=>{const r=[...document.querySelectorAll('#lbFlow .fl-node')].map(e=>e.getBoundingClientRect());
+        return {n:r.length,row:r.every((x,k)=>!k||x.left>r[k-1].right-1),cur:[...document.querySelectorAll('#lbFlow .fl-node')].findIndex(e=>e.getAttribute('aria-current')==='true')}});
+      if(f.n!==3||!f.row||f.cur!==1)throw new Error('desktop flow '+JSON.stringify(f));
+      await d.click('#lbFlow .fl-node[data-step="0"]');await sleep(300);
+      if(!/morumelons\.jpg$/.test(await d.$eval('#lbArt img',e=>e.getAttribute('src'))))throw new Error('desktop node did not open its picture');
+      await d.evaluate(()=>show(PROJECTS.findIndex(q=>q.slug==='rpg')));await sleep(300);
+      if(!await d.$eval('#lbFlow',e=>e.hidden))throw new Error('desktop flow shown on a piece without steps');
+      if(errs.length)throw new Error('page errors: '+errs.join(' | '))}finally{await c.close()}});
+
   // --- Map ---
   await T('map: place sheet',async p=>{await boot(p);await tab(p,'map');await must(p,'#gMapWrap .v-place','no places',8000);await sleep(800);
     await p.evaluate(()=>document.querySelector('#gMapWrap .v-place:not(.hire)').click());await sleep(900);if(!await p.evaluate(()=>document.getElementById('gSheet').classList.contains('open')))throw new Error('place sheet did not open');

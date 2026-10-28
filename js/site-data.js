@@ -10,6 +10,17 @@ const SiteData = (() => {
   const clean = v => { const s = str(v).replace(/[<>]/g, "").replace(/"/g, "\u201D").trim(); return s && !GLYPH.test(s) ? s : ""; };
   const SAFE_URL = /^https:\/\/[^\s"'<>`\\]+$/, SAFE_MAIL = /^[^\s@"'<>`\\]+@[^\s@"'<>`\\]+$/, SAFE_UID = /^u-[a-z0-9-]+$/;
   const SAFE_PATH = /^assets\/work\/(?:thumb\/)?u\/[a-z0-9-]+\.jpe?g$/;
+  // Project flow (docs/flow.md): steps of a piece. A bad step is dropped, never the piece; fewer than 2 means no flow.
+  const SAFE_STEP = /^assets\/work\/(?:thumb\/|s\/)?(?:u\/)?[a-z0-9-]+\.(?:jpe?g|png|gif)$/;
+  const FLOW_KINDS = ["process", "series"];
+  function flowOf(raw) {
+    if (!isObj(raw) || !Array.isArray(raw.steps)) return null;
+    const steps = raw.steps.filter(isObj).map(x => {
+      const c = isObj(x.caption) ? x.caption : {}, img = str(x.img), full = str(x.full);
+      return SAFE_STEP.test(img) && SAFE_STEP.test(full) ? { img, full, caption: { en: clean(c.en).slice(0, 60), id: clean(c.id).slice(0, 60) } } : null;
+    }).filter(Boolean).slice(0, 8);
+    return steps.length >= 2 ? { flow: FLOW_KINDS.includes(raw.flow) ? raw.flow : "process", steps } : null;
+  }
   const KINDS = ["original", "client", "fan"], CATS = ["illustration", "web", "branding", "social"];
   const ROLES = ["portfolio", "card", "featured", "share", "coloring", "sticker", "sprite", "level", "scene", "avatar", "game", "village"];
   const key = p => [p.title, p.uid, p.slug];
@@ -39,6 +50,7 @@ const SiteData = (() => {
     if (kind === "fan") p.label = "Fan art";
     else if (kind === "client" && clean(raw.label)) p.label = clean(raw.label);
     if (tr) p.id = { title: clean(tr.title), desc: clean(tr.desc) };
+    const f = flowOf(raw); if (f) Object.assign(p, f);
     if (!p.roles.includes("portfolio")) p.roles.unshift("portfolio");
     if (!p.roles.includes("card")) p.roles.push("card");
     if (kind !== "original") p.roles = p.roles.filter(r => ["portfolio", "card"].includes(r));   // fan and client: portfolio only
@@ -68,6 +80,9 @@ const SiteData = (() => {
         const p = piece(g, raw);
         if (p && !g.PROJECTS.some(q => q.full === p.full || (p.uid && q.uid === p.uid))) { g.PROJECTS.push(p); changed = true; }
       }
+      // steps for built-in pieces, keyed by title (or uid)
+      if (isObj(d.flows)) for (const k in d.flows) { const f = flowOf(d.flows[k]), p = f && g.PROJECTS.find(q => matches(q, [k]));
+        if (p) { Object.assign(p, f); changed = true; } }
       const hidden = Array.isArray(d.hidden) ? d.hidden.map(str).filter(Boolean) : [];
       for (let i = g.PROJECTS.length - 1; i >= 0; i--) if (matches(g.PROJECTS[i], hidden)) { g.PROJECTS.splice(i, 1); changed = true; }
       SiteData.order = Array.isArray(d.order) ? d.order.map(str).filter(Boolean) : [];
