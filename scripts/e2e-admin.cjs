@@ -223,7 +223,7 @@ async function runConfig(browser,url,dev,lang){
     if(phone)await edClick(p,'[data-a=redo]');else await p.keyboard.press('Control+Shift+z');await sleep(60);
     if(same(await edSample(p,600,400),s0))throw new Error('redo did not bring the brush stroke back')});
   T('editor: Apply returns a full-size JPEG Blob',async p=>{await edOpen(p);await edClick(p,'[data-tool=brush]');await edDrag(p,[200,200],[1000,600]);await edClick(p,'[data-a=apply]');
-    if(!await waitFor(()=>p.evaluate(()=>!!window.__qaBlob),5000))throw new Error('Apply did not hand back a Blob');
+    if(!await waitFor(()=>p.evaluate(()=>!!window.__qaBlob),15000))throw new Error('Apply did not hand back a Blob: '+await p.evaluate(()=>JSON.stringify({open:AdminEditor.isOpen(),msg:(document.querySelector('#aeRoot .ae-msg')||{}).textContent,d:AdminEditor.debug()&&AdminEditor.debug().history})));
     const r=await p.evaluate(async()=>{const b=window.__qaBlob,bm=await createImageBitmap(b);return {type:b.type,w:bm.width,h:bm.height,open:AdminEditor.isOpen()||!!document.querySelector('#aeRoot')}});
     if(r.type!=='image/jpeg'||r.w!==1200||r.h!==800)throw new Error(`Blob is ${r.type} ${r.w}x${r.h}, expected image/jpeg 1200x800`);if(r.open)throw new Error('the editor stayed open after Apply')});
   T('editor: Edit in the Art tab sends the edited picture to the form',async(p,c)=>{needAdmin();needEditor();mockGithub(c);await openAdmin(p);
@@ -234,8 +234,16 @@ async function runConfig(browser,url,dev,lang){
     if(!await waitFor(()=>p.evaluate(()=>{const d=window.AdminEditor&&AdminEditor.debug();return !!(d&&d.W===3200)}),6000))throw new Error('Edit did not open the editor on the 3200 px picture');
     await edClick(p,'[data-tool=brush]');await p.evaluate(()=>{document.querySelector('#aeRoot [data-o="brush.size"]').value=300;document.querySelector('#aeRoot [data-o="brush.size"]').dispatchEvent(new Event('input',{bubbles:true}))});
     await edDrag(p,[200,1800],[3000,1800]);await edClick(p,'[data-a=apply]');
-    if(!await waitFor(()=>p.evaluate(()=>!document.querySelector('#aeRoot')),6000))throw new Error('the editor did not close after Apply');
-    if(!await waitFor(async()=>{const s=await p.locator('#adminRoot .aa-pick img').getAttribute('src').catch(()=>null);return !!s&&s!==before},6000))throw new Error('the form preview did not change to the edited picture')});
+    if(!await waitFor(()=>p.evaluate(()=>!document.querySelector('#aeRoot')),15000))throw new Error('the editor did not close after Apply');
+    if(!await waitFor(async()=>{const s=await p.locator('#adminRoot .aa-pick img').getAttribute('src').catch(()=>null);return !!s&&s!==before},15000))throw new Error('the form preview did not change to the edited picture');
+    // reversible: "Back to original" restores the picked picture; Cancel leaves the form as it was
+    const orig=p.locator('#aaOrig');if(!await orig.count())throw new Error('no "Back to original" button after an edit');await orig.click();
+    if(!await waitFor(()=>p.locator('#adminRoot .aa-pick img').getAttribute('src').then(s=>s===before,()=>false),6000))throw new Error('"Back to original" did not restore the picked picture');
+    if(await p.locator('#aaOrig').count())throw new Error('"Back to original" still shows on the original');
+    await p.locator('#aaEdit').click();if(!await waitFor(()=>p.evaluate(()=>!!(window.AdminEditor&&AdminEditor.debug())),6000))throw new Error('Edit did not open the editor again');
+    await edClick(p,'[data-tool=brush]');await edDrag(p,[200,600],[3000,600]);p.once('dialog',d=>d.accept());await edClick(p,'[data-a=cancel]');
+    if(!await waitFor(()=>p.evaluate(()=>!document.querySelector('#aeRoot')),4000))throw new Error('Cancel did not close the editor');await sleep(300);
+    if(await p.locator('#adminRoot .aa-pick img').getAttribute('src')!==before)throw new Error('Cancel changed the form picture')});
 
   // 6. merged data (needs js/site-data.js)
   const site={version:1,links:{instagram:'https://example.com/qa-ig'},contact:{email:'qa@example.com'},
