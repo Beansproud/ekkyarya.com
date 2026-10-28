@@ -153,7 +153,7 @@ function villageLife(V){
    scheduler starts a new short moment every 1-3 s, so 3 to 5 play at once, each in a different part of the map.
    Every moment is a Web Animation on transform and opacity of Ekky's own sprites or a plain gold or paper shape,
    removed when it ends. Nothing runs when the map is off screen or the tab is hidden; reduced motion shows a still map. ---- */
-const Life={tok:0,run:false,tm:0,live:new Map(),recent:[],io:null,V:null,fx:null,ctl:null};
+const Life={tok:0,anims:[],kits:new Set(),run:false,tm:0,live:new Map(),recent:[],io:null,V:null,fx:null,ctl:null};
 const rnd=(a,b)=>a+Math.random()*(b-a),pick=a=>a[Math.floor(Math.random()*a.length)];
 const EZ="cubic-bezier(.4,0,.2,1)",EZI="cubic-bezier(.22,.61,.36,1)";
 const calm=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -212,22 +212,29 @@ const MOMENTS=[
 function nextWallPiece(){const shown=new Set([...$("gMapWrap").querySelectorAll(".v-frame")].map(i=>i.getAttribute("src")));
   const o=PROJECTS.filter(p=>creative(p)&&p.kind==="original"&&!shown.has(thumbOf(p)));return o.length?pick(o):null}
 function lifeSpawn(){const busy=new Set([...Life.live.values()].map(m=>m.r)),ids=Life.recent;
-  const ok=MOMENTS.filter(m=>!Life.live.has(m.id)&&!busy.has(m.r)&&!ids.includes(m.id));if(!ok.length)return;
-  const m=pick(ok),k=lifeKit();Life.recent=[...ids,m.id].slice(-6);Life.live.set(m.id,m);
+  const ok=MOMENTS.filter(m=>!Life.live.has(m.id)&&!busy.has(m.r)&&!ids.includes(m.id)&&!(Z.s>1&&m.id==="cloudride"));if(!ok.length)return;
+  const m=pick(ok),k=lifeKit();Life.recent=[...ids,m.id].slice(-6);Life.live.set(m.id,m);Life.kits.add(k);
   try{m.run(k)}catch(e){}
-  setTimeout(()=>{k.els.forEach(e=>e.remove());k.anims.forEach(a=>{try{a.cancel()}catch(e){}});Life.live.delete(m.id)},m.d+100)}
+  setTimeout(()=>{k.els.forEach(e=>e.remove());k.anims.forEach(a=>{try{a.cancel()}catch(e){}});Life.live.delete(m.id);Life.kits.delete(k)},m.d+100)}
 function lifeTick(){clearTimeout(Life.tm);if(!Life.run)return;
   if(!Z.pts.size&&Life.live.size<3+Math.floor(Math.random()*3))lifeSpawn();   // nothing new starts under a finger
   Life.tm=setTimeout(lifeTick,rnd(1000,3000))}
 // while a finger pans or pinches, the village's motion holds still and resumes when it lets go
-function lifeHold(on){if(on===!!Life.held||!Life.fx)return;Life.held=on;if(on)lifeAnims(a=>a.pause());else if(Life.run)lifeAnims(a=>{if(a.playState==="paused")a.play()})}
-function lifeAnims(f){const z=$("gMapZoom");if(z)z.getAnimations({subtree:true}).forEach(a=>{try{f(a)}catch(e){}})}
-function lifeSet(on){on=on&&!document.hidden&&!calm();if(on===Life.run)return;Life.run=on;
-  if(on){lifeAnims(a=>{if(a.playState==="paused")a.play()});lifeTick()}else{clearTimeout(Life.tm);lifeAnims(a=>a.pause())}}
+function lifeHold(on){if(on===!!Life.held||!Life.fx)return;Life.held=on;if(on)lifeEach(true);else if(Life.run)lifeEach(false)}
+// Pause or resume everything the village runs: the CSS loops all stop with one class on the village root, the Web Animations are
+// kept in a list (Life.anims, and each moment's own), so nothing walks the whole document's animations.
+function lifeEach(pause){const z=$("gMapZoom");if(z)z.classList.toggle("v-hold",pause);
+  const f=a=>{try{if(pause)a.pause();else if(a.playState==="paused")a.play()}catch(e){}};Life.anims.forEach(f);Life.kits.forEach(k=>k.anims.forEach(f))}
+// the pause waits until the tab's fade has finished, and the resume until the Map is fully shown, so a tab switch itself stays light
+function lifeSet(on){clearTimeout(Life.sw);Life.sw=setTimeout(()=>lifeApply(on&&screen==="map"&&!document.hidden&&!calm()),on?300:320)}
+function lifeApply(on){if(on===Life.run)return;Life.run=on;
+  if(on){lifeEach(false);lifeTick()}else{clearTimeout(Life.tm);lifeEach(true)}}
 // always on: walkers walk their routes, clouds drift, stars twinkle, islands bob; started once per drawn village
 function lifeStart(z,V){Life.V=V;Life.fx=z.querySelector(".v-fx");Life.live.clear();if(!Life.fx||calm())return;
   const BOB={north:[6900,.9,0],mid:[8200,.6,-2300],south:[7400,.8,-4100]},isleAt=y=>y<260?"north":y>=500?"south":"mid";
-  const u=v=>(v/V.w*100).toFixed(3)+"cqw",tok=++Life.tok,stage=(ms,f,early)=>setTimeout(()=>{if(tok===Life.tok&&z.isConnected){f();if(!early&&screen!=="map")lifeAnims(a=>a.pause())}},ms+(early?0:2600));   // the village wakes up a little after the first look, one step every 350 ms, so opening the tab never does it all at once
+  Life.anims=[];Life.kits.clear();Life.held=false;
+  const A=(el,kf,o)=>{const a=el.animate(kf,o);Life.anims.push(a);return a};
+  const u=v=>(v/V.w*100).toFixed(3)+"cqw",tok=++Life.tok,stage=(ms,f,early)=>setTimeout(()=>{if(tok===Life.tok&&z.isConnected){f();if(!early&&screen!=="map")lifeEach(true)}},ms+(early?0:2600));   // the village wakes up a little after the first look, one step every 350 ms, so opening the tab never does it all at once
   stage(700,()=>z.querySelectorAll(".v-walk").forEach(w=>{const r=V.walkers[+w.dataset.w];if(!r)return;
     const ig=z.querySelector(`.v-isleg[data-isle="${isleAt(r.route[0][1])}"]`);if(ig)ig.appendChild(w);   // it stands on its island and bobs with it
     const route=r.route,pts=[...route,...route.slice(0,-1).reverse()],T=36/1600;   // 1 tile (36 px) per 1.6 s
@@ -236,14 +243,14 @@ function lifeStart(z,V){Life.V=V;Life.fx=z.querySelector(".v-fx");Life.live.clea
     const at=p=>`translate(${pct(p[0],V.w)},${pct(p[1],V.h)})`,kf=[],turns=[];let t=0,side=Math.sign(route[1][0]-route[0][0])||1;
     pts.forEach((p,j)=>{kf.push({offset:t/dur,transform:at(p)});t+=pause(j);kf.push({offset:Math.min(1,t/dur),transform:at(p)});
       if(j<segs.length){const dx=Math.sign(pts[j+1][0]-p[0]);if(dx)side=dx;turns.push({offset:t/dur,side});t+=segs[j]}});
-    kf[kf.length-1].offset=1;w.animate(kf,{duration:dur,iterations:Infinity,easing:"linear",delay});
+    kf[kf.length-1].offset=1;A(w,kf,{duration:dur,iterations:Infinity,easing:"linear",delay});
     // the picture turns to face where it goes, flipping while it waits
     const img=w.querySelector("img"),first=turns[0].side;if(img&&r.face!==0&&turns.some(x=>x.side!==first)){
       const fk=[{offset:0,scale:"1 1"},...turns.map(x=>({offset:x.offset,scale:x.side===first?"1 1":"-1 1"})),{offset:1,scale:"1 1"}];
-      img.animate(fk.map(f=>({...f,easing:"step-end"})),{duration:dur,iterations:Infinity,delay})}}));
+      A(img,fk.map(f=>({...f,easing:"step-end"})),{duration:dur,iterations:Infinity,delay})}}));
   // each island group bobs a few px at its own pace (one animation per island, so the cost stays tiny)
-  stage(1050,()=>{z.querySelectorAll(".v-isleg").forEach(e=>{const [d,amp,delay]=BOB[e.dataset.isle];e.animate([{transform:"translateY(0)"},{transform:`translateY(${u(-amp)})`}],{duration:d,delay,iterations:Infinity,direction:"alternate",easing:"ease-in-out"})});
-    const uf=z.querySelector(".v-ufo");if(uf)uf.animate([{transform:"translate(0,0) rotate(-3deg)"},{transform:`translate(${u(1.4)},${u(-1.6)}) rotate(3deg)`}],{duration:4600,iterations:Infinity,direction:"alternate",easing:"ease-in-out"})});
+  stage(1050,()=>{z.querySelectorAll(".v-isleg").forEach(e=>{const [d,amp,delay]=BOB[e.dataset.isle];A(e,[{transform:"translateY(0)"},{transform:`translateY(${u(-amp)})`}],{duration:d,delay,iterations:Infinity,direction:"alternate",easing:"ease-in-out"})});
+    const uf=z.querySelector(".v-ufo");if(uf)A(uf,[{transform:"translate(0,0) rotate(-3deg)"},{transform:`translate(${u(1.4)},${u(-1.6)}) rotate(3deg)`}],{duration:4600,iterations:Infinity,direction:"alternate",easing:"ease-in-out"})});
   // clouds drift, the gate's lantern flickers, the noodle bath steams
   stage(0,()=>{
   Life.fx.insertAdjacentHTML("beforebegin",`<div class="v-cloudrow" style="top:4%"><span class="v-cloud"></span></div><div class="v-cloudrow" style="top:80%"><span class="v-cloud small" style="animation-delay:-36s"></span></div>`);
@@ -256,7 +263,7 @@ function lifeStart(z,V){Life.V=V;Life.fx=z.querySelector(".v-fx");Life.live.clea
     stage(500+i*200,()=>{const im=new Image();im.src=s;im.decode().catch(()=>{});Life.cache.push(im)},true));
   if(!Life.io){Life.io=new IntersectionObserver(es=>lifeSet(es[es.length-1].isIntersecting),{threshold:.05});Life.io.observe($("gMapWrap"));
     document.addEventListener("visibilitychange",()=>lifeSet(!document.hidden&&screen==="map"))}
-  stage(1400,()=>{Life.run=null;lifeSet(screen==="map")})}   // null: re-sync play or pause for the freshly drawn village   // null: re-sync play or pause for the freshly drawn village
+  stage(1400,()=>{Life.run=null;clearTimeout(Life.sw);lifeApply(screen==="map"&&!document.hidden&&!calm())})}   // null: re-sync play or pause for the freshly drawn village   // null: re-sync play or pause for the freshly drawn village
 
 /* ---- Zoom (G1): pinch, drag or double-tap with a finger, or the +/- buttons with a mouse; 1x to 2x. A place is still one tap: a touch
    that moved more than 8 px is a pan, not a tap. Nothing animates; the view follows the finger. ---- */
@@ -271,12 +278,12 @@ function widen(on){const W=$("gMapWrap"),L=$("gMapZoom");
     Object.assign(W.style,{width:Z.base.css,height:"",aspectRatio:`${window.VILLAGE.w}/${window.VILLAGE.h}`});Z.base=null}}
 // Pan and zoom: gesture math runs on cached numbers (Z.r = the frame's rect, Z.cw = its width, both read once per gesture
 // by geom(), not per move); the transform is written at most once per frame, and --zs only when the scale changed.
-function geom(){const W=$("gMapWrap"),r=W.getBoundingClientRect();Z.r={l:r.left,t:r.top};Z.cw=W.clientWidth}
+function geom(){const W=$("gMapWrap"),r=W.getBoundingClientRect(),tb=document.querySelector(".g-tabs");Z.r={l:r.left,t:r.top};Z.cw=W.clientWidth;Z.tb=tb?tb.getBoundingClientRect().top-r.top:1e4}
 // a label is shown whole or not at all: one that would be cut by the frame's edge fades out until the map is moved back
 function edgeLabels(){if(!Z.lb){const V=window.VILLAGE,k=Z.base.w/V.w;
     Z.lb=[...$("gMapWrap").querySelectorAll(".v-label")].map(el=>{const p=V.places[el.dataset.place].label,n=LABEL_NUDGE[el.dataset.place]||[0,0];return {el,x:(p[0]+n[0])*k,y:(p[1]+n[1])*Z.base.h/V.h,w:el.offsetWidth,h:el.offsetHeight,off:false}})}
-  const m=6,cw=Z.cw,ch=Z.base.h;
-  for(const l of Z.lb){const x=Z.x+l.x*Z.s,y=Z.y+l.y*Z.s,off=x-l.w/2<m||x+l.w/2>cw-m||y<m||y+l.h>ch-m;if(off!==l.off){l.off=off;l.el.classList.toggle("edge",off)}}}
+  const m=6,mv=26,cw=Z.cw,ch=Math.min(Z.base.h,Z.tb||1e4);   // the top and bottom fade 22 px into the galaxy, and the tab bar counts as the frame's bottom
+  for(const l of Z.lb){const x=Z.x+l.x*Z.s,y=Z.y+l.y*Z.s,off=x-l.w/2<m||x+l.w/2>cw-m||y<mv||y+l.h>ch-mv;if(off!==l.off){l.off=off;l.el.classList.toggle("edge",off)}}}
 function paintZoom(){Z.raf=0;const L=$("gMapZoom");if(!L||!Z.base)return;
   L.style.transform=`translate3d(${Z.x}px,${Z.y}px,0) scale(${Z.s})`;edgeLabels();
   if(Z.zs!==Z.s){Z.zs=Z.s;L.style.setProperty("--zs",(1/Z.s).toFixed(3))}}
