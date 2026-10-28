@@ -239,9 +239,13 @@ async function runConfig(browser,url,scheme,lang){
   await T('map: villager sheet',async p=>{await boot(p);await tab(p,'map');await must(p,'#gMapWrap .v-walker, #gMapWrap .v-folk','no villagers',8000);await sleep(800);
     await p.evaluate(()=>document.querySelector('#gMapWrap .v-folk,#gMapWrap .v-walker').click());await sleep(900);if(!await p.evaluate(()=>document.getElementById('gSheet').classList.contains('open')))throw new Error('villager sheet did not open');
     await audit(p,'villager sheet')});
-  await T('map: zoom + / -',async p=>{await boot(p);await tab(p,'map');await must(p,'#gMapWrap [data-zoom]','no zoom buttons',8000);await sleep(800);
+  await T('map: double-tap zoom (touch)',async p=>{await boot(p);await tab(p,'map');await must(p,'#gMapWrap .v-ground','no village',8000);await sleep(800);
+    const tf=()=>p.evaluate(()=>getComputedStyle(document.getElementById('gMapZoom')).transform);const r=await p.locator('#gMapWrap').boundingBox(),x=r.x+8,y=r.y+r.height-12;
+    const a=await tf();await p.touchscreen.tap(x,y);await sleep(120);await p.touchscreen.tap(x,y);await sleep(600);const b=await tf();if(a===b)throw new Error('double-tap changed nothing');
+    if(await p.locator('#gMapWrap .v-zoomctl').isVisible())throw new Error('+/- buttons show on a touch screen')});
+  await T('map: zoom + / - (buttons, clicked)',async p=>{await boot(p);await tab(p,'map');await p.waitForSelector('#gMapWrap [data-zoom]',{state:'attached',timeout:8000});await sleep(800);
     const tf=()=>p.evaluate(()=>{const z=document.getElementById('gMapZoom');const s=getComputedStyle(z);return s.transform+'|'+z.getBoundingClientRect().width.toFixed(1)});
-    const a=await tf();await p.tap('[data-zoom="1"]');await sleep(600);const b=await tf();if(a===b)throw new Error('zoom + changed nothing');await p.tap('[data-zoom="-1"]');await sleep(600);const c=await tf();if(c===b)throw new Error('zoom - changed nothing')});
+    const a=await tf();await p.$eval('[data-zoom="1"]',b=>b.click());await sleep(600);const b=await tf();if(a===b)throw new Error('zoom + changed nothing');await p.$eval('[data-zoom="-1"]',b=>b.click());await sleep(600);const c=await tf();if(c===b)throw new Error('zoom - changed nothing')});
 
   // --- Hire chip on every screen ---
   const hireOn=async(p,what)=>{if(!await vis(p,'[data-hire]:visible',500))throw new Error('no Hire chip on '+what);

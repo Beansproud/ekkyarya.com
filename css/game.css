@@ -954,3 +954,8 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 
 /* ===== Map fit (art critic a1): the village spans the screen width, through the 16 px side gutters ===== */
 #g-map .v-map{max-width:none;margin:auto 0;align-self:center;flex-shrink:0}
+
+/* ===== Map zoom (art critic a3): no hard clip frame; on a touch screen pinch and double-tap, the +/- stay for a mouse ===== */
+#g-map .v-map{border-radius:0}
+#g-map .v-map.zoomed{-webkit-mask-image:linear-gradient(transparent,#000 22px,#000 calc(100% - 22px),transparent);mask-image:linear-gradient(transparent,#000 22px,#000 calc(100% - 22px),transparent)}   /* the zoomed edge fades into the galaxy: no cut line, no sliced label */
+@media (hover:none) and (pointer:coarse){#g-map .v-zoomctl{display:none}}

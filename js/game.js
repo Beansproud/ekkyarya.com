@@ -258,7 +258,7 @@ function lifeStart(z,V){Life.V=V;Life.fx=z.querySelector(".v-fx");Life.live.clea
     document.addEventListener("visibilitychange",()=>lifeSet(!document.hidden&&$("gMapWrap").offsetParent!==null))}
   Life.run=null;lifeSet($("gMapWrap").offsetParent!==null)})}   // null: re-sync play or pause for the freshly drawn village
 
-/* ---- Zoom (G1): pinch or drag with a finger, or the +/- buttons; 1x to 2x. A place is still one tap: a touch
+/* ---- Zoom (G1): pinch, drag or double-tap with a finger, or the +/- buttons with a mouse; 1x to 2x. A place is still one tap: a touch
    that moved more than 8 px is a pan, not a tap. Nothing animates; the view follows the finger. ---- */
 const Z={s:1,x:0,y:0,pts:new Map(),moved:false,start:null,raf:0,zs:null,r:{l:0,t:0},cw:0};
 // At 1x the map is its framed size. Zoomed, the frame widens to the full screen width at the same height, and the
@@ -292,7 +292,11 @@ function zoomAt(k,cx,cy){const ns=Math.max(1,Math.min(2,Z.s*k));if(ns>1&&!Z.base
     if(Z.pts.size===2&&Z.pinch){lifeHold(true);const [a,b]=[...Z.pts.values()],d=Math.hypot(a.x-b.x,a.y-b.y);zoomAt(Z.pinch.s*d/Z.pinch.d/Z.s,(a.x+b.x)/2,(a.y+b.y)/2)}
     else if(Z.pts.size===1&&Z.start&&Z.s>1){const dx=e.clientX-Z.start.x,dy=e.clientY-Z.start.y;
       if(Math.hypot(dx,dy)>8)Z.moved=true;if(Z.moved){lifeHold(true);zoomTo(Z.s,Z.start.zx+dx,Z.start.zy+dy)}}});
-  const up=e=>{Z.pts.delete(e.pointerId);if(Z.pts.size<2)Z.pinch=null;if(!Z.pts.size){Z.start=null;lifeHold(false)}};
+  const up=e=>{Z.pts.delete(e.pointerId);if(Z.pts.size<2)Z.pinch=null;if(!Z.pts.size){Z.start=null;lifeHold(false)}
+    // a3: a double-tap off the places zooms in to 2x there, or back out (touch screens have no +/- buttons)
+    if(e.type!=="pointerup"||e.pointerType==="mouse"||Z.moved||Z.pts.size||e.target.closest(".v-place,.v-folk,.v-walker,button")){Z.tap=null;return}
+    const now=e.timeStamp,t=Z.tap;Z.tap={t:now,x:e.clientX,y:e.clientY};
+    if(t&&now-t.t<350&&Math.hypot(e.clientX-t.x,e.clientY-t.y)<30){Z.tap=null;geom();zoomAt(Z.s>1?1/Z.s:2,e.clientX,e.clientY)}};
   W.addEventListener("pointerup",up);W.addEventListener("pointercancel",up);
   // a pan or pinch is not a tap on whatever was under the finger
   W.addEventListener("click",e=>{if(Z.moved&&!e.target.closest(".v-zoomctl")){e.stopPropagation();e.preventDefault();Z.moved=false}},true);
