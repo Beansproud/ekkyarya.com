@@ -42,7 +42,6 @@ dialog.adm-pad[open]{display:flex;animation:none}.adm-pad::backdrop{background:t
 .adm-pad[open] .adm-card{animation:adm-in .18s ease-out}
 @keyframes adm-shake{25%{transform:translateX(-8px)}60%{transform:translateX(7px)}100%{transform:none}}
 @media (prefers-reduced-motion:reduce){.adm-shake,.adm-pad[open] .adm-card{animation:none}}
-@media (prefers-color-scheme:dark){.adm-pad{--ink:#f3ecff;--paper:#241638;--line:#3e2a5c}.adm-keys button,.adm-x{background:#2f1f47}}
 `;
   function addCss() {
     if (document.getElementById("admCss")) return;
