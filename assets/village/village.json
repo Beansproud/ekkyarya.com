@@ -3,7 +3,14 @@
  "h": 827,
  "layers": {
   "sky": {
-   "src": "assets/village/sky.png",
+   "src": "assets/village/nebula.png",
+   "x": 0,
+   "y": 0,
+   "w": 601,
+   "h": 827
+  },
+  "stars": {
+   "src": "assets/village/stars.svg",
    "x": 0,
    "y": 0,
    "w": 601,
@@ -12,23 +19,23 @@
   "north": {
    "src": "assets/village/island-north.png",
    "x": 149,
-   "y": 27,
+   "y": 26,
    "w": 282,
-   "h": 223
+   "h": 224
   },
   "mid": {
    "src": "assets/village/island-mid.png",
-   "x": 14,
-   "y": 167,
-   "w": 584,
-   "h": 508
+   "x": 11,
+   "y": 164,
+   "w": 587,
+   "h": 511
   },
   "south": {
    "src": "assets/village/island-south.png",
    "x": 176,
-   "y": 501,
-   "w": 336,
-   "h": 323
+   "y": 498,
+   "w": 338,
+   "h": 326
   }
  },
  "frames": [
