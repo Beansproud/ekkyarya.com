@@ -25,4 +25,4 @@ console.log('lock:',await p.textContent('.adm-card p'),await p.evaluate(()=>JSON
 const {defaultBrowserType,...IP}=devices['iPhone 13'];const c=await b.newContext(IP);p=await c.newPage();await p.goto(url+'?game');await p.waitForTimeout(800);
 const logo=await p.$('#g-start .g-logo, #g-start .g-logo-text');for(let i=0;i<6;i++)await logo.click();
 console.log('6 taps pad:',!!await p.$('.adm-pad'));await logo.click();await p.waitForSelector('.adm-pad');console.log('7 taps pad ok');
-await p.keyboard.type('x');await b.close();srv.close()})();
+await b.close();srv.close()})();
