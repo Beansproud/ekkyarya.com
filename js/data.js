@@ -243,6 +243,7 @@ const COPY = {
     "hire.sent.body": "Your note is ready. Press send there and it reaches Ekky.",
     "hire.sent.again": "Open email again",
     "hire.sent.done": "Done",
+    "hire.sent.fallback": "If nothing opened, copy this address:",
     // Lightbox (both views)
     "lb.hire": "Hire Ekky",
     "sheet.hire": "Hire Ekky",
@@ -542,6 +543,7 @@ const COPY = {
     "hire.sent.body": "Pesanmu sudah siap. Tekan kirim di sana, lalu sampai ke Ekky.",
     "hire.sent.again": "Buka email lagi",
     "hire.sent.done": "Selesai",
+    "hire.sent.fallback": "Kalau tidak ada yang terbuka, salin alamat ini:",
     "lb.hire": "Hubungi Ekky",
     "sheet.hire": "Hubungi Ekky",
     "lb.prefill": "Halo Ekky, saya lihat \"{title}\" di situsmu dan ",

@@ -326,7 +326,9 @@ function openSheet(html){let fresh=false;
   setTimeout(()=>$("gSheetX").focus({preventScroll:true}),50)}
 function closeSheet(){sheet.classList.remove("open");sheetHtml="";clearTimeout(warmT);warmT=setTimeout(()=>warmWhenIdle(),900);if(sheetFrom&&sheetFrom.focus)sheetFrom.focus({preventScroll:true})}
 $("gSheetX").onclick=closeSheet;sheet.addEventListener("click",e=>{if(e.target===sheet)closeSheet()});
-addEventListener("keydown",e=>{if(e.key==="Escape"&&sheet.classList.contains("open"))closeSheet()});
+addEventListener("keydown",e=>{if(e.key!=="Escape")return;
+  if(sheet.classList.contains("open"))return closeSheet();
+  const top=lstack[lstack.length-1],L=LAYERS.find(l=>l[0]===top);if(L&&top!=="lb"&&top!=="sheet"&&!e.defaultPrevented&&!document.querySelector("dialog[open]"))L[3](L[1]())});   // Esc closes the top layer (Color, share) like Back; the lightbox, a dialog, closes itself
 let sy=null;sheet.firstElementChild.addEventListener("touchstart",e=>{sy=sheet.firstElementChild.scrollTop>0?null:e.touches[0].clientY},{passive:true});
 sheet.firstElementChild.addEventListener("touchend",e=>{if(sy!==null&&e.changedTouches[0].clientY-sy>90)closeSheet();sy=null});
 // Every sheet ends with a Hire button (B07); the HUD chip above the sheet's backdrop stays tappable too.
@@ -382,7 +384,9 @@ $("gSheetBody").addEventListener("submit",e=>{e.preventDefault();const f=e.targe
   f.replaceWith(Object.assign(document.createElement("div"),{className:"g-sent",innerHTML:`<span class="g-sent-ico">${ico("i-check")}</span><h3>${esc(t("hire.sent.title"))}</h3>
     <p>${esc(t("hire.sent.body"))}</p><p class="g-small">${esc(t("hire.sent"))}</p>
     <a class="g-btn" href="${esc(go)}"${go.startsWith("mailto:")?"":' target="_blank" rel="noopener"'}>${ico("i-send")} ${esc(t("hire.sent.again"))}</a>
+    ${CONFIG.email?`<p class="g-small g-fallback">${esc(t("hire.sent.fallback"))}</p><p class="g-addr"><b>${esc(CONFIG.email)}</b><button class="g-btn alt sm" type="button" id="gSentCopy">${ico("i-copy")} ${esc(t("hire.copy"))}</button></p>`:""}
     <button class="g-link" type="button" id="gSentDone">${esc(t("hire.sent.done"))}</button>`}));
+  const sc=$("gSentCopy");if(sc)sc.onclick=async()=>{try{await navigator.clipboard.writeText(CONFIG.email);say(t("hire.copied"),"i-check")}catch{say(CONFIG.email)}};
   $("gSentDone").onclick=closeSheet;$("gSheetBody").querySelector(".g-sent").setAttribute("role","status");$("gSheetBody").querySelector(".g-sent").scrollIntoView({block:"nearest"});
   sheetHtml="";   // the sheet is drawn fresh the next time it opens
   setTimeout(()=>{if(go.startsWith("mailto:"))location.href=go;else open(go,"_blank","noopener")},900)});
@@ -519,6 +523,7 @@ if(cv&&feature("shareCards")&&!$("gResShare")){$("gAgain").insertAdjacentHTML("a
 if(cv){$("gResDl").onclick=()=>typeof Share!=="undefined"&&Share.downloadStars(lastScore);$("gArcadeX").onclick=quitArcade;$("gResBack").onclick=()=>{quitArcade();go("start")};$("gAgain").onclick=startArcade}
 G.addEventListener("click",e=>{if(e.target.closest("[data-arcade]")){sfx("tap");startArcade()}});
 {const play=q.get("play");   // desktop "Play with Ekky's art" cards: ?game&play=color|stars
+  if(play){try{const u=new URL(location);u.searchParams.delete("play");history.replaceState(history.state,"",u)}catch(e){}}   // the address bar drops ?play= once it is acted on
   if(play==="color")setTimeout(()=>go("color"),600);
   else if(play==="stars"&&feature("starCatcher"))setTimeout(startArcade,600)}
 // A hidden tab pauses the round; it resumes only once the tab is visible again (r1a bug: it used to resume while hidden).

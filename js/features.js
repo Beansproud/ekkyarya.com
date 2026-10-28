@@ -43,11 +43,10 @@ const feature = name => FEATURES[name] === true;
 // own original work. Project rule: client and fan pieces stay in the portfolio list and the Art tab only, whatever
 // CONFIG.reuse says. npm run check enforces the same rule on the code.
 const creative = p => !!p && shareable(p) && p.kind === "original";
-// The featured row and the desktop strip: a fresh pick on every visit (featuredPick in js/data.js), original pieces only.
-// Always n pieces: a random order, at most 2 per category first, then any others to fill up.
+// The featured row and the desktop strip: the owner's order (the admin "order" reorders PROJECTS), original pieces only.
+// Always n pieces: at most 2 per category first, then any others to fill up. No shuffle: the same six on every visit.
 const featuredSix = (n = 6) => {
   const pool = withRole("featured").filter(creative);
-  for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
   const per = {}, first = pool.filter(p => (per[p.cat] = (per[p.cat] || 0) + 1) <= 2);
   return first.concat(pool.filter(p => !first.includes(p))).slice(0, n);
 };

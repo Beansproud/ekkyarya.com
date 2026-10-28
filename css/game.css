@@ -962,3 +962,6 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 /* sheet header: the grab handle floats at the very top so the title row and the close button start 20 px from the top, as they sit 20 px from the sides */
 .g-sheet .g-grab{position:absolute;top:8px;left:50%;translate:-50% 0;margin:0}
 .g-sheet .g-sheet-in{padding-top:20px}
+.g-sent .g-fallback{margin-top:12px}
+.g-addr{display:flex;flex-direction:column;align-items:center;gap:6px;word-break:break-all}
+.g-addr b{color:#2B1342;font-size:.95rem}
