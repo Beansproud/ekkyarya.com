@@ -1224,3 +1224,9 @@ body.game-mode #lightbox .lb-flow{margin-top:2px}
 /* pinch zoom: the page scales inside its frame */
 .c-stage-wrap{overflow:hidden}
 .c-stage{transform-origin:0 0}
+.c-stage-wrap{position:relative}
+.c-stage.zback{transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+.c-zoomout{position:absolute;top:6px;right:6px;width:44px;height:44px;border-radius:14px;background:#FFFDF8;color:#2B1342;border:2px solid var(--paper-line,#E4DCCB);box-shadow:var(--paper-shadow,0 2px 6px rgba(0,0,0,.12));display:grid;place-items:center;z-index:2}
+.c-zoomout .ico{width:24px;height:24px;vertical-align:0}
+.c-zoomout[hidden]{display:none}
+@media (prefers-reduced-motion:reduce){.c-stage.zback{transition:none}}
