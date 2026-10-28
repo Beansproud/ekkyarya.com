@@ -80,7 +80,7 @@ if(feature("handLettering")||feature("aboutPhoto"))fetch("assets/hand/index.json
 /* ===== Procedural placeholder art ===== */
 function rng(seed){return()=>((seed=Math.imul(seed^seed>>>15,seed|1)+0x6D2B79F5|0,(seed^seed>>>13)>>>0)%1e4)/1e4}
 function makeArt(p){
-  const r=rng(p.seed*9973), [bg,ink,a,b]=p.pal; let s="";
+  const r=rng((p.seed||(p.slug||p.title||"").length+7)*9973), [bg,ink,a,b]=p.pal||["#F1EBDD","#2B1342","#FFB400","#7ED9B0"]; let s="";   // added pieces (data/site.json) have no seed or palette
   for(let i=0;i<7;i++){const x=r()*400,y=r()*300,rad=10+r()*40;s+=`<circle cx="${x}" cy="${y}" r="${rad}" fill="${r()>.5?a:b}" opacity=".35"/>`}
   for(let i=0;i<5;i++){const x=20+r()*360,y=20+r()*260;s+=`<path d="M${x} ${y-8}l2.5 5.5 6 .5-4.5 4 1.5 6-5.5-3-5.5 3 1.5-6-4.5-4 6-.5z" fill="${ink}" opacity=".8"/>`}
   // a little original blob character
@@ -155,7 +155,7 @@ const lb=document.getElementById("lightbox");let cur=0;
 function visible(){return [...grid.querySelectorAll(".tile:not(.hide)")].map(t=>+t.dataset.i)}
 function show(i){cur=i;const p=PROJECTS[i];
   document.getElementById("lbArt").innerHTML=artOf(p,true);
-  renderFlow(p);mmRenderSet(p);
+  renderFlow(p);
   document.getElementById("lbCat").innerHTML=catImg(p.cat,"")+catName(p.cat);
   document.getElementById("lbTitle").textContent=ptitle(p);
   document.getElementById("lbDesc").textContent=pdesc(p)||"";
@@ -193,8 +193,11 @@ const flowArrow=k=>{const j=4+3*Math.sin(k*2.7);
 const flowCap=(st,k)=>(st.caption&&(st.caption[LANG]||st.caption.en))||t("flow.step",{n:k+1});
 function renderFlow(p){
   const lbBody=lb.querySelector(".lb-body");let box=document.getElementById("lbFlow");
-  if(!box){box=document.createElement("section");box.id="lbFlow";box.className="lb-flow";lbBody.appendChild(box)}
-  const steps=stepsOf(p);box.hidden=!steps.length;box.classList.toggle("fl-col",document.body.classList.contains("game-mode")||matchMedia("(max-width:760px)").matches);lb.classList.toggle("has-flow",!!steps.length);
+  if(!box){box=document.createElement("section");box.id="lbFlow";box.className="lb-flow"}
+  // phones: right under the description, before the buttons (the flow is the point of the piece); desktop: a full row below
+  const col=document.body.classList.contains("game-mode")||matchMedia("(max-width:760px)").matches,desc=document.getElementById("lbDesc");
+  if(col&&box.previousElementSibling!==desc)desc.after(box);else if(!col&&box.parentElement!==lbBody)lbBody.appendChild(box);
+  const steps=stepsOf(p);box.hidden=!steps.length;box.classList.toggle("fl-col",col);lb.classList.toggle("has-flow",!!steps.length);
   if(!steps.length){box.innerHTML="";return}
   const title=t(p.flow==="series"?"flow.series":"flow.process");
   box.setAttribute("aria-label",title);
@@ -203,13 +206,15 @@ function renderFlow(p){
       <svg class="fl-bub" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path class="fl-sh" d="${wobPath(k+1)}"/><path class="fl-bg" d="${wobPath(k+1)}"/></svg>
       <span class="fl-num" aria-hidden="true">${k+1}</span><img src="${escH(st.img)}" alt="" loading="lazy" decoding="async">
       <span class="fl-cap">${escH(cap)}${me?`<small class="fl-this">${escH(t("flow.this"))}</small>`:""}</span></button>${k<steps.length-1?flowArrow(k):""}</li>`}).join("")}</ol>`;
-  box.classList.remove("fl-in");void box.offsetWidth;box.classList.add("fl-in")}
+  box.classList.remove("fl-in");void box.offsetWidth;box.classList.add("fl-in");
+  // the stable hook (docs/flow.md): extra blocks (e.g. Morumelons' sets and animations) render after the diagram
+  (window.FlowHooks||[]).forEach(h=>{try{h(box,p,steps)}catch(e){}})}
 // a node shows that step's full picture in the lightbox; the piece's own step brings the piece back
 lb.addEventListener("click",e=>{const b=e.target.closest(".fl-node");if(!b)return;const p=PROJECTS[cur],st=stepsOf(p)[+b.dataset.step];if(!st)return;
-  if(st.set){mmToSet(b);return}   // a set step (Sprint 3: morumelons) points at its grid below
+  // a hook may take over a step (a set grid, an animation): it calls preventDefault() on "flowstep"
+  if(!lb.dispatchEvent(new CustomEvent("flowstep",{cancelable:true,detail:{piece:p,step:st,index:+b.dataset.step,node:b}})))return;
   const art=document.getElementById("lbArt");
   art.innerHTML=st.full===p.full?artOf(p,true):`<img class="ok" src="${escH(st.full)}" alt="${escH(flowCap(st,+b.dataset.step))}" decoding="async">`;
-  if(st.anim)mmArt(art,st);
   lb.querySelectorAll(".fl-node").forEach(n=>n.removeAttribute("aria-current"));b.setAttribute("aria-current","true");
   art.scrollIntoView&&art.scrollIntoView({block:"nearest",behavior:reduceFlow()?"auto":"smooth"})});
 const reduceFlow=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -235,25 +240,28 @@ function mmPlay(img){const anim=img&&img.dataset.anim;if(!anim||reduceFlow()||im
     img.mmT=setTimeout(img.mmStop,ms+60)},()=>{delete img.dataset.mmOn})}
 const mmStopAll=()=>lb.querySelectorAll("img[data-mm-on]").forEach(i=>i.mmStop&&i.mmStop());
 const mmName=c=>(c.name&&(c.name[LANG]||c.name.en))||"";
-function mmRenderSet(p){
-  let box=document.getElementById("lbSet");mmStopAll();
-  if(!box){box=document.createElement("section");box.id="lbSet";box.className="mm-set";lb.querySelector(".lb-body").appendChild(box)}
-  const k=stepsOf(p).findIndex(st=>Array.isArray(st.set)&&st.set.length),st=k<0?null:stepsOf(p)[k];
-  box.hidden=!st;box.classList.toggle("mm-col",document.body.classList.contains("game-mode")||matchMedia("(max-width:760px)").matches);
-  if(!st){box.innerHTML="";return}
-  const still=reduceFlow(),cap=flowCap(st,k),tag=still?"div":"button";
-  box.setAttribute("aria-label",cap);
-  box.innerHTML=`<h4 class="fl-title">${escH(cap)} <small class="mm-n">${escH(t("flow.count",{n:st.set.length}))}</small></h4>`+
+// the hook (docs/flow.md): a step with a set gets its grid inside the flow box, under the diagram
+function mmRenderSet(box,p,steps){mmStopAll();
+  const k=steps.findIndex(st=>Array.isArray(st.set)&&st.set.length>=2),st=k<0?null:steps[k];if(!st)return;
+  const still=reduceFlow(),cap=flowCap(st,k),tag=still?"div":"button",sec=document.createElement("section");
+  sec.id="lbSet";sec.className="mm-set";sec.setAttribute("aria-label",cap);
+  sec.innerHTML=`<h4 class="fl-title">${escH(cap)} <small class="mm-n">${escH(t("flow.count",{n:st.set.length}))}</small></h4>`+
     (still?"":`<p class="mm-hint">${escH(t(document.body.classList.contains("game-mode")||!matchMedia("(hover:hover)").matches?"mm.hintTap":"mm.hint"))}</p>`)+
     `<ul class="mm-grid">${st.set.map((c,j)=>{const nm=mmName(c);
       return `<li style="--j:${j};--c:${FLOW_INK[j%FLOW_INK.length]}"><${tag} class="mm-ch"${still?"":` type="button" aria-label="${escH(t("mm.play",{name:nm}))}"`}>`+
-        `<img src="${escH(c.img)}" alt="${still?escH(nm):""}" width="160" height="160" loading="lazy" decoding="async"${c.anim&&!still?` data-anim="${escH(c.anim)}"`:""}><span aria-hidden="true">${escH(nm)}</span></${tag}></li>`}).join("")}</ul>`}
-// the "Characters" node scrolls its grid into view and lands focus on the first character
-function mmToSet(b){const box=document.getElementById("lbSet");if(!box||box.hidden)return;
+        `<img src="${escH(c.img)}" alt="${still?escH(nm):""}" width="160" height="160" loading="lazy" decoding="async"${c.anim&&!still?` data-anim="${escH(c.anim)}"`:""}><span aria-hidden="true">${escH(nm)}</span></${tag}></li>`}).join("")}</ul>`;
+  box.appendChild(sec)}
+(window.FlowHooks=window.FlowHooks||[]).push(mmRenderSet);
+// a node with a set scrolls to its grid (focus on the first character); a node with an anim opens its still and plays once
+// (the tap asked for it); tap or hover replays. Both mark the node like the core does.
+lb.addEventListener("flowstep",e=>{const {step:st,node:b}=e.detail;if(!st.set&&!st.anim)return;
+  const box=document.getElementById("lbSet");if(st.set&&!box)return;e.preventDefault();
   lb.querySelectorAll(".fl-node").forEach(n=>n.removeAttribute("aria-current"));b.setAttribute("aria-current","true");
-  box.scrollIntoView({block:"start",behavior:reduceFlow()?"auto":"smooth"});const f=box.querySelector("button.mm-ch");if(f)f.focus({preventScroll:true})}
-// an anim step: its still opens in the picture area and plays once (the tap that opened it asked for it); tap or hover replays
-function mmArt(art,st){const img=art.querySelector("img");if(!img||reduceFlow())return;img.dataset.anim=st.anim;img.classList.add("mm-anim");mmPlay(img)}
+  if(st.set){box.scrollIntoView({block:"start",behavior:reduceFlow()?"auto":"smooth"});const f=box.querySelector("button.mm-ch");if(f)f.focus({preventScroll:true});return}
+  const art=document.getElementById("lbArt");mmStopAll();
+  art.innerHTML=`<img class="ok" src="${escH(st.full)}" alt="${escH(flowCap(st,e.detail.index))}" decoding="async">`;
+  const img=art.querySelector("img");if(!reduceFlow()){img.dataset.anim=st.anim;img.classList.add("mm-anim");mmPlay(img)}
+  art.scrollIntoView&&art.scrollIntoView({block:"nearest",behavior:reduceFlow()?"auto":"smooth"})});
 lb.addEventListener("click",e=>{const b=e.target.closest(".mm-ch,.mm-anim");if(b)mmPlay(b.matches("img")?b:b.querySelector("img"))});
 lb.addEventListener("pointerover",e=>{if(e.pointerType!=="mouse")return;const b=e.target.closest(".mm-ch,.mm-anim");if(b&&!b.contains(e.relatedTarget))mmPlay(b.matches("img")?b:b.querySelector("img"))});
 lb.addEventListener("close",mmStopAll);

@@ -1198,3 +1198,8 @@ body.game-mode #lightbox .lb-flow{margin-top:2px}
 .g-flow-mark i+i{margin-left:-10px;translate:3px -3px}
 .g-feat{position:relative}
 .g-feat .g-flow-mark{position:absolute;top:6px;right:6px;margin:0}
+/* Admin, Art tab: the project flow's steps editor (js/admin-art.js stepsHtml) */
+.aa-steps{border:1.5px dashed #2B1342;border-radius:2px;padding:10px;margin:0 0 12px;display:grid;gap:8px}
+.aa-steps legend{font-size:14px;font-weight:600;padding:0 4px}
+.aa-steps>small{font-size:13px;opacity:.75}
+.aa-step .aa-meta input{width:100%;box-sizing:border-box;min-height:44px;padding:8px 10px;font:inherit;font-size:16px;color:#2B1342;background:#FFFDF8;border:1.5px solid #E4DCCB;border-radius:2px}

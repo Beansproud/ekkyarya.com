@@ -578,12 +578,16 @@ body.game-mode .cursor,body.game-mode .cursor-dot{display:none}
 .fl-col .fl-node img{width:96px;flex:none}
 .fl-col .fl-cap{text-align:left;flex:1}
 .fl-col .fl-arrow{rotate:0deg;margin:2px 0}
+.fl-col.lb-flow{margin:14px 0 4px}
+/* a narrow column (a phone on its side puts the text beside the art): the picture above its caption */
+.fl-col.lb-flow{container-type:inline-size}
+.fl-cap{min-width:0;overflow-wrap:anywhere}
+@container (max-width:320px){.fl-col .fl-node{flex-direction:column;align-items:stretch;text-align:center}.fl-col .fl-node img{width:100%}.fl-col .fl-cap{text-align:center}}
 
 /* ---- Sprint 3: morumelons ---- */
-/* A set step's characters (js/site.js mmRenderSet): small paper stickers in a grid under the flow. Tap or hover plays the
+/* A set step's characters (js/site.js mmRenderSet, through FlowHooks): small paper stickers in a grid under the diagram. Tap or hover plays the
    character's animation once (img src swap, no CSS loop); the sticker only lifts while it plays. Desktop 6 across, phones 3. */
-.mm-set{flex:1 1 100%;order:4;margin-top:2px;scroll-margin-top:12px}
-.mm-set[hidden]{display:none}
+.mm-set{margin-top:6px;scroll-margin-top:12px}
 .mm-n{font-family:Poppins,sans-serif;font-weight:600;font-size:.75rem;opacity:.75;margin-left:4px}
 .mm-hint{margin:-4px 0 10px;font-size:.85rem;line-height:1.35;color:var(--ink)}
 .mm-grid{list-style:none;margin:0;padding:4px 4px 10px;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px 12px}
@@ -596,6 +600,6 @@ button.mm-ch{cursor:pointer}
 button.mm-ch:hover,.mm-ch.mm-on{transform:translateY(-3px) rotate(-1deg);box-shadow:4px 6px 0 var(--c)}
 button.mm-ch:active{transform:scale(.97)}
 .mm-anim{cursor:pointer}
-.mm-col .mm-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 10px;padding:4px 2px 8px}
+.fl-col .mm-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 10px;padding:4px 2px 8px}
 body.game-mode #lightbox .mm-hint{color:#2B1342}
 @media (prefers-reduced-motion:reduce){.mm-ch,button.mm-ch:hover,.mm-ch.mm-on{transition:none;transform:none}}

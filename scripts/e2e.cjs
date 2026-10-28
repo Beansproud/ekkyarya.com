@@ -296,7 +296,7 @@ async function runConfig(browser,url,scheme,lang){
   await T('morumelons: 12 characters, thumbs first, tap plays once, Back returns (phone)',async p=>{const req=mmReq(p);await boot(p);await tab(p,'art');await must(p,'#gCards >*','no art cards');
     const i=await p.evaluate(()=>PROJECTS.findIndex(q=>q.slug==='morumelons'));const card=`#gCards [data-i="${i}"]`;
     await p.waitForSelector(card,{state:'attached',timeout:5000});await p.$eval(card,e=>e.scrollIntoView({block:'center'}));await sleep(300);
-    const y0=await p.evaluate(()=>{const s=document.scrollingElement,a=document.querySelector('.g-screen.active');return [s.scrollTop,a.scrollTop]});
+    const at=()=>p.$eval(card,e=>{const r=e.getBoundingClientRect();return [Math.round(r.top),Math.round(r.bottom),innerHeight]});const y0=await at();
     await p.tap(card);await sleep(900);if(!await p.evaluate(()=>document.getElementById('lightbox').open))throw new Error('Morumelons did not open');
     await must(p,'#lbSet .mm-ch','no characters',3000);const f=await mmState(p);
     if(!f.shown||f.n!==12||f.btn!==12||f.small||f.names!==12||f.cols!==3)throw new Error('character set '+JSON.stringify(f));
@@ -312,8 +312,8 @@ async function runConfig(browser,url,scheme,lang){
     await p.evaluate(()=>history.back());await sleep(900);
     if(await p.evaluate(()=>document.getElementById('lightbox').open))throw new Error('Back did not close Morumelons');
     if(await active(p)!=='g-art')throw new Error('Back left the Art tab: '+await active(p));
-    const y1=await p.evaluate(()=>{const s=document.scrollingElement,a=document.querySelector('.g-screen.active');return [s.scrollTop,a.scrollTop]});
-    if(Math.abs(y1[0]-y0[0])>4||Math.abs(y1[1]-y0[1])>4)throw new Error('Back did not return to the same place on Art: '+y0+' -> '+y1)});
+    // the Art grid fills in idle slices and late images, so compare where the card sits on screen, not raw scroll offsets
+    const y1=await at();if(y1[0]<0||y1[1]>y1[2]||Math.abs(y1[0]-y0[0])>60)throw new Error('Back did not return to the Morumelons card on Art: '+y0+' -> '+y1)});
   await T('morumelons: reduced motion shows still characters, fetches no animation',async p=>{const req=mmReq(p);await p.emulateMedia({reducedMotion:'reduce'});await boot(p);
     await openPiece(p,'morumelons');await must(p,'#lbSet .mm-ch','no characters',3000);const f=await mmState(p);
     if(f.n!==12||f.btn!==0||f.hint)throw new Error('reduced motion set '+JSON.stringify(f));

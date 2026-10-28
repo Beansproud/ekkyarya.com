@@ -187,6 +187,56 @@ async function runConfig(browser,url,dev,lang){
     if(!np.id||typeof np.id!=='object'&&!np.tr)throw new Error('new project has no Indonesian title/description object');if(!String(np.full).includes(full)||!String(np.img).includes(thumb))throw new Error('project img/full do not point at the uploaded files');
     if(!await waitFor(()=>p.evaluate(()=>/about a minute|sekitar satu menit/i.test(document.body.innerText)),4000))throw new Error('no "Live in about a minute" note after publishing')});
 
+  // 7. the image editor (docs/admin-editor.md): opened directly in the page through AdminEditor.open, so it needs no PIN
+  const EDITOR=have('js/admin-editor.js');const needEditor=()=>{if(!EDITOR)skip('js/admin-editor.js not landed yet')};
+  const edOpen=async p=>{needEditor();await boot(p);await p.addScriptTag({url:'js/admin-editor.js'});
+    await p.evaluate(l=>{const c=document.createElement('canvas');c.width=1200;c.height=800;const x=c.getContext('2d');x.fillStyle='#e9c46a';x.fillRect(0,0,1200,800);x.fillStyle='#264653';x.fillRect(300,200,600,400);
+      window.__qaEd=AdminEditor.open(c,{lang:l}).then(b=>(window.__qaBlob=b,b))},lang);
+    if(!await waitFor(()=>p.evaluate(()=>{const d=AdminEditor.debug();return !!(d&&d.W===1200&&document.querySelector('#aeRoot[open] canvas'))}),5000))throw new Error('the editor did not open on the picture')};
+  const edSample=(p,x,y)=>p.evaluate(([x,y])=>AdminEditor.sample(x,y),[x,y]);
+  const edDrag=async(p,a,b,steps=10)=>{const s=await p.evaluate(([a,b])=>[AdminEditor.toScreen(a[0],a[1]),AdminEditor.toScreen(b[0],b[1])],[a,b]);
+    await p.mouse.move(s[0].x,s[0].y);await p.mouse.down();for(let i=1;i<=steps;i++)await p.mouse.move(s[0].x+(s[1].x-s[0].x)*i/steps,s[0].y+(s[1].y-s[0].y)*i/steps);await p.mouse.up();await sleep(100)};
+  const edClick=(p,sel)=>p.locator('#aeRoot '+sel).first().click();
+  const same=(a,b)=>a.every((v,i)=>Math.abs(v-b[i])<=2);
+  T('editor: opens, tools are 44 px, admin language',async p=>{await edOpen(p);
+    const k=await p.evaluate(()=>[...document.querySelectorAll('#aeRoot .ae-tool,#aeRoot .ae-top .ae-btn')].filter(b=>b.getClientRects().length&&getComputedStyle(b).display!=='none').map(b=>{const r=b.getBoundingClientRect();return Math.min(r.width,r.height)}));
+    if(k.length<12||Math.min(...k)<43.5)throw new Error('editor buttons under 44 px: '+Math.round(Math.min(...k)));
+    const ap=await p.locator('#aeRoot [data-a=apply]').innerText();if(ap.trim()!==(lang==='id'?'Terapkan':'Apply'))throw new Error('Apply reads "'+ap+'" in '+lang);
+    const bg=await p.evaluate(()=>getComputedStyle(document.getElementById('aeRoot')).backgroundColor);if(!/255, 248, 236/.test(bg))throw new Error('the editor is not on light paper: '+bg)});
+  T('editor: crop 1:1 and brightness change the output',async p=>{await edOpen(p);const s0=await edSample(p,600,400);
+    await edClick(p,'[data-tool=crop]');await edClick(p,'[data-a=aspect][data-v="1:1"]');await edClick(p,'[data-a=applyCrop]');await sleep(150);
+    const d=await p.evaluate(()=>AdminEditor.debug());if(d.W!==800||d.H!==800)throw new Error(`crop 1:1 gave ${d.W}x${d.H}, expected 800x800`);
+    if(!same(await edSample(p,400,400),s0))throw new Error('the crop did not keep the centre of the picture');
+    await edClick(p,'[data-tool=adjust]');await sleep(150);
+    await p.evaluate(()=>{const r=document.querySelector('#aeRoot [data-o="adj.br"]');r.value=60;r.dispatchEvent(new Event('input',{bubbles:true}))});
+    await p.locator('#aeRoot .ae-panel [data-a=adjApply]').click();await sleep(150);
+    const s1=await edSample(p,400,400);if(!(s1[0]+s1[1]+s1[2]>s0[0]+s0[1]+s0[2]+60))throw new Error('brightness +60 did not brighten: '+s0+' -> '+s1);
+    const h=(await p.evaluate(()=>AdminEditor.debug())).history;if(h.length!==3)throw new Error('history should be Open, Crop, Adjustments: '+h.join(', '))});
+  T('editor: brush and gradient change pixels, undo restores them',async p=>{await edOpen(p);const s0=await edSample(p,600,400),g0=await edSample(p,100,100);
+    await edClick(p,'[data-tool=brush]');await edDrag(p,[400,400],[800,400]);
+    const s1=await edSample(p,600,400);if(same(s1,s0))throw new Error('a brush stroke did not change the pixels under it');
+    await edClick(p,'[data-tool=gradient]');await edDrag(p,[50,50],[1150,750],5);
+    const g1=await edSample(p,100,100);if(same(g1,g0))throw new Error('a gradient did not change the pixels');
+    const d=await p.evaluate(()=>AdminEditor.debug());if(!d.layers.some(l=>l.type==='paint'))throw new Error('the gradient did not get its own layer over the photo');
+    for(let i=0;i<d.hi;i++){if(phone)await edClick(p,'[data-a=undo]');else await p.keyboard.press('Control+z');await sleep(60)}
+    if(!same(await edSample(p,600,400),s0)||!same(await edSample(p,100,100),g0))throw new Error('undo did not restore the picture');
+    if(phone)await edClick(p,'[data-a=redo]');else await p.keyboard.press('Control+Shift+z');await sleep(60);
+    if(same(await edSample(p,600,400),s0))throw new Error('redo did not bring the brush stroke back')});
+  T('editor: Apply returns a full-size JPEG Blob',async p=>{await edOpen(p);await edClick(p,'[data-tool=brush]');await edDrag(p,[200,200],[1000,600]);await edClick(p,'[data-a=apply]');
+    if(!await waitFor(()=>p.evaluate(()=>!!window.__qaBlob),5000))throw new Error('Apply did not hand back a Blob');
+    const r=await p.evaluate(async()=>{const b=window.__qaBlob,bm=await createImageBitmap(b);return {type:b.type,w:bm.width,h:bm.height,open:AdminEditor.isOpen()||!!document.querySelector('#aeRoot')}});
+    if(r.type!=='image/jpeg'||r.w!==1200||r.h!==800)throw new Error(`Blob is ${r.type} ${r.w}x${r.h}, expected image/jpeg 1200x800`);if(r.open)throw new Error('the editor stayed open after Apply')});
+  T('editor: Edit in the Art tab sends the edited picture to the form',async(p,c)=>{needAdmin();needEditor();mockGithub(c);await openAdmin(p);
+    await p.locator('#adminRoot [data-tab=art]').click();await sleep(400);await p.locator('#adminRoot button').filter({hasText:/^(Add a piece|Tambah karya)$/}).click();await sleep(300);
+    await p.locator('#adminRoot input[type=file]').first().setInputFiles({name:'qa-edit.jpg',mimeType:'image/jpeg',buffer:Buffer.from(await bigJpeg(p))});
+    if(!await waitFor(()=>p.locator('#aaEdit').count().then(n=>n>0),5000))throw new Error('no Edit button next to the chosen picture');
+    const before=await p.locator('#adminRoot .aa-pick img').getAttribute('src');await p.locator('#aaEdit').click();
+    if(!await waitFor(()=>p.evaluate(()=>{const d=window.AdminEditor&&AdminEditor.debug();return !!(d&&d.W===3200)}),6000))throw new Error('Edit did not open the editor on the 3200 px picture');
+    await edClick(p,'[data-tool=brush]');await p.evaluate(()=>{document.querySelector('#aeRoot [data-o="brush.size"]').value=300;document.querySelector('#aeRoot [data-o="brush.size"]').dispatchEvent(new Event('input',{bubbles:true}))});
+    await edDrag(p,[200,1800],[3000,1800]);await edClick(p,'[data-a=apply]');
+    if(!await waitFor(()=>p.evaluate(()=>!document.querySelector('#aeRoot')),6000))throw new Error('the editor did not close after Apply');
+    if(!await waitFor(async()=>{const s=await p.locator('#adminRoot .aa-pick img').getAttribute('src').catch(()=>null);return !!s&&s!==before},6000))throw new Error('the form preview did not change to the edited picture')});
+
   // 6. merged data (needs js/site-data.js)
   const site={version:1,links:{instagram:'https://example.com/qa-ig'},contact:{email:'qa@example.com'},
     projects:[{id:'u-qa-new',cat:'illustration',title:'QA New Piece',desc:'Added in site.json.',img:'assets/work/thumb/u/qa-new.jpg',full:'assets/work/u/qa-new.jpg',kind:'original',roles:['portfolio','card','featured']},
@@ -211,6 +261,42 @@ async function runConfig(browser,url,dev,lang){
   T('merged: an emoji in a title is refused or stripped',async p=>{const c=p.context();if(!SITEDATA)skip('js/site-data.js not landed yet');
     await route(c,JSON.stringify({version:1,projects:[{id:'u-qa-emoji',cat:'illustration',title:'QA Emoji \u{1F600}',desc:'x',img:'assets/work/thumb/u/qa-emoji.jpg',full:'assets/work/u/qa-emoji.jpg',kind:'original',roles:['portfolio','card']}]}));await boot(p);await sleep(1200);
     const bad=await p.evaluate(()=>PROJECTS.some(x=>/\p{Extended_Pictographic}/u.test(x.title+x.desc)));if(bad)throw new Error('an emoji reached the site through data/site.json')});
+
+  // 7. project flow (docs/flow.md): steps in data/site.json show the diagram; the Art tab's steps editor (no PIN needed: the tab is driven directly)
+  T('merged: steps in site.json show the flow, bad steps are dropped',async p=>{const c=p.context();if(!SITEDATA)skip('js/site-data.js not landed yet');
+    await route(c,JSON.stringify({version:1,projects:[{id:'u-qa-flow',cat:'illustration',title:'QA Flow Piece',desc:'Has steps.',img:'assets/work/thumb/u/qa-flow.jpg',full:'assets/work/u/qa-flow.jpg',kind:'original',roles:['portfolio','card'],flow:'process',
+      steps:[{img:'assets/work/thumb/giraffe.jpg',full:'assets/work/giraffe.jpg',caption:{en:'Sketch',id:'Sketsa'}},{img:'javascript:alert(1)',full:'x'},{img:'assets/work/thumb/u/qa-flow.jpg',full:'assets/work/u/qa-flow.jpg',caption:{en:'Final',id:'Final'}}]}],
+      flows:{'RPG':{flow:'series',steps:[{img:'assets/work/thumb/rpg.jpg',full:'assets/work/rpg.jpg'},{img:'assets/work/thumb/shark.jpg',full:'assets/work/shark.jpg'}]}}}));
+    await boot(p);if(!await waitFor(()=>p.evaluate(()=>PROJECTS.some(x=>x.title==='QA Flow Piece')),5000))throw new Error('the piece with steps was not merged');
+    const r=await p.evaluate(()=>{const q=PROJECTS.find(x=>x.title==='QA Flow Piece'),g=PROJECTS.find(x=>x.title==='RPG');show(PROJECTS.indexOf(q));
+      return {n:stepsOf(q).length,bad:q.steps.some(x=>!/^assets\/work\//.test(x.img)),rpg:stepsOf(g).length,flow:g.flow}});
+    if(r.n!==2||r.bad)throw new Error('steps not cleaned: '+JSON.stringify(r));if(r.rpg!==2||r.flow!=='series')throw new Error('flows for a built-in piece not merged: '+JSON.stringify(r));
+    if(!await vis(p,'#lbFlow .fl-node',3000))throw new Error('no flow diagram for the merged piece');
+    if(await p.$$eval('#lbFlow .fl-node',n=>n.length)!==2)throw new Error('wrong number of flow nodes')});
+  if(!phone)T('admin art: steps editor adds, reorders, removes and publishes steps',async p=>{needAdmin();await boot(p);
+    await p.addScriptTag({url:url+'js/admin-art.js'});
+    await p.evaluate(()=>{const tab=(window.AdminTabs||[]).find(x=>x[0]==='art')[1];window.__qa={data:{version:1,projects:[],hidden:[],order:[]},files:{}};
+      const el=document.createElement('div');el.id='qaArt';el.style.cssText='position:fixed;inset:0;overflow:auto;background:#fff;z-index:9999;padding:12px';document.body.appendChild(el);
+      tab.render(el,{get data(){return __qa.data},getData:()=>__qa.data,setData:d=>{__qa.data=d},addFile:(k,b)=>{__qa.files[k]=b.length},canPublish:true})});
+    const img=px.join(SITE,'assets/work/giraffe.jpg'),img2=px.join(SITE,'assets/work/shark.jpg');
+    await p.click('#qaArt #aaAdd');await p.fill('#aaTe','QA Steps');await p.fill('#aaDe','A piece with a flow.');await p.fill('#aaTi','QA Langkah');await p.fill('#aaDi','Karya dengan alur.');
+    await p.setInputFiles('#aaFile',img);if(!await waitFor(()=>p.evaluate(()=>!!document.querySelector('#qaArt .aa-big')),6000))throw new Error('main picture did not load');
+    await p.fill('#aaTe','QA Steps');
+    await p.setInputFiles('#aaStepFile',[img2,img]);if(!await waitFor(()=>p.evaluate(()=>document.querySelectorAll('#qaArt .aa-step').length===2),8000))throw new Error('two step pictures were not added');
+    await p.click('#aaStepSelf');if(await p.$$eval('#qaArt .aa-step',n=>n.length)!==3)throw new Error('the piece itself was not added as a step');
+    await p.fill('[data-cap-en="0"]','First sketch');await p.fill('[data-cap-id="0"]','Sketsa pertama');
+    await p.click('[data-sdel="1"]');if(await p.$$eval('#qaArt .aa-step',n=>n.length)!==2)throw new Error('remove did not remove');
+    if(await p.inputValue('[data-cap-en="0"]')!=='First sketch')throw new Error('a caption was lost on redraw');
+    await p.click('[data-sup="1"]');await p.click('[data-sdown="0"]');   // up then down: back to the same order
+    await p.fill('[data-cap-en="1"]','Final');   // English only: must be refused
+    await p.click('#aaForm [type=submit]');if(!await vis(p,'#aaForm .aa-err',2000))throw new Error('a caption in one language only was accepted');
+    await p.fill('[data-cap-id="1"]','Final');await p.click('#aaForm [type=submit]');await sleep(300);
+    const r=await p.evaluate(()=>({d:__qa.data,f:__qa.files}));const pc=(r.d.projects||[])[0];
+    if(!pc||!pc.steps)throw new Error('no steps saved: '+JSON.stringify(r.d).slice(0,200));
+    if(pc.steps.length!==2||pc.steps[0].caption.en!=='First sketch'||pc.steps[1].full!==pc.full)throw new Error('steps wrong: '+JSON.stringify(pc.steps));
+    if(!/^assets\/work\/u\/qa-steps-s\d\.jpg$/.test(pc.steps[0].full)||!r.f[pc.steps[0].full]||!r.f[pc.steps[0].img])throw new Error('step picture not queued for publish: '+JSON.stringify(Object.keys(r.f)));
+    if(pc.flow!=='process')throw new Error('flow kind missing');
+    const v=await p.evaluate(()=>AdminArt.validateSteps([{img:'a',full:'b',caption:{en:'x',id:''}}]).length);if(v<2)throw new Error('validateSteps lets one step and a one-language caption through')});
 
   const q=jobs.slice();await Promise.all(Array.from({length:+process.env.POOL||3},async()=>{for(let j;(j=q.shift());)await runJob(j)}));return rows}
 

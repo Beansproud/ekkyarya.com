@@ -31,7 +31,34 @@ A piece may carry **steps**: the ordered pictures of its project. A piece withou
 - The piece's own picture should be one of the steps (usually the last for a process). The diagram marks the step
   whose `full` equals the piece's `full` as "this picture". If it is not in the list, nothing is added.
 
-## Where steps live
+## Optional step extras: `anim` and `set` (additive; steps without them work exactly as above)
+
+```json
+{ "img": "assets/projects/morumelons/thumb/astro.jpg", "full": "assets/projects/morumelons/astro.jpg",
+  "anim": "assets/projects/morumelons/anim/astro.webp",
+  "caption": { "en": "The crew", "id": "Para kru" },
+  "set": [ { "img": "...thumb/a.jpg", "full": ".../a.jpg", "anim": ".../anim/a.webp", "name": { "en": "Astronaut", "id": "Astronaut" } } ] }
+```
+
+- `anim` (on a step or a set item): a play-once animated WebP. Fetched only when it plays (tap, or hover with a mouse),
+  plays once, then settles back on `full`. Never plays under `prefers-reduced-motion`; never loops.
+- `set` (on a step): 2 to 24 items `{img, full, anim?, name {en, id}}`. A step with a set opens as a grid of its pictures
+  (thumbnails first) instead of a single picture. Fewer than 2 valid items means no set.
+- Paths may also be under `assets/projects/<project>/` (one optional sub-folder, e.g. `thumb/`, `anim/`), extension
+  jpg, png, gif or webp. A bad `anim` or set item is dropped; the step stays.
+- **Who draws them:** the flow core (js/site.js) draws the diagram and, for a plain step, shows `full`. The `anim`
+  playback and the `set` grid are drawn by the project's own block through the hook below.
+
+## The hook (stable; js/site.js)
+
+- `window.FlowHooks = [fn, ...]`: after the diagram is drawn (every time the lightbox shows a piece, and on a language
+  switch), each `fn(box, piece, steps)` is called. `box` is `#lbFlow` (hidden when the piece has no steps), `steps` is
+  `stepsOf(piece)`. A hook adds its own block inside `box` and must not change the nodes.
+- Tapping a node fires a cancelable `flowstep` event on `#lightbox` with
+  `detail = {piece, step, index, node}`. A hook that handles the step (a set, an animation) calls `preventDefault()`;
+  otherwise the core shows `step.full`.
+
+## Where steps live## Where steps live
 
 | Piece | Where its steps are written |
 |---|---|
@@ -41,7 +68,7 @@ A piece may carry **steps**: the ordered pictures of its project. A piece withou
 
 ## Paths and validation (js/site-data.js merge, js/admin-art.js validatePiece)
 
-- A step path must match `^assets/work/(thumb/|s/)?(u/)?[a-z0-9-]+\.(jpg|jpeg|png|gif)$`. Anything else drops that
+- A step path must match `^assets/(work/(thumb/|s/)?(u/)?|projects/<project>/(<folder>/)?)[a-z0-9-]+\.(jpg|jpeg|png|gif|webp)$`. Anything else drops that
   step (never the whole piece).
 - Admin uploads step pictures with the same resize as a piece (1600 px full, 480 px thumb, JPEG 0.82) to
   `assets/work/u/<piece-slug>-s<n>.jpg` and `assets/work/thumb/u/<piece-slug>-s<n>.jpg`, through `ctx.addFile`.
@@ -51,12 +78,31 @@ A piece may carry **steps**: the ordered pictures of its project. A piece withou
 
 ## Where the flow shows
 
-- Desktop lightbox (`js/site.js`): under the picture, a horizontal (zigzag when it wraps) diagram.
-- Phone game (`js/game.js`): the viewer opened from an Art tab card and from a start page tile; vertical diagram.
+- Desktop lightbox (`js/site.js` `renderFlow`): a zigzag row under the title and buttons (scrolls sideways past 5 steps).
+- Phone game: the same lightbox, opened from an Art tab card or a start page tile; a vertical diagram right under the
+  description, before the buttons. Art cards and start tiles of a piece with steps carry a small "3 pictures" sticker.
 - Each node is a sticker-like bubble with a hand-inked outline, a numbered badge and the caption, joined by hand-drawn
   arrows. Tapping a node opens that step's `full` picture. 44 px targets. A short entrance animation that plays once and
   is off under `prefers-reduced-motion`.
-- Strings in `COPY` (`js/data.js`): `flow.process`, `flow.series`, `flow.step` (`Step {n}`), `flow.this`, `flow.open`.
+- A node shows its step's picture in the lightbox (the piece's own step brings the piece back); it is marked
+  `aria-current="true"`.
+- Strings in `COPY` (`js/data.js`): `flow.process`, `flow.series`, `flow.step` (`Step {n}`), `flow.this`, `flow.open`, `flow.count`.
+
+## Admin (js/admin-art.js)
+
+The piece form of an added piece has a "Project flow (optional)" box: what the pictures show (process or series), Add
+pictures (several at once, resized like the piece), Add this piece's own picture, EN and ID captions, up and down
+buttons, a drag handle, and remove. Save writes `flow` and `steps` on the piece and queues the step pictures for the next
+Publish commit. `validatePiece` refuses 1 step, more than 8, a caption in one language only, a caption over 60
+characters, and emoji (`AdminArt.validateSteps`). Built-in pieces have no edit form, so their steps stay in `js/data.js`
+(or `flows` in data/site.json written by hand) for now.
+
+## Tests
+
+`scripts/e2e.cjs` (iPhone 13 and desktop 1440, light and dark, EN and ID): a piece with steps shows the column on the
+phone and the row on the desktop, a node opens its picture, a piece without steps has no flow at all.
+`scripts/e2e-admin.cjs`: steps in site.json merge and bad steps drop; the Art tab's steps editor adds, reorders, removes,
+validates and saves steps with their files queued (driven without the PIN).
 
 ## Content shipped
 

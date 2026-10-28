@@ -21,8 +21,13 @@
       kindNote: { fan: "Fan art stays in the portfolio and the Art tab only.", client: "Client work stays in the portfolio and the Art tab only.", original: "" },
       roleNames: { portfolio: "Portfolio grid", card: "Art tab card", featured: "Featured row", share: "Share cards", coloring: "Coloring page", sticker: "Stickers", sprite: "Star Catcher sprite", level: "Map and menu art", scene: "Doodle Scene backdrop", avatar: "Avatar", game: "Mini-games", village: "Village" },
       locked: "always on", notAllowed: "not allowed for this kind",
+      steps: "Project flow (optional)", stepsHint: "The pictures of this project in order: sketch, process, final, or more from the same project. 2 to 8 pictures; the site draws them as a diagram.",
+      flowKind: "What the pictures show", flowKinds: { process: "How it was made (sketch to final)", series: "More from the same project" },
+      stepAdd: "Add pictures", stepSelf: "Add this piece's own picture", stepCapEn: "Caption (English)", stepCapId: "Caption (Bahasa Indonesia)", stepPhEn: "English", stepPhId: "Indonesian",
+      stepN: "Picture {n}", stepThis: "this piece", stepRemove: "Remove picture",
       e: { img: "Choose an image.", titleEn: "Add an English title.", descEn: "Add an English description.", titleId: "Add an Indonesian title.", descId: "Add an Indonesian description.",
-        emoji: "Remove emoji and symbols from", cat: "Pick a category.", kind: "Pick a kind.", dup: "Another piece already has this title.", fan: "Fan art can only have portfolio and card.", client: "Client work can only have portfolio and card.", feat: "Only your own original pieces can be featured.", six: "At most six featured pieces.", role: "Unknown role", ref: "A featured or hidden entry points to a piece that does not exist" }
+        emoji: "Remove emoji and symbols from", cat: "Pick a category.", kind: "Pick a kind.", dup: "Another piece already has this title.", fan: "Fan art can only have portfolio and card.", client: "Client work can only have portfolio and card.", feat: "Only your own original pieces can be featured.", six: "At most six featured pieces.", role: "Unknown role", ref: "A featured or hidden entry points to a piece that does not exist",
+        stepsMin: "A project flow needs at least 2 pictures (or none).", stepsMax: "A project flow holds at most 8 pictures.", stepCap: "Write the caption in both languages, or leave both empty, for picture", stepLong: "Keep the caption under 60 characters, picture" }
     },
     id: {
       title: "Karya", hint: "Semua karyamu. Tambah, sembunyikan, atau pilih enam yang tampil pertama.",
@@ -41,8 +46,13 @@
       kindNote: { fan: "Fan art hanya ada di portofolio dan tab Karya.", client: "Karya klien hanya ada di portofolio dan tab Karya.", original: "" },
       roleNames: { portfolio: "Grid portofolio", card: "Kartu tab Karya", featured: "Baris pilihan", share: "Kartu bagikan", coloring: "Halaman mewarnai", sticker: "Stiker", sprite: "Sprite Star Catcher", level: "Seni peta dan menu", scene: "Latar Doodle Scene", avatar: "Avatar", game: "Mini-game", village: "Desa" },
       locked: "selalu aktif", notAllowed: "tidak boleh untuk jenis ini",
+      steps: "Alur proyek (boleh kosong)", stepsHint: "Gambar-gambar proyek ini secara berurutan: sketsa, proses, final, atau gambar lain dari proyek yang sama. 2 sampai 8 gambar; situs menggambarnya sebagai diagram.",
+      flowKind: "Isi gambarnya", flowKinds: { process: "Proses pembuatan (sketsa sampai final)", series: "Gambar lain dari proyek yang sama" },
+      stepAdd: "Tambah gambar", stepSelf: "Tambahkan gambar karya ini", stepCapEn: "Keterangan (Inggris)", stepCapId: "Keterangan (Bahasa Indonesia)", stepPhEn: "Inggris", stepPhId: "Indonesia",
+      stepN: "Gambar {n}", stepThis: "karya ini", stepRemove: "Hapus gambar",
       e: { img: "Pilih gambar.", titleEn: "Isi judul bahasa Inggris.", descEn: "Isi deskripsi bahasa Inggris.", titleId: "Isi judul bahasa Indonesia.", descId: "Isi deskripsi bahasa Indonesia.",
-        emoji: "Hapus emoji dan simbol dari", cat: "Pilih kategori.", kind: "Pilih jenis.", dup: "Karya lain sudah memakai judul ini.", fan: "Fan art hanya boleh portofolio dan kartu.", client: "Karya klien hanya boleh portofolio dan kartu.", feat: "Hanya karya asli yang boleh dipilih.", six: "Paling banyak enam karya pilihan.", role: "Peran tidak dikenal", ref: "Ada entri pilihan atau sembunyi yang menunjuk karya yang tidak ada" }
+        emoji: "Hapus emoji dan simbol dari", cat: "Pilih kategori.", kind: "Pilih jenis.", dup: "Karya lain sudah memakai judul ini.", fan: "Fan art hanya boleh portofolio dan kartu.", client: "Karya klien hanya boleh portofolio dan kartu.", feat: "Hanya karya asli yang boleh dipilih.", six: "Paling banyak enam karya pilihan.", role: "Peran tidak dikenal", ref: "Ada entri pilihan atau sembunyi yang menunjuk karya yang tidak ada",
+        stepsMin: "Alur proyek butuh paling sedikit 2 gambar (atau kosongkan).", stepsMax: "Alur proyek paling banyak 8 gambar.", stepCap: "Tulis keterangan dalam dua bahasa, atau kosongkan keduanya, untuk gambar", stepLong: "Keterangan maksimal 60 karakter, gambar" }
     }
   };
   const CATS = ["illustration", "web", "branding", "social"], KINDS = ["original", "client", "fan"];
@@ -53,7 +63,8 @@
   const ICON = {
     up: '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     down: '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-    grip: '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 8h14M5 12h14M5 16h14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>'
+    grip: '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 8h14M5 12h14M5 16h14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>',
+    x: '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>'
   };
 
   const lang = () => (typeof LANG !== "undefined" && LANG === "id") ? "id" : "en";
@@ -92,7 +103,23 @@
     const same = t => t.trim().toLowerCase();
     const others = builtIn().concat(userOf(d).filter(q => q.uid !== editing));
     if (p.title.trim() && others.some(q => same(q.title) === same(p.title))) out.push(e.dup);
+    out.push(...validateSteps(p.steps));
     return out.concat(validateData(Object.assign({}, d, { projects: userOf(d).filter(q => q.uid !== editing).concat([p]) }), true));
+  }
+  // Project flow (docs/flow.md): 0 or 2 to 8 steps; a caption in both languages or in neither, at most 60 characters, no emoji.
+  function validateSteps(steps) {
+    const e = T().e, out = [];
+    if (!steps || !steps.length) return out;
+    if (steps.length < 2) out.push(e.stepsMin);
+    if (steps.length > 8) out.push(e.stepsMax);
+    steps.forEach((s, k) => {
+      const c = s.caption || {}, en = (c.en || "").trim(), id = (c.id || "").trim();
+      if (!s.img || !s.full) out.push(`${e.img} (${k + 1})`);
+      if (!en !== !id) out.push(`${e.stepCap} ${k + 1}.`);
+      if (en.length > 60 || id.length > 60) out.push(`${e.stepLong} ${k + 1}.`);
+      if (GLYPH.test(en) || GLYPH.test(id)) out.push(`${e.emoji} ${T().stepN.replace("{n}", k + 1)}.`);
+    });
+    return out;
   }
   // The merged data: built-ins minus hidden, plus the added pieces. Returns a list of plain messages.
   function validateData(d, skipRefs) {
@@ -135,6 +162,9 @@
     if (bm.close) bm.close();
     return { full, thumb };
   }
+  // Sprint 3 editor (docs/admin-editor.md): loads js/admin-editor.js on first use; resolves to the edited Blob, or null on Cancel
+  const editImage = (src, lang) => (window.AdminEditor ? Promise.resolve() : new Promise((ok, no) => { const s = document.createElement("script"); s.src = "js/admin-editor.js?v=" + Date.now(); s.onload = ok; s.onerror = no; document.head.appendChild(s); }))
+    .then(() => window.AdminEditor.open(src, { lang }));
 
   // ---- the tab ----
   function render(el, ctx) {
@@ -187,7 +217,7 @@
         <h3>${esc(state.editing ? t.edit : t.add)}</h3>
         <div class="aa-f"><span>${esc(t.image)}</span>
           <div class="aa-pick">${f.preview ? `<img class="aa-th aa-big" src="${esc(f.preview)}" alt="">` : ""}
-          <label class="aa-btn aa-txt aa-file">${esc(t.pick)}<input id="aaFile" type="file" accept="image/*"></label></div>
+          <label class="aa-btn aa-txt aa-file">${esc(t.pick)}<input id="aaFile" type="file" accept="image/*"></label>${f.preview ? `<button type="button" class="aa-btn aa-txt" id="aaEdit">${lang() === "id" ? "Sunting" : "Edit"}</button>` : ""}</div>
           <small id="aaBusy">${esc(f.busy ? t.resizing : t.imageHint)}</small></div>
         ${field("aaTe", t.titleEn, f.title)}${field("aaDe", t.descEn, f.desc, "area")}
         ${field("aaTi", t.titleId, f.id.title)}${field("aaDi", t.descId, f.id.desc, "area")}
@@ -200,8 +230,55 @@
           return `<label class="aa-chk${off ? " aa-dim" : ""}"><input type="checkbox" data-role="${r}"${on ? " checked" : ""}${off ? " disabled" : ""}>
             <span>${esc(t.roleNames[r])}${base ? ` <small>(${esc(t.locked)})</small>` : locked ? ` <small>(${esc(t.notAllowed)})</small>` : ""}</span></label>`;
         }).join("")}</fieldset>
+        ${stepsHtml()}
         ${state.errors.length ? `<div class="aa-err" role="alert"><b>${esc(t.fixTop)}</b><ul>${state.errors.map(m => `<li>${esc(m)}</li>`).join("")}</ul></div>` : ""}
         <div class="aa-bar"><button type="submit" class="aa-btn aa-primary">${esc(t.save)}</button><button type="button" class="aa-btn aa-txt" id="aaCancel">${esc(t.cancel)}</button></div></form>`;
+    }
+
+    // ---- project flow: the steps of this piece (docs/flow.md) ----
+    function stepsHtml() {
+      const t = T(), f = state.form, st = f.steps, full = st.length >= 8;
+      return `<fieldset class="aa-steps" id="aaStepsBox"><legend>${esc(t.steps)}</legend><small>${esc(t.stepsHint)}</small>
+        <label class="aa-f"><span>${esc(t.flowKind)}</span><select id="aaFlow">${["process", "series"].map(k => `<option value="${k}"${f.flow === k ? " selected" : ""}>${esc(t.flowKinds[k])}</option>`).join("")}</select></label>
+        ${st.length ? `<ol class="aa-list aa-steps-list" id="aaSteps">${st.map((x, k) => `<li class="aa-row aa-step" data-k="${k}">
+          <button type="button" class="aa-btn aa-grip" data-sgrip aria-label="${esc(t.drag)}">${ICON.grip}</button>
+          ${(src => src ? `<img class="aa-th" src="${esc(src)}" alt="" loading="lazy" decoding="async">` : `<span class="aa-th" aria-hidden="true"></span>`)(x.self ? f.preview : x.preview || state.previews[x.img] || x.img)}
+          <div class="aa-meta"><b>${esc(t.stepN.replace("{n}", k + 1))}${x.self ? ` <small>(${esc(t.stepThis)})</small>` : ""}</b>
+            <input type="text" maxlength="60" data-cap-en="${k}" aria-label="${esc(t.stepCapEn)}" placeholder="${esc(t.stepPhEn)}" value="${esc(x.caption.en)}">
+            <input type="text" maxlength="60" data-cap-id="${k}" aria-label="${esc(t.stepCapId)}" placeholder="${esc(t.stepPhId)}" value="${esc(x.caption.id)}"></div>
+          <div class="aa-act"><button type="button" class="aa-btn" data-sup="${k}" aria-label="${esc(t.up)}"${k ? "" : " disabled"}>${ICON.up}</button>
+            <button type="button" class="aa-btn" data-sdown="${k}" aria-label="${esc(t.down)}"${k < st.length - 1 ? "" : " disabled"}>${ICON.down}</button>
+            <button type="button" class="aa-btn" data-sdel="${k}" aria-label="${esc(t.stepRemove)}">${ICON.x}</button></div></li>`).join("")}</ol>` : ""}
+        <div class="aa-bar"><label class="aa-btn aa-txt aa-file${full ? " aa-dim" : ""}">${esc(t.stepAdd)}<input id="aaStepFile" type="file" accept="image/*" multiple${full ? " disabled" : ""}></label>
+          ${st.some(x => x.self) || full ? "" : `<button type="button" class="aa-btn aa-txt" id="aaStepSelf">${esc(t.stepSelf)}</button>`}</div></fieldset>`;
+    }
+    function wireSteps() {
+      const f = state.form, box = el.querySelector("#aaStepsBox"); if (!box) return;
+      const redo = () => { draw(); const b = el.querySelector("#aaStepsBox"); if (b) b.scrollIntoView({ block: "nearest" }); };
+      const move = (i, j) => { readForm(); if (j < 0 || j >= f.steps.length) return; f.steps.splice(j, 0, f.steps.splice(i, 1)[0]); redo();
+        const b = el.querySelector(`[data-s${j < i ? "up" : "down"}="${j}"]`) || el.querySelector(`[data-s${j < i ? "down" : "up"}="${j}"]`); if (b && !b.disabled) b.focus(); };
+      box.querySelectorAll("[data-sup]").forEach(b => b.onclick = () => move(+b.dataset.sup, +b.dataset.sup - 1));
+      box.querySelectorAll("[data-sdown]").forEach(b => b.onclick = () => move(+b.dataset.sdown, +b.dataset.sdown + 1));
+      box.querySelectorAll("[data-sdel]").forEach(b => b.onclick = () => { readForm(); f.steps.splice(+b.dataset.sdel, 1); redo(); });
+      const self = box.querySelector("#aaStepSelf");
+      if (self) self.onclick = () => { readForm(); f.steps.push({ self: true, img: "", full: "", caption: { en: "", id: "" } }); redo(); };
+      box.querySelector("#aaStepFile").onchange = async e => {
+        const files = Array.from(e.target.files || []).slice(0, 8 - f.steps.length); if (!files.length) return;
+        readForm(); f.busy = true; el.querySelector("#aaBusy").textContent = T().resizing;
+        for (const file of files) { try { const r = await resizeFile(file); f.steps.push({ img: "", full: "", files: r, preview: r.thumb.url, caption: { en: "", id: "" } }); } catch (err) { /* skip a file the browser cannot read */ } }
+        f.busy = false; redo();
+      };
+      // drag by the handle (pointer events, so a finger works too)
+      box.querySelectorAll("[data-sgrip]").forEach(g => g.addEventListener("pointerdown", e => {
+        const li = g.closest("li"), ol = li.parentElement, from = +li.dataset.k;
+        e.preventDefault(); g.setPointerCapture(e.pointerId); li.classList.add("aa-drag");
+        const mv = ev => { const kids = Array.from(ol.children).filter(x => x !== li);
+          const next = kids.find(x => ev.clientY < x.getBoundingClientRect().top + x.offsetHeight / 2); ol.insertBefore(li, next || null); };
+        const up = () => { g.removeEventListener("pointermove", mv); g.removeEventListener("pointerup", up); g.removeEventListener("pointercancel", up);
+          li.classList.remove("aa-drag"); const to = Array.from(ol.children).indexOf(li); if (to === from) return; readForm();
+          f.steps.splice(to, 0, f.steps.splice(from, 1)[0]); redo(); };
+        g.addEventListener("pointermove", mv); g.addEventListener("pointerup", up); g.addEventListener("pointercancel", up);
+      }));
     }
 
     function draw() {
@@ -216,12 +293,15 @@
       wire();
     }
 
-    const blank = () => ({ title: "", desc: "", id: { title: "", desc: "" }, cat: "illustration", kind: "original", label: "", roles: ["featured", "share", "sticker"], full: "", img: "", preview: "", busy: false, files: null });
+    const blank = () => ({ title: "", desc: "", id: { title: "", desc: "" }, cat: "illustration", kind: "original", label: "", roles: ["featured", "share", "sticker"], full: "", img: "", preview: "", busy: false, files: null, flow: "process", steps: [] });
     const readForm = () => {
       const f = state.form, v = id => (el.querySelector("#" + id) || {}).value || "";
       f.title = v("aaTe"); f.desc = v("aaDe"); f.id = { title: v("aaTi"), desc: v("aaDi") };
       f.cat = v("aaCat"); f.kind = v("aaKind"); f.label = v("aaLab").trim();
       f.roles = Array.from(el.querySelectorAll("[data-role]")).filter(i => i.checked && !i.disabled).map(i => i.dataset.role);
+      f.flow = v("aaFlow") || f.flow || "process";
+      f.steps.forEach((x, k) => { const en = el.querySelector(`[data-cap-en="${k}"]`), id = el.querySelector(`[data-cap-id="${k}"]`);
+        if (en) x.caption.en = en.value; if (id) x.caption.id = id.value; });
     };
 
     function wire() {
@@ -231,7 +311,9 @@
       on("[data-edit]", "click", e => {
         const p = userOf(get()).find(q => q.uid === e.currentTarget.dataset.edit); if (!p) return;
         state.editing = p.uid; state.errors = []; state.note = "";
-        state.form = { title: p.title, desc: p.desc, id: { title: (p.id || {}).title || "", desc: (p.id || {}).desc || "" }, cat: p.cat, kind: p.kind, label: p.label || "", roles: (p.roles || []).slice(), full: p.full, img: p.img, preview: thumbSrc(p), busy: false, files: null };
+        state.form = { title: p.title, desc: p.desc, id: { title: (p.id || {}).title || "", desc: (p.id || {}).desc || "" }, cat: p.cat, kind: p.kind, label: p.label || "", roles: (p.roles || []).slice(), full: p.full, img: p.img, preview: thumbSrc(p), busy: false, files: null,
+          flow: p.flow === "series" ? "series" : "process",
+          steps: (p.steps || []).map(x => ({ self: x.full === p.full, img: x.img, full: x.full, caption: { en: (x.caption || {}).en || "", id: (x.caption || {}).id || "" } })) };
         draw(); el.querySelector("#aaForm").scrollIntoView({ block: "start" });
       });
       if (!state.form) return wireLists();
@@ -240,6 +322,7 @@
       el.querySelector("#aaCancel").onclick = () => { state.form = null; state.editing = null; state.errors = []; draw(); };
       el.querySelector("#aaFile").onchange = async e => {
         const file = e.target.files && e.target.files[0]; if (!file) return;
+        state.form.src = file;
         readForm(); state.form.busy = true; el.querySelector("#aaBusy").textContent = T().resizing;
         try {
           const r = await resizeFile(file), f = state.form;
@@ -248,7 +331,13 @@
         } catch (err) { state.form.busy = false; }
         draw();
       };
+      const ed = el.querySelector("#aaEdit");
+      if (ed) ed.onclick = async () => {
+        readForm(); const blob = await editImage(state.form.src || state.form.full, lang()).catch(() => null); if (!blob) return;
+        const r = await resizeFile(blob), f = state.form; f.files = r; f.src = blob; f.preview = r.thumb.url; draw();
+      };
       el.querySelector("#aaForm").onsubmit = e => { e.preventDefault(); submit(); };
+      wireSteps();
       wireLists();
     }
 
@@ -269,9 +358,20 @@
       };
       const label = f.label || (f.kind === "fan" ? "Fan art" : "");
       if (label) piece.label = label;
+      // steps: the piece's own picture takes its paths; a new picture gets the next free <slug>-s<n> name
+      const used = new Set(f.steps.map(x => x.full));
+      const freeName = () => { for (let n = 1; ; n++) { const full = `assets/work/u/${slug}-s${n}.jpg`; if (!used.has(full)) { used.add(full); return n; } } };
+      const steps = f.steps.map(x => {
+        const c = { en: x.caption.en.trim(), id: x.caption.id.trim() };
+        if (x.self) return { img: piece.img, full: piece.full, caption: c };
+        if (x.files && !x.full) { const n = freeName(); x.full = `assets/work/u/${slug}-s${n}.jpg`; x.img = `assets/work/thumb/u/${slug}-s${n}.jpg`; }
+        return { img: x.img, full: x.full, caption: c };
+      });
+      if (steps.length) { piece.flow = f.flow === "series" ? "series" : "process"; piece.steps = steps; }
       state.errors = validatePiece(piece, d, editing);
       if (state.errors.length) { draw(); el.querySelector(".aa-form .aa-err").scrollIntoView({ block: "nearest" }); return; }
       if (f.files) { addFile(piece.full, f.files.full.base64); addFile(piece.img, f.files.thumb.base64); state.previews[uid] = f.files.thumb.url; }
+      f.steps.forEach(x => { if (x.files && !x.self) { addFile(x.full, x.files.full.base64); addFile(x.img, x.files.thumb.base64); state.previews[x.img] = x.files.thumb.url; } });
       patch(n => { n.projects = userOf(n).filter(p => p.uid !== editing); const at = old ? userOf(get()).findIndex(p => p.uid === editing) : -1;
         if (at >= 0) n.projects.splice(at, 0, piece); else n.projects.push(piece); });
       state.form = null; state.editing = null; state.errors = []; state.note = T().saved; draw();
@@ -310,5 +410,5 @@
   const tab = { get title() { return T().title; }, render };
   const reg = () => window.Admin && window.Admin.registerTab && window.Admin.registerTab("art", tab);
   if (window.Admin && window.Admin.registerTab) reg(); else (window.AdminTabs = window.AdminTabs || []).push(["art", tab]);
-  window.AdminArt = { validateData, validatePiece, resizeFile, rolesFor };
+  window.AdminArt = { validateData, validatePiece, validateSteps, resizeFile, rolesFor, editImage };
 })();
