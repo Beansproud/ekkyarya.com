@@ -155,9 +155,8 @@ function show(i){cur=i;const p=PROJECTS[i];
   const tag=document.getElementById("lbTag");tag.textContent=plabel(p);tag.hidden=!p.label;
   document.getElementById("lbHire").textContent=t("lb.hire");
   const dl=document.getElementById("lbDl");if(dl)dl.hidden=p.kind==="fan";
-  // decode the big image before the dialog animates in (capped, so a slow image never holds the tap)
-  const open=()=>{if(!lb.open)lb.showModal()},im=document.querySelector("#lbArt img");
-  if(!lb.open&&im&&im.decode)Promise.race([im.decode(),new Promise(r=>setTimeout(r,300))]).catch(()=>{}).then(open);else open()}
+  if(!lb.open){const img=document.querySelector("#lbArt img"),i0=i;   // decode first (at most 250 ms), so the dialog does not open on a blocking decode
+    if(img&&img.decode)Promise.race([img.decode().catch(()=>{}),new Promise(r=>setTimeout(r,250))]).then(()=>{if(!lb.open&&cur===i0)lb.showModal()});else lb.showModal()}}
 function step(d){const v=visible(),k=v.indexOf(cur);show(v[(k+d+v.length)%v.length])}
 grid.addEventListener("click",e=>{const t=e.target.closest(".tile");if(t)show(+t.dataset.i)});
 document.getElementById("lbPrev").onclick=()=>step(-1);

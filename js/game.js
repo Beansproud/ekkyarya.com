@@ -53,8 +53,9 @@ function go(to,fromPop){
   G.querySelectorAll(".g-screen").forEach(s=>s.classList.toggle("active",s.id==="g-"+to));
   G.querySelectorAll(".g-tabs button").forEach(b=>b.classList.toggle("active",b.dataset.tab===to));
   if(to==="mine")renderMine();
-  if(to==="art"&&!artDone){artDone=true;renderArt()}
-  if(to==="map")renderMap();
+  if(to==="start"&&dirty.start){dirty.start=false;renderStart()}
+  if(to==="art"&&(!artDone||dirty.art)){artDone=true;dirty.art=false;renderArt()}
+  if(to==="map"){if(!mapBuilt||dirty.map){mapBuilt=true;dirty.map=false;renderMap()}else refreshWall()}
   requestAnimationFrame(moveInd);
 }
 try{history.replaceState({s:"start"},"")}catch(e){}
@@ -114,6 +115,8 @@ function renderMap(){
   Z.base=null;Z.s=1;zoomTo(1,0,0);
   $("gMapList").innerHTML=places.map(p=>`<li><button class="v-row${p.hire?" hire":""}" data-place="${p.id}"><img src="${p.icon}" alt="" loading="lazy">${esc(t(p.key))}</button></li>`).join("");
 }
+// a revisit hangs four new pieces on the gallery walls without rebuilding the village
+function refreshWall(){const art=featuredSix(4);$("gMapWrap").querySelectorAll(".v-frame").forEach((im,k)=>{const p=art[k];if(p)im.src=thumbOf(p)})}
 /* ---- Village life (B42 V3), inside the ambience budget (decision 10, docs/motion.md): walkers, two clouds, the
    gate's lantern, the noodle bath's steam and the water shimmer. All CSS animations on transform and opacity, so the
    off-screen pause and reduced motion (villagers stand still) apply; day or night is set once, on load. ---- */
@@ -139,7 +142,7 @@ function villageLife(V){
 
 /* ---- Zoom (G1): pinch or drag with a finger, or the +/- buttons; 1x to 2x. A place is still one tap: a touch
    that moved more than 8 px is a pan, not a tap. Nothing animates; the view follows the finger. ---- */
-const Z={s:1,x:0,y:0,pts:new Map(),moved:false,start:null};
+const Z={s:1,x:0,y:0,pts:new Map(),moved:false,start:null,raf:0,zs:null,r:{l:0,t:0},cw:0};
 // At 1x the map is its framed size. Zoomed, the frame widens to the full screen width at the same height, and the
 // village layer keeps its 1x size in px, so more of the island shows side to side; labels keep their 1x size (UX nit).
 function widen(on){const W=$("gMapWrap"),L=$("gMapZoom");
@@ -148,17 +151,23 @@ function widen(on){const W=$("gMapWrap"),L=$("gMapZoom");
     Object.assign(W.style,{width:"100%",height:Z.base.h+"px",aspectRatio:"auto"});Z.x=(W.clientWidth-Z.base.w)/2;Z.y=0}
   if(!on&&Z.base){Object.assign(L.style,{width:"",height:"",inset:""});
     Object.assign(W.style,{width:Z.base.css,height:"",aspectRatio:`${window.VILLAGE.w}/${window.VILLAGE.h}`});Z.base=null}}
+// Pan and zoom: gesture math runs on cached numbers (Z.r = the frame's rect, Z.cw = its width, both read once per gesture
+// by geom(), not per move); the transform is written at most once per frame, and --zs only when the scale changed.
+function geom(){const W=$("gMapWrap"),r=W.getBoundingClientRect();Z.r={l:r.left,t:r.top};Z.cw=W.clientWidth}
+function paintZoom(){Z.raf=0;const L=$("gMapZoom");if(!L||!Z.base)return;
+  L.style.transform=`translate3d(${Z.x}px,${Z.y}px,0) scale(${Z.s})`;
+  if(Z.zs!==Z.s){Z.zs=Z.s;L.style.setProperty("--zs",(1/Z.s).toFixed(3))}}
 function zoomTo(s,x,y){const W=$("gMapWrap"),L=$("gMapZoom");if(!L)return;
   Z.s=Math.max(1,Math.min(2,s));if(Z.s===1)widen(false);
-  if(!Z.base){L.style.transform="";L.style.removeProperty("--zs");W.classList.remove("zoomed");Z.x=Z.y=0;return}
-  const cw=W.clientWidth,w=Z.base.w*Z.s,h=Z.base.h;
+  if(!Z.base){cancelAnimationFrame(Z.raf);Z.raf=0;Z.zs=null;L.style.transform="";L.style.removeProperty("--zs");W.classList.remove("zoomed");Z.x=Z.y=0;return}
+  const cw=Z.cw,w=Z.base.w*Z.s,h=Z.base.h;
   Z.x=w<=cw?(cw-w)/2:Math.min(0,Math.max(cw-w,x));Z.y=Math.min(0,Math.max(h-h*Z.s,y));
-  L.style.transform=`translate(${Z.x}px,${Z.y}px) scale(${Z.s})`;L.style.setProperty("--zs",(1/Z.s).toFixed(3));W.classList.add("zoomed")}
-function zoomAt(k,cx,cy){const ns=Math.max(1,Math.min(2,Z.s*k));if(ns>1)widen(true);
-  const r=$("gMapWrap").getBoundingClientRect(),px=cx-r.left,py=cy-r.top,f=ns/Z.s;
+  W.classList.add("zoomed");if(!Z.raf)Z.raf=requestAnimationFrame(paintZoom)}
+function zoomAt(k,cx,cy){const ns=Math.max(1,Math.min(2,Z.s*k));if(ns>1&&!Z.base){widen(true);geom()}
+  const px=cx-Z.r.l,py=cy-Z.r.t,f=ns/Z.s;
   zoomTo(ns,px-(px-Z.x)*f,py-(py-Z.y)*f)}
 (()=>{const W=$("gMapWrap");
-  W.addEventListener("pointerdown",e=>{if(e.target.closest(".v-zoomctl"))return;if(e.isPrimary){Z.pts.clear();Z.pinch=null}Z.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  W.addEventListener("pointerdown",e=>{if(e.target.closest(".v-zoomctl"))return;if(e.isPrimary){Z.pts.clear();Z.pinch=null;geom()}Z.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
     if(Z.pts.size===1){Z.moved=false;Z.start={x:e.clientX,y:e.clientY,zx:Z.x,zy:Z.y}}
     else if(Z.pts.size===2){const [a,b]=[...Z.pts.values()];Z.pinch={d:Math.hypot(a.x-b.x,a.y-b.y),s:Z.s};Z.moved=true}});
   W.addEventListener("pointermove",e=>{if(!Z.pts.has(e.pointerId))return;Z.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
@@ -170,9 +179,9 @@ function zoomAt(k,cx,cy){const ns=Math.max(1,Math.min(2,Z.s*k));if(ns>1)widen(tr
   // a pan or pinch is not a tap on whatever was under the finger
   W.addEventListener("click",e=>{if(Z.moved&&!e.target.closest(".v-zoomctl")){e.stopPropagation();e.preventDefault();Z.moved=false}},true);
   W.addEventListener("click",e=>{const b=e.target.closest("[data-zoom]");if(!b)return;e.stopPropagation();buzz(8);
-    const r=W.getBoundingClientRect();zoomAt(+b.dataset.zoom>0?2:.5,r.left+r.width/2,r.top+r.height/2)},true);
-  W.addEventListener("wheel",e=>{if(!e.ctrlKey)return;e.preventDefault();zoomAt(e.deltaY<0?1.1:1/1.1,e.clientX,e.clientY)},{passive:false});
-  addEventListener("resize",()=>{if(Z.base)zoomTo(1,0,0)})})();
+    const r=W.getBoundingClientRect();geom();zoomAt(+b.dataset.zoom>0?2:.5,r.left+r.width/2,r.top+r.height/2)},true);
+  W.addEventListener("wheel",e=>{if(!e.ctrlKey)return;e.preventDefault();if(!Z.base)geom();zoomAt(e.deltaY<0?1.1:1/1.1,e.clientX,e.clientY)},{passive:false});
+  addEventListener("resize",()=>{if(Z.base){geom();zoomTo(1,0,0)}})})();
 
 function openVillager(b){const k=+b.dataset.piece,p=PROJECTS[k];if(!p)return;
   openSheet(`<h2 id="gSheetTitle"><img class="h-ico" src="${esc(b.dataset.sprite)}" alt="">${esc(ptitle(p))}</h2>
@@ -286,9 +295,13 @@ function sfx(type){if(!st.snd||!feature("sound"))return;try{actx=actx||new(windo
 
 /* ---- animated tab bar ---- */
 const tabs=G.querySelector(".g-tabs"),ind=document.createElement("span");ind.className="g-ind";tabs.prepend(ind);
-function moveInd(){const a=tabs.querySelector("button.active");ind.style.opacity=a?1:0;if(a)ind.style.left=a.offsetLeft+a.offsetWidth/2+"px"}
-tabs.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;sfx("tap");b.classList.remove("pressed");void b.offsetWidth;b.classList.add("pressed")});
-addEventListener("resize",moveInd);
+// the three tab centres are measured once (and again on resize), so a tab switch never forces a layout to place the marker
+const tabBtns=[...tabs.querySelectorAll("button")];let tabX=null;
+const measureTabs=()=>{tabX=tabBtns.map(b=>b.offsetLeft+b.offsetWidth/2)};
+function moveInd(){const k=tabBtns.findIndex(b=>b.classList.contains("active"));ind.style.opacity=k<0?0:1;
+  if(k>=0){if(!tabX||tabX.some(v=>!v))measureTabs();ind.style.setProperty("--ix",tabX[k]+"px")}}
+tabs.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;sfx("tap");b.classList.remove("pressed");requestAnimationFrame(()=>b.classList.add("pressed"))});
+addEventListener("resize",()=>{tabX=null;moveInd()});
 
 /* ---- Star Catcher (B13): one rule, always the full 30 s, no lives, no game over ---- */
 // Balance numbers (Game Director): each range goes from the start of the round to the end.
@@ -376,7 +389,7 @@ document.addEventListener("visibilitychange",()=>{if(!A)return;if(document.hidde
   else if(pausedByHide){pausedByHide=false;setTimeout(()=>{if(A&&!document.hidden&&A.t>0)A.run=true},600)}});
 
 // A friend's link draws their coloring first; the start thumbnails and the Art cards load after it (share playtest).
-let artDone=false;
+let artDone=false,mapBuilt=false;const dirty={start:false,art:false,map:false};   // screens are built once and kept; a language switch redraws only the one in view
 // The village (village.png and its sprites, about 1 MB) is built when the map opens (go("map")), not at load, so the
 // start screen's drawings come first on a slow phone (S5, Developer B).
 /* ---- Language switched in place (js/site.js dispatches "ekky:lang" at the dim point): redraw what was built with t() ---- */
@@ -384,14 +397,20 @@ let sheetRe=null;
 const remember=f=>(...a)=>{sheetRe=()=>f(...a);return f(...a)};   // the sheet's opener, so a language switch can draw it again
 openVillager=remember(openVillager);openLevel=remember(openLevel);openHire=remember(openHire);
 addEventListener("ekky:lang",()=>{
-  renderStart();renderMine();if(artDone)renderArt();
+  renderMine();
   const rs=$("gResShare");if(rs)rs.querySelector("span").textContent=t("reveal.share");
-  const sv={s:Z.s,x:Z.x,y:Z.y};renderMap();if(sv.s>1){widen(true);zoomTo(sv.s,sv.x,sv.y)}
+  if(screen==="start")renderStart();else dirty.start=true;
+  if(artDone){if(screen==="art")renderArt();else dirty.art=true}
+  if(mapBuilt){if(screen==="map"){const sv={s:Z.s,x:Z.x,y:Z.y};renderMap();if(sv.s>1){widen(true);zoomTo(sv.s,sv.x,sv.y)}}else dirty.map=true}
   const l=$("gMapList"),b=$("gMapListBtn");if(!l.hidden)b.textContent=tt("town.showVillage","Show the village");
   if(sheet.classList.contains("open")&&sheetRe){
     const body=sheet.firstElementChild,top=body.scrollTop,from=sheetFrom,f=$("gForm"),v=f&&[f.name.value,f.type.selectedIndex,f.message.value];
     sheetRe();body.scrollTop=top;sheetFrom=from;
     const g=$("gForm");if(g&&v){g.name.value=v[0];g.type.selectedIndex=v[1];g.message.value=v[2]}}});
+// Build Art and the village once the start screen has settled, off the tap: the first visit then only shows them.
+addEventListener("load",()=>setTimeout(()=>{if(!document.body.classList.contains("game-mode"))return;
+  const idle=window.requestIdleCallback||(f=>setTimeout(f,50));
+  idle(()=>{if(!artDone){artDone=true;renderArt()}idle(()=>{if(!mapBuilt&&window.VILLAGE){mapBuilt=true;renderMap()}},{timeout:3000})},{timeout:3000})},2500));
 function renderAll(){if(deep)setTimeout(renderStart,2500);else renderStart();renderMine();setTimeout(moveInd,60)}
 // Shared with js/color.js, js/share.js and js/links.js.
 window.Game={go,openHire,openSheet,closeSheet,sfx,buzz,save,get st(){return st},esc,contactReady,screen:()=>screen};
