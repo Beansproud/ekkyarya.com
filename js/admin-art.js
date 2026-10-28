@@ -8,7 +8,7 @@
       title: "Art", hint: "Your pieces. Add one, hide one, or pick the six shown first.",
       readonly: "Read-only: paste your GitHub token in Settings to publish.",
       featured: "Featured six", featuredHint: "These show first on the start page. Use the arrows or drag the handle.",
-      featuredEmpty: "Not picked yet: the site shows a fresh mix of six on each visit.",
+      featuredEmpty: "Not picked yet: the site picks six for you, spread across the categories.",
       all: "All pieces", add: "Add a piece", edit: "Edit", hide: "Hide", show: "Show", hidden: "Hidden", pending: "Not published yet",
       up: "Move up", down: "Move down", drag: "Drag to reorder", feat: "Feature", unfeat: "Remove from featured",
       remove: "Delete", removeAsk: "Delete this piece from the list? The image files stay in the repo.",
@@ -28,7 +28,7 @@
       title: "Karya", hint: "Semua karyamu. Tambah, sembunyikan, atau pilih enam yang tampil pertama.",
       readonly: "Hanya baca: tempel token GitHub di Pengaturan untuk menerbitkan.",
       featured: "Enam pilihan", featuredHint: "Enam ini tampil pertama di halaman awal. Pakai panah atau geser pegangannya.",
-      featuredEmpty: "Belum dipilih: situs menampilkan enam acak setiap kali dibuka.",
+      featuredEmpty: "Belum dipilih: situs memilih enam untukmu dari berbagai kategori.",
       all: "Semua karya", add: "Tambah karya", edit: "Ubah", hide: "Sembunyikan", show: "Tampilkan", hidden: "Disembunyikan", pending: "Belum diterbitkan",
       up: "Naik", down: "Turun", drag: "Geser untuk mengurutkan", feat: "Pilih", unfeat: "Keluarkan dari pilihan",
       remove: "Hapus", removeAsk: "Hapus karya ini dari daftar? File gambarnya tetap ada di repo.",
@@ -64,7 +64,10 @@
   // ---- pieces: built-in PROJECTS plus data.projects ----
   // A reference ("hidden", "order") is the title for a built-in piece and the uid "u-<slug>" for an added one.
   const refOf = p => p.uid || p.title;
-  const builtIn = () => (typeof PROJECTS !== "undefined" ? PROJECTS : []).filter(p => !p.uid && !/^assets\/work\/u\//.test(p.full || ""));
+  // The pristine list, not the live PROJECTS: once data/site.json or Preview hides a piece, PROJECTS no longer holds it,
+  // and its "hidden" entry would read as pointing at a piece that does not exist.
+  const builtIn = () => ((typeof SiteData !== "undefined" && SiteData.builtin && SiteData.builtin.projects) ||
+    (typeof PROJECTS !== "undefined" ? PROJECTS : [])).filter(p => !p.uid && !/^assets\/work\/u\//.test(p.full || ""));
   const userOf = d => (d.projects || []).filter(p => p && p.full);
   const slugFromFull = p => p.full.split("/").pop().replace(/\.\w+$/, "");
 
