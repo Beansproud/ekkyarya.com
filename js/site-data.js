@@ -81,18 +81,32 @@ const SiteData = (() => {
     return first.concat(pieces.filter(p => !first.includes(p))).slice(0, n);
   }
 
-  const api = { merge, ordered, order: [], builtin: null, data: null, ready: null, changed: false, load, openAdmin };
+  const api = { merge, ordered, preview, order: [], builtin: null, data: null, ready: null, changed: false, load, openAdmin };
 
   // Fetch data/site.json once; merge it; tell the page (event "sitedata") only if something changed.
   function load() {
     api.ready = fetch("data/site.json", { cache: "no-cache" }).then(r => r.ok ? r.json() : null).catch(() => null).then(d => {
       api.data = isOk(d) ? d : null;
-      if (api.data && hasContent(api.data)) api.builtin = JSON.parse(JSON.stringify({ config: CONFIG, features: FEATURES, copy: COPY }));   // pristine, for "reset to built-in"
+      if (api.data && hasContent(api.data)) api.builtin = snapshot();   // pristine, for "reset to built-in"
       api.changed = api.data ? merge({ CONFIG, FEATURES, PROJECTS, COPY }, api.data) : false;
       if (api.changed) dispatchEvent(new Event("sitedata"));
       return api.changed;
     });
     return api.ready;
+  }
+  const snapshot = () => JSON.parse(JSON.stringify({ config: CONFIG, features: FEATURES, copy: COPY, projects: PROJECTS }));
+  const reset = (to, from) => { for (const k of Object.keys(to)) delete to[k]; Object.assign(to, JSON.parse(JSON.stringify(from))); };
+  // Preview (admin): show `json` on the live page in memory, over the built-in data, or null to go back to what is published.
+  // Nothing is saved or sent anywhere; a reload shows the published site again.
+  function preview(json) {
+    if (!api.builtin) api.builtin = snapshot();   // nothing was merged at start-up, so the page is still the built-in data
+    const b = api.builtin;
+    reset(CONFIG, b.config); reset(FEATURES, b.features); reset(COPY, b.copy);
+    PROJECTS.splice(0, PROJECTS.length, ...JSON.parse(JSON.stringify(b.projects)));
+    api.order = [];
+    const d = json || api.data;
+    if (d) merge({ CONFIG, FEATURES, PROJECTS, COPY }, d);
+    dispatchEvent(new Event("sitedata"));
   }
   const hasContent = v => Array.isArray(v) ? v.some(hasContent) : isObj(v) ? Object.entries(v).some(([k, x]) => k !== "version" && hasContent(x)) : v !== "" && v !== null && v !== undefined && v !== false;
   const isOk = d => isObj(d) && d.version === 1;

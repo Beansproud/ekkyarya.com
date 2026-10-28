@@ -21,9 +21,10 @@ window.Admin = (() => {
   }
 
   const CSS = `
-.adm-pad{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;z-index:100000;display:none;align-items:center;justify-content:center;background:rgba(43,19,66,.55);font-family:Fredoka,Poppins,sans-serif;--ink:#2B1342;--paper:#FFF8EC;--line:#e5d8bd;--accent:#FFB400}
-.adm-pad[open]{display:flex}.adm-pad::backdrop{background:transparent}
+dialog.adm-pad{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;z-index:100000;display:none;border-radius:0;box-shadow:none;animation:none;overflow:hidden;align-items:center;justify-content:center;background:rgba(43,19,66,.55);font-family:Fredoka,Poppins,sans-serif;--ink:#2B1342;--paper:#FFF8EC;--line:#e5d8bd;--accent:#FFB400}
+dialog.adm-pad[open]{display:flex;animation:none}.adm-pad::backdrop{background:transparent}
 .adm-pad *{box-sizing:border-box}
+.adm-card:focus{outline:none}
 .adm-card{width:min(320px,calc(100vw - 32px));background:var(--paper);color:var(--ink);border-radius:22px;padding:22px 20px 18px;box-shadow:0 12px 40px rgba(0,0,0,.35);text-align:center}
 .adm-card h2{margin:0 0 4px;font-size:1.4rem}
 .adm-card p{margin:0 0 14px;min-height:1.3em;font-size:.95rem}
@@ -37,8 +38,10 @@ window.Admin = (() => {
 .adm-keys .adm-sm{font-size:.95rem}
 .adm-x{margin-top:12px;width:100%;min-height:44px;font-size:.95rem;background:none}
 .adm-shake{animation:adm-shake .32s ease-out 1}
+@keyframes adm-in{from{opacity:0;transform:translateY(10px)}}
+.adm-pad[open] .adm-card{animation:adm-in .18s ease-out}
 @keyframes adm-shake{25%{transform:translateX(-8px)}60%{transform:translateX(7px)}100%{transform:none}}
-@media (prefers-reduced-motion:reduce){.adm-shake{animation:none}}
+@media (prefers-reduced-motion:reduce){.adm-shake,.adm-pad[open] .adm-card{animation:none}}
 @media (prefers-color-scheme:dark){.adm-pad{--ink:#f3ecff;--paper:#241638;--line:#3e2a5c}.adm-keys button,.adm-x{background:#2f1f47}}
 `;
   function addCss() {
@@ -118,7 +121,7 @@ window.Admin = (() => {
     document.body.appendChild(el); pad = el; el.showModal();
     el.addEventListener("cancel", e => { e.preventDefault(); close(); });
     label(); draw(); lockUi();
-    card.querySelector("[data-k='5']").focus();
+    card.tabIndex = -1; card.focus();
   }
 
   // After the PIN: fetch the shell, which also loads the tab scripts.
