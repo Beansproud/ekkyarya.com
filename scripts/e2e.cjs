@@ -345,6 +345,8 @@ async function runConfig(browser,url,scheme,lang){
     if(!s.open||s.step||!/morumelons\.jpg$/.test(s.src)||s.l!=='lb')throw new Error('Back from a step did not return to the flow '+JSON.stringify(s));
     await node(2);await p.keyboard.press('Escape');await sleep(500);s=await st();if(!s.open||s.step)throw new Error('Esc from a step did not return to the flow '+JSON.stringify(s));
     await sleep(300);if((await st()).l!=='lb')throw new Error('Esc left a stale history entry');
+    await node(2);if(!await vis(p,'#lbArt .fl-back',1500))throw new Error('no on-screen Back in the step view');await p.tap('#lbArt .fl-back');await sleep(500);s=await st();
+    if(!s.open||s.step||s.l!=='lb')throw new Error('the on-screen Back did not return to the flow '+JSON.stringify(s));
     await node(2);await p.tap('#lbClose');await sleep(700);s=await st();
     if(s.open||s.step||s.tab!==s0.tab||Math.abs(s.top-s0.top)>2)throw new Error('close from a step did not return to where it opened '+JSON.stringify({s0,s}));
     if(s.l)throw new Error('a history entry was left behind: '+s.l);
@@ -358,6 +360,8 @@ async function runConfig(browser,url,scheme,lang){
       const f=await d.evaluate(()=>{const r=[...document.querySelectorAll('#lbFlow .fl-node')].map(e=>e.getBoundingClientRect());
         return {n:r.length,row:r.every((x,k)=>!k||x.left>r[k-1].right-1),cur:[...document.querySelectorAll('#lbFlow .fl-node')].findIndex(e=>e.getAttribute('aria-current')==='true')}});
       if(f.n!==3||!f.row||f.cur!==0)throw new Error('desktop flow '+JSON.stringify(f));
+      const fold=await d.evaluate(()=>{const lb=document.getElementById('lightbox').getBoundingClientRect().bottom;return [...document.querySelectorAll('#lbFlow .fl-node')].every(n=>n.getBoundingClientRect().bottom<=Math.min(innerHeight,lb)+1)});
+      if(!fold)throw new Error('desktop 1440x900: the flow is not fully above the fold');
       await d.click('#lbFlow .fl-node[data-step="2"]');await sleep(300);
       if(!/^(blob:|assets\/projects\/morumelons\/)/.test(await d.$eval('#lbArt img',e=>e.getAttribute('src'))))throw new Error('desktop node did not open its picture');
       await d.keyboard.press('Escape');await sleep(300);

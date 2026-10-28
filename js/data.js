@@ -283,6 +283,7 @@ const COPY = {
     "mm.play": "Play {name}",
     "mm.hint": "Point at a character. They have been practicing.",
     "mm.hintTap": "Tap a character. They have been practicing.",
+    "flow.back": "Back to the project",
     "lb.downloadNote": "A small copy for you. Credit Ekky Arya if you post it.",
     // Share and download (B11, B12, B40, D9, D10)
     "share.button": "Share",
@@ -601,6 +602,7 @@ const COPY = {
     "mm.play": "Putar {name}",
     "mm.hint": "Arahkan ke karakternya. Mereka sudah latihan.",
     "mm.hintTap": "Ketuk karakternya. Mereka sudah latihan.",
+    "flow.back": "Kembali ke proyek",
     "lb.downloadNote": "Versi kecil buat kamu. Kalau diunggah, sebut Ekky Arya, ya.",
     "share.button": "Bagikan",
     "dl.button": "Unduh",
