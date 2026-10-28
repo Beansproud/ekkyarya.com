@@ -78,18 +78,20 @@ const SiteData = (() => {
     return first.concat(pieces.filter(p => !first.includes(p))).slice(0, n);
   }
 
-  const api = { merge, ordered, order: [], data: null, ready: null, changed: false, load, openAdmin };
+  const api = { merge, ordered, order: [], builtin: null, data: null, ready: null, changed: false, load, openAdmin };
 
   // Fetch data/site.json once; merge it; tell the page (event "sitedata") only if something changed.
   function load() {
     api.ready = fetch("data/site.json", { cache: "no-cache" }).then(r => r.ok ? r.json() : null).catch(() => null).then(d => {
       api.data = isOk(d) ? d : null;
+      if (api.data && hasContent(api.data)) api.builtin = JSON.parse(JSON.stringify({ config: CONFIG, features: FEATURES, copy: COPY }));   // pristine, for "reset to built-in"
       api.changed = api.data ? merge({ CONFIG, FEATURES, PROJECTS, COPY }, api.data) : false;
       if (api.changed) dispatchEvent(new Event("sitedata"));
       return api.changed;
     });
     return api.ready;
   }
+  const hasContent = v => Array.isArray(v) ? v.some(hasContent) : isObj(v) ? Object.entries(v).some(([k, x]) => k !== "version" && hasContent(x)) : v !== "" && v !== null && v !== undefined && v !== false;
   const isOk = d => isObj(d) && d.version === 1;
 
   // The admin code is injected only when a door opens.

@@ -299,6 +299,7 @@ let langDirty=false;
 const redrawDesktop=()=>{langDirty=false;renderGrid();setFilter(setFilter.cur||"all",true);renderCats();renderStrip();typedWord();applyTheme();splitHeads();
   if(lb.open)show(cur)};
 addEventListener("ekky:lang",()=>{if(document.body.classList.contains("game-mode"))langDirty=true;else redrawDesktop()});
+addEventListener("sitedata",()=>{if(document.body.classList.contains("game-mode"))langDirty=true;else redrawDesktop()});   // data/site.json merged: the grid and the strip show it
 new MutationObserver(()=>{if(langDirty&&!document.body.classList.contains("game-mode"))redrawDesktop()}).observe(document.body,{attributes:true,attributeFilter:["class"]});
 
 // The tab marker slides with translate, not left: game.js still writes style.left, and it is mirrored into --ix (the first

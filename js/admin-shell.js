@@ -4,9 +4,10 @@
 // ctx given to render(el, ctx):
 //   ctx.data           the working copy of data/site.json (live: always the latest object)
 //   ctx.setData(x)     x is a function(draft) that edits the draft (or returns a new object), or an object merged over the top level
-//   ctx.stage(path, base64OrNull)  queue a file for the next Publish (null deletes it); ctx.staged() lists the paths
+//   ctx.getData()      the same object as ctx.data
+//   ctx.addFile(path, base64) / ctx.stage(path, base64OrNull)  queue a file for the next Publish (null deletes it); ctx.staged() lists the paths
 //   ctx.publish(msg?)  one commit with data/site.json plus every staged file; returns a promise
-//   ctx.canPublish()   true when a GitHub token is saved (without one, admin is read-only)
+//   ctx.canPublish   true when a GitHub token is saved (without one, admin is read-only)
 //   ctx.lang           "en" or "id" (current); ctx.t({en,id}) picks the text; ctx.onChange(fn) runs after setData / language switch
 (() => {
   const A = window.Admin;
@@ -93,16 +94,23 @@
   const ctx = {
     get data() { return data; },
     get lang() { return lang(); },
+    getData: () => data,
+    // the built-in values before the site.json merge (a copy, safe to keep): {config, features, copy}
+    get builtin() {
+      const b = typeof SiteData !== "undefined" && SiteData.builtin;
+      return JSON.parse(JSON.stringify(b || { config: CONFIG, features: FEATURES, copy: COPY }));
+    },
+    get canPublish() { return !!store.get(TOKEN_KEY); },
     t: pick,
     setData(x) {
       if (typeof x === "function") { const d = clone(data); const r = x(d); data = r && typeof r === "object" ? r : d; }
       else if (x && typeof x === "object") data = { ...data, ...clone(x) };
       changed();
     },
+    addFile(path, content) { staged.set(path, content); changed(); },
     stage(path, content) { staged.set(path, content); changed(); },
     unstage(path) { staged.delete(path); changed(); },
     staged: () => [...staged.keys()],
-    canPublish: () => !!store.get(TOKEN_KEY),
     onChange(fn) { listeners.add(fn); return () => listeners.delete(fn); },
     publish: async message => {
       status = s("working"); busy = true; paintBar();
@@ -154,7 +162,7 @@
 
   function paintBar() {
     if (!root) return;
-    const n = dirtyCount(), can = ctx.canPublish();
+    const n = dirtyCount(), can = ctx.canPublish;
     root.querySelector("[data-adm=publish]").textContent = s("publish");
     root.querySelector("[data-adm=publish]").disabled = busy || !can || !n;
     const bar = root.querySelector(".adm-bar");
@@ -231,8 +239,11 @@
     const first = root.querySelector(".adm-tabs [aria-selected=true]"); if (first && typeof tab !== "string") first.focus();
   }
 
+  // Tabs that registered before the shell existed wait in window.AdminTabs ([id, def] pairs or {id, ...def}).
   A.registerTab = (id, def) => { if (!TABS.includes(id)) return; tabs[id] = def; if (root && root.open) { paintTabs(); if (id === active) paintPanel(); } };
   A.ctx = ctx;
+  (window.AdminTabs || []).forEach(q => Array.isArray(q) ? A.registerTab(q[0], q[1]) : q && q.id && A.registerTab(q.id, q));
+  window.AdminTabs = { push: q => Array.isArray(q) ? A.registerTab(q[0], q[1]) : q && q.id && A.registerTab(q.id, q) };
   A.shell = { show };
 
   // The tab scripts register themselves; a missing one only leaves its tab saying "not ready yet".
