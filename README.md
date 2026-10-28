@@ -17,6 +17,6 @@ npm install
 npm run android      # builds www/, syncs it into android/ and opens Android Studio
 ```
 
-In Android Studio, press Run to install the app on a phone or emulator, or use Build → Generate Signed App Bundle to create a release for the Play Store. The app ID is `com.ekkyarya.app` (`capacitor.config.ts`).
+In Android Studio, press Run to install the app on a phone or emulator, or use Build → Generate Signed App Bundle to create a release for the Play Store. The app ID is `com.ekkyarya.app` (`capacitor.config.json`).
 
 For iOS, run `npm install @capacitor/ios && npx cap add ios && npx cap open ios` on a Mac with Xcode.
