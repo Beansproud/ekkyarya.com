@@ -819,9 +819,7 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
   .btn:hover,.g-btn:hover,.g-tile:hover,.play-card:hover,.tile:hover,.feat:hover,.g-feat:hover,.g-card:hover,.g-mine-item:hover,.g-hire:hover,.v-place:hover,.v-walker:hover,.v-folk:hover{animation:none;translate:none;scale:none;rotate:none}}
 .c-ripple{position:absolute;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;background:var(--c);opacity:.45;pointer-events:none;transform:scale(.3);animation:cRipple .3s cubic-bezier(.22,.61,.36,1) forwards;z-index:3;will-change:transform,opacity}
 @keyframes cRipple{to{transform:scale(4);opacity:0}}
-.c-sw.pop::before{animation:cPop .3s cubic-bezier(.34,1.56,.64,1)}
-@keyframes cPop{from{transform:scale(.8)}to{transform:scale(1)}}
-@media (prefers-reduced-motion:reduce){.c-ripple{display:none}.c-sw.pop::before{animation:none}}
+@media (prefers-reduced-motion:reduce){.c-ripple{display:none}}
 /* Doodle Scene: a sticker lifts while it is held, and pops when it lands or is added */
 .c-st{will-change:transform}
 .c-st.drag{scale:1.1;transition:scale .15s cubic-bezier(.34,1.56,.64,1)}
@@ -839,9 +837,7 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 }
 @keyframes cStWob{25%{rotate:-4deg}75%{rotate:4deg}}
 .c-page{display:flex;flex-direction:column;justify-content:flex-start}   /* a button centers its content: a one-line title beside a two-line one left a gap above the picture */
-.c-stage canvas.c-fadein{position:absolute;display:block;opacity:0;pointer-events:none;transition:opacity .25s linear}   /* the new color of a fill: opacity only, committed to the picture when it ends */
 .c-bin{transition:transform .25s cubic-bezier(.34,1.56,.64,1)}   /* transform only (the red "hot" color now switches at once) */
-@media (prefers-reduced-motion:reduce){.c-stage canvas.c-fadein{transition:none}}
 
 /* the Art grid draws and lays out only the cards near the screen (smoother tab switch and scroll) */
 #gCards .g-card{content-visibility:auto;contain-intrinsic-height:auto 230px}
@@ -1065,3 +1061,34 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 .g-sheet .g-sheet-in{transform:translateY(calc(100% + 140px))}
 .g-sheet.open .g-sheet-in{transform:none}
 #game:has(.c-over.open) .g-sheet .g-sheet-in{bottom:calc(env(safe-area-inset-bottom) + 12px);max-height:calc(100% - env(safe-area-inset-top) - 80px)}
+
+/* Play squad: Mewarnai, Doodle Scene, Done reveal, share. Light paper like the start page (owner: the game is on light paper), ink text. */
+.c-over,.c-over.s-over{background:var(--paper,#FBF8F1) var(--grain);color:#2B1342}
+.c-over .g-title{color:#2B1342;text-shadow:none}
+.c-over .g-sub,.c-over .g-link,.s-sign,.c-page small{color:#645F70}
+.s-secondary .g-link,.s-video{color:#2B1342}
+.c-top b,.c-pair figcaption,.c-page:not(.c-scratch) b{color:#2B1342}
+.c-view>.g-x,.c-icon,.c-tool,.c-tray-st{background:#FFFDF8;color:#2B1342;box-shadow:var(--paper-shadow,0 2px 6px rgba(0,0,0,.12))}
+.c-tool{border:2px solid var(--paper-line,#E4DCCB)}
+.c-tool[aria-expanded="true"]{background:#FFB400;border-color:#FFB400}
+.c-tray{background:#FFFDF8;border:2px solid var(--paper-line,#E4DCCB);box-shadow:0 -6px 18px rgba(43,19,66,.15)}
+.c-tray-st{box-shadow:none;background:var(--paper-2,#F6F1E6)}
+.s-sign input{background:#fff;border-color:var(--paper-line,#E4DCCB);color:#2B1342}
+.c-page{background:#FFFDF8;border:0;border-radius:10px;box-shadow:var(--paper-shadow,0 2px 6px rgba(0,0,0,.12))}
+.c-stage,.c-arrive-art canvas{box-shadow:0 0 0 4px #FFB400,0 6px 16px rgba(43,19,66,.18)}
+.s-preview canvas{box-shadow:0 6px 18px rgba(43,19,66,.25)}
+.c-sw.on::before{box-shadow:0 0 0 3px var(--paper,#FBF8F1),0 0 0 6px #FFB400}
+.c-wheel{background:#FFFDF8;color:#2B1342;box-shadow:0 -6px 24px rgba(43,19,66,.2)}
+.c-wheel-pre{box-shadow:inset 0 0 0 2px rgba(43,19,66,.25)}
+.c-strip canvas{box-shadow:inset 0 0 0 2px rgba(43,19,66,.25)}
+/* the picker header is one 44 px line: the title is centred on the close button, one line in both languages */
+.c-view>.g-x{top:calc(env(safe-area-inset-top) + 14px)}
+.c-pick .g-title,.c-reveal .g-title,.c-arrive .g-title{margin:0 52px;min-height:44px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;white-space:nowrap;overflow:hidden}
+.c-pick .g-sub{margin-top:6px}
+/* Doodle Scene card: a blank square and a title, the same size as a drawing card */
+.c-scratch{border:2px dashed #2B1342;padding:0;justify-content:flex-start;align-items:stretch;background:#FFFDF8}
+.c-scratch .ico{display:block;box-sizing:border-box;width:100%;height:auto;aspect-ratio:1;margin:0;padding:26%;color:#2B1342}
+.c-scratch b{padding:8px 10px 2px}
+.c-scratch small{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+/* on a phone the title shrank to "B." between Back and the Hire chip: the picture is the title there */
+@media (max-width:480px){.c-top b{display:none}.c-top .g-hire{margin-left:auto}}
