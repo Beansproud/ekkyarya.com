@@ -534,11 +534,8 @@ document.addEventListener("visibilitychange",()=>{if(!A)return;if(document.hidde
   else if(pausedByHide){pausedByHide=false;setTimeout(()=>{if(A&&!document.hidden&&A.t>0)A.run=true},600)}});
 
 // A friend's link draws their coloring first; the start thumbnails and the Art cards load after it (share playtest).
-// A few seconds after load, once the start screen has settled, the village's pictures are fetched and decoded one by one, so the
-// first Map tab only has to place them.
-const warmed=[];function warmVillage(){const V=window.VILLAGE;if(!V||!V.layers||warmed.length)return;
-  [...Object.values(V.layers).map(l=>l.src)].forEach((s,i)=>setTimeout(()=>{const im=new Image();im.src=s;im.decode().catch(()=>{});warmed.push(im)},i*400))}
-addEventListener("load",()=>setTimeout(()=>(window.requestIdleCallback||(f=>f()))(warmVillage),4000));
+// The village's pictures (about 1 MB at 2x) are fetched only when the Map tab opens (go("map")), never at load, so a
+// slow phone spends its first seconds on the start screen and a desktop visit never fetches them (sprint 2, first load).
 let artDone=false,mapBuilt=false;const dirty={start:false,art:false,map:false};   // screens are built once and kept; a language switch redraws only the one in view
 // The village (village.png and its sprites, about 1 MB) is built when the map opens (go("map")), not at load, so the
 // start screen's drawings come first on a slow phone (S5, Developer B).
@@ -572,8 +569,7 @@ function prewarm(){if(!document.body.classList.contains("game-mode"))return;
   const idle=window.requestIdleCallback||(f=>setTimeout(f,50));
   const when=job=>{if(Date.now()-lastTouch<1500)return setTimeout(()=>when(job),1500);idle(()=>Date.now()-lastTouch<1500?when(job):job(),{timeout:4000})};
   when(()=>{if(!artDone){artDone=true;renderArt()}
-    $("gCards").querySelectorAll("img[loading=lazy]").forEach(im=>{im.loading="eager";im.decode&&im.decode().catch(()=>{})});   // the first Art visit shows decoded thumbnails, not a fetch
-    setTimeout(()=>when(()=>{if(!mapBuilt&&window.VILLAGE){mapBuilt=true;renderMap()}}),1200)})}
+    })}   // the Art thumbnails stay lazy and the village waits for the Map tab: only the start screen's six load up front
 addEventListener("load",()=>{setTimeout(prewarm,2000);warmT=setTimeout(warmWhenIdle,2500)});
 function renderAll(){if(deep)setTimeout(renderStart,2500);else renderStart();renderMine();setTimeout(moveInd,60)}
 // Shared with js/color.js, js/share.js and js/links.js.
