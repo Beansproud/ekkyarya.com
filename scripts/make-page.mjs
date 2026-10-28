@@ -35,7 +35,8 @@ const PAGES = {
   "hands": { slug: "hands", lineMax: 110, inkSoft: 130 },
   "day-in-life": { slug: "day-in-life", lineMax: 128, inkSoft: 140 },
   "noodles": { slug: "noodles", lineMax: 110, inkSoft: 130 },
-  "shark": { slug: "shark", lineMax: 110, inkSoft: 130 },
+  // blueFillR: dark blue areas wider than 2 x this many px are paint, not outline (the shark's back; the water outline is a thin blue stroke)
+  "shark": { slug: "shark", lineMax: 110, inkSoft: 130, blueFillR: 8 },
 };
 const MIN_AREA = 40, COLORS = 12;
 // Color split: areas above SPLIT_AREA px are divided by up to SPLIT_K of their own colors; patches under SPECK px fold
@@ -96,9 +97,24 @@ function pngLines(w, h, rgba) {
   return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk("IHDR", ihdr), chunk("PLTE", plte), chunk("tRNS", trns), chunk("IDAT", deflateSync(raw, { level: 9 })), chunk("IEND", Buffer.alloc(0))]);
 }
 
+// Sets lum to 255 on dark blue areas thicker than 2 * R px: an opening (erode R, dilate R) of the mask by chessboard distance.
+function thickToFill(lum, px, w, h, max, R) {
+  const n = w * h, INF = 1e9;
+  const pass = (d) => { for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const i = y * w + x; if (!d[i]) continue;
+      d[i] = Math.min(d[i], x ? d[i - 1] + 1 : 1, y ? d[i - w] + 1 : 1, x && y ? d[i - w - 1] + 1 : 1, x < w - 1 && y ? d[i - w + 1] + 1 : INF) }
+    for (let y = h - 1; y >= 0; y--) for (let x = w - 1; x >= 0; x--) { const i = y * w + x; if (!d[i]) continue;
+      d[i] = Math.min(d[i], x < w - 1 ? d[i + 1] + 1 : 1, y < h - 1 ? d[i + w] + 1 : 1, x < w - 1 && y < h - 1 ? d[i + w + 1] + 1 : INF, x && y < h - 1 ? d[i + w - 1] + 1 : INF) } };
+  const d = new Float32Array(n); for (let i = 0; i < n; i++) d[i] = lum[i] <= max && px[i * 4 + 2] - px[i * 4] > 8 ? INF : 0;
+  pass(d);                                   // distance to the nearest non-dark pixel
+  const e = new Float32Array(n); for (let i = 0; i < n; i++) e[i] = d[i] >= R ? 0 : INF;   // core of thick areas
+  pass(e);                                   // distance to the core
+  for (let i = 0; i < n; i++) if (e[i] <= R && d[i] > 2) lum[i] = 255;
+}
+
 function build({ w, h, px }) {
   const n = w * h, lum = new Float32Array(n);
   for (let i = 0; i < n; i++) lum[i] = px[i * 4] * .299 + px[i * 4 + 1] * .587 + px[i * 4 + 2] * .114;
+  if (page.blueFillR) thickToFill(lum, px, w, h, page.lineMax, page.blueFillR);
   // regions: 4-connected areas of non-line pixels
   const id = new Int32Array(n).fill(-1), sizes = [0];
   for (let i = 0; i < n; i++) if (lum[i] <= page.lineMax) id[i] = 0;

@@ -19,7 +19,7 @@ const FEATURES = {
   pageLittlePlanet: true, // Little Planet coloring page (assets/color/little-planet/), Ekky original
   pageHands: true,       // Tangled Hands coloring page (assets/color/hands/), Ekky original
   pageNoodles: true,     // Noodle Bath coloring page (assets/color/noodles/), Ekky original
-  pageShark: false,      // Big Catch coloring page (assets/color/shark/), Ekky original; off: the shark keeps pre-filled grey shading in the lines
+  pageShark: true,       // Big Catch coloring page (assets/color/shark/), Ekky original; lines regenerated without the baked-in back shading
   apkDownload: true,     // glowing "APK" chip on the start page, Android browsers only (owner, 10-28); links to the app-latest release (GitHub build)
   artDownload: true,     // lightbox Download: a copy of at most 1600 px with a subtle mark, never on fan art (owner: yes)
   sound: true,           // sound effects and the sound toggle
