@@ -1118,3 +1118,4 @@ body.game-mode .idle-buddy.on-start{left:16px;right:16px;max-width:none;align-it
 .idle-buddy.on-start img{width:36px;height:36px}
 .idle-buddy.on-start .idle-bubble{margin:0;padding:0 9px;font-size:.75rem;line-height:1.5;box-shadow:0 2px 0 #2B1342;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
 @media (max-width:760px){body:not(.game-mode) .g-mode-fab{left:calc(16px + env(safe-area-inset-left));bottom:calc(22px + env(safe-area-inset-bottom))}}   /* iPhone safe areas, see site.css */
+.v-hold,.v-hold *{animation-play-state:paused!important}   /* the whole village holds still: off screen, or under a finger */

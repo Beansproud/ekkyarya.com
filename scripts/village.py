@@ -310,7 +310,7 @@ def radial(im, cx, cy, rx, ry, rgb, a, k):
 INK_PAD = 6 * Z
 
 
-def inked(sp, name):
+def inked(sp, name, cut=()):
     """Ekky's cut-out with one shared, slightly wobbly dark ink outline (about 2 px on a phone) around its silhouette,
     so every character and prop on the islands reads as drawn on the same page. The wobble is a fixed noise per name."""
     import random
@@ -323,13 +323,42 @@ def inked(sp, name):
     n = Image.fromarray((rnd.rand(big.height // 24 + 2, big.width // 24 + 2) * 255).astype(np.uint8)).resize(big.size, Image.BICUBIC)
     n = n.filter(ImageFilter.GaussianBlur(4)).point(lambda v: 255 if v > 118 else 0)
     ring = Image.composite(thick, thin, n).filter(ImageFilter.GaussianBlur(.6))
+    if cut:   # no ink line across a flat cut: it fades into the ground instead
+        r = np.array(ring)
+        m = 14 * Z + pad
+        if "bottom" in cut:
+            r[-m:, :] = 0
+        if "left" in cut:
+            r[:, :m] = 0
+        if "right" in cut:
+            r[:, -m:] = 0
+        ring = Image.fromarray(r)
     out = Image.new("RGBA", big.size, INK + (0,))
     out.putalpha(ring)
     out.alpha_composite(big)
     return out
 
 
-def paste(img, name, foot, h, flip=False, shadow=True, ink=True):
+def feather(sp, sides, px):
+    """Fade the alpha of a cut-out toward the sides where its picture was cropped flat (the original art ends in a straight line
+    there), so the island's own ground shows through and no straight edge is left."""
+    a = np.array(sp.getchannel("A")).astype(float)
+    h, w = a.shape
+    ramp = lambda n: np.clip(np.arange(n) / px, 0, 1)
+    if "bottom" in sides:
+        a *= ramp(h)[::-1][:, None]
+    if "top" in sides:
+        a *= ramp(h)[:, None]
+    if "left" in sides:
+        a *= ramp(w)[None, :]
+    if "right" in sides:
+        a *= ramp(w)[::-1][None, :]
+    out = sp.copy()
+    out.putalpha(Image.fromarray((a * 1).astype(np.uint8)))
+    return out
+
+
+def paste(img, name, foot, h, flip=False, shadow=True, ink=True, cut=()):
     """Stand a cut-out with its bottom center on `foot` (canvas units), scaled to height h; img is Z times the canvas.
     Returns its box in canvas units."""
     sp = Image.open(os.path.join(ROOT, "assets", "sprites" if os.path.exists(os.path.join(ROOT, "assets", "sprites", name + ".png")) else "ui", name + ".png")).convert("RGBA")
@@ -337,6 +366,8 @@ def paste(img, name, foot, h, flip=False, shadow=True, ink=True):
     sp = sp.resize((w * Z, h * Z), Image.LANCZOS)
     if flip:
         sp = sp.transpose(Image.FLIP_LEFT_RIGHT)
+    if cut:
+        sp = feather(sp, cut, 12 * Z)
     x, y = round(foot[0] * Z - w * Z / 2), round(foot[1] * Z - h * Z)
     if shadow:   # a soft ground shadow (none for things in the sky or the water)
         sh = Image.new("RGBA", img.size)
@@ -344,7 +375,7 @@ def paste(img, name, foot, h, flip=False, shadow=True, ink=True):
         img.alpha_composite(sh.filter(ImageFilter.GaussianBlur(3 * Z)))
     box = [x // Z, y // Z, (x + w * Z) // Z, (y + h * Z) // Z]
     if ink:
-        sp = inked(sp, name)
+        sp = inked(sp, name, cut)
         x, y = x - INK_PAD, y - INK_PAD
     img.alpha_composite(sp, (x, y))
     return box
@@ -511,7 +542,7 @@ def build():
     places["home"] = paste(L["mid"], "home", (372, 520), 200)
     places["doodle"] = paste(L["mid"], "ghost", (222, 594), 92)
     radial(L["south"], 400, 782, 120, 20, (255, 190, 90), .45, Z)   # a pool of lantern light on the ground in front of the gate
-    places["hire"] = paste(L["south"], "gate", (400, 778), 172)
+    places["hire"] = paste(L["south"], "gate", (400, 778), 172, cut=("bottom", "left", "right"))   # the gate's picture is cropped flat on three sides
     paste(L["south"], "signpost", (560, 764), 48)
     paste(L["south"], "pen-hand", (330, 790), 30, flip=True)
     gb = places["hire"]
@@ -559,7 +590,7 @@ def build():
         f.write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %d %d"><g transform="translate(%d %d)">%s</g></svg>\n' % (ex - ox, ey - oy, -ox, -oy, "".join(stars)))
     for name in ("north", "mid", "south"):
         x0, y0, x1, y1 = L[name].getchannel("A").point(lambda v: 255 if v else 0).getbbox()
-        x0, y0, x1, y1 = x0 // Z, y0 // Z, -(-x1 // Z), -(-y1 // Z)   # whole canvas units, so the layers line up exactly
+        x0, y0, x1, y1 = x0 // Z - 6, y0 // Z - 6, -(-x1 // Z) + 6, -(-y1 // Z) + 6   # whole canvas units, with a clear margin so no shape ends in a straight line on the image border
         Q[name].crop((x0 * Z, y0 * Z, x1 * Z, y1 * Z)).save(os.path.join(OUT, "island-%s.png" % name), optimize=True)
         layers[name] = dict(src="assets/village/island-%s.png" % name, x=x0, y=y0, w=x1 - x0, h=y1 - y0)
     img = small

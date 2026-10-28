@@ -18,24 +18,24 @@
   },
   "north": {
    "src": "assets/village/island-north.png",
-   "x": 149,
-   "y": 26,
-   "w": 282,
-   "h": 224
+   "x": 143,
+   "y": 20,
+   "w": 294,
+   "h": 236
   },
   "mid": {
    "src": "assets/village/island-mid.png",
-   "x": 11,
-   "y": 164,
-   "w": 587,
-   "h": 511
+   "x": 5,
+   "y": 158,
+   "w": 599,
+   "h": 523
   },
   "south": {
    "src": "assets/village/island-south.png",
-   "x": 176,
-   "y": 498,
-   "w": 338,
-   "h": 326
+   "x": 170,
+   "y": 492,
+   "w": 350,
+   "h": 338
   }
  },
  "frames": [
