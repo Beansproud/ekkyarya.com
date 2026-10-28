@@ -139,10 +139,11 @@ async function runConfig(browser,url,dev,lang){
     await p.clock.runFor(31000);await sleep(200);if(!await padOpen(p))throw new Error('the pad is gone after the pause');
     if(PIN){await p.keyboard.type(PIN,{delay:30});await p.clock.runFor(500);if(!await waitFor(()=>adminOpen(p),3000))throw new Error('the right PIN did not open admin after the 30 s pause')}});
   T('pin: the right PIN opens admin, code loads only now',async(p,c,reqs)=>{needAdmin();needPin();await boot(p);await openPad(p);
-    const before=reqs.filter(u=>/js\/admin/i.test(u)).length;await tapKeys(p,PIN);
+    // the door loads only the PIN pad (js/admin.js); the admin screen itself (shell and tabs) must load only after the right PIN
+    const screen=/js\/admin-(shell|art|settings)/i,before=reqs.filter(u=>screen.test(u)).length;await tapKeys(p,PIN);
     if(!await waitFor(()=>adminOpen(p),5000))throw new Error('the right PIN did not open admin (no Art/Links/Settings/Text tabs)');
-    if(!reqs.some(u=>/js\/admin/i.test(u)))throw new Error('admin.js was never requested after the PIN');
-    if(before)throw new Error('admin.js was already requested before the PIN')});
+    if(!reqs.some(u=>screen.test(u)))throw new Error('the admin screen code was never requested after the PIN');
+    if(before)throw new Error('the admin screen code was already requested before the PIN')});
 
   // 4. without a token admin is read-only
   // Without ADMIN_PIN the shell is opened through the page API (the PIN check itself is covered by the pad tests), so read-only and publish still run.
