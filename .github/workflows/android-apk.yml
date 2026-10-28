@@ -1,7 +1,7 @@
 # Builds the Android app (Capacitor) and publishes it as a direct download for the site's "Get the app" button:
 # https://github.com/rfim/ekkyarya.com/releases/download/app-latest/ekky-arya.apk
-# It is a debug-signed APK (installable by sideloading). A release key replaces it once the owner decides on one
-# (docs/android-apk.md); phones then need to uninstall the debug build once.
+# Signed with the owner's fixed key when the ANDROID_KEYSTORE_* secrets are set (owner, 2026-10-28), so updates
+# install over the old app; phones that have a debug build installed uninstall it once. See docs/android-apk.md.
 name: Android APK
 
 on:
@@ -40,6 +40,21 @@ jobs:
           chmod +x gradlew
           ./gradlew --no-daemon assembleDebug
           cp app/build/outputs/apk/debug/app-debug.apk ../ekky-arya.apk
+      # The owner's fixed key (repository secrets) signs every build, so a new APK installs over the old one.
+      # Without the secrets the APK stays debug-signed, as before.
+      - name: Sign with the fixed release key
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ]; then echo "No release key secrets: the APK stays debug-signed."; exit 0; fi
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          SIGNER=$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner
+          "$SIGNER" sign --ks "$RUNNER_TEMP/release.jks" --ks-key-alias "$KEY_ALIAS" \
+            --ks-pass env:KEYSTORE_PASSWORD --key-pass env:KEYSTORE_PASSWORD ekky-arya.apk
+          "$SIGNER" verify --print-certs ekky-arya.apk | head -3
+          rm -f "$RUNNER_TEMP/release.jks"
       - name: Publish to the app-latest release
         env:
           GH_TOKEN: ${{ github.token }}

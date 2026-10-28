@@ -43,13 +43,16 @@ All of this is in the Android shell; the website in a browser is unchanged. No n
    (or the command-line tools with `platforms;android-36` and `build-tools`), then run
    `npm run cap:sync && cd android && ./gradlew assembleDebug`. The debug APK lands in
    `android/app/build/outputs/apk/debug/`.
-2. **A release key, for Play or for sharing a release APK.** Create a keystore once
-   (`keytool -genkey -v -keystore ekkyarya.jks -alias ekkyarya -keyalg RSA -keysize 2048 -validity 10000`).
-   - Keep it out of git.
-   - Put the passwords in `~/.gradle/gradle.properties`, never in the repo.
-   - Add a `signingConfigs.release` block to `android/app/build.gradle`, then build with `./gradlew bundleRelease`
-     (an AAB for Play) or `assembleRelease`.
-   - Losing the key means the app can never be updated: back it up.
+2. **The release key (set up 2026-10-28, owner's yes).** One fixed key signs every APK the GitHub workflow builds,
+   so a new download installs over the old app.
+   - The key is an RSA 4096 keystore, alias `ekky`. It lives in three repository secrets: `ANDROID_KEYSTORE_B64`
+     (the keystore, base64), `ANDROID_KEYSTORE_PASSWORD` and `ANDROID_KEY_ALIAS`. It is never in git.
+   - The workflow builds the debug variant as before and re-signs it with `apksigner` in the step "Sign with the
+     fixed release key". Without the secrets the APK stays debug-signed, so the build never breaks.
+   - Phones that installed a debug build uninstall it once; every build after that installs as an update.
+   - The owner keeps a backup copy of the keystore and its password outside GitHub. Losing it means the app can
+     never be updated again under the same id.
+   - For Play later: add a `signingConfigs.release` block that reads the same values and build `bundleRelease`.
 3. **Version numbers:** raise `versionCode` (an integer) and `versionName` for every upload.
 4. **Play Store listing**, if Play is the goal:
    - a developer account (one-time fee);
@@ -60,7 +63,7 @@ All of this is in the Android shell; the website in a browser is unchanged. No n
    - a short and a full description (UX copy).
 5. **Decisions for the owner** (in `docs/owner-asks.md`):
    - Is the app id `com.ekkyarya.app` final? It can't change after the first Play upload.
-   - Who holds the release key?
+   - Who holds the release key? (the owner, since 2026-10-28)
    - Play Store, or a direct APK download from the site?
 6. **Checks on a real device before release:**
    - the Install button stays hidden (inside the app there is nothing to install);
@@ -72,7 +75,6 @@ All of this is in the Android shell; the website in a browser is unchanged. No n
      landscape and on a phone with a notch;
    - the splash shows Ekky's face and disappears once the start page is up (cold start, airplane mode too);
    - Instagram opens the Instagram app or the browser, the email button opens the mail app;
-   - whether the update installs over an earlier download. Each GitHub run signs with that runner's fresh debug key,
-     so Android will most likely refuse the update and ask to uninstall first; a fixed key (step 2) ends that.
+   - that an update installs over an earlier download (it should, once the release key secrets are set).
 
 - **Orientation:** the activity is unlocked, so landscape works.
