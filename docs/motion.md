@@ -14,7 +14,7 @@ shake, the hit tint and the particle bursts.
 
 **Village budget** (owner, 2026-10-28: "give a lot if animation / even when idle", "like 20 different animation / that
 changes simultaniously"; this replaces B42 decision 10): the village is a place, not a UI screen, and it is alive.
-Always on: walkers walking their routes, two clouds, 16 twinkling stars, the gate lantern's flicker, the noodle bath's
+Always on: walkers walking their routes, two clouds, 9 twinkling stars, the gate lantern's flicker, the noodle bath's
 steam, the UFO hovering, and each island bobbing a few px at its own pace. On top, a scheduler (`Life` in `js/game.js`)
 starts a new short moment every 1 to 3 s, so 3 to 5 play at once, never two in the same part of the map and never the
 same one twice in a row. The 20 moments are: shooting star, comet, UFO beam lifting a doodle, astronaut drifting by,

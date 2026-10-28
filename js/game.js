@@ -51,7 +51,7 @@ function go(to,fromPop){
   if(!fromPop&&to!==screen){try{history.pushState({s:to},"")}catch(e){}}   // Back returns to the previous screen
   screen=to;G.classList.toggle("at-start",to==="start");G.classList.toggle("at-paper",to==="art"||to==="mine");   // S1: Art and Mine on paper
   G.querySelectorAll(".g-screen").forEach(s=>s.classList.toggle("active",s.id==="g-"+to));
-  G.querySelectorAll(".g-tabs button").forEach(b=>b.classList.toggle("active",b.dataset.tab===to));
+  G.querySelectorAll(".g-tabs button").forEach(b=>{b.classList.toggle("active",b.dataset.tab===to);if(b.dataset.tab===to)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
   if(to==="mine")renderMine();
   if(to==="start"&&dirty.start){dirty.start=false;renderStart()}
   if(to==="art"&&(!artDone||dirty.art)){artDone=true;dirty.art=false;renderArt()}
@@ -95,14 +95,15 @@ const PLACES=[
   {id:"hire",        key:"town.hire",    icon:"assets/sprites/gate.png",      open:p=>openHire("",p), hire:true},
 ];
 const pct=(v,of)=>(v/of*100).toFixed(3)+"%";
-// the ground is the galaxy plus one picture per island (so each can bob on its own), then the UFO; one picture if the layers are missing
-function groundHTML(V){const L=V.layers;if(!L)return `<img class="v-ground" src="assets/village/village.png" alt="" decoding="async" fetchpriority="high">`;
-  const im=(n,cls)=>{const l=L[n];return `<img class="v-ground ${cls}" data-isle="${n}" src="${l.src}" alt="" decoding="async"${n==="sky"?' fetchpriority="high"':""} style="left:${pct(l.x,V.w)};top:${pct(l.y,V.h)};width:${pct(l.w,V.w)};height:${pct(l.h,V.h)}">`};
-  const u=V.ufo,b=u&&u.box;
-  return im("sky","v-skyimg")+im("mid","v-isle")+im("north","v-isle")+im("south","v-isle")+
-    (u?`<img class="v-ground v-isle v-ufo" data-isle="north" src="${u.src}" alt="" decoding="async" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}">`:"")}
+// the ground is the galaxy cloud (a smooth picture) and its stars and gold constellations (a vector, sharp at any zoom), then one picture per island (so each can bob on its own) and the UFO
+function groundHTML(V,frames){const L=V.layers;
+  const im=(n,cls)=>{const l=L[n];return `<img class="v-ground ${cls}" src="${l.src}" alt="" decoding="async"${n==="sky"?' fetchpriority="high"':""} style="left:${pct(l.x,V.w)};top:${pct(l.y,V.h)};width:${pct(l.w,V.w)};height:${pct(l.h,V.h)}">`};
+  const u=V.ufo,b=u&&u.box,grp=(n,inner)=>`<div class="v-isleg" data-isle="${n}">${inner}</div>`;
+  // one group per island: it bobs as a whole, and what stands on it (gallery frames, villagers, the UFO) bobs with it
+  return im("sky","v-skyimg")+im("stars","v-skyimg")+grp("mid",im("mid","v-isle")+frames)+
+    grp("north",im("north","v-isle")+(u?`<img class="v-ground v-ufo" src="${u.src}" alt="" decoding="async" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}">`:""))+grp("south",im("south","v-isle"))}
 let mapTok=0;
-const LABEL_NUDGE={studio:[50,0]};   // a2: image px to move a label off its baked spot where it would touch a villager
+const LABEL_NUDGE={};   // a2: image px to move a label off its baked spot where it would touch a villager
 function renderMap(){
   const V=window.VILLAGE,W=$("gMapWrap");if(!V)return;
   const places=PLACES.filter(p=>!p.feature||feature(p.feature));
@@ -111,16 +112,15 @@ function renderMap(){
   // the village fills the screen width, edge to edge through the side gutters (art critic a1), unless the height left
   // between the header and the tab bar is shorter: then the width follows that height
   W.style.width=`min(100% + 32px, 520px, calc((100dvh - 196px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) * ${(V.w/V.h).toFixed(4)}))`;
-  W.innerHTML=`<div class="v-zoom" id="gMapZoom">${groundHTML(V)}`+
-    V.frames.map((f,k)=>{const p=art[k];if(!p)return "";const deg=(Math.atan(f.slope)*180/Math.PI).toFixed(2);
-      return `<img class="v-frame" src="${thumbOf(p)}" alt="" decoding="async" style="left:${pct(f.x,V.w)};top:${pct(f.y,V.h)};width:${pct(f.w,V.w)};height:${pct(f.h,V.h)};transform:skewY(${deg}deg)">`}).join("")+
+  W.innerHTML=`<div class="v-zoom" id="gMapZoom">${groundHTML(V,V.frames.map((f,k)=>{const p=art[k];if(!p)return "";const deg=(Math.atan(f.slope)*180/Math.PI).toFixed(2);
+      return `<img class="v-frame" src="${thumbOf(p)}" alt="" decoding="async" style="left:${pct(f.x,V.w)};top:${pct(f.y,V.h)};width:${pct(f.w,V.w)};height:${pct(f.h,V.h)};transform:skewY(${deg}deg)">`}).join(""))}`+
     places.map(p=>{const b=V.places[p.id].box,n=LABEL_NUDGE[p.id]||[0,0],l=[V.places[p.id].label[0]+n[0],V.places[p.id].label[1]+n[1]];
       return `<button class="v-place${p.hire?" hire":""}" data-place="${p.id}" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}" aria-label="${esc(t(p.key))}"></button>
       <span class="v-label${p.hire?" hire":""}" data-place="${p.id}" aria-hidden="true" style="left:${pct(l[0],V.w)};top:${pct(l[1],V.h)}">${esc(t(p.key))}</span>`}).join("");
   // the villagers and scenery come a moment later, in an idle slice: the first visit lays out the island and the places only
   const mt=++mapTok;(window.requestIdleCallback||(f=>setTimeout(f,30)))(()=>{const z=$("gMapZoom");if(mt===mapTok&&z){z.insertAdjacentHTML("beforeend",villageLife(V)+`<div class="v-fx" aria-hidden="true"></div>`);lifeStart(z,V)}},{timeout:500});
   W.insertAdjacentHTML("beforeend",`<div class="v-zoomctl"><button class="g-round" data-zoom="1" aria-label="${esc(tt("town.zoomIn","Zoom in"))}">${ico("i-plus")}</button><button class="g-round" data-zoom="-1" aria-label="${esc(tt("town.zoomOut","Zoom out"))}"><b aria-hidden="true">&minus;</b></button></div>`);
-  Z.base=null;Z.s=1;zoomTo(1,0,0);
+  Z.base=null;Z.lb=null;Z.s=1;zoomTo(1,0,0);
   $("gMapList").innerHTML=places.map(p=>`<li><button class="v-row${p.hire?" hire":""}" data-place="${p.id}"><img src="${p.icon}" alt="" loading="lazy">${esc(t(p.key))}</button></li>`).join("");
 }
 // a revisit hangs four new pieces on the gallery walls without rebuilding the village
@@ -173,17 +173,17 @@ const SK="assets/sprites/",UI="assets/ui/";
 // the 20 moments: id, region (two moments in one region never overlap), length in ms, what happens
 const MOMENTS=[
  {id:"shoot",r:"skyT",d:1600,run:k=>{const x=rnd(40,260),y=rnd(10,110),e=k.dot("v-shoot",x,y,9,.5);k.mv(e,[{t:0,o:0,r:32},{t:.12,o:1,x:12,y:8},{t:1,x:250,y:160,o:0}],1600,EZI)}},
- {id:"comet",r:"skyR",d:7000,run:k=>{const x=Life.V.w+20,y=rnd(40,120),e=k.dot("v-comet",x,y,16,2.6);k.mv(e,[{t:0,o:0,r:160},{t:.1,o:.9,x:-30,y:12},{t:.85,o:.7,x:-420,y:150},{t:1,o:0,x:-470,y:170}],7000,"linear")}},
+ {id:"comet",r:"skyR",d:7000,run:k=>{const x=Life.V.w+40,y=rnd(40,120),e=k.dot("v-comet",x,y,16,2.6);k.mv(e,[{t:0,o:0,r:160},{t:.05,o:0,x:-12,y:5},{t:.18,o:.9,x:-70,y:26},{t:.85,o:.7,x:-420,y:150},{t:1,o:0,x:-470,y:170}],7000,"linear")}},
  {id:"beam",r:"N",d:4200,run:k=>{const U=Life.V.folk.ufo.box,x=(U[0]+U[2])/2,y=U[3]-6,
    b=k.dot("v-beam",x,y+35,26,70),c=k.img(SK+"doodle-cat.png",x,y+72,15,"foot");
    k.mv(b,[{t:0,o:0},{t:.2,o:1},{t:.8,o:1},{t:1,o:0}],4200);
    k.mv(c,[{t:0,y:0,s:1,o:0},{t:.12,y:0,o:1},{t:.45,y:-58,s:.55},{t:.55,y:-58,s:.55},{t:.88,y:0,s:1,o:1},{t:1,y:0,o:0}],4200)}},
- {id:"astro",r:"skyL",d:11000,run:k=>{const e=k.img(UI+"astronaut.png",-20,rnd(380,520),30);k.mv(e,[{t:0,x:0,y:0,r:-20,o:0},{t:.1,o:1},{t:.5,x:130,y:-50,r:15},{t:.9,o:1},{t:1,x:260,y:-120,r:-10,o:0}],11000,"linear")}},
+ {id:"astro",r:"skyL",d:11000,run:k=>{const e=k.img(UI+"astronaut.png",-44,rnd(380,520),30);k.mv(e,[{t:0,x:0,y:0,r:-20,o:0},{t:.07,o:0},{t:.2,o:1},{t:.5,x:130,y:-50,r:15},{t:.8,o:1},{t:.93,o:0},{t:1,x:300,y:-120,r:-10,o:0}],11000,"linear")}},
  {id:"crab",r:"S",d:3000,run:k=>{const e=k.img(SK+"crab.png",190,650,26,"foot");
    k.mv(e,[{t:0,x:0,o:0},{t:.08,o:1},{t:.2,y:-5},{t:.3,y:0,x:30},{t:.45,y:-5,x:60},{t:.55,y:0,x:80},{t:.7,y:-5,x:110},{t:.8,y:0,x:130},{t:.92,o:1,x:150},{t:1,x:160,o:0}],3000,"linear")}},
  {id:"wave",r:"C",d:3200,run:k=>{const [x,y]=inBox("home",.18,1.02),e=k.img(SK+"waver.png",x,y,38,"foot");
    k.mv(e,[{t:0,y:10,o:0,s:.8},{t:.15,y:0,o:1,s:1},{t:.3,r:-8},{t:.45,r:8},{t:.6,r:-8},{t:.75,r:5},{t:.85,r:0,o:1},{t:1,y:6,o:0}],3200)}},
- {id:"plane",r:"skyL",d:6500,run:k=>{const e=k.dot("v-plane",-20,rnd(560,720),11,6);k.mv(e,[{t:0,o:0,r:-14},{t:.1,o:.95},{t:.4,x:150,y:-40,r:-8},{t:.7,x:300,y:-20,r:-18},{t:.92,o:.95},{t:1,x:420,y:-90,r:-10,o:0}],6500,"linear")}},
+ {id:"plane",r:"skyL",d:6500,run:k=>{const e=k.dot("v-plane",-34,rnd(560,720),11,6);k.mv(e,[{t:0,o:0,r:-14},{t:.06,o:0},{t:.16,o:.95},{t:.4,x:150,y:-40,r:-8},{t:.7,x:300,y:-20,r:-18},{t:.84,o:.95},{t:.95,o:0},{t:1,x:700,y:-90,r:-10,o:0}],6500,"linear")}},
  {id:"flies",r:"S",d:5200,run:k=>{const L=Life.V.lantern;for(let i=0;i<5;i++){const e=k.dot("v-fly",L[0]+rnd(-30,30),L[1]+rnd(-18,18),3.4),dx=rnd(-26,26),dy=rnd(-30,-6);
    k.mv(e,[{t:0,o:0},{t:.25,o:1,x:dx*.4,y:dy*.3},{t:.6,o:.5,x:-dx*.5,y:dy*.8},{t:1,o:0,x:dx,y:dy-14}],rnd(4000,5200)*1)}}},
  {id:"cat",r:"E",d:2600,run:k=>{const [x,y]=inBox("gallery",.1,.02),e=k.img(UI+"cat.png",x,y,26,"foot");
@@ -203,8 +203,8 @@ const MOMENTS=[
    k.mv(e,[{t:0,o:0},{t:.08,o:1},{t:.2,y:-18,x:-14,r:-8},{t:.35,y:0,x:-28,r:0},{t:.55,y:-18,x:-46,r:-8},{t:.7,y:0,x:-62,r:0},{t:.92,o:1,x:-72},{t:1,x:-72,o:0}],2800,"linear")}},
  {id:"frame",r:"E",d:1400,run:k=>{const fr=[...Life.fx.parentNode.querySelectorAll(".v-frame")];if(!fr.length)return;const f=pick(fr),n=nextWallPiece();
    if(!n)return;const a=f.animate([{opacity:1},{opacity:.05,offset:.4},{opacity:.05,offset:.55},{opacity:1}],{duration:1400,easing:EZ});k.anims.push(a);setTimeout(()=>{f.src=thumbOf(n)},560)}},
- {id:"cloudride",r:"skyT",d:14000,run:k=>{const y=rnd(30,90),c=k.dot("v-rcloud",-90,y,80,22),m=k.img(SK+"orange-monster.png",-60,y+8,26,"foot");
-   k.mv(c,[{t:0,o:0},{t:.08,o:.4},{t:.92,o:.4,x:700},{t:1,x:760,o:0}],14000,"linear");k.mv(m,[{t:0,o:0},{t:.08,o:1},{t:.5,y:-3},{t:.92,o:1,x:700},{t:1,x:760,o:0}],14000,"linear")}},
+ {id:"cloudride",r:"skyT",d:14000,run:k=>{const y=rnd(30,90),c=k.dot("v-rcloud",-100,y,80,22),m=k.img(SK+"orange-monster.png",-100,y+8,26,"foot");
+   k.mv(c,[{t:0,o:0},{t:.07,o:0},{t:.17,o:.4},{t:.8,o:.4,x:600},{t:.92,o:0,x:690},{t:1,x:760,o:0}],14000,"linear");k.mv(m,[{t:0,o:0},{t:.07,o:0},{t:.17,o:1},{t:.5,y:-3},{t:.8,o:1,x:600,y:0},{t:.92,o:0,x:690},{t:1,x:760,o:0}],14000,"linear")}},
  {id:"palette",r:"W",d:3200,run:k=>{const [x,y]=inBox("studio",.5,.05),e=k.img(UI+"palette.png",x,y,22,"foot");
    k.mv(e,[{t:0,y:6,o:0,s:.5,r:0},{t:.25,y:-8,o:1,s:1,r:120},{t:.6,y:-20,r:300},{t:1,y:-36,o:0,r:420}],3200)}},
  {id:"lantern",r:"S",d:2600,run:k=>{const L=Life.V.lantern,e=k.dot("v-flare warm",L[0],L[1],30);k.mv(e,[{t:0,o:.1,s:.7},{t:.3,o:.9,s:1.15},{t:.5,o:.5,s:1},{t:.7,o:.85,s:1.1},{t:1,o:0,s:1.3}],2600,EZ)}}
@@ -226,8 +226,10 @@ function lifeSet(on){on=on&&!document.hidden&&!calm();if(on===Life.run)return;Li
   if(on){lifeAnims(a=>{if(a.playState==="paused")a.play()});lifeTick()}else{clearTimeout(Life.tm);lifeAnims(a=>a.pause())}}
 // always on: walkers walk their routes, clouds drift, stars twinkle, islands bob; started once per drawn village
 function lifeStart(z,V){Life.V=V;Life.fx=z.querySelector(".v-fx");Life.live.clear();if(!Life.fx||calm())return;
-  const u=v=>(v/V.w*100).toFixed(3)+"cqw",tok=++Life.tok,stage=(ms,f)=>setTimeout(()=>{if(tok===Life.tok&&z.isConnected)f()},ms);   // a few frames apart: the first visit never does it all at once
-  stage(160,()=>z.querySelectorAll(".v-walk").forEach(w=>{const r=V.walkers[+w.dataset.w];if(!r)return;
+  const BOB={north:[6900,.9,0],mid:[8200,.6,-2300],south:[7400,.8,-4100]},isleAt=y=>y<260?"north":y>=500?"south":"mid";
+  const u=v=>(v/V.w*100).toFixed(3)+"cqw",tok=++Life.tok,stage=(ms,f,early)=>setTimeout(()=>{if(tok===Life.tok&&z.isConnected){f();if(!early&&screen!=="map")lifeAnims(a=>a.pause())}},ms+(early?0:2600));   // the village wakes up a little after the first look, one step every 350 ms, so opening the tab never does it all at once
+  stage(700,()=>z.querySelectorAll(".v-walk").forEach(w=>{const r=V.walkers[+w.dataset.w];if(!r)return;
+    const ig=z.querySelector(`.v-isleg[data-isle="${isleAt(r.route[0][1])}"]`);if(ig)ig.appendChild(w);   // it stands on its island and bobs with it
     const route=r.route,pts=[...route,...route.slice(0,-1).reverse()],T=36/1600;   // 1 tile (36 px) per 1.6 s
     const segs=pts.slice(1).map((p,j)=>Math.hypot(p[0]-pts[j][0],p[1]-pts[j][1])/T),pause=j=>j===0||j===pts.length-1?2000:800;
     const dur=segs.reduce((a,b)=>a+b,0)+pts.reduce((a,_,j)=>a+pause(j),0),delay=-rnd(0,dur);
@@ -239,26 +241,24 @@ function lifeStart(z,V){Life.V=V;Life.fx=z.querySelector(".v-fx");Life.live.clea
     const img=w.querySelector("img"),first=turns[0].side;if(img&&r.face!==0&&turns.some(x=>x.side!==first)){
       const fk=[{offset:0,scale:"1 1"},...turns.map(x=>({offset:x.offset,scale:x.side===first?"1 1":"-1 1"})),{offset:1,scale:"1 1"}];
       img.animate(fk.map(f=>({...f,easing:"step-end"})),{duration:dur,iterations:Infinity,delay})}}));
-  // islands bob a few px, each at its own pace; what stands on an island (frames, villagers, the UFO) bobs with it
-  const BOB={north:[6900,.9,0],mid:[8200,.6,-2300],south:[7400,.8,-4100]},isleAt=y=>y<260?"north":y>=500?"south":"mid";
-  const bob=(el,n)=>{const [d,amp,delay]=BOB[n]||BOB.mid;el.animate([{translate:"0 0"},{translate:`0 ${u(-amp)}`}],{duration:d,delay,iterations:Infinity,direction:"alternate",easing:"ease-in-out"})};
-  stage(320,()=>{z.querySelectorAll(".v-isle").forEach(e=>bob(e,e.dataset.isle));z.querySelectorAll(".v-frame").forEach(e=>bob(e,"mid"));
-    z.querySelectorAll(".v-walk").forEach(e=>{const r=V.walkers[+e.dataset.w];if(r)bob(e,isleAt(r.route[0][1]))});
+  // each island group bobs a few px at its own pace (one animation per island, so the cost stays tiny)
+  stage(1050,()=>{z.querySelectorAll(".v-isleg").forEach(e=>{const [d,amp,delay]=BOB[e.dataset.isle];e.animate([{transform:"translateY(0)"},{transform:`translateY(${u(-amp)})`}],{duration:d,delay,iterations:Infinity,direction:"alternate",easing:"ease-in-out"})});
     const uf=z.querySelector(".v-ufo");if(uf)uf.animate([{transform:"translate(0,0) rotate(-3deg)"},{transform:`translate(${u(1.4)},${u(-1.6)}) rotate(3deg)`}],{duration:4600,iterations:Infinity,direction:"alternate",easing:"ease-in-out"})});
   // clouds drift, the gate's lantern flickers, the noodle bath steams
+  stage(0,()=>{
   Life.fx.insertAdjacentHTML("beforebegin",`<div class="v-cloudrow" style="top:4%"><span class="v-cloud"></span></div><div class="v-cloudrow" style="top:80%"><span class="v-cloud small" style="animation-delay:-36s"></span></div>`);
-  Life.fx.insertAdjacentHTML("beforebegin",`<i class="v-lantern" style="left:${pct(V.lantern[0],V.w)};top:${pct(V.lantern[1],V.h)}"></i>`+(V.smoke||[]).map(s=>`<i class="v-smoke" style="left:${pct(s[0],V.w)};top:${pct(s[1]-24,V.h)}"></i>`).join(""));
+    Life.fx.insertAdjacentHTML("beforebegin",`<i class="v-lantern" style="left:${pct(V.lantern[0],V.w)};top:${pct(V.lantern[1],V.h)}"></i>`+(V.smoke||[]).map(s=>`<i class="v-smoke" style="left:${pct(s[0],V.w)};top:${pct(s[1]-24,V.h)}"></i>`).join(""));})
   // twinkle and constellation glints
-  stage(80,()=>{for(let i=0;i<16;i++){const e=document.createElement("i"),x=((i*137+41)%100)/100*V.w,y=((i*89+23)%100)/100*V.h;
+  stage(350,()=>{for(let i=0;i<9;i++){const e=document.createElement("i"),x=((i*137+41)%100)/100*V.w,y=((i*89+23)%100)/100*V.h;
     e.className="v-tw"+(i%4===0?" gold":"");e.style.cssText=`left:${pct(x,V.w)};top:${pct(y,V.h)};animation-duration:${3+i%5*.9}s;animation-delay:${-i*.7}s`;Life.fx.appendChild(e)}});
   // the moments' sprites are decoded one by one beforehand, so none hitches when it first appears
   Life.cache=Life.cache||[];[...new Set(["doodle-cat","crab","waver","pickle","orange-monster"].map(n=>SK+n+".png").concat(["astronaut","cat","ghost","planet","palette"].map(n=>UI+n+".png")))].forEach((s,i)=>
-    stage(500+i*140,()=>{const im=new Image();im.src=s;im.decode().catch(()=>{});Life.cache.push(im)}));
-  stage(2000,()=>{if(!Life.io){Life.io=new IntersectionObserver(es=>lifeSet(es[es.length-1].isIntersecting),{threshold:.05});Life.io.observe($("gMapWrap"));
-    document.addEventListener("visibilitychange",()=>lifeSet(!document.hidden&&$("gMapWrap").offsetParent!==null))}
-  Life.run=null;lifeSet($("gMapWrap").offsetParent!==null)})}   // null: re-sync play or pause for the freshly drawn village
+    stage(500+i*200,()=>{const im=new Image();im.src=s;im.decode().catch(()=>{});Life.cache.push(im)},true));
+  if(!Life.io){Life.io=new IntersectionObserver(es=>lifeSet(es[es.length-1].isIntersecting),{threshold:.05});Life.io.observe($("gMapWrap"));
+    document.addEventListener("visibilitychange",()=>lifeSet(!document.hidden&&screen==="map"))}
+  stage(1400,()=>{Life.run=null;lifeSet(screen==="map")})}   // null: re-sync play or pause for the freshly drawn village   // null: re-sync play or pause for the freshly drawn village
 
-/* ---- Zoom (G1): pinch or drag with a finger, or the +/- buttons; 1x to 2x. A place is still one tap: a touch
+/* ---- Zoom (G1): pinch, drag or double-tap with a finger, or the +/- buttons with a mouse; 1x to 2x. A place is still one tap: a touch
    that moved more than 8 px is a pan, not a tap. Nothing animates; the view follows the finger. ---- */
 const Z={s:1,x:0,y:0,pts:new Map(),moved:false,start:null,raf:0,zs:null,r:{l:0,t:0},cw:0};
 // At 1x the map is its framed size. Zoomed, the frame widens to the full screen width at the same height, and the
@@ -272,12 +272,17 @@ function widen(on){const W=$("gMapWrap"),L=$("gMapZoom");
 // Pan and zoom: gesture math runs on cached numbers (Z.r = the frame's rect, Z.cw = its width, both read once per gesture
 // by geom(), not per move); the transform is written at most once per frame, and --zs only when the scale changed.
 function geom(){const W=$("gMapWrap"),r=W.getBoundingClientRect();Z.r={l:r.left,t:r.top};Z.cw=W.clientWidth}
+// a label is shown whole or not at all: one that would be cut by the frame's edge fades out until the map is moved back
+function edgeLabels(){if(!Z.lb){const V=window.VILLAGE,k=Z.base.w/V.w;
+    Z.lb=[...$("gMapWrap").querySelectorAll(".v-label")].map(el=>{const p=V.places[el.dataset.place].label,n=LABEL_NUDGE[el.dataset.place]||[0,0];return {el,x:(p[0]+n[0])*k,y:(p[1]+n[1])*Z.base.h/V.h,w:el.offsetWidth,h:el.offsetHeight,off:false}})}
+  const m=6,cw=Z.cw,ch=Z.base.h;
+  for(const l of Z.lb){const x=Z.x+l.x*Z.s,y=Z.y+l.y*Z.s,off=x-l.w/2<m||x+l.w/2>cw-m||y<m||y+l.h>ch-m;if(off!==l.off){l.off=off;l.el.classList.toggle("edge",off)}}}
 function paintZoom(){Z.raf=0;const L=$("gMapZoom");if(!L||!Z.base)return;
-  L.style.transform=`translate3d(${Z.x}px,${Z.y}px,0) scale(${Z.s})`;
+  L.style.transform=`translate3d(${Z.x}px,${Z.y}px,0) scale(${Z.s})`;edgeLabels();
   if(Z.zs!==Z.s){Z.zs=Z.s;L.style.setProperty("--zs",(1/Z.s).toFixed(3))}}
 function zoomTo(s,x,y){const W=$("gMapWrap"),L=$("gMapZoom");if(!L)return;
   Z.s=Math.max(1,Math.min(2,s));if(Z.s===1)widen(false);
-  if(!Z.base){cancelAnimationFrame(Z.raf);Z.raf=0;Z.zs=null;L.style.transform="";L.style.removeProperty("--zs");W.classList.remove("zoomed");Z.x=Z.y=0;return}
+  if(!Z.base){cancelAnimationFrame(Z.raf);Z.raf=0;Z.zs=null;Z.lb=null;W.querySelectorAll(".v-label.edge").forEach(e=>e.classList.remove("edge"));L.style.transform="";L.style.removeProperty("--zs");W.classList.remove("zoomed");Z.x=Z.y=0;return}
   const cw=Z.cw,w=Z.base.w*Z.s,h=Z.base.h;
   Z.x=w<=cw?(cw-w)/2:Math.min(0,Math.max(cw-w,x));Z.y=Math.min(0,Math.max(h-h*Z.s,y));
   W.classList.add("zoomed");if(!Z.raf)Z.raf=requestAnimationFrame(paintZoom)}
@@ -292,7 +297,10 @@ function zoomAt(k,cx,cy){const ns=Math.max(1,Math.min(2,Z.s*k));if(ns>1&&!Z.base
     if(Z.pts.size===2&&Z.pinch){lifeHold(true);const [a,b]=[...Z.pts.values()],d=Math.hypot(a.x-b.x,a.y-b.y);zoomAt(Z.pinch.s*d/Z.pinch.d/Z.s,(a.x+b.x)/2,(a.y+b.y)/2)}
     else if(Z.pts.size===1&&Z.start&&Z.s>1){const dx=e.clientX-Z.start.x,dy=e.clientY-Z.start.y;
       if(Math.hypot(dx,dy)>8)Z.moved=true;if(Z.moved){lifeHold(true);zoomTo(Z.s,Z.start.zx+dx,Z.start.zy+dy)}}});
-  const up=e=>{Z.pts.delete(e.pointerId);if(Z.pts.size<2)Z.pinch=null;if(!Z.pts.size){Z.start=null;lifeHold(false)}};
+  // double-tap on empty ground zooms in at that spot (or back out); the +/- buttons stay for mouse users only
+  const up=e=>{Z.pts.delete(e.pointerId);if(Z.pts.size<2)Z.pinch=null;if(!Z.pts.size){const st=Z.start;Z.start=null;lifeHold(false);
+    if(e.type==="pointerup"&&st&&!Z.moved&&e.pointerType==="touch"&&!e.target.closest(".v-place,.v-label,.v-folk,.v-walker,.v-zoomctl")){const n=performance.now(),d=Z.tap&&Math.hypot(e.clientX-Z.tap.x,e.clientY-Z.tap.y);
+      if(Z.tap&&n-Z.tap.t<450&&d<36){Z.tap=null;buzz(8);geom();if(Z.s>1)zoomTo(1,0,0);else zoomAt(2,e.clientX,e.clientY)}else Z.tap={t:n,x:e.clientX,y:e.clientY}}}};
   W.addEventListener("pointerup",up);W.addEventListener("pointercancel",up);
   // a pan or pinch is not a tap on whatever was under the finger
   W.addEventListener("click",e=>{if(Z.moved&&!e.target.closest(".v-zoomctl")){e.stopPropagation();e.preventDefault();Z.moved=false}},true);
@@ -307,7 +315,15 @@ function openVillager(b){const k=+b.dataset.piece,p=PROJECTS[k];if(!p)return;
     ${plabel(p)?`<p><span class="tag">${esc(plabel(p))}</span></p>`:""}<p>${esc(pdesc(p))}</p><p><button class="g-btn" data-see="${k}">${ico("i-eye")} ${esc(t("town.seeArt"))}</button></p></div>`+hireChip())}
 $("gMapWrap").addEventListener("click",e=>{const v=e.target.closest(".v-folk,.v-walker");if(v){buzz(10);sfx("tap");return openVillager(v)}
   const b=e.target.closest(".v-place,.v-label");if(!b)return;buzz(15);sfx("tap");
-  const pl=PLACES.find(p=>p.id===b.dataset.place);pl.open(pl)});
+  const pl=PLACES.find(p=>p.id===b.dataset.place);placeTap(pl,()=>pl.open(pl))});
+// One small drawn reaction (300 ms) before a place opens: its label lifts and a ring of gold sparks flies out of the place.
+function placeTap(pl,open){const V=window.VILLAGE,W=$("gMapWrap"),z=$("gMapZoom"),box=V.places[pl.id].box;
+  if(calm()||!z||!z.isConnected){open();return}
+  const lab=W.querySelector(`.v-label[data-place="${pl.id}"]`);if(lab){lab.classList.add("go");setTimeout(()=>lab.classList.remove("go"),420)}
+  const cx=(box[0]+box[2])/2,cy=(box[1]+box[3])/2,k=100/V.w,fx=document.createElement("div");fx.className="v-burst";fx.style.cssText=`left:${pct(cx,V.w)};top:${pct(cy,V.h)}`;
+  for(let i=0;i<8;i++){const a=i/8*Math.PI*2+.3,r=(box[2]-box[0])*.55,s=document.createElement("i");fx.appendChild(s);
+    s.animate([{transform:"translate(0,0) scale(.3)",opacity:0},{opacity:1,offset:.25},{transform:`translate(${(Math.cos(a)*r*k).toFixed(2)}cqw,${(Math.sin(a)*r*k*.8).toFixed(2)}cqw) scale(1)`,opacity:0}],{duration:300,easing:EZI})}
+  z.appendChild(fx);setTimeout(()=>fx.remove(),340);setTimeout(open,300)}
 $("gMapList").addEventListener("click",e=>{const b=e.target.closest("[data-place]");if(b){buzz(10);sfx("tap");const pl=PLACES.find(p=>p.id===b.dataset.place);pl.open(pl)}});
 // The list view replaces the island on the same screen (each place once, 48 px rows); the same link switches back.
 $("gMapListBtn").onclick=()=>{const l=$("gMapList"),open=l.hidden,b=$("gMapListBtn");l.hidden=!open;$("gMapWrap").hidden=open;
@@ -315,6 +331,21 @@ $("gMapListBtn").onclick=()=>{const l=$("gMapList"),open=l.hidden,b=$("gMapListB
   if(open)l.querySelector("button")?.focus({preventScroll:true})};
 
 /* ---- sheets ---- */
+/* Keyboard (a11y): a closed overlay is inert, so its buttons leave the Tab order; Tab stays inside the open one on top,
+   Escape closes it and focus goes back to the control that opened it. The sheet keeps its own open/close (below). */
+const OVERS=["gArcade","gShare","gColor"],overFrom={};
+const overOn=()=>OVERS.map(id=>$(id)).find(e=>e&&e.classList.contains("open"));
+function inertOvers(){[...OVERS,"gSheet"].forEach(id=>{const e=$(id);if(!e)return;const on=e.classList.contains("open");
+  if(on&&e.inert)overFrom[id]=document.activeElement;
+  else if(!on&&!e.inert){const f=overFrom[id];overFrom[id]=null;if(id!=="gSheet"&&f&&f.isConnected&&(e.contains(document.activeElement)||document.activeElement===document.body))f.focus({preventScroll:true})}
+  e.inert=!on})}
+addEventListener("load",()=>{const mo=new MutationObserver(inertOvers);[...OVERS,"gSheet"].forEach(id=>{const e=$(id);if(e)mo.observe(e,{attributes:true,attributeFilter:["class"]})});inertOvers()});
+addEventListener("keydown",e=>{if(document.querySelector("dialog[open]"))return;const sh=$("gSheet").classList.contains("open"),o=sh?$("gSheet"):overOn();if(!o)return;
+  if(e.key==="Escape"&&!sh){const x=o.querySelector("#gArcadeX,#sX");if(x)x.click();else if(o.id==="gColor"&&typeof Color!=="undefined")Color.close();return}
+  if(e.key!=="Tab")return;
+  const f=[...o.querySelectorAll('button,a[href],input,select,textarea,[tabindex]:not([tabindex="-1"])')].filter(x=>!x.disabled&&x.getClientRects().length&&!x.closest("[inert],[hidden]"));if(!f.length)return;
+  const a=document.activeElement,i=f.indexOf(a);
+  if(!o.contains(a)){e.preventDefault();f[0].focus()}else if(e.shiftKey&&i===0){e.preventDefault();f[f.length-1].focus()}else if(!e.shiftKey&&i===f.length-1){e.preventDefault();f[0].focus()}});
 const sheet=$("gSheet");let sheetFrom=null;
 // The Hire sheet is the heaviest one (form inputs: first style and layout), so it is built hidden while the app is idle
 // (warmHire) and opening it only slides the finished sheet in. sheetHtml is what the body holds now; a different html
@@ -404,7 +435,7 @@ function renderArt(){
   const list=PROJECTS.map((p,i)=>({p,i})).filter(x=>gFilter==="all"||x.p.cat===gFilter);
   // eight cards now, the rest in idle slices: the first visit lays out a screenful, not the whole grid
   const card=({p,i},k)=>`<button class="g-card" data-i="${i}" style="--tilt:${typeof tiltOf==="function"?tiltOf(p):"-1deg"}"><div class="inner">
-      <span class="gcat">${catImg(p.cat,"")}</span><div class="art">${artOf(p)}</div><div class="info"><b>${esc(ptitle(p))}</b>${p.label?`<span class="g-tag">${esc(plabel(p))}</span>`:""}</div></div></button>`;
+      <span class="gcat">${catImg(p.cat,"")}</span><div class="art" aria-hidden="true">${artOf(p)}</div><div class="info"><b>${esc(ptitle(p))}</b>${p.label?`<span class="g-tag">${esc(plabel(p))}</span>`:""}</div></div></button>`;
   const tok=++artTok,rest=list.slice(8),idle=window.requestIdleCallback||(f=>setTimeout(f,30));
   $("gCards").innerHTML=list.slice(0,8).map(card).join("");
   (function more(){if(tok!==artTok||!rest.length)return;idle(()=>{if(tok!==artTok)return;$("gCards").insertAdjacentHTML("beforeend",rest.splice(0,10).map(card).join(""));more()},{timeout:600})})();
@@ -414,12 +445,14 @@ $("gFilters").addEventListener("click",e=>{const b=e.target.closest("button");if
 $("gCards").addEventListener("click",e=>{const c=e.target.closest(".g-card");if(!c)return;buzz(15);sfx("flip");show(+c.dataset.i)});
 
 /* ---- Mine: things you made, never rewards ---- */
+// Mine is drawn again on every visit: the markup is written only when it changed, so a tab switch rebuilds, restyles and repaints nothing
+const setHTML=(el,h)=>{if(el.__h!==h){el.__h=h;el.innerHTML=h}};
 function renderMine(){
   const list=Object.entries(st.colorings||{}).sort((a,b)=>(b[1].at||0)-(a[1].at||0));
-  $("gMineList").innerHTML=list.length?list.map(([id,c])=>`<button class="g-mine-item" data-page="${esc(id)}" aria-label="${esc(c.title||id)}" style="--tilt:${typeof tiltOf==="function"?tiltOf({slug:id}):"-1deg"}">${c.thumb?`<img src="${c.thumb}" alt="">`:""}<b>${esc(c.title||id)}</b></button>`).join(""):`<p class="g-small">${esc(t("mine.empty"))}</p>`;
+  setHTML($("gMineList"),list.length?list.map(([id,c])=>`<button class="g-mine-item" data-page="${esc(id)}" aria-label="${esc(c.title||id)}" style="--tilt:${typeof tiltOf==="function"?tiltOf({slug:id}):"-1deg"}">${c.thumb?`<img src="${c.thumb}" alt="">`:""}<b>${esc(c.title||id)}</b></button>`).join(""):`<p class="g-small">${esc(t("mine.empty"))}</p>`);
   if($("gMineLinks")){const ls=[["linkedin","hire.linkedin"],["behance","hire.behance"]].filter(([k])=>CONFIG.links[k]).map(([k,c])=>[CONFIG.links[k],t(c)]);if(CONFIG.website)ls.push([CONFIG.website,t("hire.website")]);
-    $("gMineLinks").innerHTML=ls.map(([h,n])=>`<a class="g-link" href="${esc(h)}" target="_blank" rel="noopener">${esc(n)}</a>`).join("");$("gMineLinks").parentElement.hidden=!ls.length}
-  if($("gBest"))$("gBest").innerHTML=st.best?`${ico("s-star")} ${esc(t("mine.best",{n:st.best}))}`:esc(t("mine.best.none"));
+    setHTML($("gMineLinks"),ls.map(([h,n])=>`<a class="g-link" href="${esc(h)}" target="_blank" rel="noopener">${esc(n)}</a>`).join(""));$("gMineLinks").parentElement.hidden=!ls.length}
+  if($("gBest"))setHTML($("gBest"),st.best?`${ico("s-star")} ${esc(t("mine.best",{n:st.best}))}`:esc(t("mine.best.none")));
   syncToggles();
 }
 $("gMineList").addEventListener("click",e=>{const b=e.target.closest("[data-page]");if(b&&typeof Color!=="undefined")Color.open(b.dataset.page)});
@@ -434,6 +467,7 @@ $("gReset").onclick=()=>{if(!confirm(t("mine.reset.confirm")))return;st={...blan
 /* ---- sound (tiny synthesized blips, no files); off until turned on ---- */
 let actx;
 function sfx(type){if(!st.snd||!feature("sound"))return;try{actx=actx||new(window.AudioContext||window.webkitAudioContext)();
+  if(actx.state!=="running")actx.resume().catch(()=>{});   // iOS leaves it "suspended"/"interrupted" after a call, lock or app switch
   const seq={tap:[[660,.05]],coin:[[988,.05],[1319,.1]],hit:[[160,.22,"sawtooth"]],level:[[523,.09],[659,.09],[784,.09],[1047,.25]],
     flip:[[880,.04]],legend:[[784,.09],[988,.09],[1175,.09],[1568,.4]],count:[[440,.12]],go:[[880,.25]],fill:[[740,.04],[988,.06]]}[type];
   let t0=actx.currentTime;seq.forEach(([f,d,w])=>{const o=actx.createOscillator(),g=actx.createGain();o.type=w||"triangle";o.frequency.setValueAtTime(f,t0);
@@ -452,7 +486,7 @@ addEventListener("resize",()=>{tabX=null;moveInd()});
 /* ---- Star Catcher (B13): one rule, always the full 30 s, no lives, no game over ---- */
 // Balance numbers (Game Director): each range goes from the start of the round to the end.
 // Retuned after the r1a playtest (docs/playtest-r1a.md): slower and calmer; scripts/sim-stars.mjs checks idle and casual scores.
-const BALANCE={seconds:30,spawn:[.75,.45],speed:[110,240],speedRandom:40,hazardShare:[.12,.25],catchStar:30,catchHazard:26,hazardCost:2,
+const BALANCE={seconds:30,spawn:[.85,.52],speed:[110,240],speedRandom:40,hazardShare:[.12,.25],catchStar:30,catchHazard:26,hazardCost:2,
   mix:{glow:.08,palette:.20}};   // of the non-hazard items: 8% glowing star (+5), 20% palette (+3), the rest star (+1)
 const KINDS={star:["star",1,36],palette:["palette",3,40],glow:["glow",5,48],virus:["virus",-BALANCE.hazardCost,40]};
 function svgSprite(id){const sym=document.getElementById(id),i=new Image();
@@ -467,7 +501,9 @@ function startArcade(){if(!feature("starCatcher")||!cv)return;
   $("gArcade").classList.add("open");G.classList.add("playing");$("gResult").classList.remove("show");sizeCanvas();
   const W=cv.clientWidth,H=cv.clientHeight;
   A={W,H,score:0,t:BALANCE.seconds,items:[],parts:[],texts:[],px:W/2,tx:W/2,spawn:0,shake:0,run:false,stars:Array.from({length:50},()=>({x:Math.random()*W,y:Math.random()*H,s:Math.random()*2+.5,v:20+Math.random()*60}))};
-  hudA();cancelAnimationFrame(raf);let last=performance.now();const loop=now=>{const dt=Math.min(.05,(now-last)/1000);last=now;step(dt);draw();raf=requestAnimationFrame(loop)};raf=requestAnimationFrame(loop);
+  hudA();cancelAnimationFrame(raf);let last=performance.now();const loop=now=>{const dt=Math.min(.05,(now-last)/1000);last=now;step(dt);draw();
+    // once the round is over and the last sparks have faded, stop redrawing: the result card sits on a still frame (phone battery; the main thread stays free for its buttons)
+    if(A&&A.t<=0&&!A.run&&!A.parts.length&&!A.texts.length&&A.shake<=0){raf=0;return}raf=requestAnimationFrame(loop)};raf=requestAnimationFrame(loop);
   let n=3;const cd=$("gCount");const tick=()=>{if(!A)return;if(n>0){cd.innerHTML=`<span>${n}</span><p>${esc(t("stars.rule"))}</p>`;sfx("count");n--;setTimeout(tick,800)}else{cd.innerHTML=`<span>${esc(tt("stars.go","GO!"))}</span>`;sfx("go");A.run=true;setTimeout(()=>cd.innerHTML="",800)}};tick()}
 function hudA(){$("gScore").innerHTML=ico("s-star")+A.score;$("gTime").style.width=Math.max(0,A.t/BALANCE.seconds*100)+"%"}
 function step(dt){const a=A;if(!a)return;
@@ -504,19 +540,31 @@ function draw(){const a=A;if(!a)return;const sx=(Math.random()-.5)*a.shake,sy=(M
   ctx.save();ctx.translate(a.px,py+bob);ctx.rotate(Math.max(-.3,Math.min(.3,tilt)));if(heroImg.complete&&heroImg.naturalWidth)ctx.drawImage(heroImg,-pw/2,-ph*.55,pw,ph);ctx.restore();
   ctx.restore()}
 function aim(e){if(!A)return;const r=cv.getBoundingClientRect(),x=(e.touches?e.touches[0].clientX:e.clientX)-r.left;A.tx=Math.max(40,Math.min(A.W-40,x))}
+// a11y: arrow keys (and A/D) move the catcher too, a tenth of the field per press; holding a key repeats
+addEventListener("keydown",e=>{if(!A||!$("gArcade").classList.contains("open"))return;const d={ArrowLeft:-1,a:-1,ArrowRight:1,d:1}[e.key];if(!d)return;
+  e.preventDefault();A.tx=Math.max(40,Math.min(A.W-40,(A.tx??A.W/2)+d*A.W/10))});
 if(cv){cv.addEventListener("pointerdown",aim);cv.addEventListener("pointermove",aim);cv.addEventListener("touchmove",e=>{aim(e);e.preventDefault()},{passive:false})}
 // "New best!" only when there was a best to beat (the first round is just "Time's up!")
 function endArcade(){const a=A;a.run=false;lastScore=a.score;const rec=(st.best||0)>0&&a.score>st.best;st.best=Math.max(st.best||0,a.score);save();
   $("gResTitle").textContent=rec?t("stars.record"):t("stars.end");$("gResScore").innerHTML=ico("s-star")+a.score;
   // the score counts points (a palette is 3, a glowing star 5, a virus minus 2), so the line says points, not stars
   $("gResText").textContent=tt("stars.resultPoints","{n} points. Your best: {best} points.",{n:a.score,best:st.best});$("gResult").classList.add("show");G.classList.remove("playing");
+  if(typeof Share!=="undefined")setTimeout(starBlob,500);
   sfx(rec?"legend":"level");if(rec&&typeof confetti==="function")confetti()}
 function quitArcade(){cancelAnimationFrame(raf);A=null;pausedByHide=false;$("gArcade").classList.remove("open");G.classList.remove("playing");$("gCount").innerHTML=""}
-let lastScore=0;
+let lastScore=0,starCard=null;
+// The stars card (1080 x 1920) is drawn and PNG-encoded once, a moment after the result shows, so Share and Download answer at
+// once instead of each drawing and encoding it (seconds on a busy phone, and the second tap queued behind the first).
+function starBlob(){if(starCard&&starCard.score===lastScore)return starCard.p;
+  const score=lastScore,p=(async()=>{try{const c=await Share.renderCard("stars",{score});return await new Promise(ok=>c.toBlob(ok,"image/png"))}catch(e){return null}})();
+  starCard={score,p};return p}
+addEventListener("ekky:lang",()=>{starCard=null});   // the card is written in the current language
+async function downloadStars(){if(typeof Share==="undefined")return;const blob=await starBlob();if(!blob)return Share.downloadStars(lastScore);
+  if(await Share.save(blob,`ekkyarya-stars-${lastScore}.png`)==="saved"&&typeof say==="function")say(t("dl.saved"),"i-check")}
 // G3: Share on the result, next to Download. It shares the same stars card (Share.renderCard) through the phone's
 // share sheet; where that can't take a file it falls back to the Download path (Share.downloadStars).
 async function shareStars(){if(typeof Share==="undefined")return;
-  try{const c=await Share.renderCard("stars",{score:lastScore}),blob=await new Promise(ok=>c.toBlob(ok,"image/png"));
+  try{const blob=await starBlob();if(!blob)throw new Error("no card");
     const file=new File([blob],`ekkyarya-stars-${lastScore}.png`,{type:"image/png"});
     if(navigator.canShare&&navigator.canShare({files:[file]})){const url=siteBase();   // a friend can open the game from the share
       await navigator.share({files:[file],text:tt("stars.shareText","I caught {n} points in Ekky's Star Catcher.",{n:lastScore}).replace("{n}",lastScore)+" "+url,url});return}
@@ -524,7 +572,7 @@ async function shareStars(){if(typeof Share==="undefined")return;
   Share.downloadStars(lastScore)}
 if(cv&&feature("shareCards")&&!$("gResShare")){$("gAgain").insertAdjacentHTML("afterend",`<button class="g-btn alt sm" id="gResShare">${ico("i-share")} <span>${esc(t("reveal.share"))}</span></button>`);
   $("gResShare").onclick=()=>{buzz(10);shareStars()}}
-if(cv){$("gResDl").onclick=()=>typeof Share!=="undefined"&&Share.downloadStars(lastScore);$("gArcadeX").onclick=quitArcade;$("gResBack").onclick=()=>{quitArcade();go("start")};$("gAgain").onclick=startArcade}
+if(cv){$("gResDl").onclick=downloadStars;$("gArcadeX").onclick=quitArcade;$("gResBack").onclick=()=>{quitArcade();go("start")};$("gAgain").onclick=startArcade}
 G.addEventListener("click",e=>{if(e.target.closest("[data-arcade]")){sfx("tap");startArcade()}});
 {const play=q.get("play");   // desktop "Play with Ekky's art" cards: ?game&play=color|stars
   if(play){try{const u=new URL(location);u.searchParams.delete("play");history.replaceState(history.state,"",u)}catch(e){}}   // the address bar drops ?play= once it is acted on
@@ -539,7 +587,7 @@ document.addEventListener("visibilitychange",()=>{if(!A)return;if(document.hidde
 // The village's pictures (about 1 MB at 2x) are fetched only when the Map tab opens (go("map")), never at load, so a
 // slow phone spends its first seconds on the start screen and a desktop visit never fetches them (sprint 2, first load).
 let artDone=false,mapBuilt=false;const dirty={start:false,art:false,map:false};   // screens are built once and kept; a language switch redraws only the one in view
-// The village (village.png and its sprites, about 1 MB) is built when the map opens (go("map")), not at load, so the
+// The village (its layers and sprites, about 0.6 MB) is built when the map opens (go("map")), not at load, so the
 // start screen's drawings come first on a slow phone (S5, Developer B).
 /* ---- Language switched in place (js/site.js dispatches "ekky:lang" at the dim point): redraw what was built with t() ---- */
 let sheetRe=null;
@@ -573,7 +621,7 @@ function prewarm(){if(!document.body.classList.contains("game-mode"))return;
   when(()=>{if(!artDone){artDone=true;renderArt()}
     })}   // the Art thumbnails stay lazy and the village waits for the Map tab: only the start screen's six load up front
 addEventListener("load",()=>{setTimeout(prewarm,2000);warmT=setTimeout(warmWhenIdle,2500)});
-function renderAll(){if(deep)setTimeout(renderStart,2500);else renderStart();renderMine();setTimeout(moveInd,60)}
+function renderAll(){if(deep)setTimeout(renderStart,2500);else renderStart();renderMine();setTimeout(()=>{measureTabs();moveInd()},60)}   // measured now, not on the first tab switch
 // Shared with js/color.js, js/share.js and js/links.js.
 window.Game={go,openHire,openSheet,closeSheet,sfx,buzz,save,get st(){return st},esc,contactReady,screen:()=>screen};
 window.openHire=openHire;

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ekky Arya – Illustrator &amp; Graphic Designer</title>
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
@@ -16,8 +16,28 @@
    its images load behind the game; js/site.js drops the class once js/game.js has set the real mode */
 (function(){try{var q=location.search,n=window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform(),p=null;try{p=localStorage.getItem("ekkyMode")}catch(e){}
   if(n||/[?&](color|challenge|card|game)\b/.test(q)||(matchMedia("(max-width:760px)").matches&&p!=="classic"))document.documentElement.classList.add("pre-game")}catch(e){}})();</script>
+<!-- Link previews (Share squad): WhatsApp, Instagram DM, X, LinkedIn, iMessage. Image: assets/og/try-ekky.jpg, 1200 x 630. -->
 <meta name="theme-color" content="#2B1342">
 <meta name="description" content="Ekky Arya: illustrator and graphic designer making lively, playful illustrations, characters and brands.">
+<link rel="canonical" href="https://rfim.github.io/ekkyarya.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Ekky Arya">
+<meta property="og:url" content="https://rfim.github.io/ekkyarya.com/">
+<meta property="og:title" content="Try Ekky: color Ekky Arya's drawings">
+<meta property="og:description" content="Color Ekky's drawings, catch stars and send your version to a friend. Illustrations, characters and brands by Ekky Arya.">
+<meta property="og:image" content="https://rfim.github.io/ekkyarya.com/assets/og/try-ekky.jpg">
+<meta property="og:image:secure_url" content="https://rfim.github.io/ekkyarya.com/assets/og/try-ekky.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Try Ekky: three of Ekky Arya's drawings taped on sketchbook paper">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="id_ID">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Try Ekky: color Ekky Arya's drawings">
+<meta name="twitter:description" content="Color Ekky's drawings, catch stars and send your version to a friend.">
+<meta name="twitter:image" content="https://rfim.github.io/ekkyarya.com/assets/og/try-ekky.jpg">
+<meta name="twitter:image:alt" content="Try Ekky: three of Ekky Arya's drawings taped on sketchbook paper">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
@@ -263,7 +283,7 @@
   <section class="section" id="work">
     <div class="work-head">
       <div><p class="eyebrow reveal" data-t="hero.selected">Selected work</p><h2 class="h2 reveal" data-t="nav.portfolio" data-hand="portfolio">Portfolio</h2></div>
-      <div class="filters reveal" id="filters" role="tablist" aria-label="Filter projects">
+      <div class="filters reveal" id="filters" role="group" aria-label="Filter projects">
         <button class="active" data-filter="all" data-t="filter.all">All</button>
         <button data-filter="illustration" data-t="filter.illustration">Illustration</button>
         <button data-filter="web" data-t="filter.web">Web &amp; UI</button>
@@ -370,7 +390,7 @@
       <div class="g-row"><span data-t="mine.vibration"></span><button class="g-switch on" id="gVib" role="switch" aria-checked="true" data-t-aria="mine.vibration"></button></div>
       <div class="g-row" data-feature="pwa" data-install-row hidden><span data-t="app.install"></span><button class="g-btn sm alt" data-install data-tta="app.install|Install the app"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg></button></div>
       <div class="g-row"><span data-t="lang.label"></span><div class="lang-switch" role="group" data-t-aria="lang.label"><button data-lang="en">EN</button><button data-lang="id">ID</button></div></div>
-      <div class="g-row"><span data-t="start.classic"></span><button class="g-btn sm alt" data-classic aria-label="Open"><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></button></div>
+      <div class="g-row"><span data-t="start.classic"></span><button class="g-btn sm alt" data-classic data-t-aria="start.classic" aria-label="Just the art, please"><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></button></div>
       <div class="g-row" hidden><div class="g-mine-links" id="gMineLinks"></div></div>
       <div class="g-row"><button class="g-link g-reset" id="gReset" data-t="mine.reset"></button></div>
     </div>

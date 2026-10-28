@@ -143,18 +143,21 @@ async function runConfig(browser,url,scheme,lang){
     const cnt=()=>p.$$eval('#cStickers .c-st',e=>e.length);const n1=await cnt();if(!n1)throw new Error('sticker not added');
     const [x0,y0]=await pos();const st=await p.$eval('#cStage',e=>{const b=e.getBoundingClientRect();return [b.left,b.top,b.width,b.height]});
     const tx=Math.min(st[0]+st[2]*.75,x0+90),ty=Math.min(st[1]+st[3]*.6,y0+90);
-    await p.mouse.move(x0,y0);await p.mouse.down();for(let i=1;i<=10;i++){await p.mouse.move(x0+(tx-x0)*i/10,y0+(ty-y0)*i/10);await sleep(20)}await p.mouse.up();await sleep(400);
+    await p.mouse.move(x0,y0);await p.mouse.down();for(let i=1;i<=10;i++){await p.mouse.move(x0+(tx-x0)*i/10,y0+(ty-y0)*i/10);await sleep(20)}await p.mouse.up();
+    // wait for the result (poll up to 3 s), not a fixed 400 ms: under a loaded CPU the drag and undo can land late
+    const until=async(f,t=3000)=>{const end=Date.now()+t;let v;do{v=await f();if(v)return v;await sleep(100)}while(Date.now()<end);return v};
+    await until(async()=>{const [a,b]=await pos();return Math.hypot(a-x0,b-y0)>=20});
     const [x1,y1]=await pos();if(Math.hypot(x1-x0,y1-y0)<20)throw new Error('dragging the sticker did not move it');
-    await p.tap('#cUndo');await sleep(400);const n2=await cnt();const back=n2?await pos():null;if(n2===n1&&back&&Math.hypot(back[0]-x1,back[1]-y1)<5)throw new Error('undo after a sticker drag changed nothing');
+    await p.tap('#cUndo');await until(async()=>{const n=await cnt();if(n!==n1)return true;const [a,b]=await pos();return Math.hypot(a-x1,b-y1)>=5});const n2=await cnt();const back=n2?await pos():null;if(n2===n1&&back&&Math.hypot(back[0]-x1,back[1]-y1)<5)throw new Error('undo after a sticker drag changed nothing');
     // drop on the bin removes it
     await p.tap('#cStickBtn').catch(()=>{});if(!await cnt()){await p.tap('#cUndo');await sleep(300)}
-    if(!await p.isVisible('#cTray')){await p.tap('#cStickBtn')}await p.tap('#cTray [data-n]');await sleep(500);const n3=await cnt();const [x2,y2]=await pos();
+    if(!await p.isVisible('#cTray')){await p.tap('#cStickBtn')}const n2b=await cnt();await p.tap('#cTray [data-n]');await until(async()=>await cnt()>n2b);await sleep(200);const n3=await cnt();const [x2,y2]=await pos();
     await p.mouse.move(x2,y2);await p.mouse.down();await p.mouse.move(x2+6,y2+6);await p.mouse.move(x2+14,y2+10);await sleep(500);
     const bin=await p.$eval('#cBin',e=>{const b=e.getBoundingClientRect();return [b.left+b.width/2,b.top+b.height/2]});
-    for(let i=1;i<=10;i++)await p.mouse.move(x2+(bin[0]-x2)*i/10,y2+(bin[1]-y2)*i/10);await sleep(300);
-    if(!await p.$eval('#cBin',e=>e.classList.contains('hot')))throw new Error('bin did not light up under the dragged sticker');await p.mouse.up();await sleep(500);
+    for(let i=1;i<=10;i++)await p.mouse.move(x2+(bin[0]-x2)*i/10,y2+(bin[1]-y2)*i/10);await until(()=>p.$eval('#cBin',e=>e.classList.contains('hot')));
+    if(!await p.$eval('#cBin',e=>e.classList.contains('hot')))throw new Error('bin did not light up under the dragged sticker');await p.mouse.up();await until(async()=>await cnt()<n3);
     if(await cnt()>=n3)throw new Error('dropping a sticker on the bin did not delete it');
-    await p.tap('#cUndo');await sleep(400);if(await cnt()<n3)throw new Error('undo did not bring the deleted sticker back')});
+    await p.tap('#cUndo');await until(async()=>await cnt()>=n3);if(await cnt()<n3)throw new Error('undo did not bring the deleted sticker back')});
 
   // --- language switch in place ---
   await T('lang: switch in place, no stale text',async p=>{await boot(p);await p.evaluate(()=>{window.__m=1});
@@ -223,7 +226,7 @@ async function runConfig(browser,url,scheme,lang){
   await T('stars: play, result, Share, Download, Hire',async p=>{await boot(p);await p.tap('#g-start [data-arcade]');await must(p,'#gArcade.open','arcade did not open',5000);await sleep(5000);
     await audit(p,'arcade');
     if(!await vis(p,'#gResult.show',60000))throw new Error('no result screen within 65 s');await sleep(800);await audit(p,'star result');
-    if(!await vis(p,'#gResult [data-hire]',500))throw new Error('no Hire chip on star result');
+    if(!await vis(p,'#gResult [data-hire]'))throw new Error('no Hire chip on star result');
     const sh=await p.$('#gResult [data-share],#gResShare,#gResult button[aria-label*=hare i]');if(!sh)throw new Error('no Share button on star result');await sh.evaluate(e=>e.click());await sleep(1200);await p.keyboard.press('Escape');await p.evaluate(()=>document.querySelectorAll('.g-sheet.open,dialog[open]').forEach(e=>{e.classList.remove('open');if(e.close)e.close()}));
     const dl=p.waitForEvent('download',{timeout:5000}).then(()=>1,()=>0);const dlg=p.waitForSelector('.g-sheet.open,dialog[open],[class*=share]:visible',{state:'visible',timeout:5000}).then(()=>1,()=>0);
     await p.$eval('#gResDl',e=>e.click());if(!(await dl)&&!(await dlg))throw new Error('Download on star result: no file and no dialog');});
@@ -241,13 +244,17 @@ async function runConfig(browser,url,scheme,lang){
   await T('map: villager sheet',async p=>{await boot(p);await tab(p,'map');await must(p,'#gMapWrap .v-walker, #gMapWrap .v-folk','no villagers',8000);await sleep(800);
     await p.evaluate(()=>document.querySelector('#gMapWrap .v-folk,#gMapWrap .v-walker').click());await sleep(900);if(!await p.evaluate(()=>document.getElementById('gSheet').classList.contains('open')))throw new Error('villager sheet did not open');
     await audit(p,'villager sheet')});
-  await T('map: zoom + / -',async p=>{await boot(p);await tab(p,'map');await must(p,'#gMapWrap [data-zoom]','no zoom buttons',8000);await sleep(800);
+  await T('map: double-tap zoom in and out (touch has no +/- buttons)',async p=>{await boot(p);await tab(p,'map');await must(p,'#gMapZoom','no village',8000);await sleep(800);
     const tf=()=>p.evaluate(()=>{const z=document.getElementById('gMapZoom');const s=getComputedStyle(z);return s.transform+'|'+z.getBoundingClientRect().width.toFixed(1)});
-    const a=await tf();await p.tap('[data-zoom="1"]');await sleep(600);const b=await tf();if(a===b)throw new Error('zoom + changed nothing');await p.tap('[data-zoom="-1"]');await sleep(600);const c=await tf();if(c===b)throw new Error('zoom - changed nothing')});
+    if(await p.evaluate(()=>[...document.querySelectorAll('#gMapWrap [data-zoom]')].some(e=>e.offsetParent)))throw new Error('+/- buttons show on a touch screen');
+    const bb=await p.locator('#gMapWrap').boundingBox(),x=bb.x+14,y=bb.y+14,dbl=async()=>{await p.touchscreen.tap(x,y);await sleep(60);await p.touchscreen.tap(x,y);await sleep(800)};
+    const a=await tf();await dbl();const b2=await tf();if(a===b2)throw new Error('double-tap did not zoom in');await dbl();const c=await tf();if(c===b2)throw new Error('double-tap did not zoom out')});
 
   // --- Hire chip on every screen ---
-  const hireOn=async(p,what)=>{if(!await vis(p,'[data-hire]:visible',500))throw new Error('no Hire chip on '+what);
-    await p.evaluate(()=>{const e=[...document.querySelectorAll('[data-hire]')].find(x=>x.offsetParent&&x.getBoundingClientRect().height>0);e.click()});await sleep(900);
+  const hireOn=async(p,what)=>{if(!await vis(p,'[data-hire]:visible',4000))throw new Error('no Hire chip on '+what);
+    await p.evaluate(()=>{const e=[...document.querySelectorAll('[data-hire]')].find(x=>x.offsetParent&&x.getBoundingClientRect().height>0);e.click()});
+    // wait for the sheet to open (state), then let it finish sliding in before the audit
+    await p.waitForFunction(()=>document.getElementById('gSheet').classList.contains('open')||document.querySelectorAll('dialog[open]').length>0,null,{timeout:4000,polling:50}).catch(()=>{});await sleep(600);
     if(!await p.evaluate(()=>document.getElementById('gSheet').classList.contains('open')||[...document.querySelectorAll('dialog[open]')].length>0))throw new Error('Hire sheet did not open from '+what);
     await audit(p,'hire sheet')};
   for(const t of ['start','art','map','mine'])await T('hire chip: '+t,async p=>{await boot(p);if(t!=='start')await tab(p,t);await hireOn(p,t)});

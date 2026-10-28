@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- body.game-mode background in css/game.css -->
+    <color name="ekky_night">#120A1F</color>
+</resources>

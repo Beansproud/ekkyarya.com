@@ -66,13 +66,15 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",
 function show(){
   const n=total();if(!n||buddy)return;
   do{factIdx=Math.floor(Math.random()*n)}while(n>1&&factIdx===lastFact);lastFact=factIdx;
-  buddy=document.createElement("div");buddy.className="idle-buddy";
-  buddy.innerHTML=`<img src="${SPRITES[Math.floor(Math.random()*SPRITES.length)]}" alt="" width="64" height="64"><p class="idle-bubble" role="status">${words()}</p>`;
+  const onMap=!!document.querySelector("#g-map.active");buddy=document.createElement("div");buddy.className="idle-buddy";
+  buddy.innerHTML=`<img src="${SPRITES[Math.floor(Math.random()*SPRITES.length)]}" alt="" width="64" height="64">${onMap?"":`<p class="idle-bubble" role="status">${words()}</p>`}`;   // on the map the doodle comes alone: a bubble would cover a place or Work with Ekky
   const cells=reduce.matches?null:startCells();
+  const tb=document.querySelector("#game .g-tabs"),rest=tb?Math.round(innerHeight-tb.getBoundingClientRect().top+3):0;   // read once, before anything moves: the free paper is the band between the tiles and the tab bar
   if(cells)playFx(cells);   // the start page: the pictures move, the doodle only appears (measured before it is added)
   const b0=buddy,add=()=>{if(buddy!==b0)return;document.body.appendChild(b0);shownAt=Date.now();
-    const img=b0.firstChild,bub=b0.lastChild;
-    bub.animate([{opacity:0},{opacity:1}],{duration:260,delay:0,fill:"backwards"});   // after the move has started
+    if(cells&&rest){b0.classList.add("on-start");b0.style.bottom=rest+"px"}   // never over a polaroid or its caption
+    const img=b0.firstChild,bub=b0.querySelector(".idle-bubble");
+    if(bub)bub.animate([{opacity:0},{opacity:1}],{duration:260,delay:0,fill:"backwards"});   // after the move has started
     if(!cells&&!reduce.matches){const [frames,ms]=MOVES[Math.floor(Math.random()*MOVES.length)];img.animate(frames,{duration:ms,easing:"ease-in-out"})}};
   if(cells){shownAt=Date.now();setTimeout(add,2000)}else add();   // the start page: the doodle and its fact come after the pictures have settled
   clearTimeout(hideT);hideT=setTimeout(hide,cells?8000:6000);
@@ -96,7 +98,7 @@ function touch(e){const now=Date.now();if(/^(pointerdown|touchstart|keydown)$/.t
   if(now-last<250)return;last=now;if(buddy&&now-shownAt>800)hide()}
 ["pointerdown","pointermove","keydown","wheel","touchstart","scroll"].forEach(ev=>addEventListener(ev,touch,{passive:true,capture:true}));
 document.addEventListener("visibilitychange",()=>{last=Date.now()});
-addEventListener("ekky:lang",()=>{if(buddy){const b=buddy.lastChild;if(b)b.innerHTML=words()}});
+addEventListener("ekky:lang",()=>{if(buddy){const b=buddy.querySelector(".idle-bubble");if(b)b.innerHTML=words()}});
 window.IdleFx={names:EFFECTS.map(e=>e[0]),play:k=>{const c=startCells();if(c)playFx(c,k);return !!c}};   // for the QA frame strip
 arm();
 })();

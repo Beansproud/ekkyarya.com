@@ -39,7 +39,7 @@
     previewStop: { en: "Stop preview", id: "Hentikan pratinjau" },
     ribbon: { en: "Preview, not published", id: "Pratinjau, belum diterbitkan" },
     back: { en: "Back to admin", id: "Kembali ke admin" },
-    undo: { en: "Undo last publish", id: "Batalkan terbitan terakhir" },
+    undo: { en: "Undo publish", id: "Batalkan terbitan" },
     help: { en: "Help", id: "Bantuan" },
     helpClose: { en: "Hide help", id: "Tutup bantuan" },
     looking: { en: "Looking for the last publish...", id: "Mencari terbitan terakhir..." },
@@ -53,7 +53,8 @@
     undoFail: { en: "Could not undo: ", id: "Gagal membatalkan: " },
     moved: { en: "A file was changed after that publish, so undoing it could lose newer work. Nothing was changed.", id: "Ada berkas yang berubah setelah terbitan itu, jadi membatalkannya bisa menghilangkan pekerjaan yang lebih baru. Tidak ada yang diubah." },
     files: { en: "{n} file(s)", id: "{n} berkas" },
-    language: { en: "Bahasa Indonesia", id: "English" }
+    language: { en: "ID", id: "EN" },
+    languageAria: { en: "Switch to Bahasa Indonesia", id: "Switch to English" }
   };
 
   let root = null, active = TABS[0], data = null, base = "", staged = new Map(), busy = false, status = null;   // status: {kind: "busy"|"ok"|"err", text, sha?}
@@ -106,6 +107,8 @@
     const entries = [];
     const files = new Map(staged);
     if (JSON.stringify(data) !== base) files.set("data/site.json", b64(JSON.stringify(data, null, 2) + "\n"));
+    // Only these paths may be written: site.json and the two image folders (no "..", no other folder, no other type).
+    for (const path of files.keys()) if (path !== "data/site.json" && !/^assets\/work\/(?:thumb\/)?u\/[a-z0-9-]+\.jpg$/.test(path)) throw new Error("bad path: " + path);
     for (const [path, content] of files) {
       if (content === null) { entries.push({ path, mode: "100644", type: "blob", sha: null }); continue; }
       const blob = await post(`/repos/${REPO}/git/blobs`, { content, encoding: "base64" });
@@ -213,19 +216,21 @@
 
   // ---- the screen ----
   const CSS = `
-#adminRoot{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;z-index:99999;display:none;border-radius:0;box-shadow:none;animation:none;overflow:hidden;flex-direction:column;background:var(--paper);color:var(--ink);font-family:Fredoka,Poppins,sans-serif;--ink:#2B1342;--paper:#FFF8EC;--line:#e5d8bd;--accent:#FFB400;--card:#fff;--mute:#6b5a80}
+#adminRoot{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;z-index:99999;display:none;border-radius:0;box-shadow:none;animation:none;overflow:hidden;flex-direction:column;background:var(--paper);color:var(--ink);font-family:Fredoka,Poppins,sans-serif;--ink:#2B1342;--paper:#FFF8EC;--line:#e5d8bd;--accent:#FFB400;--card:#fff;--mute:#6b5a80;--text:#4b4655;--muted:#645F70;--bg:#FFF8EC;--side:#F4F4F4;--ink-soft:#4a2f66;--paper-line:#e5d8bd;color-scheme:light}
 #adminRoot *{box-sizing:border-box}
 #adminRoot[open]{display:flex;animation:none}#adminRoot::backdrop{background:transparent}
 #adminRoot button{font-family:inherit;cursor:pointer}
-.adm-top{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:2px solid var(--line);flex-wrap:wrap}
-.adm-top h1{margin:0;font-size:1.3rem;flex:1;min-width:80px}
+.adm-top{display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:2px solid var(--line);flex-wrap:nowrap}
+.adm-top .adm-btn{padding:8px 12px;flex:none}
+.adm-top h1{margin:0;font-size:1.2rem;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
 .adm-btn{min-height:44px;padding:8px 16px;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-weight:600;font-size:.95rem}
 .adm-btn.pri{background:var(--accent);border-color:#b77e00;box-shadow:0 3px 0 #b77e00}
 .adm-btn:disabled{opacity:.5;cursor:default}
-.adm-tabs{display:flex;gap:6px;padding:8px 16px;overflow-x:auto;border-bottom:2px solid var(--line)}
-.adm-tabs button{flex:none;min-height:44px;padding:8px 16px;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-weight:600}
+.adm-tabs{display:flex;gap:4px;padding:8px 12px;border-bottom:2px solid var(--line)}
+.adm-tabs button{min-height:44px;flex:1 1 auto;padding:6px 6px;font-size:.78rem;white-space:nowrap;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-weight:600}
 .adm-tabs button[aria-selected=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-.adm-tools{display:flex;gap:8px;padding:8px 16px;flex-wrap:wrap;border-bottom:2px solid var(--line)}
+.adm-tools{display:flex;gap:6px;padding:8px 12px;flex-wrap:nowrap;border-bottom:2px solid var(--line)}
+.adm-tools .adm-btn{padding:8px 10px;font-size:.9rem;white-space:nowrap;min-width:0}
 .adm-btn[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .adm-pop{max-height:55vh;overflow:auto;margin:8px 16px;padding:12px 14px;border-radius:14px;border:2px solid var(--line);background:var(--card);font-size:.95rem;line-height:1.45}
 .adm-pop[hidden]{display:none}.adm-pop ol{margin:6px 0;padding-left:20px}.adm-pop h2{margin:0 0 6px;font-size:1.05rem}.adm-pop .adm-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
@@ -238,7 +243,7 @@
 .adm-status[data-kind=ok]{color:#1f7a3d}.adm-status[data-kind=err]{color:#b3261e}.adm-status a{color:inherit;text-decoration:underline;display:inline-block;padding:12px 0}
 .adm-main{flex:1;overflow:auto;padding:16px;-webkit-overflow-scrolling:touch}
 .adm-main .adm-note{color:var(--mute)}
-@media (prefers-color-scheme:dark){.adm-status[data-kind=ok]{color:#7ddc9a}.adm-status[data-kind=err]{color:#ff9a92}#adminRoot{--ink:#f3ecff;--paper:#1b1028;--line:#3e2a5c;--card:#2f1f47;--mute:#b9a9d4}.adm-btn.pri{color:#2B1342}}
+/* The admin screen stays light paper in dark mode too, like the game and the PIN pad (the tab scripts draw on light cards). */
 `;
   function build() {
     if (!document.getElementById("admShellCss")) { const st = document.createElement("style"); st.id = "admShellCss"; st.textContent = CSS; document.head.appendChild(st); }
@@ -279,7 +284,7 @@
 
   function paintTabs() {
     const bar = root.querySelector(".adm-tabs");
-    bar.innerHTML = TABS.map(id => `<button type="button" role="tab" data-tab="${id}" aria-selected="${id === active}">${pick((tabs[id] && tabs[id].title) || TAB_TITLE[id])}</button>`).join("");
+    bar.innerHTML = TABS.map(id => `<button type="button" role="tab" data-tab="${id}" aria-selected="${id === active}">${pick(TAB_TITLE[id])}</button>`).join("");
   }
 
   function paintPanel() {
@@ -347,7 +352,7 @@
   function paintAll() {
     root.querySelector("[data-adm=title]").textContent = s("title");
     root.querySelector("[data-adm=close]").textContent = s("close");
-    root.querySelector("[data-adm=lang]").textContent = s("language");
+    const lb = root.querySelector("[data-adm=lang]"); lb.textContent = s("language"); lb.setAttribute("aria-label", s("languageAria"));
     paintTools(); paintPop(); paintTabs(); paintBar(); paintPanel();
     if (ribbon && ribbon.open) paintRibbon();
   }

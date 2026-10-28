@@ -127,7 +127,7 @@ renderCats();
 let shown=12;
 function setFilter(f,keep){
   if(!keep)shown=12;setFilter.cur=f;let n=0;
-  document.querySelectorAll("#filters button").forEach(b=>b.classList.toggle("active",b.dataset.filter===f));
+  document.querySelectorAll("#filters button").forEach(b=>{b.classList.toggle("active",b.dataset.filter===f);b.setAttribute("aria-pressed",b.dataset.filter===f)});
   document.querySelectorAll("#sideCats button").forEach(b=>b.classList.toggle("active",b.dataset.filter===f));
   grid.querySelectorAll(".tile").forEach(t=>{const m=f==="all"||t.dataset.cat===f;t.classList.toggle("hide",!m||n>=shown);t.style.animationDelay=((m?n:0)%12)*45+"ms";if(m)n++;t.classList.add("in")});
   document.getElementById("loadMore").hidden=n<=shown;
@@ -215,15 +215,24 @@ document.getElementById("themeToggle").onclick=()=>{const t=isDark()?"light":"da
 
 /* ===== Contact ===== */
 const toast=document.getElementById("toast");
-function say(m,icon){toast.textContent=m;if(icon)toast.insertAdjacentHTML("afterbegin",ico(icon));toast.classList.add("show");clearTimeout(say.t);say.t=setTimeout(()=>toast.classList.remove("show"),document.body.classList.contains("game-mode")?1500:2400)}   // D14: 1.5 s in the game
-const mail=document.getElementById("mailLink");mail.textContent=CONFIG.email;mail.href="mailto:"+CONFIG.email;
+// a11y: an open modal dialog makes the toast inert (not shown, not read), so the message is also spoken from a hidden status inside it
+function sayInDialog(m){const d=[...document.querySelectorAll("dialog[open]")].pop();if(!d)return;let s=d.querySelector(".say-sr");
+  if(!s){s=document.createElement("span");s.className="say-sr";s.setAttribute("role","status");s.style.cssText="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap";d.append(s)}
+  s.textContent="";requestAnimationFrame(()=>{s.textContent=m})}
+function say(m,icon){toast.textContent=m;sayInDialog(m);if(icon)toast.insertAdjacentHTML("afterbegin",ico(icon));toast.classList.add("show");clearTimeout(say.t);say.t=setTimeout(()=>toast.classList.remove("show"),document.body.classList.contains("game-mode")?1500:2400)}   // D14: 1.5 s in the game
+const mail=document.getElementById("mailLink");
 // B15 safe default: a placeholder email or a link to a bare home page (no profile path) stays hidden until CONFIG is filled in.
 const realLink=u=>{try{return new URL(u).pathname.replace(/\/+$/,"").length>0}catch{return false}};
-// The profile anchors show only when set, and again after data/site.json (admin) changes a link.
-const applyLinks=()=>document.querySelectorAll("[data-link]").forEach(a=>{const k=a.dataset.link,u=k==="website"?(CONFIG.links.website||CONFIG.website):CONFIG.links[k];
-  const ok=k==="website"?/^https?:\/\//.test(u||""):realLink(u);if(ok)a.href=u;a.hidden=!ok});
-applyLinks();addEventListener("sitedata",applyLinks);
-if(!CONFIG.email){document.querySelector(".mail").remove();document.querySelector('.socials a[href="#contact"]')?.remove()}
+// Applied at start-up and again when js/site-data.js merges data/site.json (admin changes to links and email). Hidden, not removed, so a later value can bring them back.
+function applyContact(){
+  mail.textContent=CONFIG.email;mail.href="mailto:"+CONFIG.email;
+  document.querySelectorAll("[data-link]").forEach(a=>{const k=a.dataset.link,u=k==="website"?(CONFIG.links.website||CONFIG.website):CONFIG.links[k];
+    const ok=k==="website"?/^https?:\/\//.test(u||""):realLink(u);if(ok)a.href=u;a.hidden=!ok});
+  const noMail=!CONFIG.email;
+  document.querySelector(".mail").style.display=noMail?"none":"";
+  const em=document.querySelector('.socials a[href="#contact"]');if(em)em.style.display=noMail?"none":"";
+}
+applyContact();addEventListener("sitedata",applyContact);
 const copyMail=document.getElementById("copyMail");if(copyMail)copyMail.onclick=async()=>{try{await navigator.clipboard.writeText(CONFIG.email);say(t("hire.copied"),"i-check")}catch{say(CONFIG.email)}};
 document.getElementById("form").addEventListener("submit",e=>{e.preventDefault();const f=e.target;let ok=true;
   f.querySelectorAll("[required]").forEach(i=>{const err=i.parentElement.querySelector(".err");

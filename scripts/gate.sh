@@ -56,6 +56,12 @@ if [ -z "$FAST" ]; then
   echo "$r" | grep -q ', 0 FAIL' && ok "e2e ($r)" || no e2e "${r:-no result}"; secs e2e
 fi
 
+# 8. Admin e2e (doors, PIN, read-only, mocked GitHub publish, merged data). Needs ADMIN_PIN in the environment for the right-PIN tests; without it those print SKIP.
+if [ -z "$FAST" ]; then
+  r=$(node scripts/e2e-admin.cjs . "$OUT/e2e-admin" 2>&1 | grep -E '[0-9]+ PASS')
+  echo "$r" | grep -q ', 0 FAIL' && ok "e2e-admin ($r)" || no e2e-admin "${r:-no result}"
+fi
+
 [ ${#fail[@]} -eq 0 ] && res="GATE PASS" || res="GATE FAIL: ${fail[*]}"
 echo "$res"
 echo "TIME total $(( $(date +%s)-T0 ))s ($(IFS=,; echo "${times[*]}" | sed 's/,/, /g'))"

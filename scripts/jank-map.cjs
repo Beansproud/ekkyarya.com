@@ -10,12 +10,12 @@ const openMap=p=>p.tap('.g-tabs button[data-tab="map"]');
 const CASES=[
  ['Map tab opens',async p=>{await sleep(500)},async p=>{await openMap(p)},2500],
  ['10 s idle on the map',async p=>{await openMap(p);await sleep(3000)},async()=>{},10000],
- ['pan, zoomed',async p=>{await openMap(p);await sleep(3000);await p.tap('[data-zoom="1"]');await sleep(800)},
+ ['pan, zoomed',async p=>{await openMap(p);await sleep(3000);const b=await p.locator('#gMapWrap').boundingBox();await p.touchscreen.tap(b.x+14,b.y+14);await sleep(120);await p.touchscreen.tap(b.x+14,b.y+14);await sleep(900)},
   async p=>{const b=await p.locator('#gMapWrap').boundingBox(),x=b.x+b.width/2,y=b.y+b.height/2;await p.mouse.move(x,y);await p.mouse.down();
    for(let i=1;i<=30;i++){await p.mouse.move(x-i*4,y+i*2);await sleep(16)}await p.mouse.up()},800]];
 const stats=f=>{let over=0,worst=0;for(let i=1;i<f.length;i++){const d=f[i]-f[i-1];if(d>32)over++;if(d>worst)worst=d}return {n:f.length-1,over,worst:Math.round(worst)}};
 srv.listen(0,async()=>{const url=`http://localhost:${srv.address().port}/`,b=await chromium.launch(),rows=[];
- for(const [name,setup,run,settle] of CASES){let best=null,err='';
+ for(const [name,setup,run,settle] of CASES){if(process.env.ONLY&&!name.includes(process.env.ONLY))continue;let best=null,err='';
   for(let k=0;k<RUNS;k++){const c=await b.newContext({...IPHONE});await c.addInitScript(()=>{try{localStorage.setItem('lang','en')}catch(e){}});const p=await c.newPage();
    try{await p.goto(url+'?game=1');await p.waitForSelector('#g-start.active',{state:'visible',timeout:8000});await sleep(8000);
     const cdp=await c.newCDPSession(p);await cdp.send('Emulation.setCPUThrottlingRate',{rate:RATE});
