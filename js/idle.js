@@ -66,8 +66,9 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",
 function show(){
   const n=total();if(!n||buddy)return;
   do{factIdx=Math.floor(Math.random()*n)}while(n>1&&factIdx===lastFact);lastFact=factIdx;
-  const onMap=!!document.querySelector("#g-map.active");buddy=document.createElement("div");buddy.className="idle-buddy";
-  buddy.innerHTML=`<img src="${SPRITES[Math.floor(Math.random()*SPRITES.length)]}" alt="" width="64" height="64">${onMap?"":`<p class="idle-bubble" role="status">${words()}</p>`}`;   // on the map the doodle comes alone: a bubble would cover a place or Work with Ekky
+  const onMap=!!document.querySelector("#g-map.active")||(innerWidth>innerHeight&&innerHeight<500);   // sideways phone there is no free paper for a bubble either: the doodle comes alone
+  buddy=document.createElement("div");buddy.className="idle-buddy";
+  buddy.innerHTML=`<img src="${SPRITES[Math.floor(Math.random()*SPRITES.length)]}" alt="" width="64" height="64">${onMap?"":`<p class="idle-bubble" role="status">${words()}</p>`}`;   // a bubble would cover a place, Work with Ekky or the heading
   const cells=reduce.matches?null:startCells();
   const tb=document.querySelector("#game .g-tabs"),rest=tb?Math.round(innerHeight-tb.getBoundingClientRect().top+3):0;   // read once, before anything moves: the free paper is the band between the tiles and the tab bar
   if(cells)playFx(cells);   // the start page: the pictures move, the doodle only appears (measured before it is added)
