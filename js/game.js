@@ -102,14 +102,6 @@ function groundHTML(V){const L=V.layers;
   return im("sky","v-skyimg")+im("stars","v-skyimg")+im("mid","v-isle")+im("north","v-isle")+im("south","v-isle")+
     (u?`<img class="v-ground v-isle v-ufo" data-isle="north" src="${u.src}" alt="" decoding="async" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}">`:"")}
 let mapTok=0;
-// b1: one slightly wobbly ink line (about 2 px) around the islands and everything cut out on them, so the village
-// reads as one hand-drawn page: the solid part of each island picture (alpha over 60%), grown 1.3 px, nudged by a
-// slow noise and filled with the ink colour, under the picture
-const INK=`<svg class="v-inkdefs" width="0" height="0" aria-hidden="true" focusable="false"><filter id="vInk" x="-3%" y="-3%" width="106%" height="106%" color-interpolation-filters="sRGB">
-<feComponentTransfer in="SourceAlpha" result="a"><feFuncA type="discrete" tableValues="0 0 0 1 1"/></feComponentTransfer>
-<feMorphology in="a" operator="dilate" radius="1.3" result="d"/><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="1" seed="7" result="n"/>
-<feDisplacementMap in="d" in2="n" scale="2.2" xChannelSelector="R" yChannelSelector="G" result="w"/><feFlood flood-color="#2B1342"/><feComposite in2="w" operator="in" result="ink"/>
-<feMerge><feMergeNode in="ink"/><feMergeNode in="SourceGraphic"/></feMerge></filter></svg>`;
 const LABEL_NUDGE={studio:[50,0]};   // a2: image px to move a label off its baked spot where it would touch a villager
 function renderMap(){
   const V=window.VILLAGE,W=$("gMapWrap");if(!V)return;
@@ -119,7 +111,7 @@ function renderMap(){
   // the village fills the screen width, edge to edge through the side gutters (art critic a1), unless the height left
   // between the header and the tab bar is shorter: then the width follows that height
   W.style.width=`min(100% + 32px, 520px, calc((100dvh - 196px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) * ${(V.w/V.h).toFixed(4)}))`;
-  W.innerHTML=INK+`<div class="v-zoom" id="gMapZoom">${groundHTML(V)}`+
+  W.innerHTML=`<div class="v-zoom" id="gMapZoom">${groundHTML(V)}`+
     V.frames.map((f,k)=>{const p=art[k];if(!p)return "";const deg=(Math.atan(f.slope)*180/Math.PI).toFixed(2);
       return `<img class="v-frame" src="${thumbOf(p)}" alt="" decoding="async" style="left:${pct(f.x,V.w)};top:${pct(f.y,V.h)};width:${pct(f.w,V.w)};height:${pct(f.h,V.h)};transform:skewY(${deg}deg)">`}).join("")+
     places.map(p=>{const b=V.places[p.id].box,n=LABEL_NUDGE[p.id]||[0,0],l=[V.places[p.id].label[0]+n[0],V.places[p.id].label[1]+n[1]];
