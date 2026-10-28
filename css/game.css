@@ -708,8 +708,7 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 /* Map face (owner, 10-28 "still not neat"): the whole head sits centered inside the mint circle, sized to fit it, with nothing
    breaking out over the ring. The amber ring (::after) marks the active tab. */
 .g-tabs .g-face{padding:0;overflow:visible}
-.g-face-img{position:absolute;inset:0;width:100%;height:100%;max-width:none;box-sizing:border-box;padding:6px 6px 5px;
-  object-fit:contain;object-position:50% 60%;pointer-events:none}
+.g-face-img{position:absolute;inset:0;width:100%;height:100%;max-width:none;box-sizing:border-box;padding:4px;object-fit:contain;pointer-events:none}
 
 /* Start screen: the game tiles' icons tilt on touch and hover, the language toggle lifts on hover and the chosen language pops
    once when it changes. Finite, never looping. */
