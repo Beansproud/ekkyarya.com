@@ -265,16 +265,15 @@ function mmRenderSet(box,p,steps){mmStopAll();
         `<img src="${escH(c.img)}" alt="${still?escH(nm):""}" width="160" height="160" loading="lazy" decoding="async"${c.anim&&!still?` data-anim="${escH(c.anim)}"`:""}><span aria-hidden="true">${escH(nm)}</span></${tag}></li>`}).join("")}</ul>`;
   box.appendChild(sec)}
 (window.FlowHooks=window.FlowHooks||[]).push(mmRenderSet);
-// a node with a set scrolls to its grid (focus on the first character); a node with an anim opens its still and plays once
-// (the tap asked for it); tap or hover replays. Both mark the node like the core does.
-lb.addEventListener("flowstep",e=>{const {step:st,node:b}=e.detail;if(!st.set&&!st.anim)return;
-  const box=document.getElementById("lbSet");if(st.set&&!box)return;e.preventDefault();
-  lb.querySelectorAll(".fl-node").forEach(n=>n.removeAttribute("aria-current"));b.setAttribute("aria-current","true");
-  if(st.set){box.scrollIntoView({block:"start",behavior:reduceFlow()?"auto":"smooth"});const f=box.querySelector("button.mm-ch");if(f)f.focus({preventScroll:true});return}
-  const art=document.getElementById("lbArt");mmStopAll();
-  art.innerHTML=`<img class="ok" src="${escH(st.full)}" alt="${escH(flowCap(st,e.detail.index))}" decoding="async">`;
-  const img=art.querySelector("img");if(!reduceFlow()){img.dataset.anim=st.anim;img.classList.add("mm-anim");mmPlay(img)}
-  art.scrollIntoView&&art.scrollIntoView({block:"nearest",behavior:reduceFlow()?"auto":"smooth"})});
+// a node with a set scrolls to its grid (focus on the first character; no new view, so no layer). A node with an anim
+// is left to the core, which opens its still as the step layer (fl-viewing: Back and Esc return to the piece); right
+// after, the still plays once (the tap asked for it), and a tap or hover replays.
+lb.addEventListener("flowstep",e=>{const {step:st,node:b}=e.detail,box=document.getElementById("lbSet");
+  if(st.set&&box){e.preventDefault();
+    lb.querySelectorAll(".fl-node").forEach(n=>n.removeAttribute("aria-current"));b.setAttribute("aria-current","true");
+    box.scrollIntoView({block:"start",behavior:reduceFlow()?"auto":"smooth"});const f=box.querySelector("button.mm-ch");if(f)f.focus({preventScroll:true});return}
+  if(st.anim)queueMicrotask(()=>{const img=document.querySelector("#lbArt img");if(!img||img.getAttribute("src")!==st.full||reduceFlow())return;
+    img.dataset.anim=st.anim;img.classList.add("mm-anim");mmPlay(img)})});
 lb.addEventListener("click",e=>{const b=e.target.closest(".mm-ch,.mm-anim");if(b)mmPlay(b.matches("img")?b:b.querySelector("img"))});
 lb.addEventListener("pointerover",e=>{if(e.pointerType!=="mouse")return;const b=e.target.closest(".mm-ch,.mm-anim");if(b&&!b.contains(e.relatedTarget))mmPlay(b.matches("img")?b:b.querySelector("img"))});
 lb.addEventListener("close",mmStopAll);
