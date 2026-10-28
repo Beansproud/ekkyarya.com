@@ -76,6 +76,17 @@ async function runConfig(browser,url,scheme,lang){
   const tab=async(p,t)=>{await p.tap(`.g-tabs button[data-tab="${t}"]`);await isActive(p,'g-'+t);await sleep(300)};
 
   // --- navigation ---
+  // owner: "if we go from mobile to web, make sure its reversible from web to mobile too": Web, then Play brings the game back,
+  // the choice survives a reload both ways, and Play is never covered (a sideways iPad keeps the web sidebar open)
+  await T('nav: mobile to web and back',async p=>{const game=()=>p.evaluate(()=>document.body.classList.contains('game-mode'));
+    for(const [w,h] of [[390,844],[1180,820]]){await p.setViewportSize({width:w,height:h});await p.goto(url);await must(p,'#g-start.active','game mode did not open',8000);
+      await p.tap('#game .g-web-pin');await sleep(500);if(await game())throw new Error(w+': Web did not open the web site');
+      await p.reload();await sleep(800);if(await game())throw new Error(w+': web choice lost on reload');
+      await must(p,'#gFab',w+': no Play button on the web site');
+      const top=await p.evaluate(()=>{const r=document.getElementById('gFab').getBoundingClientRect(),e=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return !!e&&!!e.closest('#gFab')});
+      if(!top)throw new Error(w+': Play is covered');
+      await p.tap('#gFab');await must(p,'#g-start.active',w+': Play did not bring the game back');
+      await p.reload();await must(p,'#g-start.active',w+': game choice lost on reload',8000)}});
   await T('nav: tabs + Home logo',async p=>{await boot(p);
     for(const t of ['art','map','mine']){await tab(p,t);if(await active(p)!=='g-'+t)throw new Error('tab '+t+' did not open');
       if(!await vis(p,homeEl,3000))throw new Error('no Home logo visible on '+t+' screen');
