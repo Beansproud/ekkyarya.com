@@ -1006,7 +1006,7 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
   #game #g-mine::after{height:env(safe-area-inset-bottom)}
   #game .g-sheet{left:var(--rail);top:calc(env(safe-area-inset-top) + 64px)}
   #game:has(.c-over.open) .g-sheet{left:0;top:0}
-  #game .g-sheet-in{max-width:640px;margin:0 auto;max-height:100%;padding-bottom:calc(env(safe-area-inset-bottom) + 24px)}
+  #game .g-sheet-in{max-width:640px;margin:0 auto;max-height:100%;bottom:0;padding-bottom:calc(env(safe-area-inset-bottom) + 24px)}   /* the tab bar is a side rail here: no 108 px lift above it */
 
   /* start: head, one row of six polaroids, then the two games as a compact row */
   #game #g-start{padding:calc(env(safe-area-inset-top) + 10px) calc(env(safe-area-inset-right) + 16px) calc(env(safe-area-inset-bottom) + 12px) var(--rail);gap:8px}
