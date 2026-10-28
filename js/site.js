@@ -127,7 +127,7 @@ renderCats();
 let shown=12;
 function setFilter(f,keep){
   if(!keep)shown=12;setFilter.cur=f;let n=0;
-  document.querySelectorAll("#filters button").forEach(b=>b.classList.toggle("active",b.dataset.filter===f));
+  document.querySelectorAll("#filters button").forEach(b=>{b.classList.toggle("active",b.dataset.filter===f);b.setAttribute("aria-pressed",b.dataset.filter===f)});
   document.querySelectorAll("#sideCats button").forEach(b=>b.classList.toggle("active",b.dataset.filter===f));
   grid.querySelectorAll(".tile").forEach(t=>{const m=f==="all"||t.dataset.cat===f;t.classList.toggle("hide",!m||n>=shown);t.style.animationDelay=((m?n:0)%12)*45+"ms";if(m)n++;t.classList.add("in")});
   document.getElementById("loadMore").hidden=n<=shown;
@@ -215,7 +215,11 @@ document.getElementById("themeToggle").onclick=()=>{const t=isDark()?"light":"da
 
 /* ===== Contact ===== */
 const toast=document.getElementById("toast");
-function say(m,icon){toast.textContent=m;if(icon)toast.insertAdjacentHTML("afterbegin",ico(icon));toast.classList.add("show");clearTimeout(say.t);say.t=setTimeout(()=>toast.classList.remove("show"),document.body.classList.contains("game-mode")?1500:2400)}   // D14: 1.5 s in the game
+// a11y: an open modal dialog makes the toast inert (not shown, not read), so the message is also spoken from a hidden status inside it
+function sayInDialog(m){const d=[...document.querySelectorAll("dialog[open]")].pop();if(!d)return;let s=d.querySelector(".say-sr");
+  if(!s){s=document.createElement("span");s.className="say-sr";s.setAttribute("role","status");s.style.cssText="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap";d.append(s)}
+  s.textContent="";requestAnimationFrame(()=>{s.textContent=m})}
+function say(m,icon){toast.textContent=m;sayInDialog(m);if(icon)toast.insertAdjacentHTML("afterbegin",ico(icon));toast.classList.add("show");clearTimeout(say.t);say.t=setTimeout(()=>toast.classList.remove("show"),document.body.classList.contains("game-mode")?1500:2400)}   // D14: 1.5 s in the game
 const mail=document.getElementById("mailLink");mail.textContent=CONFIG.email;mail.href="mailto:"+CONFIG.email;
 // B15 safe default: a placeholder email or a link to a bare home page (no profile path) stays hidden until CONFIG is filled in.
 const realLink=u=>{try{return new URL(u).pathname.replace(/\/+$/,"").length>0}catch{return false}};

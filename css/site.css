@@ -25,6 +25,7 @@ a{color:inherit;text-decoration:none}
 button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 img,svg{display:block}
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:6px}
+:root[data-theme="light"] :focus-visible{outline-color:var(--ink)}   /* a11y: #FFB400 on paper is 1.8:1; the ring needs 3:1, so light mode draws it in ink */
 .skip{position:absolute;left:-999px;top:8px;background:var(--accent);color:var(--accent-ink);padding:8px 14px;border-radius:8px;z-index:100}
 .skip:focus{left:8px}
 
