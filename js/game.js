@@ -95,7 +95,7 @@ const PLACES=[
   {id:"hire",        key:"town.hire",    icon:"assets/sprites/gate.png",      open:p=>openHire("",p), hire:true},
 ];
 const pct=(v,of)=>(v/of*100).toFixed(3)+"%";
-let mapTok=0;
+let mapTok=0,mapRO=null;
 function renderMap(){
   const V=window.VILLAGE,W=$("gMapWrap");if(!V)return;
   const places=PLACES.filter(p=>!p.feature||feature(p.feature));
@@ -113,10 +113,13 @@ function renderMap(){
   const mt=++mapTok;(window.requestIdleCallback||(f=>setTimeout(f,30)))(()=>{const z=$("gMapZoom");if(mt===mapTok&&z)z.insertAdjacentHTML("beforeend",villageLife(V)+"</div>")},{timeout:500});
   W.insertAdjacentHTML("beforeend",`<div class="v-zoomctl"><button class="g-round" data-zoom="1" aria-label="${esc(tt("town.zoomIn","Zoom in"))}">${ico("i-plus")}</button><button class="g-round" data-zoom="-1" aria-label="${esc(tt("town.zoomOut","Zoom out"))}"><b aria-hidden="true">&minus;</b></button></div>`);
   Z.base=null;Z.s=1;zoomTo(1,0,0);
+  if(!mapRO&&window.ResizeObserver){mapRO=new ResizeObserver(([e])=>e.target.style.setProperty("--vw",e.contentRect.width+"px"));mapRO.observe($("gMapZoom"))}   // the island's width in px, so nothing needs a container query
+  else if(mapRO){mapRO.disconnect();mapRO.observe($("gMapZoom"))}
+  const gr=W.querySelector(".v-ground");if(gr&&gr.decode)gr.decode().catch(()=>{});   // decoded now, in the idle slice, not on the first tap
   $("gMapList").innerHTML=places.map(p=>`<li><button class="v-row${p.hire?" hire":""}" data-place="${p.id}"><img src="${p.icon}" alt="" loading="lazy">${esc(t(p.key))}</button></li>`).join("");
 }
 // a revisit hangs four new pieces on the gallery walls without rebuilding the village
-function refreshWall(){const art=featuredSix(4);$("gMapWrap").querySelectorAll(".v-frame").forEach((im,k)=>{const p=art[k];if(p)im.src=thumbOf(p)})}
+function refreshWall(){const art=featuredSix(4);$("gMapWrap").querySelectorAll(".v-frame").forEach((im,k)=>{const p=art[k];if(p&&im.getAttribute("src")!==thumbOf(p))im.src=thumbOf(p)})}   // same picture: no reload on a tab switch
 /* ---- Village life (B42 V3), inside the ambience budget (decision 10, docs/motion.md): walkers, two clouds, the
    gate's lantern, the noodle bath's steam and the water shimmer. All CSS animations on transform and opacity, so the
    off-screen pause and reduced motion (villagers stand still) apply; day or night is set once, on load. ---- */
@@ -137,7 +140,7 @@ function villageLife(V){
   (V.walkers||[]).filter(w=>(perPiece[w.piece]=(perPiece[w.piece]||0)+1)<=2).slice(0,8).forEach(w=>{const p=card(w.piece);if(!p)return;
     const [a,b]=w.route,face=w.face===0?1:Math.sign(b[0]-a[0]||1)*w.face;
     html+=`<div class="v-walk" style="transform:translate(${pct(a[0],V.w)},${pct(a[1],V.h)})">`+
-      btn("v-walker",p,w.src,"",`<img src="${w.src}" alt="" decoding="async" style="height:${(w.h/V.w*100).toFixed(2)}cqw;transform:scaleX(${face})">`)+`</div>`});
+      btn("v-walker",p,w.src,"",`<img src="${w.src}" alt="" decoding="async" style="height:calc(var(--vw,0px)*${(w.h/V.w).toFixed(4)});transform:scaleX(${face})">`)+`</div>`});
   return html}
 
 /* ---- Zoom (G1): pinch or drag with a finger, or the +/- buttons; 1x to 2x. A place is still one tap: a touch
@@ -203,7 +206,8 @@ const sheet=$("gSheet");let sheetFrom=null;
 // (another language, another place) is simply drawn again, as before.
 let sheetHtml="",warming=false;
 function openSheet(html){let fresh=false;
-  if(html!==sheetHtml){$("gSheetBody").innerHTML=html;sheetHtml=html;fresh=true}
+  if(html!==sheetHtml){$("gSheetBody").innerHTML=html;sheetHtml=html;fresh=true;
+    const h=$("gSheetTitle");if(h)sheet.firstElementChild.style.setProperty("--xtop",Math.round(h.offsetTop+(h.offsetHeight-44)/2)+"px")}   // the close button sits on the title's centre line, even for a two-line title
   if(warming){if(fresh)sheet.firstElementChild.scrollTop=0;return}
   sheetFrom=document.activeElement;sheet.classList.add("open");if(fresh)sheet.firstElementChild.scrollTop=0;
   setTimeout(()=>$("gSheetX").focus({preventScroll:true}),50)}
@@ -237,12 +241,11 @@ $("gSheetBody").addEventListener("click",e=>{const f=e.target.closest(".g-feat")
 /* ---- Final Quest: the Hire sheet (B07, B17). Opens over the current screen; closing returns there. ---- */
 function openHire(prefill,pl){const l=LEVELS[4];
   // Quick actions lead with the business email; every other channel shows only when CONFIG has it (B15).
-  const links=[["instagram","hire.instagram"],["linkedin","hire.linkedin"],["behance","hire.behance"]].filter(([k])=>CONFIG.links[k]);
+  const links=[["instagram","hire.instagram"]].filter(([k])=>CONFIG.links[k]);   // owner: the sheet shows Email, Copy email and Instagram only; the other links live on Mine
   const quick=`<div class="g-quick">
       ${CONFIG.email?`<a class="g-btn" href="mailto:${esc(CONFIG.email)}">${ico("i-mail")} ${esc(t("hire.email"))}</a>`:`<a class="g-btn" href="${esc(hireTarget().href)}" target="_blank" rel="noopener">${ico("i-send")} ${esc(t("hire.chip"))}</a>`}
-      ${CONFIG.whatsapp?`<a class="g-btn alt" href="https://wa.me/${esc(String(CONFIG.whatsapp).replace(/\D/g,""))}" target="_blank" rel="noopener">${ico("i-chat")} ${esc(t("hire.whatsapp"))}</a>`:""}
       ${CONFIG.email?`<button class="g-btn alt" type="button" id="gCopyMail">${ico("i-copy")} ${esc(t("hire.copy"))}</button>`:""}</div>
-    ${links.length||CONFIG.website?`<p class="g-links">${links.map(([k,c])=>`<a href="${esc(CONFIG.links[k])}" target="_blank" rel="noopener">${esc(t(c))}</a>`).join("")}${CONFIG.website?`<a href="${esc(CONFIG.website)}" target="_blank" rel="noopener">${esc(t("hire.website"))}</a>`:""}</p>`:""}`;
+    ${links.length?`<p class="g-links">${links.map(([k,c])=>`<a href="${esc(CONFIG.links[k])}" target="_blank" rel="noopener">${esc(t(c))}</a>`).join("")}</p>`:""}`;
   const types=t("hire.form.types").split("|");
   openSheet(`<h2 id="gSheetTitle">${uiImg(l.icon,"h-ico")}${esc(t("hire.title"))}</h2>
     <p>${esc(t("hire.body"))}</p>${quick}<p class="g-small">${esc(t("hire.price"))}</p>
@@ -285,6 +288,8 @@ $("gCards").addEventListener("click",e=>{const c=e.target.closest(".g-card");if(
 function renderMine(){
   const list=Object.entries(st.colorings||{}).sort((a,b)=>(b[1].at||0)-(a[1].at||0));
   $("gMineList").innerHTML=list.length?list.map(([id,c])=>`<button class="g-mine-item" data-page="${esc(id)}" aria-label="${esc(c.title||id)}" style="--tilt:${typeof tiltOf==="function"?tiltOf({slug:id}):"-1deg"}">${c.thumb?`<img src="${c.thumb}" alt="">`:""}<b>${esc(c.title||id)}</b></button>`).join(""):`<p class="g-small">${esc(t("mine.empty"))}</p>`;
+  if($("gMineLinks")){const ls=[["linkedin","hire.linkedin"],["behance","hire.behance"]].filter(([k])=>CONFIG.links[k]).map(([k,c])=>[CONFIG.links[k],t(c)]);if(CONFIG.website)ls.push([CONFIG.website,t("hire.website")]);
+    $("gMineLinks").innerHTML=ls.map(([h,n])=>`<a class="g-link" href="${esc(h)}" target="_blank" rel="noopener">${esc(n)}</a>`).join("");$("gMineLinks").parentElement.hidden=!ls.length}
   if($("gBest"))$("gBest").innerHTML=st.best?`${ico("s-star")} ${esc(t("mine.best",{n:st.best}))}`:esc(t("mine.best.none"));
   syncToggles();
 }
@@ -430,7 +435,9 @@ function warmWhenIdle(){if(!document.body.classList.contains("game-mode")||sheet
 function prewarm(){if(!document.body.classList.contains("game-mode"))return;
   const idle=window.requestIdleCallback||(f=>setTimeout(f,50));
   const when=job=>{if(Date.now()-lastTouch<1500)return setTimeout(()=>when(job),1500);idle(()=>Date.now()-lastTouch<1500?when(job):job(),{timeout:4000})};
-  when(()=>{if(!artDone){artDone=true;renderArt()}setTimeout(()=>when(()=>{if(!mapBuilt&&window.VILLAGE){mapBuilt=true;renderMap()}}),1200)})}
+  when(()=>{if(!artDone){artDone=true;renderArt()}
+    $("gCards").querySelectorAll("img[loading=lazy]").forEach(im=>{im.loading="eager";im.decode&&im.decode().catch(()=>{})});   // the first Art visit shows decoded thumbnails, not a fetch
+    setTimeout(()=>when(()=>{if(!mapBuilt&&window.VILLAGE){mapBuilt=true;renderMap()}}),1200)})}
 addEventListener("load",()=>{setTimeout(prewarm,2000);warmT=setTimeout(warmWhenIdle,2500)});
 function renderAll(){if(deep)setTimeout(renderStart,2500);else renderStart();renderMine();setTimeout(moveInd,60)}
 // Shared with js/color.js, js/share.js and js/links.js.

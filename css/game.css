@@ -370,7 +370,7 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 /* ===== Ekky's Village (B42 V1): the map ===== */
 #g-map .g-head{margin-bottom:0}
 #g-map .g-title{font-size:1.5rem}
-.v-map{position:relative;width:100%;max-width:420px;margin:0 auto;container-type:inline-size}
+.v-map{position:relative;width:100%;max-width:420px;margin:0 auto}
 .v-ground{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;user-select:none}
 .v-frame{position:absolute;object-fit:cover;transform-origin:0 0;pointer-events:none;box-shadow:0 0 0 1px #2B1342}
 .v-place{position:absolute;background:none;border-radius:16px;min-width:44px;min-height:44px}
@@ -468,7 +468,7 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 .v-map .v-folk{z-index:2}    /* the still villagers are small and sit on top of the place boxes */
 .v-walker{position:absolute;left:0;top:0;min-width:44px;min-height:44px;transform:translate(-50%,-100%);padding:0;background:none;border:0;
   display:flex;align-items:flex-end;justify-content:center;pointer-events:auto;cursor:pointer}
-.v-walker img{display:block;width:auto;pointer-events:none}   /* height in cqw: the walker's own size, the button keeps 44 px to tap */
+.v-walker img{display:block;width:auto;pointer-events:none}   /* height from --vw (the layer's width in px, set in renderMap): the walker's own size, the button keeps 44 px to tap */
 .v-walker:focus-visible,.v-folk:focus-visible{outline:3px solid #FFB400;outline-offset:2px;border-radius:12px}
 .v-folk{position:absolute;min-width:44px;min-height:44px;background:none;border:0;padding:0;cursor:pointer}
 .v-map.night .v-ground{filter:brightness(.7) saturate(.85)}
@@ -521,7 +521,7 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 /* G1: the village zooms (1x to 2x) with a finger or the +/- buttons; nothing animates, the view follows the finger */
 .v-map{overflow:hidden;touch-action:pan-y;border-radius:18px}
 .v-map.zoomed{touch-action:none}
-.v-zoom{position:absolute;inset:0;transform-origin:0 0;container-type:inline-size}
+.v-zoom{position:absolute;inset:0;transform-origin:0 0}
 .zoomed .v-zoom{will-change:transform}   /* the zoomed island is one compositor layer: pan and pinch only move it */
 #gMapWrap.zoomed{touch-action:none}   /* zoomed, the finger pans the map (in JS); at 1x a vertical drag still scrolls the page */
 .v-walk{transition:none}
@@ -535,7 +535,7 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
    The start screen is a page of Ekky's sketchbook: off-white paper with a faint grain (tokens from css/site.css),
    the six drawings taped on at a fixed 1 to 2 degree tilt, flat paper tiles, ink text. Nothing moves.
    The other screens keep the night sky for now; the HUD follows whichever page it sits on. */
-body.game-mode #game.at-start{background:var(--paper,#FBF7EE) var(--grain);color:#2B1342}
+body.game-mode #game.at-start{background:var(--paper,#FBF7EE) var(--grain)}
 #game.at-start .g-player b{color:#2B1342}
 #game.at-start .g-sky,#game.at-start .g-planet-bg{display:none}
 #game.at-start .g-hud{background:none}
@@ -618,7 +618,7 @@ body.game-mode #game.at-start{background:var(--paper,#FBF7EE) var(--grain);color
 /* ===== Developer A: S1 paper for the Art and Mine tabs =====
    Same sketchbook page as the start screen (Developer B's tokens): off-white paper, ink text, the drawings taped on
    at a fixed per-piece tilt (tiltOf), flat paper tiles, no rarity borders, badge circles or foil. Nothing moves. */
-body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color:#2B1342}
+body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain)}
 #game.at-paper .g-sky,#game.at-paper .g-planet-bg{display:none}
 #game.at-paper .g-title{color:#2B1342;text-shadow:none}
 #game.at-paper .g-sub,#game.at-paper .g-small{color:#645F70}
@@ -861,3 +861,60 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 @keyframes cPop{from{opacity:0;transform:translateY(14px) scale(.92)}}
 .c-pages .c-page{animation:cPop .28s var(--ease-move,ease-out) backwards;animation-delay:calc(var(--i,0) * 30ms)}
 @media (prefers-reduced-motion:reduce){.c-pages .c-page{animation:none}}
+
+/* Shell squad */
+.g-screen:not(.active){content-visibility:hidden;contain-intrinsic-size:auto 100vh}   /* hidden screens cost no style, layout or paint */
+.g-card .art,#g-mine .art{animation:none!important}   /* the shimmer moved background-position: a main-thread repaint of every card on each frame of a tab switch; a still paper tile instead */
+.g-screen:not(.active){transition:none}   /* only the incoming screen animates: one layer to composite, not two */
+.g-mine-links{display:flex;flex-wrap:wrap;gap:4px 18px}
+.g-mine-links a{display:inline-flex;align-items:center;min-height:44px}
+.g-mine-links a{color:#2B1342}
+/* sheet header: the title row and the close button share one centre line and one 20 px inset */
+.g-sheet h2{margin:0 0 10px;min-height:44px;padding-right:64px}
+.g-sheet .g-x{top:var(--xtop,31px);right:20px}
+
+/* World squad */
+#g-map{contain:layout paint}   /* the village screen is its own box: its layout and paint never reach the other screens */
+/* the galaxy sky and planet stay laid out and are faded, not display:none, so leaving the paper screens costs no style or layout work */
+.g-sky,.g-planet-bg{will-change:opacity;transition:opacity var(--dur-fast) var(--ease-in)}
+#game.at-start .g-sky,#game.at-start .g-planet-bg,#game.at-paper .g-sky,#game.at-paper .g-planet-bg{display:block;opacity:0}
+/* ink on paper is set on the screens and on #game's other children, not on #game: a colour that changes on #game is inherited, so every tab switch restyled all 800+ elements (about 30 ms at 4x) */
+#g-start,#g-art,#g-mine,#game.at-start>:not(.g-screen),#game.at-paper>:not(.g-screen){color:#2B1342}
+
+/* Admin art */
+.aa{background:#FFFDF8;color:#2B1342;border-radius:2px;padding:14px;font-family:Fredoka,system-ui,sans-serif;max-width:640px;margin:0 auto}
+.aa h3{margin:18px 0 6px;font-size:18px}
+.aa-note{margin:0 0 10px;font-size:15px;line-height:1.4}
+.aa-warn{background:#FFF1C9;padding:8px 10px;border-radius:2px}
+.aa-ok{color:#1F6B3A}
+.aa-err{background:#FDE8E4;color:#7A1F12;padding:8px 12px;border-radius:2px;margin:10px 0;font-size:15px}
+.aa-err ul{margin:4px 0 0;padding-left:18px}
+.aa-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.aa-row{display:flex;align-items:center;gap:8px;background:#FBF8F1;border:1px solid #E4DCCB;border-radius:2px;padding:6px;flex-wrap:wrap}
+.aa-row.aa-off{opacity:.55}
+.aa-row.aa-drag{box-shadow:0 4px 12px rgba(43,19,66,.25);background:#FFFDF8}
+.aa-th{width:56px;height:56px;object-fit:cover;border-radius:2px;background:#E4DCCB;flex:none}
+.aa-big{width:120px;height:120px}
+.aa-meta{flex:1 1 140px;min-width:0;display:grid;gap:2px}
+.aa-meta b{font-weight:600;overflow-wrap:anywhere}
+.aa-meta small,.aa-f small{font-size:13px;opacity:.75}
+.aa-act{display:flex;flex-wrap:wrap;gap:4px;margin-left:auto}
+.aa-btn{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:0 12px;background:#FFFDF8;color:#2B1342;border:1.5px solid #2B1342;border-radius:22px;font:inherit;font-size:15px;cursor:pointer}
+.aa-btn:disabled{opacity:.35;cursor:default}
+.aa-btn:focus-visible{outline:3px solid #FFB400;outline-offset:2px}
+.aa-btn:active:not(:disabled){scale:.95}
+.aa-primary{background:#2B1342;color:#FFFDF8}
+.aa-grip{touch-action:none;cursor:grab;padding:0}
+.aa-bar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.aa-form{border:1px solid #E4DCCB;background:#FBF8F1;padding:12px;border-radius:2px;margin:10px 0}
+.aa-form h3{margin-top:0}
+.aa-f{display:grid;gap:4px;margin:0 0 12px;border:0;padding:0}
+.aa-f>span,.aa-roles legend{font-size:14px;font-weight:600}
+.aa-f input[type=text],.aa-f textarea,.aa-f select{width:100%;box-sizing:border-box;min-height:44px;padding:8px 10px;font:inherit;font-size:16px;color:#2B1342;background:#FFFDF8;border:1.5px solid #E4DCCB;border-radius:2px}
+.aa-pick{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.aa-file{position:relative;overflow:hidden}
+.aa-file input{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0}
+.aa-roles{border:0;padding:0;margin:0 0 12px;display:grid;gap:2px}
+.aa-chk{display:flex;align-items:center;gap:10px;min-height:44px;font-size:15px}
+.aa-chk input{width:24px;height:24px;flex:none;accent-color:#2B1342}
+.aa-dim{opacity:.55}
