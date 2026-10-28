@@ -578,3 +578,8 @@ body.game-mode .cursor,body.game-mode .cursor-dot{display:none}
 .fl-col .fl-node img{width:96px;flex:none}
 .fl-col .fl-cap{text-align:left;flex:1}
 .fl-col .fl-arrow{rotate:0deg;margin:2px 0}
+.fl-col.lb-flow{margin:14px 0 4px}
+/* a narrow column (a phone on its side puts the text beside the art): the picture above its caption */
+.fl-col.lb-flow{container-type:inline-size}
+.fl-cap{min-width:0;overflow-wrap:anywhere}
+@container (max-width:320px){.fl-col .fl-node{flex-direction:column;align-items:stretch;text-align:center}.fl-col .fl-node img{width:100%}.fl-col .fl-cap{text-align:center}}

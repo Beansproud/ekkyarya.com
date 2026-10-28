@@ -332,6 +332,20 @@ async function runConfig(browser,url,scheme,lang){
     await p.$eval('#lbFlow .fl-node[data-step="2"]',e=>e.scrollIntoView({block:'center'}));await sleep(300);await p.tap('#lbFlow .fl-node[data-step="2"]');await sleep(500);
     const src=await p.$eval('#lbArt img',e=>e.getAttribute('src'));if(!/nft-9\.jpg$/.test(src))throw new Error('step 3 did not open its picture: '+src);
     await audit(p,'lightbox flow')});
+  await T('flow: reversible path (step picture, Back, Esc, close)',async p=>{await boot(p);await openPiece(p,'morumelons');
+    const st=()=>p.evaluate(()=>{const lb=document.getElementById('lightbox'),g=document.querySelector('.g-screen.active');return {open:lb.open,step:lb.classList.contains('fl-viewing'),
+      src:(document.querySelector('#lbArt img')||{}).getAttribute?.('src')||'',tab:g&&g.id,top:g?Math.round(g.scrollTop):0,l:history.state&&history.state.l}});
+    const s0=await st();if(!s0.open||s0.step||!/morumelons\.jpg$/.test(s0.src))throw new Error('start '+JSON.stringify(s0));
+    const node=async k=>{await p.$eval(`#lbFlow .fl-node[data-step="${k}"]`,e=>e.scrollIntoView({block:'center'}));await sleep(200);await p.tap(`#lbFlow .fl-node[data-step="${k}"]`);await sleep(400)};
+    await node(1);let s=await st();if(!s.step||!/nft-3\.jpg$/.test(s.src)||s.l!=='flstep')throw new Error('step view '+JSON.stringify(s));
+    await p.evaluate(()=>history.back());await sleep(600);s=await st();
+    if(!s.open||s.step||!/morumelons\.jpg$/.test(s.src)||s.l!=='lb')throw new Error('Back from a step did not return to the flow '+JSON.stringify(s));
+    await node(2);await p.keyboard.press('Escape');await sleep(500);s=await st();if(!s.open||s.step)throw new Error('Esc from a step did not return to the flow '+JSON.stringify(s));
+    await sleep(300);if((await st()).l!=='lb')throw new Error('Esc left a stale history entry');
+    await node(1);await p.tap('#lbClose');await sleep(700);s=await st();
+    if(s.open||s.step||s.tab!==s0.tab||Math.abs(s.top-s0.top)>2)throw new Error('close from a step did not return to where it opened '+JSON.stringify({s0,s}));
+    if(s.l)throw new Error('a history entry was left behind: '+s.l);
+    await p.evaluate(()=>history.back());await sleep(600);if((await st()).open)throw new Error('Back after closing reopened the lightbox')});
   await T('flow: piece without steps is unchanged (phone)',async p=>{await boot(p);await openPiece(p,'giraffe');
     const f=await p.evaluate(()=>({hidden:document.getElementById('lbFlow').hidden,nodes:document.querySelectorAll('#lbFlow .fl-node').length,cls:document.getElementById('lightbox').classList.contains('has-flow')}));
     if(!f.hidden||f.nodes||f.cls)throw new Error('flow shown on a piece without steps '+JSON.stringify(f))});
@@ -343,6 +357,9 @@ async function runConfig(browser,url,scheme,lang){
       if(f.n!==3||!f.row||f.cur!==1)throw new Error('desktop flow '+JSON.stringify(f));
       await d.click('#lbFlow .fl-node[data-step="0"]');await sleep(300);
       if(!/morumelons\.jpg$/.test(await d.$eval('#lbArt img',e=>e.getAttribute('src'))))throw new Error('desktop node did not open its picture');
+      await d.keyboard.press('Escape');await sleep(300);
+      const r=await d.evaluate(()=>({open:document.getElementById('lightbox').open,step:document.getElementById('lightbox').classList.contains('fl-viewing'),src:document.querySelector('#lbArt img').getAttribute('src')}));
+      if(!r.open||r.step||!/nft-3\.jpg$/.test(r.src))throw new Error('desktop Esc from a step did not return to the flow '+JSON.stringify(r));
       await d.evaluate(()=>show(PROJECTS.findIndex(q=>q.slug==='rpg')));await sleep(300);
       if(!await d.$eval('#lbFlow',e=>e.hidden))throw new Error('desktop flow shown on a piece without steps');
       if(errs.length)throw new Error('page errors: '+errs.join(' | '))}finally{await c.close()}});
