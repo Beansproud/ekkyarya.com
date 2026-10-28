@@ -929,6 +929,9 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 .as-primary{background:#FFB400;color:#2B1342}
 @media (min-width:700px){.as-cols{grid-template-columns:1fr 1fr}}
 
+/* the sky, planet, tab bar and sheet keep that ink on every screen (their visible colours are all set on their insides), so the
+   at-paper switch changes nothing they pass down: Map <> Art or Mine no longer restyles their 120+ elements */
+#game>.g-sky,#game>.g-planet-bg,#game>.g-tabs,#game>.g-sheet{color:#2B1342}
 .g-screen{contain:strict}
 
 /* Admin art */
