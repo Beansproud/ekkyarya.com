@@ -71,15 +71,17 @@ async function runConfig(browser,url,scheme,lang){
   const active=p=>p.evaluate(()=>{const s=document.querySelector('.g-screen.active');return s&&s.id});
   const overlayOpen=p=>p.evaluate(()=>[...document.querySelectorAll('#gColor,#gArcade,#gSheet,#lightbox')].some(e=>e.classList.contains('open')||e.open||(e.id==='gColor'&&getComputedStyle(e).display!=='none'&&e.offsetParent!==null)));
   const homeEl='[data-home],.g-home,#gHome,.g-top-logo,.g-logo-btn';
-  const tab=async(p,t)=>{await p.tap(`.g-tabs button[data-tab="${t}"]`);await sleep(600)};
+  // wait for the screen to be active (state), not a fixed sleep: under load a tab switch can take longer than 600 ms
+  const isActive=(p,id,t=5000)=>p.waitForFunction(id=>{const s=document.querySelector('.g-screen.active');return !!s&&s.id===id},id,{timeout:t,polling:50}).then(()=>true,()=>false);
+  const tab=async(p,t)=>{await p.tap(`.g-tabs button[data-tab="${t}"]`);await isActive(p,'g-'+t);await sleep(300)};
 
   // --- navigation ---
   await T('nav: tabs + Home logo',async p=>{await boot(p);
     for(const t of ['art','map','mine']){await tab(p,t);if(await active(p)!=='g-'+t)throw new Error('tab '+t+' did not open');
-      if(!await vis(p,homeEl,500))throw new Error('no Home logo visible on '+t+' screen');
-      await p.tap(homeEl+':visible');await sleep(500);if(await active(p)!=='g-start')throw new Error('Home logo from '+t+' did not return to start')}});
+      if(!await vis(p,homeEl,3000))throw new Error('no Home logo visible on '+t+' screen');
+      await p.tap(homeEl+':visible');await isActive(p,'g-start');if(await active(p)!=='g-start')throw new Error('Home logo from '+t+' did not return to start')}});
   await T('nav: history.back() to start',async p=>{await boot(p);const u0=p.url().split('?')[0];
-    for(const t of ['art','map','mine']){await tab(p,t);await p.evaluate(()=>history.back()).catch(()=>{});await sleep(1200);
+    for(const t of ['art','map','mine']){await tab(p,t);await p.evaluate(()=>history.back()).catch(()=>{});await isActive(p,'g-start');
       if(!p.url().startsWith(u0))throw new Error('back from '+t+' left the app: '+p.url().slice(0,60));if(await active(p)!=='g-start')throw new Error('back from '+t+' stayed on '+await active(p))}});
   await T('nav: back closes overlays',async p=>{await boot(p);await p.tap('[data-go=color]');await must(p,'#gColor','picker did not open');await p.evaluate(()=>history.back()).catch(()=>{});await sleep(1200);
     if(!p.url().includes('localhost'))throw new Error('back from Color left the app');if(await p.isVisible('#cPick'))throw new Error('back did not close the Color picker')});

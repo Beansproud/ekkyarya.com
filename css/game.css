@@ -908,6 +908,31 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 #game.at-start .g-sky,#game.at-start .g-planet-bg,#game.at-paper .g-sky,#game.at-paper .g-planet-bg{display:block;opacity:0}
 /* ink on paper is set on the screens and on #game's other children, not on #game: a colour that changes on #game is inherited, so every tab switch restyled all 800+ elements (about 30 ms at 4x) */
 #g-start,#g-art,#g-mine,#game.at-start>:not(.g-screen),#game.at-paper>:not(.g-screen){color:#2B1342}
+/* Admin settings */
+.as-intro{margin:0 0 14px;font-size:1rem;line-height:1.45}
+.as-field{margin:0 0 16px}
+.as-label{display:block;margin:0 0 6px;font-family:Fredoka;font-weight:700;font-size:1rem}
+.as-in{box-sizing:border-box;width:100%;min-height:44px;padding:10px 12px;border:2px solid var(--ink,#2B1342);border-radius:12px;background:var(--card,#FFFDF6);color:var(--ink,#2B1342);font:inherit;font-size:1rem}
+.as-in[aria-invalid="true"]{border-color:#B3261E}
+.as-area{resize:vertical;min-height:88px}
+.as-note{margin:6px 0 0;font-size:.9rem;opacity:.75}
+.as-err{margin:6px 0 0;font-size:.9rem;color:#B3261E;font-weight:600}
+.as-err:empty{display:none}
+.as-h{margin:22px 0 6px;font-family:Fredoka;font-size:1.2rem}
+.as-switches{display:grid;gap:8px}
+.as-switch{display:flex;align-items:center;gap:12px;min-height:44px;padding:8px 12px;border:2px solid var(--ink,#2B1342);border-radius:12px;background:var(--card,#FFFDF6)}
+.as-check{flex:none;width:44px;height:44px;margin:0;accent-color:var(--ink,#2B1342)}
+.as-switch-text{display:flex;flex-direction:column;gap:2px;min-width:0}
+.as-switch-text strong{display:block;font-size:1rem;font-family:Fredoka;font-weight:700}
+.as-switch-text .as-note{display:block;margin:0}
+.as-rows{display:grid;gap:14px}
+.as-row{padding:12px;border:2px solid var(--ink,#2B1342);border-radius:14px;background:var(--card,#FFFDF6)}
+.as-key{display:block;margin:0 0 8px;font-size:.85rem;overflow-wrap:anywhere}
+.as-cols{display:grid;gap:10px}
+.as-btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;margin-top:10px;padding:10px 18px;border:2px solid var(--ink,#2B1342);border-radius:12px;background:var(--card,#FFFDF6);color:var(--ink,#2B1342);font-family:Fredoka;font-weight:700;font-size:1rem;text-decoration:none}
+.as-primary{background:#FFB400;color:#2B1342}
+@media (min-width:700px){.as-cols{grid-template-columns:1fr 1fr}}
+
 .g-screen{contain:strict}
 
 /* Admin art */
@@ -951,3 +976,6 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 .v-map .v-label{font-size:clamp(12px,2.35cqw,13.5px);padding:2px 8px;border-radius:6px;background:#FFF3DC;border:2px solid #2B1342;color:#2B1342;box-shadow:0 2px 0 rgba(43,19,66,.55);rotate:-1.6deg}
 .v-map span.v-label:nth-of-type(even){rotate:1.4deg}   /* paper tags, each at its own fixed tilt */
 .v-map .v-label.hire{background:#FFB400;border-color:#2B1342;color:#2B1342}
+
+/* ===== Map fit (art critic a1): the village spans the screen width, through the 16 px side gutters ===== */
+#g-map .v-map{max-width:none;margin:auto 0;align-self:center;flex-shrink:0}

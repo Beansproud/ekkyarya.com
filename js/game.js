@@ -78,7 +78,7 @@ G.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(g){buzz(
 /* ---- start screen: the featured six open the lightbox ---- */
 function renderStart(){const six=featuredSix().map(p=>({p,i:PROJECTS.indexOf(p)}));
   // each drawing opens big on tap; Download lives in the viewer, not on the tile (owner, 10-28)
-  $("gFeatured").innerHTML=six.map(({p,i})=>`<div class="g-feat-cell"><button class="g-feat" data-i="${i}" aria-label="${esc(ptitle(p))}"><img src="${thumbOf(p)}" alt="" decoding="async"><b>${esc(ptitle(p))}</b></button>`+
+  $("gFeatured").innerHTML=six.map(({p,i})=>`<div class="g-feat-cell"><button class="g-feat" data-i="${i}" aria-label="${esc(ptitle(p))}"><img src="${thumbOf(p)}" alt="" decoding="async" fetchpriority="high"><b>${esc(ptitle(p))}</b></button>`+
     `</div>`).join("")}
 $("gFeatured").addEventListener("click",e=>{const b=e.target.closest(".g-feat");if(b){buzz(10);show(+b.dataset.i)}});
 
@@ -102,17 +102,19 @@ function groundHTML(V){const L=V.layers;if(!L)return `<img class="v-ground" src=
   return im("sky","v-skyimg")+im("mid","v-isle")+im("north","v-isle")+im("south","v-isle")+
     (u?`<img class="v-ground v-isle v-ufo" data-isle="north" src="${u.src}" alt="" decoding="async" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}">`:"")}
 let mapTok=0;
+const LABEL_NUDGE={studio:[50,0]};   // a2: image px to move a label off its baked spot where it would touch a villager
 function renderMap(){
   const V=window.VILLAGE,W=$("gMapWrap");if(!V)return;
   const places=PLACES.filter(p=>!p.feature||feature(p.feature));
   const art=featuredSix(4);
   W.style.height="";W.className="g-map-wrap v-map";W.style.aspectRatio=`${V.w}/${V.h}`;
-  // the whole village fits between the header and the tab bar: the width follows the height left on screen
-  W.style.width=`min(100vw, calc((100dvh - 216px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) * ${(V.w/V.h).toFixed(4)}))`;   // fills the band between the title and the tab bar; may bleed into the side padding
+  // the village fills the screen width, edge to edge through the side gutters (art critic a1), unless the height left
+  // between the header and the tab bar is shorter: then the width follows that height
+  W.style.width=`min(100% + 32px, 520px, calc((100dvh - 196px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) * ${(V.w/V.h).toFixed(4)}))`;
   W.innerHTML=`<div class="v-zoom" id="gMapZoom">${groundHTML(V)}`+
     V.frames.map((f,k)=>{const p=art[k];if(!p)return "";const deg=(Math.atan(f.slope)*180/Math.PI).toFixed(2);
       return `<img class="v-frame" src="${thumbOf(p)}" alt="" decoding="async" style="left:${pct(f.x,V.w)};top:${pct(f.y,V.h)};width:${pct(f.w,V.w)};height:${pct(f.h,V.h)};transform:skewY(${deg}deg)">`}).join("")+
-    places.map(p=>{const b=V.places[p.id].box,l=V.places[p.id].label;
+    places.map(p=>{const b=V.places[p.id].box,n=LABEL_NUDGE[p.id]||[0,0],l=[V.places[p.id].label[0]+n[0],V.places[p.id].label[1]+n[1]];
       return `<button class="v-place${p.hire?" hire":""}" data-place="${p.id}" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}" aria-label="${esc(t(p.key))}"></button>
       <span class="v-label${p.hire?" hire":""}" data-place="${p.id}" aria-hidden="true" style="left:${pct(l[0],V.w)};top:${pct(l[1],V.h)}">${esc(t(p.key))}</span>`}).join("");
   // the villagers and scenery come a moment later, in an idle slice: the first visit lays out the island and the places only
