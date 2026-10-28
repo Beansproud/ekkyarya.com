@@ -901,7 +901,6 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 .v-lantern{animation-duration:3.4s}
 @media (prefers-reduced-motion:reduce){.v-fx,.v-tw,.v-lantern,.v-smoke,.v-cloudrow{display:none}}
 
-#g-start,#g-art,#g-mine,#game.at-start>:not(.g-screen),#game.at-paper>:not(.g-screen){color:#2B1342}
 /* Admin settings */
 .as-intro{margin:0 0 14px;font-size:1rem;line-height:1.45}
 .as-field{margin:0 0 16px}
