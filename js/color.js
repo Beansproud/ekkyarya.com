@@ -99,8 +99,17 @@ G.insertAdjacentHTML("beforeend",`<div class="c-over" id="gColor" role="dialog" 
 const over=$("gColor");
 function view(name){if(typeof wheel!=="undefined")wheel.hidden=true;over.classList.add("open");over.querySelectorAll(".c-view").forEach(v=>v.classList.toggle("active",v.id===name))}
 function close(){
-  // the phone's Back while zoomed only zooms out: js/game.js has already taken Color's history entry, so a class flip on the overlay makes it add one again
-  if(typeof zoom!=="undefined"&&zoomed()&&window.event&&window.event.type==="popstate"&&$("cEdit").classList.contains("active")){zoomOut();over.classList.add("re");requestAnimationFrame(()=>over.classList.remove("re"));return}
+  // The phone's Back closes only the top layer (owner rule, QA P2-2 and P2-3): the colour wheel, then the sticker tray, then the zoom,
+  // then the editor (back to the picker), the reveal (back to the editor), and only then Color. js/game.js has already taken Color's
+  // history entry when this runs, so a class flip on the overlay makes it add the entry again.
+  if(window.event&&window.event.type==="popstate"&&over.classList.contains("open")){const on=id=>$(id).classList.contains("active");let step=true;
+    if(!wheel.hidden)closeWheel();
+    else if(!$("cTray").hidden&&$("cStickBtn"))$("cStickBtn").click();
+    else if(on("cEdit")&&typeof zoom!=="undefined"&&zoomed())zoomOut();
+    else if(on("cEdit")){save(true);openPicker()}
+    else if(on("cReveal")){view("cEdit");sizeStage()}
+    else step=false;
+    if(step){over.classList.add("re");requestAnimationFrame(()=>over.classList.remove("re"));return}}
   over.classList.remove("open");cur=null;if(typeof zoom!=="undefined"&&zoomed())zReset()}
 
 /* ---- picker ---- */
@@ -266,7 +275,7 @@ async function open(id,opts={}){
   if(!hintShown&&!(Game.st.hints||{}).color){hintShown=true;const h=$("cHint");h.textContent=t("color.hint");h.classList.add("show");setTimeout(()=>h.classList.remove("show"),2600);
     Game.st.hints=Object.assign({},Game.st.hints,{color:1});Game.save()}
 }
-function sizeStage(){if(!cur)return;const wrap=stage.parentElement,{w,h}=cur.pd.meta,aw=wrap.clientWidth,ah=wrap.clientHeight;
+function sizeStage(){if(!cur)return;const wrap=stage.parentElement,{w,h}=cur.pd.meta,aw=wrap.clientWidth-12,ah=wrap.clientHeight-12;   // room for the frame's yellow ring inside the clipping wrap
   const sc=Math.min(aw/w,ah/h);stage.style.width=w*sc+"px";stage.style.height=h*sc+"px"}
 addEventListener("resize",sizeStage);
 function renderColors(){const cols=cur.pd.meta.colors;
