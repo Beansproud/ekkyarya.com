@@ -4,13 +4,13 @@
 // loader keeps them, else from CONFIG, FEATURES and COPY.
 const AdminSettings = (() => {
 const LINKS = [
-  ["instagram", "Instagram", "Hire sheet, Mine and the website", "Lembar Hire, Mine dan situs"],
-  ["behance", "Behance", "Mine and the website", "Mine dan situs"],
-  ["linkedin", "LinkedIn", "Mine and the website", "Mine dan situs"],
-  ["website", "Website", "Mine and the website", "Mine dan situs"],
-  ["tiktok", "TikTok", "Mine and the website", "Mine dan situs"],
-  ["youtube", "YouTube", "Mine and the website", "Mine dan situs"],
-  ["x", "X", "Mine and the website", "Mine dan situs"]
+  ["instagram", "Instagram", "Hire sheet, Yours and the website", "Lembar Hubungi Ekky, Buatanmu dan situs"],
+  ["behance", "Behance", "Yours and the website", "Buatanmu dan situs"],
+  ["linkedin", "LinkedIn", "Yours and the website", "Buatanmu dan situs"],
+  ["website", "Website", "Yours and the website", "Buatanmu dan situs"],
+  ["tiktok", "TikTok", "Yours and the website", "Buatanmu dan situs"],
+  ["youtube", "YouTube", "Yours and the website", "Buatanmu dan situs"],
+  ["x", "X", "Yours and the website", "Buatanmu dan situs"]
 ];
 const FEATURE_TEXT = {
   starCatcher: ["Star Catcher game", "Game Star Catcher", "The star-catching arcade game.", "Game arkade menangkap bintang."],
