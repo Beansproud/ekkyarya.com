@@ -407,10 +407,13 @@ addEventListener("ekky:lang",()=>{
     const body=sheet.firstElementChild,top=body.scrollTop,from=sheetFrom,f=$("gForm"),v=f&&[f.name.value,f.type.selectedIndex,f.message.value];
     sheetRe();body.scrollTop=top;sheetFrom=from;
     const g=$("gForm");if(g&&v){g.name.value=v[0];g.type.selectedIndex=v[1];g.message.value=v[2]}}});
-// Build Art and the village once the start screen has settled, off the tap: the first visit then only shows them.
-addEventListener("load",()=>setTimeout(()=>{if(!document.body.classList.contains("game-mode"))return;
+// Build Art and the village once the start screen has settled and nobody is tapping, off the tap: the first visit then only shows them.
+let lastTouch=0;addEventListener("pointerdown",()=>{lastTouch=Date.now()},{passive:true,capture:true});
+function prewarm(){if(!document.body.classList.contains("game-mode"))return;
   const idle=window.requestIdleCallback||(f=>setTimeout(f,50));
-  idle(()=>{if(!artDone){artDone=true;renderArt()}idle(()=>{if(!mapBuilt&&window.VILLAGE){mapBuilt=true;renderMap()}},{timeout:3000})},{timeout:3000})},2500));
+  const when=job=>{if(Date.now()-lastTouch<1500)return setTimeout(()=>when(job),1500);idle(()=>Date.now()-lastTouch<1500?when(job):job(),{timeout:4000})};
+  when(()=>{if(!artDone){artDone=true;renderArt()}setTimeout(()=>when(()=>{if(!mapBuilt&&window.VILLAGE){mapBuilt=true;renderMap()}}),1200)})}
+addEventListener("load",()=>setTimeout(prewarm,5000));
 function renderAll(){if(deep)setTimeout(renderStart,2500);else renderStart();renderMine();setTimeout(moveInd,60)}
 // Shared with js/color.js, js/share.js and js/links.js.
 window.Game={go,openHire,openSheet,closeSheet,sfx,buzz,save,get st(){return st},esc,contactReady,screen:()=>screen};
