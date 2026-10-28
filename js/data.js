@@ -88,10 +88,20 @@ const PROJECTS = [
   {"cat": "social", "title": "Merdeka 77", "desc": "Indonesia's 77th Independence Day, by bicycle.", "img": "assets/work/thumb/kemerdekaan.jpg", "full": "assets/work/kemerdekaan.jpg", "kind": "original", "roles": ["portfolio", "card", "featured", "share", "coloring", "sticker", "game", "village"], "id": {"title": "Merdeka 77", "desc": "Hari Kemerdekaan Indonesia ke-77, naik sepeda."}},
   {"cat": "social", "title": "Tangled Hands", "desc": "A happy knot of hands with nowhere to go.", "img": "assets/work/thumb/hands.jpg", "full": "assets/work/hands.jpg", "kind": "original", "roles": ["portfolio", "card", "featured", "share", "coloring", "game", "village"], "id": {"title": "Tangan Kusut", "desc": "Simpul tangan yang riang dan tidak ke mana-mana."}}
 ];
+// Project flow (docs/flow.md): a piece may carry steps, the ordered pictures of its project, each {img, full, caption {en, id}};
+// flow "process" (sketch to final) or "series" (other pictures from the same project). Fewer than 2 steps = no flow.
+// Morumelons is the one honest grouping in assets/work/ today: the landing page art and two characters from the collection.
+const MORUMELONS_FLOW={flow:"series",steps:[
+  {img:"assets/work/thumb/morumelons.jpg",full:"assets/work/morumelons.jpg",caption:{en:"The landing page",id:"Halaman utama"}},
+  {img:"assets/work/thumb/nft-3.jpg",full:"assets/work/nft-3.jpg",caption:{en:"Astronaut",id:"Astronaut"}},
+  {img:"assets/work/thumb/nft-9.jpg",full:"assets/work/nft-9.jpg",caption:{en:"Radio Explorer",id:"Penjelajah Radio"}}]};
+const FLOWS={morumelons:MORUMELONS_FLOW,"nft-3":MORUMELONS_FLOW,"nft-9":MORUMELONS_FLOW};
+const stepsOf=p=>{const s=Array.isArray(p&&p.steps)?p.steps.filter(x=>x&&x.img&&x.full):[];return s.length>=2?s.slice(0,8):[]};
 // slug = file name; own = may take creative roles. Pieces that may not lose every role but portfolio and card.
 const BASE_ROLES=["portfolio","card"];
 PROJECTS.forEach(p=>{
   p.slug=p.full.split("/").pop().replace(/\.\w+$/,"");
+  if(FLOWS[p.slug]&&!p.steps){p.flow=FLOWS[p.slug].flow;p.steps=FLOWS[p.slug].steps}
   p.own=!!CONFIG.reuse[p.kind]&&!CONFIG.reuseBlock.includes(p.slug);
   if(!p.own)p.roles=p.roles.filter(r=>BASE_ROLES.includes(r));
   if(p.kind!=="original")p.roles=p.roles.filter(r=>r!=="game"); // brand logos don't belong in a game world
@@ -253,6 +263,12 @@ const COPY = {
     "sheet.hire": "Hire Ekky",
     "lb.prefill": "Hi Ekky, I saw \"{title}\" on your site and ",
     "lb.download": "Download",
+    "flow.process": "How it was made",
+    "flow.series": "From the same project",
+    "flow.step": "Step {n}",
+    "flow.this": "This picture",
+    "flow.open": "Open step {n}: {caption}",
+    "flow.count": "{n} pictures",
     "lb.downloadNote": "A small copy for you. Credit Ekky Arya if you post it.",
     // Share and download (B11, B12, B40, D9, D10)
     "share.button": "Share",
@@ -562,6 +578,12 @@ const COPY = {
     "sheet.hire": "Hubungi Ekky",
     "lb.prefill": "Halo Ekky, aku lihat \"{title}\" di webmu dan ",
     "lb.download": "Unduh",
+    "flow.process": "Proses pembuatannya",
+    "flow.series": "Dari proyek yang sama",
+    "flow.step": "Langkah {n}",
+    "flow.this": "Gambar ini",
+    "flow.open": "Buka langkah {n}: {caption}",
+    "flow.count": "{n} gambar",
     "lb.downloadNote": "Versi kecil buat kamu. Kalau diunggah, sebut Ekky Arya, ya.",
     "share.button": "Bagikan",
     "dl.button": "Unduh",

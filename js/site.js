@@ -155,6 +155,7 @@ const lb=document.getElementById("lightbox");let cur=0;
 function visible(){return [...grid.querySelectorAll(".tile:not(.hide)")].map(t=>+t.dataset.i)}
 function show(i){cur=i;const p=PROJECTS[i];
   document.getElementById("lbArt").innerHTML=artOf(p,true);
+  renderFlow(p);
   document.getElementById("lbCat").innerHTML=catImg(p.cat,"")+catName(p.cat);
   document.getElementById("lbTitle").textContent=ptitle(p);
   document.getElementById("lbDesc").textContent=pdesc(p)||"";
@@ -175,6 +176,41 @@ document.getElementById("lbHire").onclick=()=>{const note=t("lb.prefill",{title:
   const m=document.querySelector("#form [name=message]");m.value=note;document.getElementById("contact").scrollIntoView({behavior:"smooth"});setTimeout(()=>m.focus({preventScroll:true}),600)};
 lb.addEventListener("click",e=>{if(e.target===lb)lb.close()});
 lb.addEventListener("keydown",e=>{if(e.key==="ArrowRight")step(1);if(e.key==="ArrowLeft")step(-1)});
+
+/* ===== Project flow (docs/flow.md): a piece's steps as a hand-inked diagram in the lightbox (desktop and game) ===== */
+// Sticker bubbles with a wobbly ink outline (the same wobble on every visit, seeded by the step), a numbered badge and
+// a hand-drawn arrow to the next step. Vertical on phones, a zigzag row on the desktop. A node shows its picture big.
+const FLOW_INK=["#FFB400","#FF6B6B","#7ED9B0","#B8D5FF"];
+const escH=v=>String(v==null?"":v).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function wobPath(seed){const n=24,pts=[];
+  for(let k=0;k<n;k++){const a=k/n*2*Math.PI,c=Math.cos(a),s=Math.sin(a),j=1.3*Math.sin(seed*7.1+k*2.3)+.7*Math.sin(seed*3.7+k*5.1);
+    pts.push([50+(46+j)*Math.sign(c)*Math.pow(Math.abs(c),.22),50+(45+j)*Math.sign(s)*Math.pow(Math.abs(s),.22)])}
+  const m=(a,b)=>((a[0]+b[0])/2).toFixed(1)+" "+((a[1]+b[1])/2).toFixed(1);
+  let d="M"+m(pts[n-1],pts[0]);for(let k=0;k<n;k++){const q=pts[k],r=pts[(k+1)%n];d+=`Q${q[0].toFixed(1)} ${q[1].toFixed(1)} ${m(q,r)}`}
+  return d+"Z"}
+const flowArrow=k=>{const j=4+3*Math.sin(k*2.7);
+  return `<svg class="fl-arrow" viewBox="0 0 40 44" aria-hidden="true"><path d="M20 3C${(12+j).toFixed(1)} 14 ${(28-j).toFixed(1)} 24 20 35M11.5 27.5L20 38.5L28.5 28.5"/></svg>`};
+const flowCap=(st,k)=>(st.caption&&(st.caption[LANG]||st.caption.en))||t("flow.step",{n:k+1});
+function renderFlow(p){
+  const lbBody=lb.querySelector(".lb-body");let box=document.getElementById("lbFlow");
+  if(!box){box=document.createElement("section");box.id="lbFlow";box.className="lb-flow";lbBody.appendChild(box)}
+  const steps=stepsOf(p);box.hidden=!steps.length;box.classList.toggle("fl-col",document.body.classList.contains("game-mode")||matchMedia("(max-width:760px)").matches);lb.classList.toggle("has-flow",!!steps.length);
+  if(!steps.length){box.innerHTML="";return}
+  const title=t(p.flow==="series"?"flow.series":"flow.process");
+  box.setAttribute("aria-label",title);
+  box.innerHTML=`<h4 class="fl-title">${escH(title)}</h4><ol class="fl-list">${steps.map((st,k)=>{const me=st.full===p.full,cap=flowCap(st,k);
+    return `<li class="fl-step" style="--i:${k};--c:${FLOW_INK[k%FLOW_INK.length]}"><button class="fl-node" type="button" data-step="${k}" aria-label="${escH(t("flow.open",{n:k+1,caption:cap}))}"${me?' aria-current="true"':""}>
+      <svg class="fl-bub" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path class="fl-sh" d="${wobPath(k+1)}"/><path class="fl-bg" d="${wobPath(k+1)}"/></svg>
+      <span class="fl-num" aria-hidden="true">${k+1}</span><img src="${escH(st.img)}" alt="" loading="lazy" decoding="async">
+      <span class="fl-cap">${escH(cap)}${me?`<small class="fl-this">${escH(t("flow.this"))}</small>`:""}</span></button>${k<steps.length-1?flowArrow(k):""}</li>`}).join("")}</ol>`;
+  box.classList.remove("fl-in");void box.offsetWidth;box.classList.add("fl-in")}
+// a node shows that step's full picture in the lightbox; the piece's own step brings the piece back
+lb.addEventListener("click",e=>{const b=e.target.closest(".fl-node");if(!b)return;const p=PROJECTS[cur],st=stepsOf(p)[+b.dataset.step];if(!st)return;
+  const art=document.getElementById("lbArt");
+  art.innerHTML=st.full===p.full?artOf(p,true):`<img class="ok" src="${escH(st.full)}" alt="${escH(flowCap(st,+b.dataset.step))}" decoding="async">`;
+  lb.querySelectorAll(".fl-node").forEach(n=>n.removeAttribute("aria-current"));b.setAttribute("aria-current","true");
+  art.scrollIntoView&&art.scrollIntoView({block:"nearest",behavior:reduceFlow()?"auto":"smooth"})});
+const reduceFlow=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /* ===== Typed words ===== */
 const typedWord=()=>{const el=document.getElementById("typed");if(el)el.textContent=t("hero.words").split("|")[0]};
