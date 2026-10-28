@@ -10,7 +10,7 @@ const openMap=p=>p.tap('.g-tabs button[data-tab="map"]');
 const CASES=[
  ['Map tab opens',async p=>{await sleep(500)},async p=>{await openMap(p)},2500],
  ['10 s idle on the map',async p=>{await openMap(p);await sleep(3000)},async()=>{},10000],
- ['pan, zoomed',async p=>{await openMap(p);await sleep(3000);await p.evaluate(()=>document.querySelector('[data-zoom="1"]').click());await sleep(800)},
+ ['pan, zoomed',async p=>{await openMap(p);await sleep(3000);const b=await p.locator('#gMapWrap').boundingBox();await p.touchscreen.tap(b.x+14,b.y+14);await sleep(120);await p.touchscreen.tap(b.x+14,b.y+14);await sleep(900)},
   async p=>{const b=await p.locator('#gMapWrap').boundingBox(),x=b.x+b.width/2,y=b.y+b.height/2;await p.mouse.move(x,y);await p.mouse.down();
    for(let i=1;i<=30;i++){await p.mouse.move(x-i*4,y+i*2);await sleep(16)}await p.mouse.up()},800]];
 const stats=f=>{let over=0,worst=0;for(let i=1;i<f.length;i++){const d=f[i]-f[i-1];if(d>32)over++;if(d>worst)worst=d}return {n:f.length-1,over,worst:Math.round(worst)}};
