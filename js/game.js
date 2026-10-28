@@ -95,7 +95,7 @@ const PLACES=[
   {id:"hire",        key:"town.hire",    icon:"assets/sprites/gate.png",      open:p=>openHire("",p), hire:true},
 ];
 const pct=(v,of)=>(v/of*100).toFixed(3)+"%";
-let mapTok=0;
+let mapTok=0,mapRO=null;
 function renderMap(){
   const V=window.VILLAGE,W=$("gMapWrap");if(!V)return;
   const places=PLACES.filter(p=>!p.feature||feature(p.feature));
@@ -113,6 +113,9 @@ function renderMap(){
   const mt=++mapTok;(window.requestIdleCallback||(f=>setTimeout(f,30)))(()=>{const z=$("gMapZoom");if(mt===mapTok&&z)z.insertAdjacentHTML("beforeend",villageLife(V)+"</div>")},{timeout:500});
   W.insertAdjacentHTML("beforeend",`<div class="v-zoomctl"><button class="g-round" data-zoom="1" aria-label="${esc(tt("town.zoomIn","Zoom in"))}">${ico("i-plus")}</button><button class="g-round" data-zoom="-1" aria-label="${esc(tt("town.zoomOut","Zoom out"))}"><b aria-hidden="true">&minus;</b></button></div>`);
   Z.base=null;Z.s=1;zoomTo(1,0,0);
+  if(!mapRO&&window.ResizeObserver){mapRO=new ResizeObserver(([e])=>e.target.style.setProperty("--vw",e.contentRect.width+"px"));mapRO.observe($("gMapZoom"))}   // the island's width in px, so nothing needs a container query
+  else if(mapRO){mapRO.disconnect();mapRO.observe($("gMapZoom"))}
+  const gr=W.querySelector(".v-ground");if(gr&&gr.decode)gr.decode().catch(()=>{});   // decoded now, in the idle slice, not on the first tap
   $("gMapList").innerHTML=places.map(p=>`<li><button class="v-row${p.hire?" hire":""}" data-place="${p.id}"><img src="${p.icon}" alt="" loading="lazy">${esc(t(p.key))}</button></li>`).join("");
 }
 // a revisit hangs four new pieces on the gallery walls without rebuilding the village
@@ -137,7 +140,7 @@ function villageLife(V){
   (V.walkers||[]).filter(w=>(perPiece[w.piece]=(perPiece[w.piece]||0)+1)<=2).slice(0,8).forEach(w=>{const p=card(w.piece);if(!p)return;
     const [a,b]=w.route,face=w.face===0?1:Math.sign(b[0]-a[0]||1)*w.face;
     html+=`<div class="v-walk" style="transform:translate(${pct(a[0],V.w)},${pct(a[1],V.h)})">`+
-      btn("v-walker",p,w.src,"",`<img src="${w.src}" alt="" decoding="async" style="height:${(w.h/V.w*100).toFixed(2)}cqw;transform:scaleX(${face})">`)+`</div>`});
+      btn("v-walker",p,w.src,"",`<img src="${w.src}" alt="" decoding="async" style="height:calc(var(--vw,0px)*${(w.h/V.w).toFixed(4)});transform:scaleX(${face})">`)+`</div>`});
   return html}
 
 /* ---- Zoom (G1): pinch or drag with a finger, or the +/- buttons; 1x to 2x. A place is still one tap: a touch

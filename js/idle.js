@@ -68,18 +68,23 @@ function show(){
   do{factIdx=Math.floor(Math.random()*n)}while(n>1&&factIdx===lastFact);lastFact=factIdx;
   buddy=document.createElement("div");buddy.className="idle-buddy";
   buddy.innerHTML=`<img src="${SPRITES[Math.floor(Math.random()*SPRITES.length)]}" alt="" width="64" height="64"><p class="idle-bubble" role="status">${words()}</p>`;
-  document.body.appendChild(buddy);shownAt=Date.now();
-  const img=buddy.firstChild,bub=buddy.lastChild;
-  bub.animate([{opacity:0},{opacity:1}],{duration:260,delay:reduce.matches?0:700,fill:"backwards"});   // after the move has started
   const cells=reduce.matches?null:startCells();
-  if(cells)playFx(cells);   // the start page: the pictures move, the doodle only appears
-  else if(!reduce.matches){const [frames,ms]=MOVES[Math.floor(Math.random()*MOVES.length)];img.animate(frames,{duration:ms,easing:"ease-in-out"})}
+  if(cells)playFx(cells);   // the start page: the pictures move, the doodle only appears (measured before it is added)
+  const b0=buddy,add=()=>{if(buddy!==b0)return;document.body.appendChild(b0);shownAt=Date.now();
+    const img=b0.firstChild,bub=b0.lastChild;
+    bub.animate([{opacity:0},{opacity:1}],{duration:260,delay:reduce.matches?0:700,fill:"backwards"});   // after the move has started
+    if(!cells&&!reduce.matches){const [frames,ms]=MOVES[Math.floor(Math.random()*MOVES.length)];img.animate(frames,{duration:ms,easing:"ease-in-out"})}};
+  if(cells){shownAt=Date.now();setTimeout(add,250)}else add();
   clearTimeout(hideT);hideT=setTimeout(hide,6000);
 }
 function hide(){
   if(!buddy)return;const b=buddy;buddy=null;clearTimeout(hideT);
   const a=b.animate([{opacity:1},{opacity:0}],{duration:260,fill:"forwards"});a.onfinish=()=>b.remove();setTimeout(()=>b.remove(),600);
 }
+// the doodles and the bubble's fonts are fetched a few seconds in, so the first one to appear costs no frame
+const warm=()=>{try{document.fonts.load('500 .85rem Poppins');document.fonts.load('700 .85rem Fredoka')}catch(e){}   // the bubble's faces too: the first load of a face re-lays out the page
+  SPRITES.forEach(src=>{const i=new Image();i.src=src;if(i.decode)i.decode().catch(()=>{})})};
+(window.requestIdleCallback||(f=>setTimeout(f,50)))(()=>setTimeout(warm,2000),{timeout:5000});
 function arm(){clearTimeout(timer);timer=setTimeout(fire,Math.max(1000,at(idx)-(Date.now()-base)))}
 function fire(){
   if(last!==base){base=last;idx=0;return arm()}   // there was input since: count from the start again
