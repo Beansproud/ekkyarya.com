@@ -129,12 +129,32 @@ Notes for whoever pastes it:
 - **Game:** nothing. Client pieces stay out of stickers, coloring pages and the game until the owner says
   otherwise.
 
+## What was built (Morumelons worker, sprint 3)
+
+The suggested PROJECTS entry above was not pasted. The 12 characters became part of the existing Morumelons piece
+through the Flow contract (`docs/flow.md`, the optional `set` and `anim` fields), so the landing page keeps its slug,
+its roles and its tile:
+
+- Flow (`js/data.js`, `MORUMELONS_FLOW`, also shown on Astronaut and Radio Explorer): **1 The landing page**
+  (`assets/work/morumelons.jpg`) then **2 The characters** (cover 02 Robot Pilot; a set of all 12) then
+  **3 Animation** (05 Dino Hoodie, plays once when opened).
+- The set (`js/site.js`, `mmRenderSet` through `FlowHooks`): a grid under the diagram, 6 across on the desktop,
+  3 on a phone. Thumbs only on first view; a tap (or a hover with a mouse) fetches that character's `-anim.webp`,
+  plays it once and settles back on the thumb. Under reduced motion the grid is still pictures and nothing is
+  fetched. Posters load only when the Animation step opens.
+- Reversible: the set step only scrolls to its grid (no new view); the Animation step opens through the flow core's
+  step layer, so Back and Esc return to the piece and close returns to where the lightbox was opened.
+- e2e (`scripts/e2e.cjs`, "morumelons: ..."): 12 characters on a 390 x 844 phone and on the desktop, thumbs only on
+  first view, one tap fetches exactly one animation and it settles back, reduced motion fetches none, Back and Esc
+  return.
+
 ## Open questions for the owner
 
-1. Is Morumelons a client job or Ekky's own collection? The site says "own" today; this upload says client
-   (also `docs/copy.md` question 4). The answer decides `kind`, the label and whether any Morumelons art may be
-   used in the game.
-2. May the client be named, and may these 12 characters be shown publicly (NFT rights may sit with the buyers or
-   the client)?
-3. Are the working names fine (Robot Pilot, Dino Hoodie and so on), or do the characters have official names?
+1. **Answered** (owner, 10-28 15:1x, relayed by the lead): "its ekky own collection, can be shown publicly".
+   Morumelons is Ekky's own collection, `kind: "original"`, no Client label. The existing three pieces keep their
+   roles; the 12 characters may take creative roles where they fit (sticker, game, village; coloring only if a
+   clean line version exists). None is wired this sprint: they show in the portfolio and the Art card's viewer.
+2. **Answered** (same message): the 12 characters may be shown publicly. No client to name.
+3. Are the working names fine (Robot Pilot, Dino Hoodie and so on), or do the characters have official names? None
+   given yet; the site uses the working names (and Bahasa versions such as Pilot Robot, Hoodie Dino).
 4. Keep 12, or swap any for the alternates above?

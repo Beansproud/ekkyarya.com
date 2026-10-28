@@ -323,11 +323,11 @@ async function runConfig(browser,url,scheme,lang){
     await p.tap(`#lbFlow .fl-node[data-step="${f.setNode}"]`);await sleep(700);
     if(!await p.evaluate(()=>{const r=document.getElementById('lbSet').getBoundingClientRect();return r.top<innerHeight&&r.bottom>0}))throw new Error('the Characters node did not bring the set into view');
     await p.$$eval('#lbSet img',l=>Promise.all(l.map(i=>i.complete?0:new Promise(r=>{i.onload=i.onerror=r;setTimeout(r,4000)}))));
-    if(req.some(u=>!/^thumb\//.test(u)))throw new Error('first view loaded more than thumbs: '+req.filter(u=>!/^thumb\//.test(u)).slice(0,3).join(', '));
+    if(req.some(u=>!/-thumb\.webp$/.test(u)))throw new Error('first view loaded more than thumbs: '+req.filter(u=>!/-thumb\.webp$/.test(u)).slice(0,3).join(', '));
     await audit(p,'morumelons set');
     await p.$eval('#lbSet li:nth-child(2) .mm-ch',e=>e.scrollIntoView({block:'center'}));await sleep(300);
     await p.tap('#lbSet li:nth-child(2) .mm-ch');await mmSettles(p,'#lbSet li:nth-child(2) img');
-    const anims=req.filter(u=>/^anim\//.test(u));if(anims.length!==1)throw new Error('one tap should fetch exactly one animation, got '+anims.length);
+    const anims=req.filter(u=>/-anim\.webp$/.test(u));if(anims.length!==1)throw new Error('one tap should fetch exactly one animation, got '+anims.length);
     await p.evaluate(()=>history.back());await sleep(900);
     if(await p.evaluate(()=>document.getElementById('lightbox').open))throw new Error('Back did not close Morumelons');
     if(await active(p)!=='g-art')throw new Error('Back left the Art tab: '+await active(p));
@@ -337,7 +337,7 @@ async function runConfig(browser,url,scheme,lang){
     await openPiece(p,'morumelons');await must(p,'#lbSet .mm-ch','no characters',3000);const f=await mmState(p);
     if(f.n!==12||f.btn!==0||f.hint)throw new Error('reduced motion set '+JSON.stringify(f));
     await p.$eval('#lbSet .mm-ch',e=>e.scrollIntoView({block:'center'}));await p.tap('#lbSet .mm-ch');await sleep(800);
-    if(req.some(u=>/^anim\//.test(u)))throw new Error('an animation was fetched under reduced motion');
+    if(req.some(u=>/-anim\.webp$/.test(u)))throw new Error('an animation was fetched under reduced motion');
     await p.tap('#lbClose');await sleep(600);if(await p.evaluate(()=>document.getElementById('lightbox').open))throw new Error('close did not close')});
   await T('morumelons: desktop set, hover plays once, Esc returns',async p=>{const c=await p.context().browser().newContext({viewport:{width:1440,height:900},colorScheme:scheme});
     await c.addInitScript(l=>{try{localStorage.setItem('lang',l)}catch(e){}},lang);
@@ -348,7 +348,7 @@ async function runConfig(browser,url,scheme,lang){
       if(f.n!==12||f.btn!==12||f.small||f.cols!==6)throw new Error('desktop set '+JSON.stringify(f));
       if(f.hint!==f.wantHint)throw new Error('desktop hint '+JSON.stringify(f));
       await d.$eval('#lbSet li:nth-child(3) .mm-ch',e=>e.scrollIntoView({block:'center'}));await sleep(200);
-      if(req.some(u=>/^anim\//.test(u)))throw new Error('an animation was fetched before any hover');
+      if(req.some(u=>/-anim\.webp$/.test(u)))throw new Error('an animation was fetched before any hover');
       await d.hover('#lbSet li:nth-child(3) .mm-ch');await mmSettles(d,'#lbSet li:nth-child(3) img');
       await d.keyboard.press('Escape');await sleep(500);if(await d.evaluate(()=>document.getElementById('lightbox').open))throw new Error('Esc did not close');
       if(Math.abs(await d.evaluate(()=>scrollY)-y0)>4)throw new Error('Esc did not return to the same place in the gallery');

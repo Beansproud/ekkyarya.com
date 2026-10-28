@@ -96,12 +96,13 @@ const PROJECTS = [
 // an 800 px poster and a play-once animated WebP each, fetched only on tap or hover (js/site.js mmPlay). Owner (10-28 15:1x,
 // via the lead): "its ekky own collection, can be shown publicly". They live inside the project (portfolio and the Art
 // card's viewer); creative roles (sticker, game, village) can follow where a character fits.
-const MM_DIR="assets/projects/morumelons/";
-const MORUMELONS_CAST=[
-  ["c01","C01","C01"],["c02","C02","C02"],["c03","C03","C03"],["c04","C04","C04"],["c05","C05","C05"],["c06","C06","C06"],
-  ["c07","C07","C07"],["c08","C08","C08"],["c09","C09","C09"],["c10","C10","C10"],["c11","C11","C11"],["c12","C12","C12"]
-].map(([k,en,id])=>({img:MM_DIR+"thumb/"+k+".webp",full:MM_DIR+k+".webp",anim:MM_DIR+"anim/"+k+".webp",name:{en,id}}));
-const MM_STAR=MORUMELONS_CAST[0];   // the Animation step's character
+const MM_DIR="assets/projects/morumelons/morumelons-";
+const MORUMELONS_CAST=[   // working names (no official names yet, docs/morumelons.md)
+  ["Astronaut","Astronaut"],["Robot Pilot","Pilot Robot"],["Mermaid","Putri Duyung"],["Samurai","Samurai"],
+  ["Dino Hoodie","Hoodie Dino"],["Mummy","Mumi"],["Fishbowl Diver","Penyelam Akuarium"],["Unicorn Girl","Gadis Unicorn"],
+  ["Wooden Boy","Bocah Kayu"],["Wizard","Penyihir"],["Clown","Badut"],["Dark Knight","Ksatria Gelap"]
+].map(([en,id],k)=>{const n=MM_DIR+String(k+1).padStart(2,"0");return {img:n+"-thumb.webp",full:n+".webp",anim:n+"-anim.webp",name:{en,id}}});
+const MM_STAR=MORUMELONS_CAST[4];   // the Animation step: the dino's fire breath; the Characters step's cover is 02 Robot Pilot (docs/morumelons.md)
 const MORUMELONS_FLOW={flow:"series",steps:[
   {img:"assets/work/thumb/morumelons.jpg",full:"assets/work/morumelons.jpg",caption:{en:"The landing page",id:"Halaman utama"}},
   {img:MORUMELONS_CAST[1].img,full:MORUMELONS_CAST[1].full,caption:{en:"The characters",id:"Para karakter"},set:MORUMELONS_CAST},
