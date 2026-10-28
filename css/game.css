@@ -957,3 +957,7 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 /* start page at 360 px: one 16 px gutter and one 12 px gap for the grid, the tiles and the Hire chip (Visual QA) */
 #game .g-start{padding-left:var(--gut,16px);padding-right:var(--gut,16px)}
 #g-start .g-featured{column-gap:var(--gap,12px)}
+/* the idle doodle on the start page sits in the free paper just above the tab bar, small, so it never covers a polaroid or a caption */
+body.game-mode .idle-buddy.on-start{left:16px;right:16px;max-width:none;align-items:flex-end;gap:6px}
+.idle-buddy.on-start img{width:36px;height:36px}
+.idle-buddy.on-start .idle-bubble{margin:0;padding:0 9px;font-size:.75rem;line-height:1.5;box-shadow:0 2px 0 #2B1342;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}

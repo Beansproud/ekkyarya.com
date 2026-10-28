@@ -69,8 +69,10 @@ function show(){
   const onMap=!!document.querySelector("#g-map.active");buddy=document.createElement("div");buddy.className="idle-buddy";
   buddy.innerHTML=`<img src="${SPRITES[Math.floor(Math.random()*SPRITES.length)]}" alt="" width="64" height="64">${onMap?"":`<p class="idle-bubble" role="status">${words()}</p>`}`;   // on the map the doodle comes alone: a bubble would cover a place or Work with Ekky
   const cells=reduce.matches?null:startCells();
+  const tb=document.querySelector("#game .g-tabs"),rest=tb?Math.round(innerHeight-tb.getBoundingClientRect().top+3):0;   // read once, before anything moves: the free paper is the band between the tiles and the tab bar
   if(cells)playFx(cells);   // the start page: the pictures move, the doodle only appears (measured before it is added)
   const b0=buddy,add=()=>{if(buddy!==b0)return;document.body.appendChild(b0);shownAt=Date.now();
+    if(cells&&rest){b0.classList.add("on-start");b0.style.bottom=rest+"px"}   // never over a polaroid or its caption
     const img=b0.firstChild,bub=b0.querySelector(".idle-bubble");
     if(bub)bub.animate([{opacity:0},{opacity:1}],{duration:260,delay:0,fill:"backwards"});   // after the move has started
     if(!cells&&!reduce.matches){const [frames,ms]=MOVES[Math.floor(Math.random()*MOVES.length)];img.animate(frames,{duration:ms,easing:"ease-in-out"})}};
