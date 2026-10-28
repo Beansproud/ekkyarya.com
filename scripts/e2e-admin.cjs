@@ -189,7 +189,7 @@ async function runConfig(browser,url,dev,lang){
 
   // 7. the image editor (docs/admin-editor.md): opened directly in the page through AdminEditor.open, so it needs no PIN
   const EDITOR=have('js/admin-editor.js');const needEditor=()=>{if(!EDITOR)skip('js/admin-editor.js not landed yet')};
-  const edOpen=async p=>{needEditor();await boot(p);await p.addScriptTag({url:'js/admin-editor.js'});
+  const edOpen=async(p,again)=>{needEditor();if(!again){await boot(p);await p.addScriptTag({url:'js/admin-editor.js'})}
     await p.evaluate(l=>{const c=document.createElement('canvas');c.width=1200;c.height=800;const x=c.getContext('2d');x.fillStyle='#e9c46a';x.fillRect(0,0,1200,800);x.fillStyle='#264653';x.fillRect(300,200,600,400);
       window.__qaEd=AdminEditor.open(c,{lang:l}).then(b=>(window.__qaBlob=b,b))},lang);
     if(!await waitFor(()=>p.evaluate(()=>{const d=AdminEditor.debug();return !!(d&&d.W===1200&&document.querySelector('#aeRoot[open] canvas'))}),5000))throw new Error('the editor did not open on the picture')};
@@ -226,6 +226,25 @@ async function runConfig(browser,url,dev,lang){
     if(!await waitFor(()=>p.evaluate(()=>!!window.__qaBlob),15000))throw new Error('Apply did not hand back a Blob: '+await p.evaluate(()=>JSON.stringify({open:AdminEditor.isOpen(),msg:(document.querySelector('#aeRoot .ae-msg')||{}).textContent,d:AdminEditor.debug()&&AdminEditor.debug().history})));
     const r=await p.evaluate(async()=>{const b=window.__qaBlob,bm=await createImageBitmap(b);return {type:b.type,w:bm.width,h:bm.height,open:AdminEditor.isOpen()||!!document.querySelector('#aeRoot')}});
     if(r.type!=='image/jpeg'||r.w!==1200||r.h!==800)throw new Error(`Blob is ${r.type} ${r.w}x${r.h}, expected image/jpeg 1200x800`);if(r.open)throw new Error('the editor stayed open after Apply')});
+  T('editor: inputs are 44 px on touch',async p=>{if(!phone)skip('touch sizes are checked on the phone');await edOpen(p);const small=[];
+    for(const tool of ['brush','gradient','shape','text','crop']){await edClick(p,`[data-tool=${tool}]`);await sleep(100);
+      small.push(...await p.evaluate(t=>[...document.querySelectorAll('#aeRoot .ae-opts :is(input,select,button)')].filter(e=>e.getClientRects().length).map(e=>{const r=e.getBoundingClientRect();return [t+' '+(e.type||e.tagName)+' '+Math.round(r.width)+'x'+Math.round(r.height),Math.min(r.width,r.height)]}).filter(x=>x[1]<43.5).map(x=>x[0]),tool))}
+    if(small.length)throw new Error('under 44 px: '+small.slice(0,4).join(', '))});
+  T('editor: Esc and Back close it like Cancel, the page stays',async p=>{await edOpen(p);const url0=p.url();
+    await p.keyboard.press('Escape');if(!await waitFor(()=>p.evaluate(()=>!document.querySelector('#aeRoot')),3000))throw new Error('Esc did not close an unchanged editor');
+    if(await p.evaluate(()=>window.__qaEd.then(b=>b!==null)))throw new Error('Esc returned a picture instead of nothing');
+    await edOpen(p,true);await edClick(p,'[data-tool=brush]');await edDrag(p,[400,400],[800,400]);
+    p.once('dialog',d=>d.dismiss());await p.evaluate(()=>history.back());await sleep(500);
+    if(!await p.evaluate(()=>!!document.querySelector('#aeRoot[open]')&&AdminEditor.debug().hi>0))throw new Error('Back with edits and "stay" did not keep the editor and its edits');
+    p.once('dialog',d=>d.dismiss());await p.keyboard.press('Escape');await sleep(300);
+    if(!await p.evaluate(()=>!!document.querySelector('#aeRoot[open]')))throw new Error('Esc with edits and "stay" closed the editor');
+    p.once('dialog',d=>d.accept());await p.evaluate(()=>history.back());
+    if(!await waitFor(()=>p.evaluate(()=>!document.querySelector('#aeRoot')),3000))throw new Error('Back did not close the editor');
+    if(await p.evaluate(()=>window.__qaEd.then(b=>b!==null)))throw new Error('Back returned a picture instead of nothing');
+    if(p.url()!==url0)throw new Error('Back left the page: '+p.url());if(phone&&!await vis(p,'#g-start.active',1500))throw new Error('Back moved the game off its screen');
+    await edOpen(p,true);await edClick(p,'[data-a=apply]');if(!await waitFor(()=>p.evaluate(()=>!document.querySelector('#aeRoot')),15000))throw new Error('Apply did not close the editor');await sleep(400);
+    if(await p.evaluate(()=>!!(history.state&&history.state.ae)))throw new Error('the editor left its history entry behind after Apply');
+    if(p.url()!==url0||(phone&&!await vis(p,'#g-start.active',1500)))throw new Error('closing with Apply moved the page')});
   T('editor: Edit in the Art tab sends the edited picture to the form',async(p,c)=>{needAdmin();needEditor();mockGithub(c);await openAdmin(p);
     await p.locator('#adminRoot [data-tab=art]').click();await sleep(400);await p.locator('#adminRoot button').filter({hasText:/^(Add a piece|Tambah karya)$/}).click();await sleep(300);
     await p.locator('#adminRoot input[type=file]').first().setInputFiles({name:'qa-edit.jpg',mimeType:'image/jpeg',buffer:Buffer.from(await bigJpeg(p))});
@@ -243,7 +262,10 @@ async function runConfig(browser,url,dev,lang){
     await p.locator('#aaEdit').click();if(!await waitFor(()=>p.evaluate(()=>!!(window.AdminEditor&&AdminEditor.debug())),6000))throw new Error('Edit did not open the editor again');
     await edClick(p,'[data-tool=brush]');await edDrag(p,[200,600],[3000,600]);p.once('dialog',d=>d.accept());await edClick(p,'[data-a=cancel]');
     if(!await waitFor(()=>p.evaluate(()=>!document.querySelector('#aeRoot')),4000))throw new Error('Cancel did not close the editor');await sleep(300);
-    if(await p.locator('#adminRoot .aa-pick img').getAttribute('src')!==before)throw new Error('Cancel changed the form picture')});
+    if(await p.locator('#adminRoot .aa-pick img').getAttribute('src')!==before)throw new Error('Cancel changed the form picture');
+    await p.locator('#aaEdit').click();if(!await waitFor(()=>p.evaluate(()=>!!(window.AdminEditor&&AdminEditor.debug())),6000))throw new Error('Edit did not open the editor a third time');
+    await p.evaluate(()=>history.back());if(!await waitFor(()=>p.evaluate(()=>!document.querySelector('#aeRoot')),4000))throw new Error('Back did not close the editor');await sleep(300);
+    if(!await adminOpen(p))throw new Error('Back from the editor closed admin');if(await p.locator('#adminRoot .aa-pick img').getAttribute('src')!==before)throw new Error('Back changed the form picture')});
 
   // 6. merged data (needs js/site-data.js)
   const site={version:1,links:{instagram:'https://example.com/qa-ig'},contact:{email:'qa@example.com'},
