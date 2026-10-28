@@ -1,0 +1,48 @@
+# Builds the Android app (Capacitor) and publishes it as a direct download for the site's "Get the app" button:
+# https://github.com/rfim/ekkyarya.com/releases/download/app-latest/ekky-arya.apk
+# It is a debug-signed APK (installable by sideloading). A release key replaces it once the owner decides on one
+# (docs/android-apk.md); phones then need to uninstall the debug build once.
+name: Android APK
+
+on:
+  push:
+    branches: [main]
+    paths: ["index.html", "css/**", "js/**", "assets/**", "android/**", "capacitor.config.ts", "package*.json", "scripts/build.mjs", ".github/workflows/android-apk.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-apk
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Build the web app and sync it into Android
+        run: |
+          npm ci
+          npm run cap:sync
+      - name: Build the APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug
+          cp app/build/outputs/apk/debug/app-debug.apk ../ekky-arya.apk
+      - name: Publish to the app-latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view app-latest >/dev/null 2>&1 || gh release create app-latest --prerelease --title "Ekky Arya Android app (latest build)" --notes "Built automatically from main. Debug-signed: install by allowing apps from this source."
+          gh release upload app-latest ekky-arya.apk --clobber
