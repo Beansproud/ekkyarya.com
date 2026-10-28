@@ -482,3 +482,37 @@ body.game-mode .idle-buddy{left:16px;right:auto;flex-direction:row;bottom:calc(e
 }
 @media (prefers-reduced-motion:reduce){.g-mode-fab.t-squash img{animation:none}
   .nav a:hover,.cats button:hover,.g-mode-fab:hover,.g-mode-fab:hover img{scale:none;translate:none;rotate:none}}
+
+/* Desktop rhythm: four cards and four steps sit in one row, not 3 + 1 */
+@media (min-width:1000px){
+  .cards,.steps{grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
+}
+@media (min-width:1000px){
+  .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+
+/* Desktop: the Doodle to Done band hangs evenly around the page column, so its heading lines up with the other headings */
+@media (min-width:1000px){
+  .process-band{margin:0 calc(clamp(20px,8vw,150px) - clamp(24px,6vw,100px))}
+}
+
+/* Desktop sidebar, quieter: the Portfolio list repeated the filters in the page (they stay there); status, language and
+   dark mode share one soft row under the socials. Nothing is removed from the tab order that the page still offers. */
+@media (min-width:981px){
+  .side-h,.cats{display:none}
+  .nav{gap:10px;margin-top:56px}
+  .side-foot{display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center}
+  .socials,.status{grid-column:1/-1}
+  .theme-toggle{justify-self:start}
+}
+
+/* Desktop fresh eyes: the lightbox picture leaves room for the title, Hire, Download and the arrows, whatever the window height;
+   tiles show a paper-tone slot until the drawing fades in (tape and tilt unchanged). */
+@media (min-width:761px){
+  .lb-art img{max-height:min(70vh,calc(100vh - 330px));max-height:min(70vh,calc(100dvh - 330px))}
+}
+.tile .art{background:var(--paper-2)}
+/* Narrow desktop: the sidebar is 240 px wide, so the dark-mode switch drops its text label (still named for screen readers) */
+@media (min-width:981px) and (max-width:1100px){
+  .theme-toggle #themeLabel{display:none}
+}
