@@ -220,7 +220,7 @@
 #adminRoot *{box-sizing:border-box}
 #adminRoot[open]{display:flex;animation:none}#adminRoot::backdrop{background:transparent}
 #adminRoot button{font-family:inherit;cursor:pointer}
-.adm-top{display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:2px solid var(--line);flex-wrap:nowrap}
+.adm-top{display:flex;align-items:center;gap:6px;padding:max(8px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) 8px max(12px,env(safe-area-inset-left));border-bottom:2px solid var(--line);flex-wrap:nowrap}
 .adm-top .adm-btn{padding:8px 12px;flex:none}
 .adm-top h1{margin:0;font-size:1.2rem;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
 .adm-btn{min-height:44px;padding:8px 16px;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-weight:600;font-size:.95rem}
@@ -241,7 +241,7 @@
 .adm-bar input{flex:1;min-width:180px;min-height:44px;padding:8px 12px;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--ink);font:inherit}
 .adm-bar .adm-status{flex-basis:100%;font-weight:600}
 .adm-status[data-kind=ok]{color:#1f7a3d}.adm-status[data-kind=err]{color:#b3261e}.adm-status a{color:inherit;text-decoration:underline;display:inline-block;padding:12px 0}
-.adm-main{flex:1;overflow:auto;padding:16px;-webkit-overflow-scrolling:touch}
+.adm-main{flex:1;overflow:auto;padding:16px max(16px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));-webkit-overflow-scrolling:touch}   /* clear of the notch, the island and the home bar (iPhone, Android app) */
 .adm-main .adm-note{color:var(--mute)}
 /* The admin screen stays light paper in dark mode too, like the game and the PIN pad (the tab scripts draw on light cards). */
 `;
