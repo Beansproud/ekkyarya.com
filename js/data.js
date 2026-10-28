@@ -90,11 +90,22 @@ const PROJECTS = [
 ];
 // Project flow (docs/flow.md): a piece may carry steps, the ordered pictures of its project, each {img, full, caption {en, id}};
 // flow "process" (sketch to final) or "series" (other pictures from the same project). Fewer than 2 steps = no flow.
-// Morumelons is the one honest grouping in assets/work/ today: the landing page art and two characters from the collection.
+// Morumelons: the landing page art, then its characters as a set and one of them moving (Sprint 3: morumelons below).
+/* ---- Sprint 3: morumelons ---- */
+// The 12 characters the Color squad picked from the owner's 48 GIFs (docs/morumelons.md): a 320 px thumb (first view),
+// an 800 px poster and a play-once animated WebP each, fetched only on tap or hover (js/site.js mmPlay). Portfolio and
+// card only until the owner says whether Morumelons is a client job or Ekky's own collection: no sticker, coloring, game
+// or village use, so they live inside the project, not in PROJECTS.
+const MM_DIR="assets/projects/morumelons/";
+const MORUMELONS_CAST=[
+  ["c01","C01","C01"],["c02","C02","C02"],["c03","C03","C03"],["c04","C04","C04"],["c05","C05","C05"],["c06","C06","C06"],
+  ["c07","C07","C07"],["c08","C08","C08"],["c09","C09","C09"],["c10","C10","C10"],["c11","C11","C11"],["c12","C12","C12"]
+].map(([k,en,id])=>({img:MM_DIR+"thumb/"+k+".webp",full:MM_DIR+k+".webp",anim:MM_DIR+"anim/"+k+".webp",name:{en,id}}));
+const MM_STAR=MORUMELONS_CAST[0];   // the Animation step's character
 const MORUMELONS_FLOW={flow:"series",steps:[
   {img:"assets/work/thumb/morumelons.jpg",full:"assets/work/morumelons.jpg",caption:{en:"The landing page",id:"Halaman utama"}},
-  {img:"assets/work/thumb/nft-3.jpg",full:"assets/work/nft-3.jpg",caption:{en:"Astronaut",id:"Astronaut"}},
-  {img:"assets/work/thumb/nft-9.jpg",full:"assets/work/nft-9.jpg",caption:{en:"Radio Explorer",id:"Penjelajah Radio"}}]};
+  {img:MORUMELONS_CAST[1].img,full:MORUMELONS_CAST[1].full,caption:{en:"The characters",id:"Para karakter"},set:MORUMELONS_CAST},
+  {img:MM_STAR.img,full:MM_STAR.full,anim:MM_STAR.anim,caption:{en:"Animation",id:"Animasi"}}]};
 const FLOWS={morumelons:MORUMELONS_FLOW,"nft-3":MORUMELONS_FLOW,"nft-9":MORUMELONS_FLOW};
 const stepsOf=p=>{const s=Array.isArray(p&&p.steps)?p.steps.filter(x=>x&&x.img&&x.full):[];return s.length>=2?s.slice(0,8):[]};
 // slug = file name; own = may take creative roles. Pieces that may not lose every role but portfolio and card.
@@ -269,6 +280,9 @@ const COPY = {
     "flow.this": "This picture",
     "flow.open": "Open step {n}: {caption}",
     "flow.count": "{n} pictures",
+    "mm.play": "Play {name}",
+    "mm.hint": "Point at a character. They have been practicing.",
+    "mm.hintTap": "Tap a character. They have been practicing.",
     "lb.downloadNote": "A small copy for you. Credit Ekky Arya if you post it.",
     // Share and download (B11, B12, B40, D9, D10)
     "share.button": "Share",
@@ -579,6 +593,9 @@ const COPY = {
     "flow.this": "Gambar ini",
     "flow.open": "Buka langkah {n}: {caption}",
     "flow.count": "{n} gambar",
+    "mm.play": "Putar {name}",
+    "mm.hint": "Arahkan ke karakternya. Mereka sudah latihan.",
+    "mm.hintTap": "Ketuk karakternya. Mereka sudah latihan.",
     "lb.downloadNote": "Versi kecil buat kamu. Kalau diunggah, sebut Ekky Arya, ya.",
     "share.button": "Bagikan",
     "dl.button": "Unduh",

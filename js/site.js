@@ -155,7 +155,7 @@ const lb=document.getElementById("lightbox");let cur=0;
 function visible(){return [...grid.querySelectorAll(".tile:not(.hide)")].map(t=>+t.dataset.i)}
 function show(i){cur=i;const p=PROJECTS[i];
   document.getElementById("lbArt").innerHTML=artOf(p,true);
-  renderFlow(p);
+  renderFlow(p);mmRenderSet(p);
   document.getElementById("lbCat").innerHTML=catImg(p.cat,"")+catName(p.cat);
   document.getElementById("lbTitle").textContent=ptitle(p);
   document.getElementById("lbDesc").textContent=pdesc(p)||"";
@@ -206,11 +206,57 @@ function renderFlow(p){
   box.classList.remove("fl-in");void box.offsetWidth;box.classList.add("fl-in")}
 // a node shows that step's full picture in the lightbox; the piece's own step brings the piece back
 lb.addEventListener("click",e=>{const b=e.target.closest(".fl-node");if(!b)return;const p=PROJECTS[cur],st=stepsOf(p)[+b.dataset.step];if(!st)return;
+  if(st.set){mmToSet(b);return}   // a set step (Sprint 3: morumelons) points at its grid below
   const art=document.getElementById("lbArt");
   art.innerHTML=st.full===p.full?artOf(p,true):`<img class="ok" src="${escH(st.full)}" alt="${escH(flowCap(st,+b.dataset.step))}" decoding="async">`;
+  if(st.anim)mmArt(art,st);
   lb.querySelectorAll(".fl-node").forEach(n=>n.removeAttribute("aria-current"));b.setAttribute("aria-current","true");
   art.scrollIntoView&&art.scrollIntoView({block:"nearest",behavior:reduceFlow()?"auto":"smooth"})});
 const reduceFlow=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ===== Sprint 3: morumelons. A step may carry a set (characters shown as a grid) and an anim (a play-once animated WebP) ===== */
+// Thumbs only on first view; an animation is fetched on the first tap or hover, plays once and settles back on the still.
+// Never under prefers-reduced-motion (the grid is then plain pictures). Nothing here pushes history: Back, Esc and close
+// leave the lightbox exactly as for any other piece.
+const mmAnims=new Map();   // anim path -> Promise<{blob, ms}>
+function webpMs(buf){const v=new DataView(buf);let ms=0;   // an animated WebP's length: the sum of its ANMF frame durations
+  for(let o=12;o+8<=v.byteLength;){const id=String.fromCharCode(v.getUint8(o),v.getUint8(o+1),v.getUint8(o+2),v.getUint8(o+3)),n=v.getUint32(o+4,true);
+    if(id==="ANMF"&&o+23<=v.byteLength)ms+=v.getUint8(o+20)|v.getUint8(o+21)<<8|v.getUint8(o+22)<<16;o+=8+n+(n&1)}
+  return ms}
+function mmPlay(img){const anim=img&&img.dataset.anim;if(!anim||reduceFlow()||img.dataset.mmOn)return;
+  const still=img.getAttribute("src");img.dataset.mmOn="1";
+  let got=mmAnims.get(anim);
+  if(!got){got=fetch(anim).then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(b=>({blob:new Blob([b],{type:"image/webp"}),ms:webpMs(b)||2400}));
+    mmAnims.set(anim,got);got.catch(()=>mmAnims.delete(anim))}
+  got.then(({blob,ms})=>{if(!img.isConnected||!lb.open){delete img.dataset.mmOn;return}
+    const u=URL.createObjectURL(blob),host=img.closest(".mm-ch")||img;   // a fresh URL restarts the play-once animation
+    img.src=u;host.classList.add("mm-on");
+    img.mmStop=()=>{clearTimeout(img.mmT);img.mmStop=null;if(img.getAttribute("src")===u)img.src=still;URL.revokeObjectURL(u);host.classList.remove("mm-on");delete img.dataset.mmOn};
+    img.mmT=setTimeout(img.mmStop,ms+60)},()=>{delete img.dataset.mmOn})}
+const mmStopAll=()=>lb.querySelectorAll("img[data-mm-on]").forEach(i=>i.mmStop&&i.mmStop());
+const mmName=c=>(c.name&&(c.name[LANG]||c.name.en))||"";
+function mmRenderSet(p){
+  let box=document.getElementById("lbSet");mmStopAll();
+  if(!box){box=document.createElement("section");box.id="lbSet";box.className="mm-set";lb.querySelector(".lb-body").appendChild(box)}
+  const k=stepsOf(p).findIndex(st=>Array.isArray(st.set)&&st.set.length),st=k<0?null:stepsOf(p)[k];
+  box.hidden=!st;box.classList.toggle("mm-col",document.body.classList.contains("game-mode")||matchMedia("(max-width:760px)").matches);
+  if(!st){box.innerHTML="";return}
+  const still=reduceFlow(),cap=flowCap(st,k),tag=still?"div":"button";
+  box.setAttribute("aria-label",cap);
+  box.innerHTML=`<h4 class="fl-title">${escH(cap)} <small class="mm-n">${escH(t("flow.count",{n:st.set.length}))}</small></h4>`+
+    (still?"":`<p class="mm-hint">${escH(t(document.body.classList.contains("game-mode")||!matchMedia("(hover:hover)").matches?"mm.hintTap":"mm.hint"))}</p>`)+
+    `<ul class="mm-grid">${st.set.map((c,j)=>{const nm=mmName(c);
+      return `<li style="--j:${j};--c:${FLOW_INK[j%FLOW_INK.length]}"><${tag} class="mm-ch"${still?"":` type="button" aria-label="${escH(t("mm.play",{name:nm}))}"`}>`+
+        `<img src="${escH(c.img)}" alt="${still?escH(nm):""}" width="160" height="160" loading="lazy" decoding="async"${c.anim&&!still?` data-anim="${escH(c.anim)}"`:""}><span aria-hidden="true">${escH(nm)}</span></${tag}></li>`}).join("")}</ul>`}
+// the "Characters" node scrolls its grid into view and lands focus on the first character
+function mmToSet(b){const box=document.getElementById("lbSet");if(!box||box.hidden)return;
+  lb.querySelectorAll(".fl-node").forEach(n=>n.removeAttribute("aria-current"));b.setAttribute("aria-current","true");
+  box.scrollIntoView({block:"start",behavior:reduceFlow()?"auto":"smooth"});const f=box.querySelector("button.mm-ch");if(f)f.focus({preventScroll:true})}
+// an anim step: its still opens in the picture area and plays once (the tap that opened it asked for it); tap or hover replays
+function mmArt(art,st){const img=art.querySelector("img");if(!img||reduceFlow())return;img.dataset.anim=st.anim;img.classList.add("mm-anim");mmPlay(img)}
+lb.addEventListener("click",e=>{const b=e.target.closest(".mm-ch,.mm-anim");if(b)mmPlay(b.matches("img")?b:b.querySelector("img"))});
+lb.addEventListener("pointerover",e=>{if(e.pointerType!=="mouse")return;const b=e.target.closest(".mm-ch,.mm-anim");if(b&&!b.contains(e.relatedTarget))mmPlay(b.matches("img")?b:b.querySelector("img"))});
+lb.addEventListener("close",mmStopAll);
 
 /* ===== Typed words ===== */
 const typedWord=()=>{const el=document.getElementById("typed");if(el)el.textContent=t("hero.words").split("|")[0]};

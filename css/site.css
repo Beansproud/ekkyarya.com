@@ -578,3 +578,24 @@ body.game-mode .cursor,body.game-mode .cursor-dot{display:none}
 .fl-col .fl-node img{width:96px;flex:none}
 .fl-col .fl-cap{text-align:left;flex:1}
 .fl-col .fl-arrow{rotate:0deg;margin:2px 0}
+
+/* ---- Sprint 3: morumelons ---- */
+/* A set step's characters (js/site.js mmRenderSet): small paper stickers in a grid under the flow. Tap or hover plays the
+   character's animation once (img src swap, no CSS loop); the sticker only lifts while it plays. Desktop 6 across, phones 3. */
+.mm-set{flex:1 1 100%;order:4;margin-top:2px;scroll-margin-top:12px}
+.mm-set[hidden]{display:none}
+.mm-n{font-family:Poppins,sans-serif;font-weight:600;font-size:.75rem;opacity:.75;margin-left:4px}
+.mm-hint{margin:-4px 0 10px;font-size:.85rem;line-height:1.35;color:var(--ink)}
+.mm-grid{list-style:none;margin:0;padding:4px 4px 10px;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px 12px}
+.mm-ch{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;width:100%;min-height:44px;padding:6px 6px 8px;box-sizing:border-box;
+  border:2.5px solid #2B1342;border-radius:14px 17px 13px 16px;background:#FFFDF8;color:#2B1342;font:inherit;box-shadow:3px 4px 0 var(--c);
+  rotate:calc((var(--j) % 3 - 1) * 1.4deg);transition:transform .2s var(--ease-in,ease),box-shadow .2s}
+button.mm-ch{cursor:pointer}
+.mm-ch img{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:contain;border-radius:9px;background:#F1EBDD}
+.mm-ch span{font-family:Fredoka,Poppins,sans-serif;font-weight:600;font-size:.8rem;line-height:1.15;text-align:center}
+button.mm-ch:hover,.mm-ch.mm-on{transform:translateY(-3px) rotate(-1deg);box-shadow:4px 6px 0 var(--c)}
+button.mm-ch:active{transform:scale(.97)}
+.mm-anim{cursor:pointer}
+.mm-col .mm-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 10px;padding:4px 2px 8px}
+body.game-mode #lightbox .mm-hint{color:#2B1342}
+@media (prefers-reduced-motion:reduce){.mm-ch,button.mm-ch:hover,.mm-ch.mm-on{transition:none;transform:none}}

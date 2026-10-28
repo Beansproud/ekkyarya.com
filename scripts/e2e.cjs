@@ -262,21 +262,77 @@ async function runConfig(browser,url,scheme,lang){
     if(f.n!==3||!f.col||f.small||!f.down||f.arrows!==2)throw new Error('flow layout '+JSON.stringify(f));
     if(f.cur!==0||f.title!==f.want)throw new Error('flow labels '+JSON.stringify(f));
     await p.$eval('#lbFlow .fl-node[data-step="2"]',e=>e.scrollIntoView({block:'center'}));await sleep(300);await p.tap('#lbFlow .fl-node[data-step="2"]');await sleep(500);
-    const src=await p.$eval('#lbArt img',e=>e.getAttribute('src'));if(!/nft-9\.jpg$/.test(src))throw new Error('step 3 did not open its picture: '+src);
+    // step 3 (Animation, Sprint 3: morumelons) opens its character's still, which plays once
+    const st3=await p.$eval('#lbArt img',e=>[e.getAttribute('src'),e.dataset.anim||'']);if(!/^(blob:|assets\/projects\/morumelons\/)/.test(st3[0])||!st3[1])throw new Error('step 3 did not open its picture: '+st3);
     await audit(p,'lightbox flow')});
   await T('flow: piece without steps is unchanged (phone)',async p=>{await boot(p);await openPiece(p,'giraffe');
     const f=await p.evaluate(()=>({hidden:document.getElementById('lbFlow').hidden,nodes:document.querySelectorAll('#lbFlow .fl-node').length,cls:document.getElementById('lightbox').classList.contains('has-flow')}));
     if(!f.hidden||f.nodes||f.cls)throw new Error('flow shown on a piece without steps '+JSON.stringify(f))});
   await T('flow: desktop lightbox row, and none without steps',async p=>{const c=await p.context().browser().newContext({viewport:{width:1440,height:900},colorScheme:scheme});
     try{const d=await c.newPage();const errs=[];d.on('pageerror',e=>errs.push(e.message));await d.goto(url);await sleep(800);
-      await d.evaluate(()=>show(PROJECTS.findIndex(q=>q.slug==='nft-3')));await must(d,'#lbFlow .fl-node','no desktop flow',3000);
+      await d.evaluate(()=>show(PROJECTS.findIndex(q=>q.slug==='morumelons')));await must(d,'#lbFlow .fl-node','no desktop flow',3000);
       const f=await d.evaluate(()=>{const r=[...document.querySelectorAll('#lbFlow .fl-node')].map(e=>e.getBoundingClientRect());
         return {n:r.length,row:r.every((x,k)=>!k||x.left>r[k-1].right-1),cur:[...document.querySelectorAll('#lbFlow .fl-node')].findIndex(e=>e.getAttribute('aria-current')==='true')}});
-      if(f.n!==3||!f.row||f.cur!==1)throw new Error('desktop flow '+JSON.stringify(f));
+      if(f.n!==3||!f.row||f.cur!==0)throw new Error('desktop flow '+JSON.stringify(f));
       await d.click('#lbFlow .fl-node[data-step="0"]');await sleep(300);
       if(!/morumelons\.jpg$/.test(await d.$eval('#lbArt img',e=>e.getAttribute('src'))))throw new Error('desktop node did not open its picture');
       await d.evaluate(()=>show(PROJECTS.findIndex(q=>q.slug==='rpg')));await sleep(300);
       if(!await d.$eval('#lbFlow',e=>e.hidden))throw new Error('desktop flow shown on a piece without steps');
+      if(errs.length)throw new Error('page errors: '+errs.join(' | '))}finally{await c.close()}});
+
+  // --- Sprint 3: morumelons. The project opens with its 12 characters; first view loads thumbs only; a tap plays one
+  // animation once and settles back; Back returns to the Art card it came from (phone), Esc to the gallery (desktop) ---
+  const mmReq=pg=>{const seen=[];pg.on('request',r=>{const u=r.url();if(u.includes('/assets/projects/morumelons/'))seen.push(u.split('/assets/projects/morumelons/')[1])});return seen};
+  const mmState=pg=>pg.evaluate(()=>{const box=document.getElementById('lbSet'),ch=[...box.querySelectorAll('.mm-ch')],r=ch.map(e=>e.getBoundingClientRect());
+    return {shown:!box.hidden,n:ch.length,btn:ch.filter(e=>e.tagName==='BUTTON').length,small:r.filter(x=>x.width<44||x.height<44).length,
+      names:ch.filter(e=>e.textContent.trim()).length,hint:(box.querySelector('.mm-hint')||{}).textContent||'',lang:LANG,
+      wantHint:t(document.body.classList.contains('game-mode')||!matchMedia('(hover:hover)').matches?'mm.hintTap':'mm.hint'),
+      cols:new Set(r.map(x=>Math.round(x.left))).size,setNode:[...document.querySelectorAll('#lbFlow .fl-node')].findIndex(n=>!!(stepsOf(PROJECTS[cur])[+n.dataset.step]||{}).set)}});
+  const mmSettles=async(pg,sel)=>{const src0=await pg.$eval(sel,e=>e.getAttribute('src'));
+    const on=await pg.waitForFunction(s=>/^blob:/.test(document.querySelector(s).getAttribute('src')),sel,{timeout:6000,polling:50}).then(()=>true,()=>false);
+    if(!on)throw new Error('the animation did not start: '+sel);
+    const back=await pg.waitForFunction(([s,v])=>document.querySelector(s).getAttribute('src')===v,[sel,src0],{timeout:12000,polling:100}).then(()=>true,()=>false);
+    if(!back)throw new Error('the animation did not settle back on its still')};
+  await T('morumelons: 12 characters, thumbs first, tap plays once, Back returns (phone)',async p=>{const req=mmReq(p);await boot(p);await tab(p,'art');await must(p,'#gCards >*','no art cards');
+    const i=await p.evaluate(()=>PROJECTS.findIndex(q=>q.slug==='morumelons'));const card=`#gCards [data-i="${i}"]`;
+    await p.waitForSelector(card,{state:'attached',timeout:5000});await p.$eval(card,e=>e.scrollIntoView({block:'center'}));await sleep(300);
+    const y0=await p.evaluate(()=>{const s=document.scrollingElement,a=document.querySelector('.g-screen.active');return [s.scrollTop,a.scrollTop]});
+    await p.tap(card);await sleep(900);if(!await p.evaluate(()=>document.getElementById('lightbox').open))throw new Error('Morumelons did not open');
+    await must(p,'#lbSet .mm-ch','no characters',3000);const f=await mmState(p);
+    if(!f.shown||f.n!==12||f.btn!==12||f.small||f.names!==12||f.cols!==3)throw new Error('character set '+JSON.stringify(f));
+    if(f.hint!==f.wantHint)throw new Error('hint in the wrong language '+JSON.stringify(f));
+    await p.tap(`#lbFlow .fl-node[data-step="${f.setNode}"]`);await sleep(700);
+    if(!await p.evaluate(()=>{const r=document.getElementById('lbSet').getBoundingClientRect();return r.top<innerHeight&&r.bottom>0}))throw new Error('the Characters node did not bring the set into view');
+    await p.$$eval('#lbSet img',l=>Promise.all(l.map(i=>i.complete?0:new Promise(r=>{i.onload=i.onerror=r;setTimeout(r,4000)}))));
+    if(req.some(u=>!/^thumb\//.test(u)))throw new Error('first view loaded more than thumbs: '+req.filter(u=>!/^thumb\//.test(u)).slice(0,3).join(', '));
+    await audit(p,'morumelons set');
+    await p.$eval('#lbSet li:nth-child(2) .mm-ch',e=>e.scrollIntoView({block:'center'}));await sleep(300);
+    await p.tap('#lbSet li:nth-child(2) .mm-ch');await mmSettles(p,'#lbSet li:nth-child(2) img');
+    const anims=req.filter(u=>/^anim\//.test(u));if(anims.length!==1)throw new Error('one tap should fetch exactly one animation, got '+anims.length);
+    await p.evaluate(()=>history.back());await sleep(900);
+    if(await p.evaluate(()=>document.getElementById('lightbox').open))throw new Error('Back did not close Morumelons');
+    if(await active(p)!=='g-art')throw new Error('Back left the Art tab: '+await active(p));
+    const y1=await p.evaluate(()=>{const s=document.scrollingElement,a=document.querySelector('.g-screen.active');return [s.scrollTop,a.scrollTop]});
+    if(Math.abs(y1[0]-y0[0])>4||Math.abs(y1[1]-y0[1])>4)throw new Error('Back did not return to the same place on Art: '+y0+' -> '+y1)});
+  await T('morumelons: reduced motion shows still characters, fetches no animation',async p=>{const req=mmReq(p);await p.emulateMedia({reducedMotion:'reduce'});await boot(p);
+    await openPiece(p,'morumelons');await must(p,'#lbSet .mm-ch','no characters',3000);const f=await mmState(p);
+    if(f.n!==12||f.btn!==0||f.hint)throw new Error('reduced motion set '+JSON.stringify(f));
+    await p.$eval('#lbSet .mm-ch',e=>e.scrollIntoView({block:'center'}));await p.tap('#lbSet .mm-ch');await sleep(800);
+    if(req.some(u=>/^anim\//.test(u)))throw new Error('an animation was fetched under reduced motion');
+    await p.tap('#lbClose');await sleep(600);if(await p.evaluate(()=>document.getElementById('lightbox').open))throw new Error('close did not close')});
+  await T('morumelons: desktop set, hover plays once, Esc returns',async p=>{const c=await p.context().browser().newContext({viewport:{width:1440,height:900},colorScheme:scheme});
+    await c.addInitScript(l=>{try{localStorage.setItem('lang',l)}catch(e){}},lang);
+    try{const d=await c.newPage();const errs=[];d.on('pageerror',e=>errs.push(e.message));const req=mmReq(d);await d.goto(url);await sleep(800);
+      const i=await d.evaluate(()=>PROJECTS.findIndex(q=>q.slug==='morumelons'));const tile=`#grid .tile[data-i="${i}"]`;
+      await d.$eval(tile,e=>e.scrollIntoView({block:'center'}));await sleep(400);const y0=await d.evaluate(()=>scrollY);
+      await d.$eval(tile,e=>e.click());await must(d,'#lbSet .mm-ch','no desktop characters',3000);const f=await mmState(d);
+      if(f.n!==12||f.btn!==12||f.small||f.cols!==6)throw new Error('desktop set '+JSON.stringify(f));
+      if(f.hint!==f.wantHint)throw new Error('desktop hint '+JSON.stringify(f));
+      await d.$eval('#lbSet li:nth-child(3) .mm-ch',e=>e.scrollIntoView({block:'center'}));await sleep(200);
+      if(req.some(u=>/^anim\//.test(u)))throw new Error('an animation was fetched before any hover');
+      await d.hover('#lbSet li:nth-child(3) .mm-ch');await mmSettles(d,'#lbSet li:nth-child(3) img');
+      await d.keyboard.press('Escape');await sleep(500);if(await d.evaluate(()=>document.getElementById('lightbox').open))throw new Error('Esc did not close');
+      if(Math.abs(await d.evaluate(()=>scrollY)-y0)>4)throw new Error('Esc did not return to the same place in the gallery');
       if(errs.length)throw new Error('page errors: '+errs.join(' | '))}finally{await c.close()}});
 
   // --- Map ---
