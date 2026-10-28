@@ -28,6 +28,8 @@ const FEATURE_TEXT = {
   pageLittlePlanet: ["Coloring page: Little Planet", "Halaman mewarnai: Little Planet", "Show this page in the coloring list.", "Tampilkan halaman ini di daftar mewarnai."],
   pageHands: ["Coloring page: Tangled Hands", "Halaman mewarnai: Tangled Hands", "Show this page in the coloring list.", "Tampilkan halaman ini di daftar mewarnai."],
   pageNoodles: ["Coloring page: Noodle Bath", "Halaman mewarnai: Noodle Bath", "Show this page in the coloring list.", "Tampilkan halaman ini di daftar mewarnai."],
+  pageSummertime: ["Coloring page: Buried at the Beach", "Halaman mewarnai: Terkubur di Pantai", "Show this page in the coloring list.", "Tampilkan halaman ini di daftar mewarnai."],
+  pageVirusAndWar: ["Coloring page: Virus and War", "Halaman mewarnai: Virus dan Perang", "Show this page in the coloring list.", "Tampilkan halaman ini di daftar mewarnai."],
   pageShark: ["Coloring page: Big Catch", "Halaman mewarnai: Big Catch", "Show this page in the coloring list.", "Tampilkan halaman ini di daftar mewarnai."],
   apkDownload: ["Android app button", "Tombol aplikasi Android", "The APK chip on the start page, Android only.", "Chip APK di halaman awal, khusus Android."],
   artDownload: ["Download button on art", "Tombol unduh di karya", "Lets visitors save a small copy of a piece.", "Pengunjung bisa menyimpan salinan kecil karya."],
