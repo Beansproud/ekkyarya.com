@@ -192,6 +192,7 @@ const flowArrow=k=>{const j=4+3*Math.sin(k*2.7);
   return `<svg class="fl-arrow" viewBox="0 0 40 44" aria-hidden="true"><path d="M20 3C${(12+j).toFixed(1)} 14 ${(28-j).toFixed(1)} 24 20 35M11.5 27.5L20 38.5L28.5 28.5"/></svg>`};
 const flowCap=(st,k)=>(st.caption&&(st.caption[LANG]||st.caption.en))||t("flow.step",{n:k+1});
 function renderFlow(p){
+  lb.classList.remove("fl-viewing");
   const lbBody=lb.querySelector(".lb-body");let box=document.getElementById("lbFlow");
   if(!box){box=document.createElement("section");box.id="lbFlow";box.className="lb-flow"}
   // phones: right under the description, before the buttons (the flow is the point of the piece); desktop: a full row below
@@ -213,10 +214,22 @@ function renderFlow(p){
 lb.addEventListener("click",e=>{const b=e.target.closest(".fl-node");if(!b)return;const p=PROJECTS[cur],st=stepsOf(p)[+b.dataset.step];if(!st)return;
   // a hook may take over a step (a set grid, an animation): it calls preventDefault() on "flowstep"
   if(!lb.dispatchEvent(new CustomEvent("flowstep",{cancelable:true,detail:{piece:p,step:st,index:+b.dataset.step,node:b}})))return;
+  if(st.full===p.full)return flowBack();
+  // a step's picture is a layer of its own (class fl-viewing; js/game.js LAYERS gives it a history entry):
+  // Back, Esc or the piece's own node return to the piece with the flow, the lightbox stays open
   const art=document.getElementById("lbArt");
-  art.innerHTML=st.full===p.full?artOf(p,true):`<img class="ok" src="${escH(st.full)}" alt="${escH(flowCap(st,+b.dataset.step))}" decoding="async">`;
+  art.innerHTML=`<img class="ok" src="${escH(st.full)}" alt="${escH(flowCap(st,+b.dataset.step))}" decoding="async">`;
   lb.querySelectorAll(".fl-node").forEach(n=>n.removeAttribute("aria-current"));b.setAttribute("aria-current","true");
+  flowBack.from=+b.dataset.step;lb.classList.add("fl-viewing");
   art.scrollIntoView&&art.scrollIntoView({block:"nearest",behavior:reduceFlow()?"auto":"smooth"})});
+function flowBack(){if(!lb.classList.contains("fl-viewing"))return;const p=PROJECTS[cur];
+  document.getElementById("lbArt").innerHTML=artOf(p,true);lb.classList.remove("fl-viewing");
+  const nodes=[...lb.querySelectorAll(".fl-node")],own=stepsOf(p).findIndex(x=>x.full===p.full);
+  nodes.forEach(n=>n.removeAttribute("aria-current"));if(nodes[own])nodes[own].setAttribute("aria-current","true");
+  const back=nodes[flowBack.from];if(back){back.focus({preventScroll:true});back.scrollIntoView({block:"nearest"})}}
+window.flowBack=flowBack;
+lb.addEventListener("cancel",e=>{if(lb.classList.contains("fl-viewing")){e.preventDefault();flowBack()}});   // Esc: back to the flow, not out of the lightbox
+lb.addEventListener("close",()=>lb.classList.remove("fl-viewing"));
 const reduceFlow=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /* ===== Typed words ===== */

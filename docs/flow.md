@@ -86,6 +86,11 @@ A piece may carry **steps**: the ordered pictures of its project. A piece withou
   is off under `prefers-reduced-motion`.
 - A node shows its step's picture in the lightbox (the piece's own step brings the piece back); it is marked
   `aria-current="true"`.
+- **Reversible path** (owner, 10-28: "please make sure the flow have reversible path"): a step's picture is its own layer
+  (`#lightbox.fl-viewing`, the `flstep` entry in `LAYERS` in js/game.js, which also runs on the desktop site). Back
+  (button or phone gesture) and Esc return to the piece with its flow, the lightbox still open and the step's node focused;
+  the piece's own node does the same. Back again, or the close button, returns to exactly where the lightbox was opened
+  (same tab, same scroll, no stale history entry). Layers that close together go back in one history step.
 - Strings in `COPY` (`js/data.js`): `flow.process`, `flow.series`, `flow.step` (`Step {n}`), `flow.this`, `flow.open`, `flow.count`.
 
 ## Admin (js/admin-art.js)

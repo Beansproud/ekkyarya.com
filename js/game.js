@@ -75,12 +75,17 @@ function go(to,fromPop){
 }
 try{history.replaceState({s:"start"},"")}catch(e){}
 /* Back closes what is on top (the lightbox, Color, a sheet, the share overlay): each open layer has its own history entry */
-const LAYERS=[["lb",()=>$("lightbox"),e=>e.open,e=>e.close()],["color",()=>$("gColor"),e=>e.classList.contains("open"),()=>Color.close()],
+const LAYERS=[["lb",()=>$("lightbox"),e=>e.open,e=>e.close()],["flstep",()=>$("lightbox"),e=>e.open&&e.classList.contains("fl-viewing"),()=>window.flowBack&&flowBack()],["color",()=>$("gColor"),e=>e.classList.contains("open"),()=>Color.close()],
   ["sheet",()=>$("gSheet"),e=>e.classList.contains("open"),()=>closeSheet()],["share",()=>$("gShare"),e=>e.classList.contains("open"),()=>{const x=$("sX");if(x)x.click()}]];
 const lstack=[];let skipPop=0;
-function syncLayers(){LAYERS.forEach(([id,get,isOpen])=>{const el=get();if(!el)return;const on=!!isOpen(el),at=lstack.indexOf(id);
-  if(on&&at<0){lstack.push(id);try{history.pushState({s:screen,l:id},"")}catch(e){}}
-  else if(!on&&at>=0){lstack.splice(at,1);if(history.state&&history.state.l===id){skipPop++;history.back()}}})}   // closed with its own button: drop its entry
+function syncLayers(){
+  // closed with its own button: drop its entry; layers that close together (the lightbox over a flow step) go back in one step
+  const closed=lstack.filter(id=>{const L=LAYERS.find(x=>x[0]===id),el=L[1]();return !el||!L[2](el)});
+  if(closed.length){let n=0;while(lstack.length&&closed.includes(lstack[lstack.length-1])){lstack.pop();n++}
+    closed.forEach(id=>{const at=lstack.indexOf(id);if(at>=0)lstack.splice(at,1)});
+    if(n&&history.state&&closed.includes(history.state.l)){skipPop++;history.go(-n)}}
+  LAYERS.forEach(([id,get,isOpen])=>{const el=get();if(!el)return;
+    if(isOpen(el)&&lstack.indexOf(id)<0){lstack.push(id);try{history.pushState({s:screen,l:id},"")}catch(e){}}})}
 addEventListener("load",()=>{const mo=new MutationObserver(syncLayers);
   LAYERS.forEach(([,get])=>{const el=get();if(el)mo.observe(el,{attributes:true,attributeFilter:["class","open"]})});syncLayers()});
 addEventListener("popstate",e=>{if(skipPop){skipPop--;return}
