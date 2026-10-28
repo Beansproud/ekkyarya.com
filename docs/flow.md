@@ -97,7 +97,8 @@ A piece may carry **steps**: the ordered pictures of its project. A piece withou
 
 The piece form of an added piece has a "Project flow (optional)" box: what the pictures show (process or series), Add
 pictures (several at once, resized like the piece), Add this piece's own picture, EN and ID captions, up and down
-buttons, a drag handle, and remove. Save writes `flow` and `steps` on the piece and queues the step pictures for the next
+buttons, a drag handle, remove, and Edit (opens the step picture in the image editor through `AdminArt.editImage`;
+Cancel leaves it untouched; the piece's own picture is edited with the main Edit). Save writes `flow` and `steps` on the piece and queues the step pictures for the next
 Publish commit. `validatePiece` refuses 1 step, more than 8, a caption in one language only, a caption over 60
 characters, and emoji (`AdminArt.validateSteps`). Built-in pieces have no edit form, so their steps stay in `js/data.js`
 (or `flows` in data/site.json written by hand) for now.
