@@ -41,6 +41,8 @@ phone.addEventListener("change",setMode);
 // the Web shortcut sits just left of the Hire chip, whose width changes with the language
 // and steps down when the start title needs the room: full label, then the globe alone, then the title gives way
 // (only on the narrowest phones in Bahasa; the logo beside it still says who this is)
+// Only in a mobile browser (owner, 10-28): the Android app and an installed home-screen app (PWA) have no Web button.
+if(native||matchMedia("(display-mode: standalone)").matches||navigator.standalone===true)document.querySelector("#game .g-web-pin")?.remove();
 {const h=document.querySelector("#game .g-hire-pin"),wb=document.querySelector("#game .g-web-pin"),tl=document.querySelector("#g-start .g-start-title");
   // measured only while the start page shows (a hidden title has no width); the compact place is computed, not tried
   const fit=()=>{if(!h||!h.offsetWidth)return;$("game").style.setProperty("--hire-w",h.offsetWidth+"px");if(!wb||!tl||!tl.offsetParent)return;
