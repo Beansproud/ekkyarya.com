@@ -453,9 +453,10 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 .v-cloud::before{left:18%;width:34%;aspect-ratio:1}
 .v-cloud::after{left:44%;width:44%;aspect-ratio:1}
 .v-cloud.small{width:14%;opacity:.18}
-@keyframes vCloud{from{transform:translateX(-110%)}to{transform:translateX(560%)}}
+/* clouds fade in and out while they cross the frame edge, so no box ever cuts one flat */
+@keyframes vCloud{0%{transform:translateX(-110%);opacity:0}3%{opacity:0}16%{opacity:.22}76%{opacity:.22}91%{opacity:0}100%{transform:translateX(560%);opacity:0}}
 .v-cloud.small{animation-name:vCloudS}
-@keyframes vCloudS{from{transform:translateX(-110%)}to{transform:translateX(720%)}}
+@keyframes vCloudS{0%{transform:translateX(-110%);opacity:0}2%{opacity:0}14%{opacity:.18}86%{opacity:.18}99%{opacity:0}100%{transform:translateX(720%);opacity:0}}
 .v-lantern{position:absolute;width:9%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
   background:radial-gradient(circle,rgba(255,226,140,.85),rgba(255,200,80,0) 68%);opacity:.35;animation:vLantern 6s ease-in-out infinite}
 @keyframes vLantern{50%{opacity:.8}}
@@ -877,7 +878,7 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 
 /* Map squad: a living village (owner 10-28). Transform and opacity only; JS (Life in js/game.js) pauses all of it when the
    map is off screen or the tab is hidden, and starts none of it under reduced motion. */
-.v-fx{position:absolute;inset:0;pointer-events:none;z-index:2}
+.v-fx{position:absolute;inset:0;pointer-events:none;z-index:2;contain:layout paint style}   /* moments come and go in here without restyling the rest of the map */
 .v-fx i,.v-fx img{position:absolute;display:block;translate:-50% -50%;pointer-events:none}
 .v-fx img{width:auto}
 .v-fx img.foot{translate:-50% -100%}
@@ -963,3 +964,7 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 
 /* ===== Map fit (art critic a1): the village spans the screen width, through the 16 px side gutters ===== */
 #g-map .v-map{max-width:none;margin:auto 0;align-self:center;flex-shrink:0}
+/* the World idle fact bubble keeps off the gate and the island: above the tab bar, or under the title on a short phone */
+body:has(#g-map.active) .idle-buddy{bottom:calc(env(safe-area-inset-bottom) + 96px)}
+@media (max-height:700px){body:has(#g-map.active) .idle-buddy{bottom:auto;top:calc(env(safe-area-inset-top) + 112px)}}
+.v-isleg{position:absolute;inset:0;pointer-events:none;will-change:transform}
