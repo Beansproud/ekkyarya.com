@@ -2,6 +2,12 @@
 
 The art critic's top 3 per round, newest on top. Method and sources: `docs/art-critic.md`. Advisory, never blocking.
 
+Final look, main f28ea16 (post-freeze; sprint2/final not yet pushed at 07:50), 07:50 UTC
+Verdict: calm, and his. All three round 1 close notes landed: the zoomed map has no hard cloud rectangle and its top edge
+fades; Doodle Scene starts on cream paper; the Done reveal is down to Share, Download, Keep coloring and Hire.
+Protect: the start page sketchbook wall and the map at 1x. Next sprint, first look: the zoom frame's soft bands at top
+and bottom at 1.5x and 2x, judged on iPhone Safari (this pass was Chromium).
+
 Round 1 close, sprint2/r1 e9a2702, 06:55 UTC
 1. Map at 1.5x and 2x: cut the hard edges. Zoomed in, a cloud layer shows as a grey rectangle with straight edges, the zoomed picture starts at a straight line under the title (the UFO and stars cut flat), and at 1x a cloud is sliced by the left screen edge. Owner, 10-28: a hard layer edge in the zoomed galaxy "really bugs" him; rubric 3. Smallest fix: hide the cloud layer above 1x and fade the top of the zoom frame into the galaxy the way its bottom already fades.
 2. Doodle Scene: simplify. The blank page is one solid #FFB400 yellow block filling the screen, now the loudest thing on the site, with the drawing and stickers tiny on it. Rubric 2 (the art leads) and the sprint goal "calm". Smallest fix: start the scene on white paper; yellow stays a swatch.
