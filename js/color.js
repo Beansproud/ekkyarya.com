@@ -107,7 +107,7 @@ async function pageData(id){
     if(!(window.COLOR_PAGE_DATA||{})[id])await loadScript(`assets/color/${id}/page.js`);
     meta=COLOR_PAGE_DATA[id];const map=await loadImg(meta.mapData);await breathe();
     const c=document.createElement("canvas");c.width=meta.w;c.height=meta.h;const x=c.getContext("2d",{willReadFrequently:true});x.drawImage(map,0,0);
-    const d32=new Uint32Array(x.getImageData(0,0,meta.w,meta.h).data.buffer);ids=new Uint16Array(d32.length);
+    const d32=new Uint32Array(x.getImageData(0,0,meta.w,meta.h).data.buffer);c.width=c.height=0;ids=new Uint16Array(d32.length);
     for(let i=0;i<ids.length;i++){const v=d32[i];ids[i]=(v&255)+(v>>8&255)*256}}   // little-endian RGBA: R + 256 * G
   await breathe();
   const pd={id,meta,ids,line:null};boxes(pd);   // pass 1: sizes, bounding boxes and rank together
@@ -153,7 +153,7 @@ function paintRegion(s,cv,r){const {meta,line,ids}=s.pd,W=meta.w,x=cv.getContext
   const bx=box.getContext("2d"),img=bx.createImageData(w,h),d32=new Uint32Array(img.data.buffer),col=new Uint32Array(16),fills=s.fills;
   for(let v=0;v<16;v++){const c=hexRgb(colorOf(s,v));col[v]=(255<<24|c[2]<<16|c[1]<<8|c[0])>>>0}
   let yy=0;const rows=until=>{for(;yy<h&&performance.now()<until;yy++){const base=(y0+yy)*W+x0,o=yy*w;for(let xx=0;xx<w;xx++)d32[o+xx]=col[fills[ids[base+xx]]]}};
-  const done=()=>{bx.putImageData(img,0,0);if(line)bx.drawImage(line,x0,y0,w,h,0,0,w,h);x.drawImage(box,x0,y0)};
+  const done=()=>{bx.putImageData(img,0,0);if(line)bx.drawImage(line,x0,y0,w,h,0,0,w,h);x.drawImage(box,x0,y0);box.width=box.height=0};
   rows(performance.now()+10);if(yy>=h)return done();
   const tick=()=>{rows(performance.now()+10);yy>=h?done():requestAnimationFrame(tick)};requestAnimationFrame(tick)}
 // Draw the whole picture (fills, lines, stickers) into a box on any canvas: thumbnails, reveal, share card, arrival.
