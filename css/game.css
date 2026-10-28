@@ -7,7 +7,7 @@ body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family
 .g-sky{position:absolute;inset:0;pointer-events:none}
 .g-sky i{position:absolute;border-radius:50%;background:#fff;animation:twinkle 9s ease-in-out infinite}
 .g-planet-bg{position:absolute;width:420px;height:420px;border-radius:50%;left:50%;bottom:-300px;translate:-50% 0;background:radial-gradient(circle at 40% 30%,#4b3470,#2a1845 70%);box-shadow:0 0 80px rgba(156,145,189,.35);pointer-events:none}
-.g-screen{position:absolute;inset:0;padding:calc(env(safe-area-inset-top) + 92px) 16px calc(env(safe-area-inset-bottom) + 104px);overflow-y:auto;overflow-x:hidden;opacity:0;pointer-events:none;transform:translateY(24px) scale(.97);transition:opacity var(--dur) var(--ease-in),transform var(--dur) var(--ease-in);scrollbar-width:none}
+.g-screen{position:absolute;inset:0;padding:calc(env(safe-area-inset-top) + 92px) 16px calc(env(safe-area-inset-bottom) + 104px);overflow-y:auto;overflow-x:hidden;opacity:0;pointer-events:none;transform:translateY(16px);transition:opacity var(--dur-fast) var(--ease-in),transform var(--dur-fast) var(--ease-in);will-change:opacity,transform;scrollbar-width:none}   /* a screen is a layer: opacity and translate only */
 .g-screen::-webkit-scrollbar{display:none}
 .g-screen.active{opacity:1;pointer-events:auto;transform:none}
 .g-title{color:#fff;font-size:1.9rem;font-weight:700;text-align:center;text-shadow:0 4px 0 #2B1342}
@@ -310,7 +310,7 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 .s-rec{position:fixed;left:-10000px;top:0;pointer-events:none}
 
 /* B39: nothing animates where nobody can see it */
-.g-screen:not(.active) *,.g-screen:not(.active){animation-play-state:paused!important}
+.g-screen:not(.active),.g-screen:not(.active) :is(.v-shimmer,.v-cloud,.g-card .art){animation-play-state:paused!important}   /* named, not "*": toggling .active must not restyle every element of three screens */
 #game.playing .g-screen *{animation-play-state:paused!important}
 
 /* r1b: six of Ekky's drawings at once, a static 3 x 2 grid (no swipe), titled by COPY start.featured */
@@ -360,7 +360,7 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 /* Mine scrolls to clear the tab bar: a spacer as tall as the bar (72 px + 12 px offset) plus 16 px */
 #g-mine::after{content:"";display:block;height:calc(env(safe-area-inset-bottom) + 100px)}
 /* hidden Art cards: nothing animates off-screen (B42) */
-.g-screen:not(.active) .g-card,.g-screen:not(.active) .g-card *{animation:none!important}
+.g-screen:not(.active) .g-card,.g-screen:not(.active) .g-card .art{animation:none!important}
 /* share preview: one primary Share, then Download and video as quiet links (r1c) */
 .s-primary{min-width:240px;max-width:none!important}
 .s-secondary{gap:18px;margin-top:10px}
@@ -698,7 +698,7 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 @keyframes t-spin{40%{rotate:-15deg;animation-timing-function:cubic-bezier(.34,1.56,.64,1)}}
 @keyframes t-squeeze{35%{scale:.8 1.1;animation-timing-function:cubic-bezier(.34,1.56,.64,1)}}
 @keyframes t-ringflash{40%{opacity:1}}
-.g-tabs button.active .g-ico{animation:t-pop .32s ease-out}
+.g-tabs button.active .g-ico{animation:t-pop .32s ease-out .26s backwards}   /* after the screen switch (250 ms), not during it */
 .g-tabs button.active:not(.center) span:last-child,.g-tabs button.center.active small{font-weight:700}
 .g-tabs button[data-tab=art].t-bounce .g-ico{animation:t-spin .35s ease-out}
 .g-tabs button[data-tab=mine].t-bounce .g-ico{animation:t-squeeze .35s ease-out}

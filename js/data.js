@@ -734,7 +734,7 @@ function setLang(l) {
   if (!LANGS.includes(l)) return;
   LANG = l;
   try { localStorage.setItem("lang", l); } catch (e) {}
-  if (typeof document !== "undefined") document.documentElement.lang = l;
+  if (typeof document !== "undefined" && !setLang.deferLang) document.documentElement.lang = l;   // switchLang (js/site.js) sets it when idle: it restyles the whole page
 }
 // t("stars.score", {n: 42}) -> "You caught 42 stars". Falls back to English, then to the key.
 function t(key, vars) {

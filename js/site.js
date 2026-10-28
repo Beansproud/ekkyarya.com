@@ -13,11 +13,15 @@ const langBtns=document.querySelectorAll("[data-lang]");
 const syncLang=()=>{document.documentElement.lang=LANG;langBtns.forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===LANG))};
 syncLang();
 // Switches in place, no reload: a short dim, the text and every screen redrawn at the dim point ("ekky:lang"), then back.
-function switchLang(l){if(l===LANG)return;setLang(l);syncLang();
+let langAttrT=0;
+const setLangAttr=()=>{clearTimeout(langAttrT);langAttrT=setTimeout(()=>(window.requestIdleCallback||(f=>f()))(()=>{document.documentElement.lang=LANG},{timeout:300}),450)};   // restyles the whole page (about 50 ms at 4x CPU): after the fade, not in the tap's own frames
+function switchLang(l){if(l===LANG)return;setLang.deferLang=true;setLang(l);setLang.deferLang=false;
+  langBtns.forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===LANG));setLangAttr();
   const swap=()=>{applyText();dispatchEvent(new Event("ekky:lang"))};
   if(matchMedia("(prefers-reduced-motion: reduce)").matches)return swap();
-  const el=document.body;el.style.transition="opacity .1s";el.style.opacity=".4";
-  setTimeout(()=>{swap();el.style.opacity="1";setTimeout(()=>{el.style.transition="";el.style.opacity=""},120)},110)}
+  const el=document.body.classList.contains("game-mode")&&document.querySelector("#game .g-screen.active")||document.body;   // dim only the screen in view
+  el.style.willChange="opacity";el.style.transition="opacity .1s";el.style.opacity=".4";
+  setTimeout(()=>{swap();el.style.opacity="1";setTimeout(()=>{el.style.transition="";el.style.opacity="";el.style.willChange=""},120)},110)}
 langBtns.forEach(b=>b.addEventListener("click",()=>switchLang(b.dataset.lang)));
 /* ===== Install the app (B40, FEATURES.pwa). Where the browser offers it (beforeinstallprompt, Chrome), the button opens
    the browser's own install prompt. Everywhere else (iPhone, an in-app browser, Chrome before it decides to offer it) the
