@@ -650,15 +650,6 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 #g-mine .lang-switch{border-radius:6px;box-shadow:inset 0 0 0 1.5px #2B1342;background:#FFFDF8}
 #g-mine .lang-switch button{background:#FFFDF8;color:#2B1342}
 #g-mine .lang-switch button[aria-pressed="true"]{background:#FFB400}
-/* start: the art stays the hero (UX: drawings at least 100 px at 360 x 640) with the tab bar showing; tighter gaps */
-#game .g-start{gap:10px}
-#g-start .g-featured{gap:12px 10px;padding-top:4px}
-#g-start .g-featured .g-feat{padding:5px 5px 0}
-#g-start .g-featured .g-feat b{padding:3px 1px 4px;font-size:.75rem}
-#g-start .g-tile,#g-start .g-tile.catch{height:52px;min-height:52px;flex-direction:row;gap:8px}
-#g-start .g-start-foot .g-classic,#g-start .g-start-foot .lang-switch{height:44px;min-height:44px}
-@media (max-width:380px){#game .g-start{padding-left:12px;padding-right:12px}#g-start .g-featured{column-gap:6px}#g-start .g-featured .g-feat{padding:3px 3px 0}}
-#game .g-start{padding-bottom:calc(env(safe-area-inset-bottom) + 120px)}   /* the bar (72 + 12) plus the Map face that rises 30 px above it */
 
 /* Dark mode on phones: the game is a sketchbook page, so it always uses the light paper and ink. Without this, a phone
    in dark mode got the dark site tokens (dark paper) under the ink-colored text, and the title, tagline and headings
@@ -1149,3 +1140,17 @@ body.game-mode .idle-buddy.on-start{left:16px;right:16px;max-width:none;align-it
 }
 .v-hold,.v-hold *{animation-play-state:paused!important}   /* the whole village holds still: off screen, or under a finger */
 #g-map .v-map.zoomed .v-cloudrow{display:none}   /* zoomed in, the drifting clouds would only show as flat grey shapes */
+/* the game stays on light paper: the picture viewer is a dialog outside #game, so dark mode must not darken it here;
+   the desktop site keeps its dark viewer */
+body.game-mode #lightbox{background:#FFFDF8;color:#2B1342}
+body.game-mode #lightbox .lb-body,body.game-mode #lightbox .lb-body h3{color:#2B1342}
+body.game-mode #lightbox .lb-desc{color:#4b4655}
+body.game-mode #lightbox .lb-art{background:#F1EBDD}
+body.game-mode #lightbox .lb-nav button,body.game-mode #lightbox .lb-close{background:#FFFDF8;color:#2B1342;border-color:#2B1342}
+/* wide screens (desktop game mode): sheets stay a phone-sized card, centred */
+.g-sheet .g-sheet-in{max-width:560px;margin-left:auto;margin-right:auto}
+body.game-mode #lightbox .lb-art img{background:#F1EBDD}
+body.game-mode #lightbox .lb-cat{color:#645F70}
+body.game-mode #lightbox .btn.ghost{color:#2B1342;border-color:#2B1342;background:transparent}
+body.game-mode #lightbox .lb-hire{color:#2B1342}
+body.game-mode #lightbox .lb-actions .btn.ghost.lb-dl{border:1.5px solid #2B1342;color:#2B1342}
