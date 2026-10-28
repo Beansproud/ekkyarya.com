@@ -310,7 +310,7 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 .s-rec{position:fixed;left:-10000px;top:0;pointer-events:none}
 
 /* B39: nothing animates where nobody can see it */
-.g-screen:not(.active) *,.g-screen:not(.active){animation-play-state:paused!important}
+.g-screen:not(.active),.g-screen:not(.active) :is(.v-shimmer,.v-cloud,.g-card .art){animation-play-state:paused!important}   /* named, not "*": toggling .active must not restyle every element of three screens */
 #game.playing .g-screen *{animation-play-state:paused!important}
 
 /* r1b: six of Ekky's drawings at once, a static 3 x 2 grid (no swipe), titled by COPY start.featured */
@@ -360,7 +360,7 @@ body.game-mode .toast.show{transform:translate(-50%,0)}
 /* Mine scrolls to clear the tab bar: a spacer as tall as the bar (72 px + 12 px offset) plus 16 px */
 #g-mine::after{content:"";display:block;height:calc(env(safe-area-inset-bottom) + 100px)}
 /* hidden Art cards: nothing animates off-screen (B42) */
-.g-screen:not(.active) .g-card,.g-screen:not(.active) .g-card *{animation:none!important}
+.g-screen:not(.active) .g-card,.g-screen:not(.active) .g-card .art{animation:none!important}
 /* share preview: one primary Share, then Download and video as quiet links (r1c) */
 .s-primary{min-width:240px;max-width:none!important}
 .s-secondary{gap:18px;margin-top:10px}
