@@ -47,7 +47,7 @@ const PAGES = {
   const n = String(k + 1).padStart(2, "0");
   const dark = [1, 6, 10, 12].includes(k + 1);   // night and shadow backgrounds sit close to the ink: a tighter threshold keeps them colorable
   PAGES["mm-" + n] = { slug: "morumelons", src: `assets/projects/morumelons/morumelons-${n}.webp`, title: nm + " Melon",
-    lineMax: dark ? 44 : 66, inkSoft: dark ? 52 : 84, inkLikeFill: [6, 10].includes(k + 1),   // the mummy's alley and the wizard's night are almost ink: any wide dark area is paint
+    lineMax: dark ? 44 : 66, inkSoft: dark ? 52 : 84, visor: k === 0 ? { cx: 455, cy: 355, rx: 198, ry: 194, eyes: [[420, 337], [549, 341]] } : null, inkLikeFill: [6, 10].includes(k + 1),   // the mummy's alley and the wizard's night are almost ink: any wide dark area is paint
     // owner: "make it very very detail" (the samurai's scar and the dino's fire were lost): colored outlines are lines too
     // (stroke: a pixel this much darker than its 7 px neighborhood), small painted shapes get their own region
     // (area, speck), and every edge between two regions without one of Ekky's lines gets a fine ink edge (edge alpha)
@@ -146,7 +146,22 @@ function edges(line, own, onLine, w, h, a) {
     if (r || d) for (const j of [i, r ? i + 1 : d ? i + w : i]) if (!onLine[j] && line[j * 4 + 3] < a * 255) { line[j * 4] = 43; line[j * 4 + 1] = 19; line[j * 4 + 2] = 66; line[j * 4 + 3] = Math.round(a * 255) } }
 }
 
+// Astro's visor (owner: "remove the helmet reflection lines too, make it make sense"): tinted glass with glare and the
+// face behind it traces as a tangle. Inside the visor, Ekky's ink stays; the glare and the glass become one light glass
+// color and the face one skin color, so the page shows a clear glass, a face with eyes and a smile, and nothing else.
+function clearVisor(px, w, h, { cx, cy, rx, ry, eyes }) {
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    if (((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 > 1) continue;
+    const i = (y * w + x) * 4, r = px[i], g = px[i + 1], b = px[i + 2], l = r * .299 + g * .587 + b * .114;
+    if (l < 110 && (eyes || []).some(([ex, ey]) => Math.hypot(x - ex, y - ey) < 24)) { px[i] = 43; px[i + 1] = 19; px[i + 2] = 66; continue }   // the eyes, dimmed by the glass: full ink
+    if (l < 58 && Math.hypot(r - 43, g - 19, b - 66) < 48) continue;   // Ekky's ink: smile, outlines
+    const face = r >= g - 4 && l < 150;                                 // the face's grey-brown; teal glass and white glare are glass
+    px[i] = face ? 246 : 214; px[i + 1] = face ? 226 : 234; px[i + 2] = face ? 206 : 242;
+  }
+}
+
 function build({ w, h, px }) {
+  if (page.visor) { px = Buffer.from(px); clearVisor(px, w, h, page.visor) }   // a copy: build runs twice under --verify
   const n = w * h, lum = new Float32Array(n);
   for (let i = 0; i < n; i++) lum[i] = px[i * 4] * .299 + px[i * 4 + 1] * .587 + px[i * 4 + 2] * .114;
   if (page.blueFillR) thickToFill(lum, px, w, h, page.lineMax, page.blueFillR);
