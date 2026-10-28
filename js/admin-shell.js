@@ -78,6 +78,8 @@
     const entries = [];
     const files = new Map(staged);
     if (JSON.stringify(data) !== base) files.set("data/site.json", b64(JSON.stringify(data, null, 2) + "\n"));
+    // Only these paths may be written: site.json and the two image folders (no "..", no other folder, no other type).
+    for (const path of files.keys()) if (path !== "data/site.json" && !/^assets\/work\/(?:thumb\/)?u\/[a-z0-9-]+\.jpg$/.test(path)) throw new Error("bad path: " + path);
     for (const [path, content] of files) {
       if (content === null) { entries.push({ path, mode: "100644", type: "blob", sha: null }); continue; }
       const blob = await post(`/repos/${REPO}/git/blobs`, { content, encoding: "base64" });

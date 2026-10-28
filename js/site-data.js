@@ -5,7 +5,10 @@ const SiteData = (() => {
   const isObj = v => v && typeof v === "object" && !Array.isArray(v);
   const str = v => typeof v === "string" ? v.trim() : "";
   const GLYPH = /[\p{Extended_Pictographic}\u{FE0F}\u{20E3}]/u;
-  const clean = v => { const s = str(v); return s && !GLYPH.test(s) ? s : ""; };   // owner rule: no emoji
+  // Owner rule: no emoji. Security: the site puts some of these strings into innerHTML and double-quoted attributes
+  // (js/site.js), so no value may carry markup: "<" and ">" are dropped and a straight double quote becomes a curly one.
+  const clean = v => { const s = str(v).replace(/[<>]/g, "").replace(/"/g, "\u201D").trim(); return s && !GLYPH.test(s) ? s : ""; };
+  const SAFE_URL = /^https:\/\/[^\s"'<>`\\]+$/, SAFE_MAIL = /^[^\s@"'<>`\\]+@[^\s@"'<>`\\]+$/, SAFE_UID = /^u-[a-z0-9-]+$/;
   const SAFE_PATH = /^assets\/work\/(?:thumb\/)?u\/[a-z0-9-]+\.jpe?g$/;
   const KINDS = ["original", "client", "fan"], CATS = ["illustration", "web", "branding", "social"];
   const ROLES = ["portfolio", "card", "featured", "share", "coloring", "sticker", "sprite", "level", "scene", "avatar", "game", "village"];
@@ -29,7 +32,7 @@ const SiteData = (() => {
     const kind = KINDS.includes(raw.kind) ? raw.kind : "original";
     const tr = isObj(raw.id) ? raw.id : isObj(raw.tr) ? raw.tr : null;
     const p = {
-      uid: str(typeof raw.id === "string" ? raw.id : raw.uid), cat: CATS.includes(raw.cat) ? raw.cat : "illustration",
+      uid: (u => SAFE_UID.test(u) ? u : "")(str(typeof raw.id === "string" ? raw.id : raw.uid)), cat: CATS.includes(raw.cat) ? raw.cat : "illustration",
       title, desc: clean(raw.desc), img, full, kind,
       roles: (Array.isArray(raw.roles) ? raw.roles : ["portfolio", "card"]).filter(r => ROLES.includes(r))
     };
@@ -49,12 +52,12 @@ const SiteData = (() => {
     try {
       if (!isObj(d) || d.version !== 1) return false;
       const c = isObj(d.contact) ? d.contact : {};
-      if (clean(c.email) && /^[^\s@]+@[^\s@]+$/.test(c.email.trim())) { g.CONFIG.email = c.email.trim(); changed = true; }
+      if (SAFE_MAIL.test(str(c.email))) { g.CONFIG.email = c.email.trim(); changed = true; }
       if (isObj(c.priceLine)) for (const l of ["en", "id"]) if (clean(c.priceLine[l]) && g.COPY[l]) {
         g.COPY[l]["hire.price"] = g.COPY[l]["about.fact.price"] = clean(c.priceLine[l]); changed = true; }
       if (isObj(d.links)) for (const k in d.links) {
         const u = str(d.links[k]);
-        if (!/^https:\/\/[^\s]+$/.test(u)) continue;
+        if (!SAFE_URL.test(u)) continue;
         if (k === "website") g.CONFIG.website = u; else g.CONFIG.links[k] = u;
         changed = true;
       }
