@@ -594,3 +594,19 @@ body.game-mode .cursor,body.game-mode .cursor-dot{display:none}
   .fl-col .fl-arrow{rotate:-90deg;margin:0 2px}
 }
 .lb-body>div:has(>.lb-flow.fl-col:not([hidden])){flex:1 1 100%;min-width:0}   /* the text column grows to hold the flow */
+/* QA and critic, round 1 (16:15): one plate colour, his yellow only on "this picture"; the drawing leads the bubble */
+.fl-sh{fill:#DCD6EA}
+.fl-num{background:#FFFDF8}
+.fl-node[aria-current="true"] .fl-sh,.fl-node[aria-current="true"] .fl-num{fill:#FFB400;background:#FFB400}
+.fl-col .fl-node img{width:58%;max-width:220px}
+@container (min-width:600px){.fl-col .fl-node img{width:100%;max-width:none}}
+/* a step's picture: an on-screen one-step Back and the step's own caption (the phone has no back button) */
+.lb-art{position:relative}
+#lightbox .lb-close{z-index:3}   /* stays above the positioned picture area */
+.fl-bar{position:absolute;left:12px;top:12px;right:72px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;pointer-events:none}
+.fl-back{pointer-events:auto;display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 14px 0 10px;border-radius:22px;border:2px solid #2B1342;
+  background:#FFFDF8;color:#2B1342;font-family:Fredoka,Poppins,sans-serif;font-weight:700;font-size:.95rem;box-shadow:2px 3px 0 #2B1342;cursor:pointer}
+.fl-back .ico{width:20px;height:20px}
+.fl-bar-cap{padding:4px 10px;border-radius:10px;background:#FFFDF8;color:#2B1342;border:1.5px solid #2B1342;font-family:Fredoka,Poppins,sans-serif;font-weight:600;font-size:.85rem}
+/* desktop: with a flow the picture is shorter, so the diagram's top shows without scrolling (QA P2-5) */
+body:not(.game-mode) #lightbox.has-flow .lb-art>img{display:block;width:100%;max-height:min(40vh,520px);object-fit:contain}

@@ -269,6 +269,7 @@ const COPY = {
     "flow.this": "This picture",
     "flow.open": "Open step {n}: {caption}",
     "flow.count": "{n} pictures",
+    "flow.back": "Back to the project",
     "lb.downloadNote": "A small copy for you. Credit Ekky Arya if you post it.",
     // Share and download (B11, B12, B40, D9, D10)
     "share.button": "Share",
@@ -584,6 +585,7 @@ const COPY = {
     "flow.this": "Gambar ini",
     "flow.open": "Buka langkah {n}: {caption}",
     "flow.count": "{n} gambar",
+    "flow.back": "Kembali ke proyek",
     "lb.downloadNote": "Versi kecil buat kamu. Kalau diunggah, sebut Ekky Arya, ya.",
     "share.button": "Bagikan",
     "dl.button": "Unduh",
