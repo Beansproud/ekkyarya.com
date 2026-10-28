@@ -1183,3 +1183,5 @@ body.game-mode #lightbox .lb-actions .btn.ghost.lb-dl{border:1.5px solid #2B1342
   #game .g-screen:not(#g-start){padding-top:calc(env(safe-area-inset-top) + 92px)}
   #game .g-screen{padding-bottom:calc(env(safe-area-inset-bottom) + 136px)}
 }
+/* the way back to the game must never hide: where the sidebar stays open (wider than 980 px, e.g. a sideways iPad), Play sits beside it, not under it */
+@media (min-width:981px) and (pointer:coarse){body:not(.game-mode) .g-mode-fab{left:calc(var(--side-w) + 16px)}}
