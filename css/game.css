@@ -1172,3 +1172,14 @@ body.game-mode #lightbox .lb-actions .btn.ghost.lb-dl{border:1.5px solid #2B1342
 
 /* tablets: Safari can ring a tab after a tap; the ring stays for the keyboard only */
 .g-tabs button:focus:not(:focus-visible),#game .g-web-pin:focus:not(:focus-visible),#game .g-hire-pin:focus:not(:focus-visible){outline:none}
+
+/* Tablets (owner, 10-28: "scale up the headers and buttons for ipad"): the chrome and the text panels grow by about a
+   quarter; the village and the coloring canvas keep their own sizing (they turn touches into picture positions). */
+@media (min-width:700px) and (min-height:700px){
+  body.game-mode #game{--chrome-h:236px}
+  #game .g-home,#game .g-hire-pin,#game .g-web-pin{zoom:1.3}
+  #game .g-tabs{zoom:1.25}
+  #game .g-head,#g-start .g-start-head,#g-start .g-row-head,#g-start .g-tiles,#g-art .g-filters,#g-mine .g-panel,#game .g-sheet-in{zoom:1.25}
+  #game .g-screen:not(#g-start){padding-top:calc(env(safe-area-inset-top) + 92px)}
+  #game .g-screen{padding-bottom:calc(env(safe-area-inset-bottom) + 136px)}
+}

@@ -127,7 +127,7 @@ function renderMap(){
   // the village fills the screen width, edge to edge through the side gutters (art critic a1), unless the height left
   // between the header and the tab bar is shorter: then the width follows that height
   // tablets (owner, 10-28: an iPad showed a phone-sized village): the cap grows with the screen, the height rule still holds
-  W.style.width=`min(100% + 32px, max(520px, 100% - 64px), calc((100dvh - 196px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) * ${(V.w/V.h).toFixed(4)}))`;
+  W.style.width=`min(100% + 32px, max(520px, 100% - 64px), calc((100dvh - var(--chrome-h, 196px) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) * ${(V.w/V.h).toFixed(4)}))`;
   W.innerHTML=`<div class="v-zoom" id="gMapZoom">${groundHTML(V,V.frames.map((f,k)=>{const p=art[k];if(!p)return "";const deg=(Math.atan(f.slope)*180/Math.PI).toFixed(2);
       return `<img class="v-frame" src="${thumbOf(p)}" alt="" decoding="async" style="left:${pct(f.x,V.w)};top:${pct(f.y,V.h)};width:${pct(f.w,V.w)};height:${pct(f.h,V.h)};transform:skewY(${deg}deg)">`}).join(""))}`+
     places.map(p=>{const b=V.places[p.id].box,n=LABEL_NUDGE[p.id]||[0,0],l=[V.places[p.id].label[0]+n[0],V.places[p.id].label[1]+n[1]];
