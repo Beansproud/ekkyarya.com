@@ -14,7 +14,7 @@ const syncLang=()=>{document.documentElement.lang=LANG;langBtns.forEach(b=>b.set
 syncLang();
 // Switches in place, no reload: a short dim, the text and every screen redrawn at the dim point ("ekky:lang"), then back.
 let langAttrT=0;
-const setLangAttr=()=>{clearTimeout(langAttrT);langAttrT=setTimeout(()=>(window.requestIdleCallback||(f=>f()))(()=>{document.documentElement.lang=LANG},{timeout:3000}),1500)};   // restyles the whole page (about 50 ms at 4x CPU): not in the tap's frames
+const setLangAttr=()=>{clearTimeout(langAttrT);langAttrT=setTimeout(()=>(window.requestIdleCallback||(f=>f()))(()=>{document.documentElement.lang=LANG},{timeout:300}),450)};   // restyles the whole page (about 50 ms at 4x CPU): after the fade, not in the tap's own frames
 function switchLang(l){if(l===LANG)return;setLang.deferLang=true;setLang(l);setLang.deferLang=false;
   langBtns.forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===LANG));setLangAttr();
   const swap=()=>{applyText();dispatchEvent(new Event("ekky:lang"))};
