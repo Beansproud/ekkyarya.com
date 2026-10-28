@@ -217,7 +217,7 @@
         <h3>${esc(state.editing ? t.edit : t.add)}</h3>
         <div class="aa-f"><span>${esc(t.image)}</span>
           <div class="aa-pick">${f.preview ? `<img class="aa-th aa-big" src="${esc(f.preview)}" alt="">` : ""}
-          <label class="aa-btn aa-txt aa-file">${esc(t.pick)}<input id="aaFile" type="file" accept="image/*"></label>${f.preview ? `<button type="button" class="aa-btn aa-txt" id="aaEdit">${lang() === "id" ? "Sunting" : "Edit"}</button>` : ""}</div>
+          <label class="aa-btn aa-txt aa-file">${esc(t.pick)}<input id="aaFile" type="file" accept="image/*"></label>${f.preview ? `<button type="button" class="aa-btn aa-txt" id="aaEdit">${lang() === "id" ? "Sunting" : "Edit"}</button>` : ""}${f.orig && f.src !== f.orig ? `<button type="button" class="aa-btn aa-txt" id="aaOrig">${lang() === "id" ? "Kembali ke asli" : "Back to original"}</button>` : ""}</div>
           <small id="aaBusy">${esc(f.busy ? t.resizing : t.imageHint)}</small></div>
         ${field("aaTe", t.titleEn, f.title)}${field("aaDe", t.descEn, f.desc, "area")}
         ${field("aaTi", t.titleId, f.id.title)}${field("aaDi", t.descId, f.id.desc, "area")}
@@ -322,7 +322,7 @@
       el.querySelector("#aaCancel").onclick = () => { state.form = null; state.editing = null; state.errors = []; draw(); };
       el.querySelector("#aaFile").onchange = async e => {
         const file = e.target.files && e.target.files[0]; if (!file) return;
-        state.form.src = file;
+        state.form.src = state.form.orig = file;
         readForm(); state.form.busy = true; el.querySelector("#aaBusy").textContent = T().resizing;
         try {
           const r = await resizeFile(file), f = state.form;
@@ -336,6 +336,8 @@
         readForm(); const blob = await editImage(state.form.src || state.form.full, lang()).catch(() => null); if (!blob) return;
         const r = await resizeFile(blob), f = state.form; f.files = r; f.src = blob; f.preview = r.thumb.url; draw();
       };
+      const og = el.querySelector("#aaOrig");   // every edit can be undone: back to the picture as it was picked
+      if (og) og.onclick = async () => { readForm(); const f = state.form, r = await resizeFile(f.orig); f.files = r; f.src = f.orig; f.preview = r.thumb.url; draw(); };
       el.querySelector("#aaForm").onsubmit = e => { e.preventDefault(); submit(); };
       wireSteps();
       wireLists();
