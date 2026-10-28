@@ -8,7 +8,7 @@ Owner: Developer A. Nothing here is signed or published.
   `www/` is git-ignored.
 - `npx cap sync` copies `www/` into `android/app/src/main/assets/public` and finishes in under 0.1 s. That folder is
   git-ignored too.
-- **App id and name:** `com.ekkyarya.app`, "Ekky Arya" (`capacitor.config.ts`).
+- **App id and name:** `com.ekkyarya.app`, "Ekky Arya" (`capacitor.config.json`).
 - **Android levels:** min SDK 24, target SDK 36, versionCode 1, versionName "1.0"
   (`android/variables.gradle`, `android/app/build.gradle`).
 - **Icon and splash** are Ekky's face from `assets/icon-512.png`, no longer the Capacitor defaults
