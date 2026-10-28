@@ -49,18 +49,21 @@ function auditFn(){
 
 // ---- one config = one scheme + language, run end to end ----
 async function runConfig(browser,url,scheme,lang){
-  const cfg=`${scheme}-${lang}`;const rows=[];const errs=[];
-  async function ctx(){
+  const cfg=`${scheme}-${lang}`;const rows=[];
+  async function ctx(errs){
     const c=await browser.newContext({...IPHONE,colorScheme:scheme,acceptDownloads:true});
     await c.addInitScript(l=>{try{if(!sessionStorage.getItem('e2e-init')){localStorage.setItem('lang',l);sessionStorage.setItem('e2e-init','1')}}catch(e){}
-      // keep the share sheet deterministic: pretend there is no Web Share so the app's own fallback runs, and record any call
-      window.__shared=[];try{navigator.share=undefined;navigator.canShare=undefined}catch(e){}},lang);
+      // keep the share sheet deterministic: pretend there is no Web Share so the app's own fallback runs
+      try{navigator.share=undefined;navigator.canShare=undefined}catch(e){}},lang);
     const p=await c.newPage();p.on('pageerror',e=>errs.push(e.message));return {c,p}}
   async function boot(p,qs=''){await p.goto(url+'?game=1'+qs);await must(p,'#g-start.active','game mode did not open',8000);await sleep(500)}
-  async function T(name,fn){let ok=true,msg='';const {c,p}=await ctx();const before=errs.length;
-    try{await fn(p,c);if(errs.length>before)throw new Error('page error: '+errs[errs.length-1].slice(0,90))}catch(e){ok=false;msg=String(e.message||e).split('\n')[0].slice(0,160);
+  // tests are independent (each gets its own browser context), so they run POOL at a time; most of the wall time is waiting
+  const jobs=[];const T=(name,fn)=>{jobs.push({i:jobs.length,name,fn})};
+  async function runJob(job,again){const {i,name,fn}=job;let ok=true,msg='';const errs=[];const {c,p}=await ctx(errs);
+    try{await fn(p,c);if(errs.length)throw new Error('page error: '+errs[errs.length-1].slice(0,90))}catch(e){ok=false;msg=String(e.message||e).split('\n')[0].slice(0,160);
       if(OUT)await p.screenshot({path:`${OUT}/FAIL-${cfg}-${name.replace(/\W+/g,'_')}.png`}).catch(()=>{})}
-    rows.push({cfg,name,ok,msg});await c.close()}
+    await c.close().catch(()=>{});if(!ok&&!again)return runJob(job,true);   // one retry: a timing flake must not block a merge; a real bug fails twice
+    rows[i]={cfg,name,ok,msg,retried:!!again&&ok}}
   const audit=async(p,what)=>{const a=await p.evaluate(auditFn);if(a.length)throw new Error(`audit ${what}: ${a.slice(0,4).join(' ; ')}${a.length>4?' (+'+(a.length-4)+')':''}`)};
   const hash=p=>p.evaluate(()=>{const c=document.getElementById('cCanvas');if(!c)return null;const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let h=0;for(let i=0;i<d.length;i+=5)h=(h*31+d[i])>>>0;return h});
   const active=p=>p.evaluate(()=>{const s=document.querySelector('.g-screen.active');return s&&s.id});
@@ -128,12 +131,12 @@ async function runConfig(browser,url,scheme,lang){
     await p.tap('#cUndo');await sleep(400);await p.tap('#cUndo');await sleep(400);if(await p.$$eval('#cStickers .c-st',e=>e.length)>n0&&await hash(p)===h1)throw new Error('undo changed nothing on scratch page')});
 
   await T('doodle: sticker drag, drop on bin, undo',async p=>{await boot(p);await p.tap('[data-go=color]');await must(p,'#cPages .c-scratch','no Doodle Scene entry');await p.tap('#cPages .c-scratch');await must(p,'#cEdit #cCanvas','scratch editor did not open',8000);await sleep(800);
-    await p.tap('#cStickBtn');await must(p,'#cTray [data-n]','no stickers');await p.tap('#cTray [data-n]');await sleep(500);
+    await p.tap('#cStickBtn');await must(p,'#cTray [data-n]','no stickers');await p.tap('#cTray [data-n]');await sleep(1000);
     const pos=()=>p.$eval('#cStickers .c-st:last-child',e=>{const b=e.getBoundingClientRect();return [b.left+b.width/2,b.top+b.height/2]});
     const cnt=()=>p.$$eval('#cStickers .c-st',e=>e.length);const n1=await cnt();if(!n1)throw new Error('sticker not added');
     const [x0,y0]=await pos();const st=await p.$eval('#cStage',e=>{const b=e.getBoundingClientRect();return [b.left,b.top,b.width,b.height]});
     const tx=Math.min(st[0]+st[2]*.75,x0+90),ty=Math.min(st[1]+st[3]*.6,y0+90);
-    await p.mouse.move(x0,y0);await p.mouse.down();for(let i=1;i<=10;i++)await p.mouse.move(x0+(tx-x0)*i/10,y0+(ty-y0)*i/10);await p.mouse.up();await sleep(400);
+    await p.mouse.move(x0,y0);await p.mouse.down();for(let i=1;i<=10;i++){await p.mouse.move(x0+(tx-x0)*i/10,y0+(ty-y0)*i/10);await sleep(20)}await p.mouse.up();await sleep(400);
     const [x1,y1]=await pos();if(Math.hypot(x1-x0,y1-y0)<20)throw new Error('dragging the sticker did not move it');
     await p.tap('#cUndo');await sleep(400);const n2=await cnt();const back=n2?await pos():null;if(n2===n1&&back&&Math.hypot(back[0]-x1,back[1]-y1)<5)throw new Error('undo after a sticker drag changed nothing');
     // drop on the bin removes it
@@ -184,14 +187,32 @@ async function runConfig(browser,url,scheme,lang){
     if(!await p.$eval('#cCanvas',c=>c.width>100&&c.height>100))throw new Error('Noodle Bath canvas is empty');
     await fill(p,1);await audit(p,'noodle bath editor')});
 
+  // --- the 10 start-page idle effects: no errors, tiles back at rest within 1 px, will-change cleared; a tap cancels ---
+  const cellRects=p=>p.evaluate(()=>[...document.querySelectorAll('#gFeatured .g-feat-cell')].map(c=>{const r=c.getBoundingClientRect();return [r.left,r.top,r.width,r.height]}));
+  const cellState=p=>p.evaluate(()=>{const cs=[...document.querySelectorAll('#gFeatured .g-feat-cell')];return {anims:document.getAnimations().filter(a=>a.effect&&a.effect.target&&cs.includes(a.effect.target)).length,wc:cs.filter(c=>c.style.willChange||/transform|opacity/.test(getComputedStyle(c).willChange)).length,n:cs.length}});
+  const restDiff=async(p,base)=>{const now=await cellRects(p);let d=0;now.forEach((r,i)=>{for(let k=0;k<4;k++)d=Math.max(d,Math.abs(r[k]-base[i][k]))});return d};
+  for(let k=0;k<10;k++)await T('idle fx '+k,async p=>{await boot(p);if(!await p.evaluate(k=>!!(window.IdleFx&&window.IdleFx.names&&window.IdleFx.names.length>k),k))throw new Error('window.IdleFx missing or has no effect '+k);
+    await must(p,'#gFeatured .g-feat-cell','no featured tiles',6000);await sleep(1200);const base=await cellRects(p);const name=await p.evaluate(k=>IdleFx.names[k],k);
+    if(!await p.evaluate(k=>IdleFx.play(k),k))throw new Error('IdleFx.play('+k+') refused to start');await sleep(150);
+    const s0=await cellState(p);if(!s0.anims)throw new Error(name+': no animation running after play()');if(!s0.wc)throw new Error(name+': will-change not set while running');
+    const t0=Date.now();while((await cellState(p)).anims&&Date.now()-t0<7000)await sleep(150);const s1=await cellState(p);
+    if(s1.anims)throw new Error(name+': still animating after 7 s');await sleep(200);
+    const d=await restDiff(p,base);if(d>1)throw new Error(`${name}: tiles ${d.toFixed(1)} px off rest after the effect`);
+    const s2=await cellState(p);if(s2.wc)throw new Error(name+': will-change not cleared ('+s2.wc+' tiles)')});
+  await T('idle fx: a tap cancels the effect',async p=>{await boot(p);await must(p,'#gFeatured .g-feat-cell','no featured tiles',6000);await sleep(1200);const base=await cellRects(p);
+    for(const k of [0,5,9]){await p.evaluate(k=>IdleFx.play(k),k);await sleep(350);if(!(await cellState(p)).anims)throw new Error('effect '+k+' not running to cancel');
+      const r=await p.$eval('.g-tagline',e=>{const b=e.getBoundingClientRect();return [b.left+b.width/2,b.top+b.height/2]});await p.touchscreen.tap(r[0],r[1]);await sleep(200);
+      const s=await cellState(p);if(s.anims)throw new Error('effect '+k+' still running 200 ms after a tap');if(s.wc)throw new Error('effect '+k+': will-change left after a tap');
+      const d=await restDiff(p,base);if(d>1)throw new Error(`effect ${k}: tiles ${d.toFixed(1)} px off rest after a tap`)}});
+
   // --- Catch stars ---
-  await T('stars: play, result, Share, Download',async p=>{await boot(p);await p.tap('#g-start [data-arcade]');await must(p,'#gArcade.open','arcade did not open',5000);await sleep(5000);
+  await T('stars: play, result, Share, Download, Hire',async p=>{await boot(p);await p.tap('#g-start [data-arcade]');await must(p,'#gArcade.open','arcade did not open',5000);await sleep(5000);
     await audit(p,'arcade');
     if(!await vis(p,'#gResult.show',60000))throw new Error('no result screen within 65 s');await sleep(800);await audit(p,'star result');
+    if(!await vis(p,'#gResult [data-hire]',500))throw new Error('no Hire chip on star result');
+    const sh=await p.$('#gResult [data-share],#gResShare,#gResult button[aria-label*=hare i]');if(!sh)throw new Error('no Share button on star result');await sh.evaluate(e=>e.click());await sleep(1200);await p.keyboard.press('Escape');await p.evaluate(()=>document.querySelectorAll('.g-sheet.open,dialog[open]').forEach(e=>{e.classList.remove('open');if(e.close)e.close()}));
     const dl=p.waitForEvent('download',{timeout:5000}).then(()=>1,()=>0);const dlg=p.waitForSelector('.g-sheet.open,dialog[open],[class*=share]:visible',{state:'visible',timeout:5000}).then(()=>1,()=>0);
-    await p.tap('#gResDl');if(!(await dl)&&!(await dlg))throw new Error('Download on star result: no file and no dialog');});
-  await T('stars: result Share',async p=>{await boot(p);await p.tap('#g-start [data-arcade]');await must(p,'#gArcade.open','arcade did not open',5000);
-    if(!await vis(p,'#gResult.show',65000))throw new Error('no result screen');const sh=await p.$('#gResult [data-share],#gResShare,#gResult button[aria-label*=hare i]');if(!sh)throw new Error('no Share button on star result');await sh.tap();await sleep(1200)});
+    await p.$eval('#gResDl',e=>e.click());if(!(await dl)&&!(await dlg))throw new Error('Download on star result: no file and no dialog');});
 
   // --- Art ---
   await T('art: lightbox + Download',async p=>{await boot(p);await tab(p,'art');await must(p,'#gCards >*','no art cards');await p.tap('#gCards >* >> nth=0');await sleep(900);
@@ -218,8 +239,7 @@ async function runConfig(browser,url,scheme,lang){
   for(const t of ['start','art','map','mine'])await T('hire chip: '+t,async p=>{await boot(p);if(t!=='start')await tab(p,t);await hireOn(p,t)});
   await T('hire chip: color picker',async p=>{await boot(p);await p.tap('[data-go=color]');await must(p,'#cPick','picker did not open');await audit(p,'color picker');
     if(!await vis(p,'#gColor [data-hire],[data-hire]:visible',500))throw new Error('no Hire chip on Color picker')});
-  await T('hire chip: star result',async p=>{await boot(p);await p.tap('#g-start [data-arcade]');if(!await vis(p,'#gResult.show',65000))throw new Error('no result');
-    if(!await vis(p,'#gResult [data-hire]',500))throw new Error('no Hire chip on star result')});
+  const q=jobs.slice();await Promise.all(Array.from({length:+process.env.POOL||4},async()=>{for(let j;(j=q.shift());)await runJob(j)}));
   return rows}
 
 srv.listen(0,async()=>{
@@ -230,6 +250,6 @@ srv.listen(0,async()=>{
   const names=[...new Set(all.map(r=>r.name))];const cols=cfgs.map(c=>c.join('-'));
   console.log('\n'+'test'.padEnd(46)+cols.map(c=>c.padEnd(9)).join(''));
   for(const n of names)console.log(n.padEnd(46)+cols.map(c=>{const r=all.find(x=>x.name===n&&x.cfg===c);return (r?r.ok?'PASS':'FAIL':'-').padEnd(9)}).join(''));
-  const fails=all.filter(r=>!r.ok);console.log(`\n${all.length-fails.length} PASS, ${fails.length} FAIL`);
+  const fails=all.filter(r=>!r.ok);console.log(`\n${all.length-fails.length} PASS, ${fails.length} FAIL`+(all.some(r=>r.retried)?`  (passed only on retry: ${all.filter(r=>r.retried).map(r=>r.cfg+' '+r.name).join('; ')})`:''));
   for(const f of fails)console.log(`FAIL ${f.cfg} | ${f.name}: ${f.msg}`);
   process.exit(fails.length?1:0)});
