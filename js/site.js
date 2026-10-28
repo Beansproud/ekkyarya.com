@@ -80,7 +80,7 @@ if(feature("handLettering")||feature("aboutPhoto"))fetch("assets/hand/index.json
 /* ===== Procedural placeholder art ===== */
 function rng(seed){return()=>((seed=Math.imul(seed^seed>>>15,seed|1)+0x6D2B79F5|0,(seed^seed>>>13)>>>0)%1e4)/1e4}
 function makeArt(p){
-  const r=rng(p.seed*9973), [bg,ink,a,b]=p.pal; let s="";
+  const r=rng((p.seed||(p.slug||p.title||"").length+7)*9973), [bg,ink,a,b]=p.pal||["#F1EBDD","#2B1342","#FFB400","#7ED9B0"]; let s="";   // added pieces (data/site.json) have no seed or palette
   for(let i=0;i<7;i++){const x=r()*400,y=r()*300,rad=10+r()*40;s+=`<circle cx="${x}" cy="${y}" r="${rad}" fill="${r()>.5?a:b}" opacity=".35"/>`}
   for(let i=0;i<5;i++){const x=20+r()*360,y=20+r()*260;s+=`<path d="M${x} ${y-8}l2.5 5.5 6 .5-4.5 4 1.5 6-5.5-3-5.5 3 1.5-6-4.5-4 6-.5z" fill="${ink}" opacity=".8"/>`}
   // a little original blob character
