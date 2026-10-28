@@ -28,7 +28,7 @@ const pivot=(px,py,r)=>`translate(${px.toFixed(1)}px,${py.toFixed(1)}px) rotate(
 const rnd=(a,b)=>a+Math.random()*(b-a),sign=()=>Math.random()<.5?-1:1;
 let running=[];
 function go(el,frames,dur,delay,opts){const a=el.animate(frames,{duration:dur,delay:delay||0,fill:"backwards",composite:"add",...opts});running.push(a);return a}
-function stopFx(){fxTok++;const r=running;running=[];r.forEach(a=>{try{a.cancel()}catch(e){}});document.querySelectorAll("#gFeatured .g-feat-cell").forEach(c=>c.style.willChange="")}
+function stopFx(){const r=running;running=[];r.forEach(a=>{try{a.cancel()}catch(e){}});document.querySelectorAll("#gFeatured .g-feat-cell").forEach(c=>c.style.willChange="")}
 function startCells(){if(!document.body.classList.contains("game-mode"))return null;const st=document.getElementById("g-start");
   if(!st||!st.classList.contains("active"))return null;const cells=[...document.querySelectorAll("#gFeatured .g-feat-cell")];return cells.length?cells:null}
 const EFFECTS=[
@@ -53,16 +53,14 @@ const EFFECTS=[
   ["scatter",(c)=>c.forEach((el,i)=>{const dx=sign()*rnd(70,130),dy=sign()*rnd(60,120),r=sign()*rnd(12,30),sc=rnd(.85,1.1);
     go(el,[{transform:T(),offset:0,easing:"cubic-bezier(.2,.8,.3,1)"},{transform:T(dx,dy,r,sc),offset:.36},{transform:T(dx*.96,dy*.96,r,sc),offset:.5,easing:E_SPRING},{transform:T(-dx*.06,-dy*.06,-r*.1,1.02),offset:.82,easing:E_OUT},{transform:T()}],1700,i*40)})],
 ];
-let lastFx=-1,fxTok=0;
+let lastFx=-1;
 function playFx(cells,k){stopFx();const n=EFFECTS.length;
   if(k==null){do{k=Math.floor(Math.random()*n)}while(n>1&&k===lastFx)}lastFx=k;
   const R=cells.map(c=>{const r=c.getBoundingClientRect();return {w:r.width,h:r.height,cx:r.left+r.width/2,cy:r.top+r.height/2}});   // measured once, before anything moves
   const G={cx:R.reduce((a,r)=>a+r.cx,0)/R.length,cy:R.reduce((a,r)=>a+r.cy,0)/R.length};
-  cells.forEach(c=>c.style.willChange="transform,opacity");   // the layers are made in this frame; the animations start in the next, so no frame pays for both
-  const tok=++fxTok;
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{if(tok!==fxTok)return;
-    try{EFFECTS[k][1](cells,R,G)}catch(e){stopFx();return}
-    const mine=running.slice();Promise.all(mine.map(a=>a.finished)).then(()=>{if(running[0]===mine[0]){running=[];cells.forEach(c=>c.style.willChange="")}},()=>{})}))}
+  cells.forEach(c=>c.style.willChange="transform,opacity");
+  try{EFFECTS[k][1](cells,R,G)}catch(e){stopFx();return}
+  const mine=running.slice();Promise.all(mine.map(a=>a.finished)).then(()=>{if(running[0]===mine[0]){running=[];cells.forEach(c=>c.style.willChange="")}},()=>{})}
 function words(){return `<b>${esc(t("idle.label"))}</b> ${esc(t("fact."+(factIdx+1)))}`}
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function show(){
