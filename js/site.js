@@ -29,6 +29,8 @@ langBtns.forEach(b=>b.addEventListener("click",()=>switchLang(b.dataset.lang)));
 if(feature("pwa")&&"serviceWorker" in navigator&&/^https?:/.test(location.protocol))addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 let installEvt=null;
 const installed=()=>matchMedia("(display-mode: standalone)").matches||navigator.standalone===true||!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+// The glowing APK chip on the start page: Android browsers only, never inside the app itself (owner, 10-28).
+{const a=document.querySelector("[data-apk]");if(a&&typeof FEATURES!=="undefined"&&FEATURES.apkDownload&&/Android/i.test(navigator.userAgent)&&!installed())a.hidden=false}
 const showInstall=on=>document.querySelectorAll("[data-install],[data-install-row]").forEach(b=>b.hidden=!on);
 if(feature("pwa"))showInstall(!installed());
 addEventListener("beforeinstallprompt",e=>{if(!feature("pwa"))return;e.preventDefault();installEvt=e;showInstall(true)});
