@@ -253,7 +253,8 @@ async function runConfig(browser,url,dev,lang){
   const merged=async(p,c)=>{if(!SITEDATA)skip('js/site-data.js not landed yet');await route(c,JSON.stringify(site));await boot(p);if(!await waitFor(()=>p.evaluate(()=>PROJECTS.some(x=>x.title==='QA New Piece')),5000))throw new Error('a project added in data/site.json is not in PROJECTS')};
   T('merged: an added project shows on the site',async p=>{const c=p.context();await merged(p,c);
     if(!phone){if(!await waitFor(()=>p.evaluate(()=>document.body.innerText.includes('QA New Piece')||[...document.querySelectorAll('img')].some(i=>/QA New/.test(i.alt))),4000))throw new Error('QA New Piece is in PROJECTS but not on the page')}
-    else{await p.tap('.g-tabs button[data-tab="art"]');await sleep(900);if(!await p.evaluate(()=>document.querySelector('#g-art').innerText.includes('QA New Piece')||[...document.querySelectorAll('#g-art img')].some(i=>/QA New/.test(i.alt))))throw new Error('QA New Piece is not in the Art tab')}});
+    // the Art tab draws 8 cards at once and the rest in idle slices, so wait for the card rather than a fixed time
+    else{await p.tap('.g-tabs button[data-tab="art"]');if(!await waitFor(()=>p.evaluate(()=>document.querySelector('#g-art').innerText.includes('QA New Piece')||[...document.querySelectorAll('#g-art img')].some(i=>/QA New/.test(i.alt))),4000))throw new Error('QA New Piece is not in the Art tab')}});
   T('merged: a hidden project disappears',async p=>{const c=p.context();await merged(p,c);
     if(await p.evaluate(()=>PROJECTS.some(x=>x.title==='Hidden Monster')))throw new Error('Hidden Monster still in PROJECTS');
     if(await p.evaluate(()=>[...document.querySelectorAll('body *')].some(e=>!e.children.length&&e.getClientRects().length&&getComputedStyle(e).visibility!=='hidden'&&(/Hidden Monster/.test(e.textContent)||/Hidden Monster/.test(e.alt||'')))))throw new Error('Hidden Monster still visible on the page')});
