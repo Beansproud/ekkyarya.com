@@ -55,3 +55,8 @@ The first-pass report follows for the record.
 ## Final acceptance at the deadline (main 243f861, 2026-10-27 11:55 UTC)
 
 **ACCEPTED.** Probe at 390 x 664, 360 x 640 and 1440 x 900, EN and ID: 6 artworks fully visible first, no fan art in the featured row, Hire one tap from start, map, Art and Mine, every village place labeled, on screen and topmost, "Work with Ekky" above the tab bar, fan-art lightbox tagged with no Download, no "boss" text, no English left on ID screens (the desktop hero was the last one, fixed in 243f861), 0 errors, 0 failed requests, 0 loops under reduced motion, `npm run check` passes. The low-poly village islands are generated from plain shapes by `scripts/village.py`: nothing is copied from the reference.
+
+## Sprint freeze acceptance (main 1672a23, 2026-10-28 02:15 UTC)
+
+**ACCEPTED.** Sprint probe at 360 x 640 and 390 x 664 in EN and ID plus 1440 x 900: 0 blockers (0 errors, 0 failed requests, Hire one tap from every screen, the 5 uncanny-valley lines intact, no loops outside play). Start screen: 12 controls (Hire, 6 drawings, Color, Catch stars, 3 tabs). `scripts/probe-dark.cjs`: start, Art, Mine, Map and desktop readable in dark mode. `npm run check` passes.
+**Games (Game Director):** village GO (first frame 251 ms and 60 fps at 4x CPU, 0 errors, 3 artworks reached, Hire place and chip, list fallback, nothing running under reduced motion). Paint Patrol: not in this build (removed in 082d9e6), no verdict.
