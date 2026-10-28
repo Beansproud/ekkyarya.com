@@ -289,7 +289,7 @@ function popSticker(k){const el=$("cStickers").children[k];if(el){el.classList.a
 /* ---- autosave to Mine ---- */
 let saveT=0;
 function save(now){updUndo();if(!cur)return;clearTimeout(saveT);const run=()=>{if(!cur)return;const st=Game.st;st.colorings=st.colorings||{};
-  let thumb="";try{const c=document.createElement("canvas");c.width=240;c.height=Math.round(240*cur.pd.meta.h/cur.pd.meta.w);compose(cur,c.getContext("2d"),0,0,240,1,cv);thumb=c.toDataURL("image/jpeg",.7)}catch{}
+  let thumb="";try{const c=document.createElement("canvas");c.width=240;c.height=Math.round(240*cur.pd.meta.h/cur.pd.meta.w);compose(cur,c.getContext("2d"),0,0,240,1,cv);thumb=c.toDataURL("image/jpeg",.7);c.width=c.height=0}catch{}
   st.colorings[cur.pd.id]={title:cur.title,fills:[...cur.fills],custom:cur.custom,stickers:cur.stickers.map(s=>({n:s.n,x:+s.x.toFixed(4),y:+s.y.toFixed(4),s:+s.s.toFixed(4),r:+s.r.toFixed(4)})),undo:cur.undo.slice(-UNDO_KEEP),at:Date.now(),thumb};Game.save();updUndo()};
   if(now)run();else saveT=setTimeout(()=>window.requestIdleCallback?requestIdleCallback(run,{timeout:1500}):run(),400)}
 

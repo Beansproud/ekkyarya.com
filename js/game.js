@@ -467,6 +467,7 @@ $("gReset").onclick=()=>{if(!confirm(t("mine.reset.confirm")))return;st={...blan
 /* ---- sound (tiny synthesized blips, no files); off until turned on ---- */
 let actx;
 function sfx(type){if(!st.snd||!feature("sound"))return;try{actx=actx||new(window.AudioContext||window.webkitAudioContext)();
+  if(actx.state!=="running")actx.resume().catch(()=>{});   // iOS leaves it "suspended"/"interrupted" after a call, lock or app switch
   const seq={tap:[[660,.05]],coin:[[988,.05],[1319,.1]],hit:[[160,.22,"sawtooth"]],level:[[523,.09],[659,.09],[784,.09],[1047,.25]],
     flip:[[880,.04]],legend:[[784,.09],[988,.09],[1175,.09],[1568,.4]],count:[[440,.12]],go:[[880,.25]],fill:[[740,.04],[988,.06]]}[type];
   let t0=actx.currentTime;seq.forEach(([f,d,w])=>{const o=actx.createOscillator(),g=actx.createGain();o.type=w||"triangle";o.frequency.setValueAtTime(f,t0);
