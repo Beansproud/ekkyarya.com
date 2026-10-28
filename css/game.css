@@ -1120,8 +1120,6 @@ body:has(#g-map.active) .idle-buddy{bottom:calc(env(safe-area-inset-bottom) + 96
 .g-sheet.open .g-sheet-in{transform:none}
 #game:has(.c-over.open) .g-sheet .g-sheet-in{bottom:calc(env(safe-area-inset-bottom) + 12px);max-height:calc(100% - env(safe-area-inset-top) - 80px)}
 
-/* 360 px in Bahasa: Back, "Hubungi Ekky" and "Selesai" must fit beside the Home button (Done ran 17 px off screen) */
-@media (max-width:380px){.c-top{gap:6px}.c-top .g-hire.sm{padding-right:8px;font-size:.8rem}.c-top .g-btn.sm{padding-left:10px;padding-right:10px}}
 /* on a phone the Home button (about 76 px) sits left of the title: the title clears it and shrinks to stay on one line ("Mewarnai bareng Ekky") */
 @media (max-width:480px){.c-pick .g-title,.c-reveal .g-title,.c-arrive .g-title{margin:0 52px 0 84px;font-size:min(1.4rem,5.2vw)}}
 /* World squad */
