@@ -3,7 +3,7 @@
 // requestAnimationFrame frame times; prints the frames, the count over 32 ms and the worst frame. Lower is better.
 // Run before and after a smoothness fix to prove it. Always exits 0 (it measures, it does not gate).
 const {chromium,devices}=require('playwright');const http=require('http'),fs=require('fs'),px=require('path');
-const SITE=px.resolve(process.argv[2]||'.');const RATE=+process.env.THROTTLE||4,RUNS=+process.env.RUNS||1;
+const SITE=px.resolve(process.argv[2]||'.');const SETTLE=process.env.SETTLE!==undefined?+process.env.SETTLE:12000;const RATE=+process.env.THROTTLE||4,RUNS=+process.env.RUNS||1;
 const MIME={'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.json':'application/json','.webmanifest':'application/json'};
 const srv=http.createServer((q,r)=>{let f=px.join(SITE,decodeURIComponent(q.url.split('?')[0]));if(fs.existsSync(f)&&fs.statSync(f).isDirectory())f=px.join(f,'index.html');if(!fs.existsSync(f)){r.writeHead(404);return r.end()}
 r.writeHead(200,{'content-type':MIME[px.extname(f)]||'application/octet-stream'});fs.createReadStream(f).pipe(r)});
@@ -36,16 +36,16 @@ const CASES=[
    async p=>{await tap(p,'#cDone')},2000],
  ['language toggle',async p=>{await tap(p,'.g-tabs button[data-tab="mine"]');await sleep(900)},
    async p=>{await tap(p,'#g-mine [data-lang="id"]')},1000],
- ['idle effect, 9-12 s',async p=>{await sleep(Math.max(0,9000-(+process.env.SETTLE||4000)))},
-   async()=>{},3000]];
+ ['idle effect, 9-12 s',async p=>{await sleep(9000-1500)},
+   async()=>{},3000,true]];
 
 function stats(f){let over=0,worst=0;for(let i=1;i<f.length;i++){const d=f[i]-f[i-1];if(d>32)over++;if(d>worst)worst=d}return {n:f.length-1,over,worst:Math.round(worst)}}
 
 srv.listen(0,async()=>{
   const url=`http://localhost:${srv.address().port}/`;const b=await chromium.launch();const rows=[];
-  for(const [name,setup,run,settle] of CASES){let best=null,err='';
+  for(const [name,setup,run,settle,noSettle] of CASES){const c2={noSettle};let best=null,err='';
     for(let k=0;k<RUNS;k++){const c=await b.newContext({...IPHONE});await c.addInitScript(()=>{try{localStorage.setItem('lang','en')}catch(e){}});
-      const p=await c.newPage();try{await p.goto(url+'?game=1');await p.waitForSelector('#g-start.active',{state:'visible',timeout:8000});await sleep(+process.env.SETTLE||4000);
+      const p=await c.newPage();try{await p.goto(url+'?game=1');await p.waitForSelector('#g-start.active',{state:'visible',timeout:8000});await sleep(c2.noSettle?0:SETTLE);
         const cdp=await c.newCDPSession(p);await cdp.send('Emulation.setCPUThrottlingRate',{rate:RATE});
         await p.evaluate(()=>{window.__f=[];window.__rec=true;const loop=t=>{if(window.__rec)window.__f.push(t);requestAnimationFrame(loop)};requestAnimationFrame(loop)});
         await setup(p);await p.evaluate(()=>{window.__f=[]});

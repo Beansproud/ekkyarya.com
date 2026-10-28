@@ -58,14 +58,16 @@ async function runConfig(browser,url,scheme,lang){
     const p=await c.newPage();p.on('pageerror',e=>errs.push(e.message));return {c,p}}
   async function boot(p,qs=''){await p.goto(url+'?game=1'+qs);await must(p,'#g-start.active','game mode did not open',8000);await sleep(500)}
   // tests are independent (each gets its own browser context), so they run POOL at a time; most of the wall time is waiting
-  const jobs=[];const T=(name,fn)=>{jobs.push({i:jobs.length,name,fn})};
+  const jobs=[];const ONLY=process.env.ONLY&&new RegExp(process.env.ONLY,'i');const T=(name,fn)=>{if(ONLY&&!ONLY.test(name))return;for(let r=0;r<(+process.env.REPEAT||1);r++)jobs.push({i:jobs.length,name,fn})};   // ONLY=regex REPEAT=n NORETRY=1: for hunting flakes
   async function runJob(job,again){const {i,name,fn}=job;let ok=true,msg='';const errs=[];const {c,p}=await ctx(errs);
     try{await fn(p,c);if(errs.length)throw new Error('page error: '+errs[errs.length-1].slice(0,90))}catch(e){ok=false;msg=String(e.message||e).split('\n')[0].slice(0,160);
       if(OUT)await p.screenshot({path:`${OUT}/FAIL-${cfg}-${name.replace(/\W+/g,'_')}.png`}).catch(()=>{})}
-    await c.close().catch(()=>{});if(!ok&&!again)return runJob(job,true);   // one retry: a timing flake must not block a merge; a real bug fails twice
+    await c.close().catch(()=>{});if(!ok&&!again&&!process.env.NORETRY)return runJob(job,true);   // one retry: a timing flake must not block a merge; a real bug fails twice
     rows[i]={cfg,name,ok,msg,retried:!!again&&ok}}
   const audit=async(p,what)=>{const a=await p.evaluate(auditFn);if(a.length)throw new Error(`audit ${what}: ${a.slice(0,4).join(' ; ')}${a.length>4?' (+'+(a.length-4)+')':''}`)};
   const hash=p=>p.evaluate(()=>{const c=document.getElementById('cCanvas');if(!c)return null;const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let h=0;for(let i=0;i<d.length;i+=5)h=(h*31+d[i])>>>0;return h});
+  // a fill or undo may animate: read the canvas only once two reads 120 ms apart agree
+  const settled=async p=>{await sleep(250);let h=await hash(p);for(let i=0;i<25;i++){await sleep(120);const n=await hash(p);if(n===h)return n;h=n}return h};
   const active=p=>p.evaluate(()=>{const s=document.querySelector('.g-screen.active');return s&&s.id});
   const overlayOpen=p=>p.evaluate(()=>[...document.querySelectorAll('#gColor,#gArcade,#gSheet,#lightbox')].some(e=>e.classList.contains('open')||e.open||(e.id==='gColor'&&getComputedStyle(e).display!=='none'&&e.offsetParent!==null)));
   const homeEl='[data-home],.g-home,#gHome,.g-top-logo,.g-logo-btn';
@@ -87,21 +89,24 @@ async function runConfig(browser,url,scheme,lang){
   for(const t of ['art','map','mine'])await T('audit: '+t,async p=>{await boot(p);await tab(p,t);await sleep(800);await audit(p,t)});
 
   // --- Color ---
+  const waitIdle=async p=>{await sleep(500);for(let i=0;i<30;i++){if(!await p.evaluate(()=>document.getAnimations().some(a=>a.playState==='running'&&a.effect&&a.effect.target&&a.effect.target.closest&&a.effect.target.closest('#gColor'))))break;await sleep(100)}await sleep(300)};
   const openColor=async(p,page)=>{await p.tap('[data-go=color]');await must(p,'#cPages .c-page','picker has no pages');
     if(!await p.isVisible('#cPick'))throw new Error('picker not visible');
     const id=page||await p.evaluate(()=>[...document.querySelectorAll('#cPages .c-page:not(.c-scratch)')][0].dataset.page);
-    await p.tap(`#cPages .c-page[data-page="${id}"]`);await must(p,'#cEdit #cCanvas','editor did not open',8000);await sleep(900);return id};
+    await sleep(600);   // the picker slides in; a tap during the slide can be lost
+    for(let k=0;k<3;k++){await p.tap(`#cPages .c-page[data-page="${id}"]`);if(await vis(p,'#cEdit #cCanvas',5000))break}
+    await must(p,'#cEdit #cCanvas','editor did not open',8000);await waitIdle(p);return id};
   const fill=async(p,n)=>{const r=await p.evaluate(()=>{const b=document.getElementById('cStage').getBoundingClientRect();return [b.left,b.top,b.width,b.height]});
     let last=await hash(p);const hs=[last];let k=0;
     for(const [fx,fy] of [[.5,.5],[.3,.3],[.7,.3],[.3,.7],[.7,.7],[.5,.25],[.5,.75],[.2,.5],[.8,.5],[.4,.4],[.6,.6],[.35,.55],[.65,.45],[.5,.4],[.5,.6]]){
-      if(hs.length>n)break;await p.tap(`#cColors .c-sw[data-v]:nth-of-type(${(k++%12)+1})`).catch(()=>{});await p.touchscreen.tap(r[0]+r[2]*fx,r[1]+r[3]*fy);await sleep(350);const h=await hash(p);if(h!==last){hs.push(h);last=h}}
+      if(hs.length>n)break;await p.tap(`#cColors .c-sw[data-v]:nth-of-type(${(k++%12)+1})`).catch(()=>{});await p.touchscreen.tap(r[0]+r[2]*fx,r[1]+r[3]*fy);const h=await settled(p);if(h!==last){hs.push(h);last=h}}
     if(hs.length<=n)throw new Error(`only ${hs.length-1} of ${n} taps changed pixels`);return hs};
   await T('color: fill 2 + undo x2',async p=>{await boot(p);await openColor(p);const hs=await fill(p,2);
-    await p.tap('#cUndo');await sleep(400);if(await hash(p)!==hs[1])throw new Error('1st undo did not restore pixels');
-    await p.tap('#cUndo');await sleep(400);if(await hash(p)!==hs[0])throw new Error('2nd undo did not restore pixels');await audit(p,'color editor')});
+    await p.tap('#cUndo');if(await settled(p)!==hs[1])throw new Error('1st undo did not restore pixels');
+    await p.tap('#cUndo');if(await settled(p)!==hs[0])throw new Error('2nd undo did not restore pixels');await audit(p,'color editor')});
   await T('color: reload keeps fills + undo',async(p)=>{await boot(p);const id=await openColor(p);const hs=await fill(p,2);await p.tap('#cBack');await sleep(800);
-    await p.reload();await must(p,'#g-start.active','reload failed',8000);await sleep(500);await openColor(p,id);const h=await hash(p);
-    if(h!==hs[2])throw new Error('fills not kept after reload');await p.tap('#cUndo');await sleep(400);if(await hash(p)===h)throw new Error('Undo does nothing after reopen')});
+    await p.reload();await must(p,'#g-start.active','reload failed',8000);await sleep(500);await openColor(p,id);const h=await settled(p);
+    if(h!==hs[2])throw new Error('fills not kept after reload');await p.tap('#cUndo');if(await settled(p)===h)throw new Error('Undo does nothing after reopen')});
   await T('color: "+" color sheet adds swatch',async p=>{await boot(p);await openColor(p);const n0=await p.$$eval('#cColors .c-sw',e=>e.length);
     if(!await vis(p,'#cColors .c-any',500))throw new Error('no "+" swatch');await p.tap('#cColors .c-any');await must(p,'#cWheel','"+" did not open the color sheet');await sleep(400);
     const pre=()=>p.$eval('#cWPre',e=>getComputedStyle(e).backgroundColor);const p0=await pre();

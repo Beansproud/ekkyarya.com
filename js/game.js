@@ -95,6 +95,7 @@ const PLACES=[
   {id:"hire",        key:"town.hire",    icon:"assets/sprites/gate.png",      open:p=>openHire("",p), hire:true},
 ];
 const pct=(v,of)=>(v/of*100).toFixed(3)+"%";
+let mapTok=0;
 function renderMap(){
   const V=window.VILLAGE,W=$("gMapWrap");if(!V)return;
   const places=PLACES.filter(p=>!p.feature||feature(p.feature));
@@ -108,7 +109,8 @@ function renderMap(){
     places.map(p=>{const b=V.places[p.id].box,l=V.places[p.id].label;
       return `<button class="v-place${p.hire?" hire":""}" data-place="${p.id}" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}" aria-label="${esc(t(p.key))}"></button>
       <span class="v-label${p.hire?" hire":""}" data-place="${p.id}" aria-hidden="true" style="left:${pct(l[0],V.w)};top:${pct(l[1],V.h)}">${esc(t(p.key))}</span>`}).join("");
-  $("gMapZoom").insertAdjacentHTML("beforeend",villageLife(V)+"</div>");
+  // the villagers and scenery come a moment later, in an idle slice: the first visit lays out the island and the places only
+  const mt=++mapTok;(window.requestIdleCallback||(f=>setTimeout(f,30)))(()=>{const z=$("gMapZoom");if(mt===mapTok&&z)z.insertAdjacentHTML("beforeend",villageLife(V)+"</div>")},{timeout:500});
   W.insertAdjacentHTML("beforeend",`<div class="v-zoomctl"><button class="g-round" data-zoom="1" aria-label="${esc(tt("town.zoomIn","Zoom in"))}">${ico("i-plus")}</button><button class="g-round" data-zoom="-1" aria-label="${esc(tt("town.zoomOut","Zoom out"))}"><b aria-hidden="true">&minus;</b></button></div>`);
   Z.base=null;Z.s=1;zoomTo(1,0,0);
   $("gMapList").innerHTML=places.map(p=>`<li><button class="v-row${p.hire?" hire":""}" data-place="${p.id}"><img src="${p.icon}" alt="" loading="lazy">${esc(t(p.key))}</button></li>`).join("");
@@ -263,12 +265,17 @@ $("gSheetBody").addEventListener("submit",e=>{e.preventDefault();const f=e.targe
 
 /* ---- Art: every piece, free to view; rarity is only a frame color ---- */
 let gFilter="all";
+let artTok=0;
 function renderArt(){
   $("gFilters").innerHTML=[["all","All"],["illustration","Illustration"],["web","Web & UI"],["branding","Branding"],["social","Social"]]
     .map(([f,n])=>`<button class="${f===gFilter?"active":""}" data-f="${f}" aria-pressed="${f===gFilter}">${catImg(f)}${esc(tt("filter."+f,n))}</button>`).join("");
   const list=PROJECTS.map((p,i)=>({p,i})).filter(x=>gFilter==="all"||x.p.cat===gFilter);
-  $("gCards").innerHTML=list.map(({p,i},k)=>`<button class="g-card" data-i="${i}" style="--tilt:${typeof tiltOf==="function"?tiltOf(p):"-1deg"}"><div class="inner">
-      <span class="gcat">${catImg(p.cat,"")}</span><div class="art">${artOf(p)}</div><div class="info"><b>${esc(ptitle(p))}</b>${p.label?`<span class="g-tag">${esc(plabel(p))}</span>`:""}</div></div></button>`).join("");
+  // eight cards now, the rest in idle slices: the first visit lays out a screenful, not the whole grid
+  const card=({p,i},k)=>`<button class="g-card" data-i="${i}" style="--tilt:${typeof tiltOf==="function"?tiltOf(p):"-1deg"}"><div class="inner">
+      <span class="gcat">${catImg(p.cat,"")}</span><div class="art">${artOf(p)}</div><div class="info"><b>${esc(ptitle(p))}</b>${p.label?`<span class="g-tag">${esc(plabel(p))}</span>`:""}</div></div></button>`;
+  const tok=++artTok,rest=list.slice(8),idle=window.requestIdleCallback||(f=>setTimeout(f,30));
+  $("gCards").innerHTML=list.slice(0,8).map(card).join("");
+  (function more(){if(tok!==artTok||!rest.length)return;idle(()=>{if(tok!==artTok)return;$("gCards").insertAdjacentHTML("beforeend",rest.splice(0,10).map(card).join(""));more()},{timeout:600})})();
   $("gArtCount").textContent=t("art.count",{n:list.length});
 }
 $("gFilters").addEventListener("click",e=>{const b=e.target.closest("button");if(b){gFilter=b.dataset.f;buzz(8);artDone=true;renderArt()}});
@@ -424,7 +431,7 @@ function prewarm(){if(!document.body.classList.contains("game-mode"))return;
   const idle=window.requestIdleCallback||(f=>setTimeout(f,50));
   const when=job=>{if(Date.now()-lastTouch<1500)return setTimeout(()=>when(job),1500);idle(()=>Date.now()-lastTouch<1500?when(job):job(),{timeout:4000})};
   when(()=>{if(!artDone){artDone=true;renderArt()}setTimeout(()=>when(()=>{if(!mapBuilt&&window.VILLAGE){mapBuilt=true;renderMap()}}),1200)})}
-addEventListener("load",()=>{setTimeout(prewarm,5000);warmT=setTimeout(warmWhenIdle,2500)});
+addEventListener("load",()=>{setTimeout(prewarm,2000);warmT=setTimeout(warmWhenIdle,2500)});
 function renderAll(){if(deep)setTimeout(renderStart,2500);else renderStart();renderMine();setTimeout(moveInd,60)}
 // Shared with js/color.js, js/share.js and js/links.js.
 window.Game={go,openHire,openSheet,closeSheet,sfx,buzz,save,get st(){return st},esc,contactReady,screen:()=>screen};
