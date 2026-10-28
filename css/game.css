@@ -964,6 +964,39 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 .aa-chk{display:flex;align-items:center;gap:10px;min-height:44px;font-size:15px}
 .aa-chk input{width:24px;height:24px;flex:none;accent-color:#2B1342}
 .aa-dim{opacity:.55}
+
+/* Play squad: Mewarnai, Doodle Scene, Done reveal, share. Light paper like the start page (owner: the game is on light paper), ink text. */
+.c-over,.c-over.s-over{background:var(--paper,#FBF8F1) var(--grain);color:#2B1342}
+.c-over .g-title{color:#2B1342;text-shadow:none}
+.c-over .g-sub,.c-over .g-link,.s-sign,.c-page small{color:#645F70}
+.s-secondary .g-link,.s-video{color:#2B1342}
+.c-top b,.c-pair figcaption,.c-page:not(.c-scratch) b{color:#2B1342}
+.c-view>.g-x,.c-icon,.c-tool,.c-tray-st{background:#FFFDF8;color:#2B1342;box-shadow:var(--paper-shadow,0 2px 6px rgba(0,0,0,.12))}
+.c-tool{border:2px solid var(--paper-line,#E4DCCB)}
+.c-tool[aria-expanded="true"]{background:#FFB400;border-color:#FFB400}
+.c-tray{background:#FFFDF8;border:2px solid var(--paper-line,#E4DCCB);box-shadow:0 -6px 18px rgba(43,19,66,.15)}
+.c-tray-st{box-shadow:none;background:var(--paper-2,#F6F1E6)}
+.s-sign input{background:#fff;border-color:var(--paper-line,#E4DCCB);color:#2B1342}
+.c-page{background:#FFFDF8;border:0;border-radius:10px;box-shadow:var(--paper-shadow,0 2px 6px rgba(0,0,0,.12))}
+.c-stage,.c-arrive-art canvas{box-shadow:0 0 0 4px #FFB400,0 6px 16px rgba(43,19,66,.18)}
+.s-preview canvas{box-shadow:0 6px 18px rgba(43,19,66,.25)}
+.c-sw.on::before{box-shadow:0 0 0 3px var(--paper,#FBF8F1),0 0 0 6px #FFB400}
+.c-wheel{background:#FFFDF8;color:#2B1342;box-shadow:0 -6px 24px rgba(43,19,66,.2)}
+.c-wheel-pre{box-shadow:inset 0 0 0 2px rgba(43,19,66,.25)}
+.c-strip canvas{box-shadow:inset 0 0 0 2px rgba(43,19,66,.25)}
+/* the picker header is one 44 px line: the title is centred on the close button, one line in both languages */
+.c-view>.g-x{top:calc(env(safe-area-inset-top) + 14px)}
+.c-pick .g-title,.c-reveal .g-title,.c-arrive .g-title{margin:0 52px;min-height:44px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;white-space:nowrap;overflow:hidden}
+.c-pick .g-sub{margin-top:6px}
+/* Doodle Scene card: a blank square and a title, the same size as a drawing card */
+.c-scratch{border:2px dashed #2B1342;padding:0;justify-content:flex-start;align-items:stretch;background:#FFFDF8}
+.c-scratch .ico{display:block;box-sizing:border-box;width:100%;height:auto;aspect-ratio:1;margin:0;padding:26%;color:#2B1342}
+.c-scratch b{padding:8px 10px 2px}
+.c-scratch small{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+/* the editor's top bar is one row: back, title, Done (Hire stays on the picker and the reveal) */
+#cEdit .g-hire,#game:has(#cEdit.active) .g-home{display:none}
+#game:has(.c-over.open) #cEdit .c-top{padding-left:0}
+
 #g-map .v-map{align-self:center;margin:auto 0;max-width:460px;border-radius:0}   /* centred in the band under the title, edge to edge on a phone */
 .v-map .v-label{font-size:clamp(12px,2.35cqw,13.5px);padding:2px 8px;border-radius:6px;background:#FFF3DC;border:2px solid #2B1342;color:#2B1342;box-shadow:0 2px 0 rgba(43,19,66,.55);rotate:-1.6deg}
 .v-map span.v-label:nth-of-type(even){rotate:1.4deg}   /* paper tags, each at its own fixed tilt */
@@ -982,6 +1015,11 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 .g-sent .g-fallback{margin-top:12px}
 .g-addr{display:flex;flex-direction:column;align-items:center;gap:6px;word-break:break-all}
 .g-addr b{color:#2B1342;font-size:.95rem}
+/* the picker shows each page as blank line art on white: that is what you will color */
+.c-page img{background:#fff;object-fit:contain}
+/* the title in the editor uses the full row between Back and Done: two lines allowed, never cut */
+.c-top b{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.15;overflow-wrap:anywhere}
+
 
 /* ===== Map fit (art critic a1): the village spans the screen width, through the 16 px side gutters ===== */
 #g-map .v-map{max-width:none;margin:auto 0;align-self:center;flex-shrink:0}
