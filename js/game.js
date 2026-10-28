@@ -107,8 +107,9 @@ function renderMap(){
   const places=PLACES.filter(p=>!p.feature||feature(p.feature));
   const art=featuredSix(4);
   W.style.height="";W.className="g-map-wrap v-map";W.style.aspectRatio=`${V.w}/${V.h}`;
-  // the whole village fits between the header and the tab bar: the width follows the height left on screen
-  W.style.width=`min(100%, calc((100dvh - 300px) * ${(V.w/V.h).toFixed(4)}))`;
+  // the village fills the screen width, edge to edge through the side gutters (art critic a1), unless the height left
+  // between the header and the tab bar is shorter: then the width follows that height
+  W.style.width=`min(100% + 32px, 520px, calc((100dvh - 196px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * ${(V.w/V.h).toFixed(4)}))`;
   W.innerHTML=`<div class="v-zoom" id="gMapZoom">${groundHTML(V)}`+
     V.frames.map((f,k)=>{const p=art[k];if(!p)return "";const deg=(Math.atan(f.slope)*180/Math.PI).toFixed(2);
       return `<img class="v-frame" src="${thumbOf(p)}" alt="" decoding="async" style="left:${pct(f.x,V.w)};top:${pct(f.y,V.h)};width:${pct(f.w,V.w)};height:${pct(f.h,V.h)};transform:skewY(${deg}deg)">`}).join("")+
