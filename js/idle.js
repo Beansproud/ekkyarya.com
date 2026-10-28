@@ -66,7 +66,7 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",
 function show(){
   const n=total();if(!n||buddy)return;
   do{factIdx=Math.floor(Math.random()*n)}while(n>1&&factIdx===lastFact);lastFact=factIdx;
-  const onMap=!!document.querySelector("#g-map.active")||innerWidth>innerHeight;   // sideways there is no free paper for a bubble either: the doodle comes alone
+  const onMap=!!document.querySelector("#g-map.active")||(innerWidth>innerHeight&&innerHeight<500);   // sideways phone there is no free paper for a bubble either: the doodle comes alone
   buddy=document.createElement("div");buddy.className="idle-buddy";
   buddy.innerHTML=`<img src="${SPRITES[Math.floor(Math.random()*SPRITES.length)]}" alt="" width="64" height="64">${onMap?"":`<p class="idle-bubble" role="status">${words()}</p>`}`;   // a bubble would cover a place, Work with Ekky or the heading
   const cells=reduce.matches?null:startCells();
