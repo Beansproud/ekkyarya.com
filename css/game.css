@@ -705,14 +705,11 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 @media (prefers-reduced-motion:reduce){.g-tabs button.active .g-ico,.g-tabs button.t-bounce .g-ico,.g-face.t-nod{animation:none}
   .g-tabs .g-ind{transition:none}.g-tabs button:hover .g-ico,.g-tabs button.center:hover .g-face{translate:none}}
 
-/* Map face, sticker style: the mint circle is a frame and Ekky's head pops out over its top edge. Below the circle's middle
-   the head is masked to the circle, above it the hair breaks out. The head lifts a little while Map is the active tab. */
+/* Map face (owner, 10-28 "still not neat"): the whole head sits centered inside the mint circle, sized to fit it, with nothing
+   breaking out over the ring. The amber ring (::after) marks the active tab. */
 .g-tabs .g-face{padding:0;overflow:visible}
-.g-face-img{position:absolute;left:-2px;top:-11px;width:58px;height:56px;max-width:none;pointer-events:none;transition:translate .25s var(--ease-in);
-  -webkit-mask:radial-gradient(circle 28px at 30px 39px,#000 98%,transparent 100%),linear-gradient(#000,#000) top/100% 39px no-repeat;
-  mask:radial-gradient(circle 28px at 30px 39px,#000 98%,transparent 100%),linear-gradient(#000,#000) top/100% 39px no-repeat}
-.g-tabs button.center.active .g-face-img{translate:0 -2px}
-@media (prefers-reduced-motion:reduce){.g-face-img{transition:none}}
+.g-face-img{position:absolute;inset:0;width:100%;height:100%;max-width:none;box-sizing:border-box;padding:6px 6px 5px;
+  object-fit:contain;object-position:50% 60%;pointer-events:none}
 
 /* Start screen: the game tiles' icons tilt on touch and hover, the language toggle lifts on hover and the chosen language pops
    once when it changes. Finite, never looping. */
