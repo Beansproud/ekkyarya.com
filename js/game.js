@@ -375,8 +375,16 @@ $("gSheetBody").addEventListener("submit",e=>{e.preventDefault();const f=e.targe
   f.querySelectorAll("[required]").forEach(i=>{const m=i.validity.valueMissing?"This one's needed":i.validity.tooShort?"A few more words, please":"";
     i.parentElement.querySelector(".err").textContent=m;if(m)ok=false});
   if(!ok){buzz([20,40,20]);if(!reduce)f.animate([{transform:"translateX(0)"},{transform:"translateX(-8px)"},{transform:"translateX(8px)"},{transform:"translateX(0)"}],{duration:300});return}
-  const d=Object.fromEntries(new FormData(f));sfx("level");if(typeof confetti==="function")confetti();closeSheet();say(t("hire.sent"),"i-check");
+  const d=Object.fromEntries(new FormData(f));sfx("level");if(typeof confetti==="function")confetti();
   const go=CONFIG.email?`mailto:${CONFIG.email}?subject=${encodeURIComponent(d.type+" project from "+d.name)}&body=${encodeURIComponent(d.message+"\n\n"+d.name)}`:hireTarget().href;
+  // the result stays inside the sheet (a toast at the top of the screen was clipped): what happens, and that it worked
+  const hh=f.previousElementSibling;if(hh&&hh.matches("h3"))hh.remove();
+  f.replaceWith(Object.assign(document.createElement("div"),{className:"g-sent",innerHTML:`<span class="g-sent-ico">${ico("i-check")}</span><h3>${esc(t("hire.sent.title"))}</h3>
+    <p>${esc(t("hire.sent.body"))}</p><p class="g-small">${esc(t("hire.sent"))}</p>
+    <a class="g-btn" href="${esc(go)}"${go.startsWith("mailto:")?"":' target="_blank" rel="noopener"'}>${ico("i-send")} ${esc(t("hire.sent.again"))}</a>
+    <button class="g-link" type="button" id="gSentDone">${esc(t("hire.sent.done"))}</button>`}));
+  $("gSentDone").onclick=closeSheet;$("gSheetBody").querySelector(".g-sent").setAttribute("role","status");$("gSheetBody").querySelector(".g-sent").scrollIntoView({block:"nearest"});
+  sheetHtml="";   // the sheet is drawn fresh the next time it opens
   setTimeout(()=>{if(go.startsWith("mailto:"))location.href=go;else open(go,"_blank","noopener")},900)});
 
 /* ---- Art: every piece, free to view; rarity is only a frame color ---- */
