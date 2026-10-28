@@ -237,12 +237,11 @@ $("gSheetBody").addEventListener("click",e=>{const f=e.target.closest(".g-feat")
 /* ---- Final Quest: the Hire sheet (B07, B17). Opens over the current screen; closing returns there. ---- */
 function openHire(prefill,pl){const l=LEVELS[4];
   // Quick actions lead with the business email; every other channel shows only when CONFIG has it (B15).
-  const links=[["instagram","hire.instagram"],["linkedin","hire.linkedin"],["behance","hire.behance"]].filter(([k])=>CONFIG.links[k]);
+  const links=[["instagram","hire.instagram"]].filter(([k])=>CONFIG.links[k]);   // owner: the sheet shows Email, Copy email and Instagram only; the other links live on Mine
   const quick=`<div class="g-quick">
       ${CONFIG.email?`<a class="g-btn" href="mailto:${esc(CONFIG.email)}">${ico("i-mail")} ${esc(t("hire.email"))}</a>`:`<a class="g-btn" href="${esc(hireTarget().href)}" target="_blank" rel="noopener">${ico("i-send")} ${esc(t("hire.chip"))}</a>`}
-      ${CONFIG.whatsapp?`<a class="g-btn alt" href="https://wa.me/${esc(String(CONFIG.whatsapp).replace(/\D/g,""))}" target="_blank" rel="noopener">${ico("i-chat")} ${esc(t("hire.whatsapp"))}</a>`:""}
       ${CONFIG.email?`<button class="g-btn alt" type="button" id="gCopyMail">${ico("i-copy")} ${esc(t("hire.copy"))}</button>`:""}</div>
-    ${links.length||CONFIG.website?`<p class="g-links">${links.map(([k,c])=>`<a href="${esc(CONFIG.links[k])}" target="_blank" rel="noopener">${esc(t(c))}</a>`).join("")}${CONFIG.website?`<a href="${esc(CONFIG.website)}" target="_blank" rel="noopener">${esc(t("hire.website"))}</a>`:""}</p>`:""}`;
+    ${links.length?`<p class="g-links">${links.map(([k,c])=>`<a href="${esc(CONFIG.links[k])}" target="_blank" rel="noopener">${esc(t(c))}</a>`).join("")}</p>`:""}`;
   const types=t("hire.form.types").split("|");
   openSheet(`<h2 id="gSheetTitle">${uiImg(l.icon,"h-ico")}${esc(t("hire.title"))}</h2>
     <p>${esc(t("hire.body"))}</p>${quick}<p class="g-small">${esc(t("hire.price"))}</p>
@@ -285,6 +284,8 @@ $("gCards").addEventListener("click",e=>{const c=e.target.closest(".g-card");if(
 function renderMine(){
   const list=Object.entries(st.colorings||{}).sort((a,b)=>(b[1].at||0)-(a[1].at||0));
   $("gMineList").innerHTML=list.length?list.map(([id,c])=>`<button class="g-mine-item" data-page="${esc(id)}" aria-label="${esc(c.title||id)}" style="--tilt:${typeof tiltOf==="function"?tiltOf({slug:id}):"-1deg"}">${c.thumb?`<img src="${c.thumb}" alt="">`:""}<b>${esc(c.title||id)}</b></button>`).join(""):`<p class="g-small">${esc(t("mine.empty"))}</p>`;
+  if($("gMineLinks")){const ls=[["linkedin","hire.linkedin"],["behance","hire.behance"]].filter(([k])=>CONFIG.links[k]).map(([k,c])=>[CONFIG.links[k],t(c)]);if(CONFIG.website)ls.push([CONFIG.website,t("hire.website")]);
+    $("gMineLinks").innerHTML=ls.map(([h,n])=>`<a class="g-link" href="${esc(h)}" target="_blank" rel="noopener">${esc(n)}</a>`).join("");$("gMineLinks").parentElement.hidden=!ls.length}
   if($("gBest"))$("gBest").innerHTML=st.best?`${ico("s-star")} ${esc(t("mine.best",{n:st.best}))}`:esc(t("mine.best.none"));
   syncToggles();
 }
