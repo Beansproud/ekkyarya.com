@@ -116,7 +116,7 @@ function renderMap(){
   $("gMapList").innerHTML=places.map(p=>`<li><button class="v-row${p.hire?" hire":""}" data-place="${p.id}"><img src="${p.icon}" alt="" loading="lazy">${esc(t(p.key))}</button></li>`).join("");
 }
 // a revisit hangs four new pieces on the gallery walls without rebuilding the village
-function refreshWall(){const art=featuredSix(4);$("gMapWrap").querySelectorAll(".v-frame").forEach((im,k)=>{const p=art[k];if(p)im.src=thumbOf(p)})}
+function refreshWall(){const art=featuredSix(4);$("gMapWrap").querySelectorAll(".v-frame").forEach((im,k)=>{const p=art[k];if(p&&im.getAttribute("src")!==thumbOf(p))im.src=thumbOf(p)})}   // same picture: no reload on a tab switch
 /* ---- Village life (B42 V3), inside the ambience budget (decision 10, docs/motion.md): walkers, two clouds, the
    gate's lantern, the noodle bath's steam and the water shimmer. All CSS animations on transform and opacity, so the
    off-screen pause and reduced motion (villagers stand still) apply; day or night is set once, on load. ---- */
@@ -430,7 +430,9 @@ function warmWhenIdle(){if(!document.body.classList.contains("game-mode")||sheet
 function prewarm(){if(!document.body.classList.contains("game-mode"))return;
   const idle=window.requestIdleCallback||(f=>setTimeout(f,50));
   const when=job=>{if(Date.now()-lastTouch<1500)return setTimeout(()=>when(job),1500);idle(()=>Date.now()-lastTouch<1500?when(job):job(),{timeout:4000})};
-  when(()=>{if(!artDone){artDone=true;renderArt()}setTimeout(()=>when(()=>{if(!mapBuilt&&window.VILLAGE){mapBuilt=true;renderMap()}}),1200)})}
+  when(()=>{if(!artDone){artDone=true;renderArt()}
+    $("gCards").querySelectorAll("img[loading=lazy]").forEach(im=>{im.loading="eager";im.decode&&im.decode().catch(()=>{})});   // the first Art visit shows decoded thumbnails, not a fetch
+    setTimeout(()=>when(()=>{if(!mapBuilt&&window.VILLAGE){mapBuilt=true;renderMap()}}),1200)})}
 addEventListener("load",()=>{setTimeout(prewarm,2000);warmT=setTimeout(warmWhenIdle,2500)});
 function renderAll(){if(deep)setTimeout(renderStart,2500);else renderStart();renderMine();setTimeout(moveInd,60)}
 // Shared with js/color.js, js/share.js and js/links.js.
