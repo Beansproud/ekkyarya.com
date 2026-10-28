@@ -19,7 +19,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{font-family:Poppins,system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.65;transition:background .3s,color .3s;overflow-x:hidden}
+body{font-family:Poppins,system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.65;transition:background .3s,color .3s;overflow-x:hidden;overflow-x:clip}   /* clip, not hidden: hidden made body a scroll box and the phone and tablet top bar stopped sticking (hidden stays as the fallback for old Safari) */
 h1,h2,h3,.display{font-family:Fredoka,Poppins,sans-serif;color:var(--ink);line-height:1.05}
 a{color:inherit;text-decoration:none}
 button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}

@@ -12,6 +12,8 @@ Owner's choices: **GitHub as the backend**, **PIN only**.
 - **Doors** (different on web and on a phone; neither shows any hint in the UI):
   - **Web (desktop site):** type `ekky` on the keyboard anywhere, unless the focus is in a text field.
   - **Phone (game mode):** tap the Ekky Arya logo on the start page 7 times within 3 seconds.
+  - **Tablet on the web site (an iPad, no keyboard):** tap the Ekky Arya logo in the top bar or sidebar 7 times within
+    3 seconds. Only on touch screens, so a computer with a mouse keeps the typed door.
   - Either door opens a PIN pad: 6 digits, big 44 px keys, EN and ID, with a soft shake on a wrong PIN and a 30 s pause
     after 5 wrong tries.
 - **The PIN is never in the code.** The site stores only

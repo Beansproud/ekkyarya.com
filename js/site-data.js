@@ -126,6 +126,7 @@ const SiteData = (() => {
 })();
 
 // Doors. Web: type "ekky" outside a text field. Phone (game mode): tap the logo on the start page 7 times in 3 seconds.
+// A touch screen on the web site (an iPad, with no keyboard to type on) uses the tap door on the web logo.
 // Neither shows any hint in the interface.
 (() => {
   const game = () => document.body.classList.contains("game-mode");
@@ -139,7 +140,9 @@ const SiteData = (() => {
   });
   let taps = [];
   document.addEventListener("click", e => {
-    if (!game() || !e.target.closest("#g-start .g-logo, #g-start .g-logo-text")) return;
+    const gameLogo = game() && e.target.closest("#g-start .g-logo, #g-start .g-logo-text");
+    const webLogo = !game() && matchMedia("(pointer:coarse)").matches && e.target.closest(".topbar .logo, .sidebar .logo");
+    if (!gameLogo && !webLogo) return;
     const now = Date.now();
     taps = taps.filter(t => now - t < 3000).concat(now);
     if (taps.length >= 7) { taps = []; SiteData.openAdmin(); }
