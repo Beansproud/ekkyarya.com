@@ -220,17 +220,24 @@ function sayInDialog(m){const d=[...document.querySelectorAll("dialog[open]")].p
   if(!s){s=document.createElement("span");s.className="say-sr";s.setAttribute("role","status");s.style.cssText="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap";d.append(s)}
   s.textContent="";requestAnimationFrame(()=>{s.textContent=m})}
 function say(m,icon){toast.textContent=m;sayInDialog(m);if(icon)toast.insertAdjacentHTML("afterbegin",ico(icon));toast.classList.add("show");clearTimeout(say.t);say.t=setTimeout(()=>toast.classList.remove("show"),document.body.classList.contains("game-mode")?1500:2400)}   // D14: 1.5 s in the game
-const mail=document.getElementById("mailLink");mail.textContent=CONFIG.email;mail.href="mailto:"+CONFIG.email;
+const mail=document.getElementById("mailLink");
 // B15 safe default: a placeholder email or a link to a bare home page (no profile path) stays hidden until CONFIG is filled in.
 const realLink=u=>{try{return new URL(u).pathname.replace(/\/+$/,"").length>0}catch{return false}};
-document.querySelectorAll("[data-link]").forEach(a=>{const u=CONFIG.links[a.dataset.link];if(realLink(u))a.href=u;else a.remove()});
-if(!CONFIG.email){document.querySelector(".mail").remove();document.querySelector('.socials a[href="#contact"]')?.remove()}
+// Applied at start-up and again when js/site-data.js merges data/site.json (admin changes to links and email). Hidden, not removed, so a later value can bring them back.
+function applyContact(){
+  mail.textContent=CONFIG.email;mail.href="mailto:"+CONFIG.email;
+  document.querySelectorAll("[data-link]").forEach(a=>{const u=CONFIG.links[a.dataset.link];const ok=realLink(u);if(ok)a.href=u;a.style.display=ok?"":"none"});
+  const noMail=!CONFIG.email;
+  document.querySelector(".mail").style.display=noMail?"none":"";
+  const em=document.querySelector('.socials a[href="#contact"]');if(em)em.style.display=noMail?"none":"";
+}
+applyContact();addEventListener("sitedata",applyContact);
 const copyMail=document.getElementById("copyMail");if(copyMail)copyMail.onclick=async()=>{try{await navigator.clipboard.writeText(CONFIG.email);say(t("hire.copied"),"i-check")}catch{say(CONFIG.email)}};
 document.getElementById("form").addEventListener("submit",e=>{e.preventDefault();const f=e.target;let ok=true;
   f.querySelectorAll("[required]").forEach(i=>{const err=i.parentElement.querySelector(".err");
     const msg=i.validity.valueMissing?"This one's needed":i.validity.typeMismatch?"Hmm, that email looks off":i.validity.tooShort?"A few more words, please":"";
     err.textContent=msg;if(msg)ok=false});
-  if(!ok)return say("Please check the form");
+  if(!ok){f.querySelector("[required]:invalid")?.focus();return}   // the fields are marked inline; no toast
   const d=Object.fromEntries(new FormData(f));
   if(!CONFIG.email){open(hireTarget().href,"_blank","noopener");return}
   location.href=`mailto:${CONFIG.email}?subject=${encodeURIComponent(d.type+" project from "+d.name)}&body=${encodeURIComponent(d.message+"\n\n"+d.name+" ("+d.email+")")}`;

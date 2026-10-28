@@ -820,9 +820,7 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
   .btn:hover,.g-btn:hover,.g-tile:hover,.play-card:hover,.tile:hover,.feat:hover,.g-feat:hover,.g-card:hover,.g-mine-item:hover,.g-hire:hover,.v-place:hover,.v-walker:hover,.v-folk:hover{animation:none;translate:none;scale:none;rotate:none}}
 .c-ripple{position:absolute;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;background:var(--c);opacity:.45;pointer-events:none;transform:scale(.3);animation:cRipple .3s cubic-bezier(.22,.61,.36,1) forwards;z-index:3;will-change:transform,opacity}
 @keyframes cRipple{to{transform:scale(4);opacity:0}}
-.c-sw.pop::before{animation:cPop .3s cubic-bezier(.34,1.56,.64,1)}
-@keyframes cPop{from{transform:scale(.8)}to{transform:scale(1)}}
-@media (prefers-reduced-motion:reduce){.c-ripple{display:none}.c-sw.pop::before{animation:none}}
+@media (prefers-reduced-motion:reduce){.c-ripple{display:none}}
 /* Doodle Scene: a sticker lifts while it is held, and pops when it lands or is added */
 .c-st{will-change:transform}
 .c-st.drag{scale:1.1;transition:scale .15s cubic-bezier(.34,1.56,.64,1)}
@@ -840,9 +838,7 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 }
 @keyframes cStWob{25%{rotate:-4deg}75%{rotate:4deg}}
 .c-page{display:flex;flex-direction:column;justify-content:flex-start}   /* a button centers its content: a one-line title beside a two-line one left a gap above the picture */
-.c-stage canvas.c-fadein{position:absolute;display:block;opacity:0;pointer-events:none;transition:opacity .25s linear}   /* the new color of a fill: opacity only, committed to the picture when it ends */
 .c-bin{transition:transform .25s cubic-bezier(.34,1.56,.64,1)}   /* transform only (the red "hot" color now switches at once) */
-@media (prefers-reduced-motion:reduce){.c-stage canvas.c-fadein{transition:none}}
 
 /* the Art grid draws and lays out only the cards near the screen (smoother tab switch and scroll) */
 #gCards .g-card{content-visibility:auto;contain-intrinsic-height:auto 230px}
@@ -874,7 +870,7 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 .g-mine-links a{color:#2B1342}
 /* sheet header: the title row and the close button share one centre line and one 20 px inset */
 .g-sheet h2{margin:0 0 10px;min-height:44px;padding-right:64px}
-.g-sheet .g-x{top:var(--xtop,31px);right:20px}
+.g-sheet .g-x{top:var(--xtop,20px);right:20px}
 
 /* Map squad: a living village (owner 10-28). Transform and opacity only; JS (Life in js/game.js) pauses all of it when the
    map is off screen or the tab is hidden, and starts none of it under reduced motion. */
@@ -902,13 +898,6 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 .v-lantern{animation-duration:3.4s}
 @media (prefers-reduced-motion:reduce){.v-fx,.v-tw,.v-lantern,.v-smoke,.v-cloudrow{display:none}}
 
-/* World squad */
-#g-map{contain:layout paint}   /* the village screen is its own box: its layout and paint never reach the other screens */
-/* the galaxy sky and planet stay laid out and are faded, not display:none, so leaving the paper screens costs no style or layout work */
-.g-sky,.g-planet-bg{will-change:opacity;transition:opacity var(--dur-fast) var(--ease-in)}
-#game.at-start .g-sky,#game.at-start .g-planet-bg,#game.at-paper .g-sky,#game.at-paper .g-planet-bg{display:block;opacity:0}
-/* ink on paper is set on the screens and on #game's other children, not on #game: a colour that changes on #game is inherited, so every tab switch restyled all 800+ elements (about 30 ms at 4x) */
-#g-start,#g-art,#g-mine,#game.at-start>:not(.g-screen),#game.at-paper>:not(.g-screen){color:#2B1342}
 /* Admin settings */
 .as-intro{margin:0 0 14px;font-size:1rem;line-height:1.45}
 .as-field{margin:0 0 16px}
@@ -934,6 +923,9 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 .as-primary{background:#FFB400;color:#2B1342}
 @media (min-width:700px){.as-cols{grid-template-columns:1fr 1fr}}
 
+/* the sky, planet, tab bar and sheet keep that ink on every screen (their visible colours are all set on their insides), so the
+   at-paper switch changes nothing they pass down: Map <> Art or Mine no longer restyles their 120+ elements */
+#game>.g-sky,#game>.g-planet-bg,#game>.g-tabs,#game>.g-sheet{color:#2B1342}
 .g-screen{contain:strict}
 
 /* Admin art */
@@ -986,6 +978,20 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 .v-burst i{position:absolute;left:0;top:0;width:2.2cqw;height:2.2cqw;margin:-1.1cqw 0 0 -1.1cqw;background:#FFD678;
   clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%)}
 .v-map .v-label.go{translate:0 -4px;box-shadow:none}
+/* Shell squad: the Hire confirmation lives in the sheet */
+.g-sent{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;padding:18px 8px 6px}
+.g-sent-ico{width:56px;height:56px;border-radius:50%;background:#7ED9B0;color:#2B1342;display:grid;place-items:center}
+.g-sent-ico .ico{width:30px;height:30px}
+.g-sent h3{font-family:Fredoka;color:#2B1342;font-size:1.3rem;margin:4px 0 0}
+.g-sent p{margin:0}
+.g-sent .g-btn{margin-top:10px}
+.g-sent .g-link{color:#2B1342;min-height:44px;min-width:44px}
+/* sheet header: the grab handle floats at the very top so the title row and the close button start 20 px from the top, as they sit 20 px from the sides */
+.g-sheet .g-grab{position:absolute;top:8px;left:50%;translate:-50% 0;margin:0}
+.g-sheet .g-sheet-in{padding-top:20px}
+.g-sent .g-fallback{margin-top:12px}
+.g-addr{display:flex;flex-direction:column;align-items:center;gap:6px;word-break:break-all}
+.g-addr b{color:#2B1342;font-size:.95rem}
 
 /* ===== Map fit (art critic a1): the village spans the screen width, through the 16 px side gutters ===== */
 #g-map .v-map{max-width:none;margin:auto 0;align-self:center;flex-shrink:0}
@@ -1043,3 +1049,72 @@ body:has(#g-map.active) .idle-buddy{bottom:calc(env(safe-area-inset-bottom) + 96
   body.game-mode #lightbox .lb-nav{position:absolute;left:12px;bottom:12px;z-index:1}
   body.game-mode #lightbox .lb-nav button{box-shadow:0 2px 6px rgba(0,0,0,.18)}
 }
+/* labels are hand-weight lettering straight on the picture: white with a thin dark ink outline, "Work with Ekky" gold */
+.v-map .v-label{font-size:clamp(12px,2.7cqw,14px);padding:0;border:0;border-radius:0;background:none;box-shadow:none;color:#fff;letter-spacing:.01em;
+  -webkit-text-stroke:2.6px #2B1342;paint-order:stroke fill;text-shadow:0 1px 3px rgba(43,19,66,.55);font-weight:800;rotate:-1.2deg}
+.v-map span.v-label:nth-of-type(even){rotate:1deg}
+.v-map .v-label.hire{color:#FFD23F;border:0;background:none;-webkit-text-stroke:3.4px #2B1342;text-shadow:0 0 6px rgba(43,19,66,.9)}
+.v-label{transition:transform var(--dur-fast) var(--ease-move),opacity .2s}
+.v-label.edge{opacity:0;pointer-events:none}
+@media (hover:none) and (pointer:coarse){.v-zoomctl{display:none}}   /* a touch screen pinches or double-taps; the +/- buttons are for a mouse */
+.v-burst{position:absolute;width:0;height:0;pointer-events:none;z-index:3}
+.v-burst i{position:absolute;left:0;top:0;width:2.2cqw;height:2.2cqw;margin:-1.1cqw 0 0 -1.1cqw;background:#FFD678;
+  clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%)}
+.v-map .v-label.go{translate:0 -4px;box-shadow:none}
+#g-map .v-map.zoomed{-webkit-mask-image:linear-gradient(transparent,#000 22px,#000 calc(100% - 22px),transparent);mask-image:linear-gradient(transparent,#000 22px,#000 calc(100% - 22px),transparent)}   /* a3: zoomed, the map's top and bottom fade into the galaxy: no hard clip line */
+@media (orientation:landscape) and (max-height:520px){#g-map .v-map:not(.zoomed){width:min(100%,440px)!important;margin:8px 0 0;flex-shrink:0}}   /* landscape phone: the height can't hold the village, so it keeps a readable width and the screen scrolls */
+/* Hire form: an empty field is marked in place */
+.g-sheet label .err{color:#B3261E;font-size:.82rem;font-weight:600;min-height:0}
+.g-sheet label .err:empty{display:none}
+.g-sheet input.bad,.g-sheet textarea.bad{border-color:#B3261E;box-shadow:0 2px 0 #B3261E}
+/* every sheet ends above the tab bar (and its raised centre button), so nothing of a sheet is ever under it */
+.g-sheet .g-sheet-in{bottom:calc(env(safe-area-inset-bottom) + 108px);border-radius:30px;padding-bottom:28px;max-height:calc(100% - env(safe-area-inset-top) - 68px - env(safe-area-inset-bottom) - 108px)}
+.g-sheet .g-sheet-in{transform:translateY(calc(100% + 140px))}
+.g-sheet.open .g-sheet-in{transform:none}
+#game:has(.c-over.open) .g-sheet .g-sheet-in{bottom:calc(env(safe-area-inset-bottom) + 12px);max-height:calc(100% - env(safe-area-inset-top) - 80px)}
+
+/* Play squad: Mewarnai, Doodle Scene, Done reveal, share. Light paper like the start page (owner: the game is on light paper), ink text. */
+.c-over,.c-over.s-over{background:var(--paper,#FBF8F1) var(--grain);color:#2B1342}
+.c-over .g-title{color:#2B1342;text-shadow:none}
+.c-over .g-sub,.c-over .g-link,.s-sign,.c-page small{color:#645F70}
+.s-secondary .g-link,.s-video{color:#2B1342}
+.c-top b,.c-pair figcaption,.c-page:not(.c-scratch) b{color:#2B1342}
+.c-view>.g-x,.c-icon,.c-tool,.c-tray-st{background:#FFFDF8;color:#2B1342;box-shadow:var(--paper-shadow,0 2px 6px rgba(0,0,0,.12))}
+.c-tool{border:2px solid var(--paper-line,#E4DCCB)}
+.c-tool[aria-expanded="true"]{background:#FFB400;border-color:#FFB400}
+.c-tray{background:#FFFDF8;border:2px solid var(--paper-line,#E4DCCB);box-shadow:0 -6px 18px rgba(43,19,66,.15)}
+.c-tray-st{box-shadow:none;background:var(--paper-2,#F6F1E6)}
+.s-sign input{background:#fff;border-color:var(--paper-line,#E4DCCB);color:#2B1342}
+.c-page{background:#FFFDF8;border:0;border-radius:10px;box-shadow:var(--paper-shadow,0 2px 6px rgba(0,0,0,.12))}
+.c-stage,.c-arrive-art canvas{box-shadow:0 0 0 4px #FFB400,0 6px 16px rgba(43,19,66,.18)}
+.s-preview canvas{box-shadow:0 6px 18px rgba(43,19,66,.25)}
+.c-sw.on::before{box-shadow:0 0 0 3px var(--paper,#FBF8F1),0 0 0 6px #FFB400}
+.c-wheel{background:#FFFDF8;color:#2B1342;box-shadow:0 -6px 24px rgba(43,19,66,.2)}
+.c-wheel-pre{box-shadow:inset 0 0 0 2px rgba(43,19,66,.25)}
+.c-strip canvas{box-shadow:inset 0 0 0 2px rgba(43,19,66,.25)}
+/* the picker header is one 44 px line: the title is centred on the close button, one line in both languages */
+.c-view>.g-x{top:calc(env(safe-area-inset-top) + 14px)}
+.c-pick .g-title,.c-reveal .g-title,.c-arrive .g-title{margin:0 52px;min-height:44px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;white-space:nowrap;overflow:hidden}
+.c-pick .g-sub{margin-top:6px}
+/* Doodle Scene card: a blank square and a title, the same size as a drawing card */
+.c-scratch{border:2px dashed #2B1342;padding:0;justify-content:flex-start;align-items:stretch;background:#FFFDF8}
+.c-scratch .ico{display:block;box-sizing:border-box;width:100%;height:auto;aspect-ratio:1;margin:0;padding:26%;color:#2B1342}
+.c-scratch b{padding:8px 10px 2px}
+.c-scratch small{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+/* on a phone the title shrank to "B." between Back and the Hire chip: the picture is the title there */
+@media (max-width:480px){.c-top b{display:none}.c-top .g-hire{margin-left:auto}}
+/* World squad */
+#g-map{contain:layout paint}   /* the village screen is its own box: its layout and paint never reach the other screens */
+/* the galaxy sky and planet stay laid out and are faded, not display:none, so leaving the paper screens costs no style or layout work */
+.g-sky,.g-planet-bg{will-change:opacity;transition:opacity var(--dur-fast) var(--ease-in)}
+#game.at-start .g-sky,#game.at-start .g-planet-bg,#game.at-paper .g-sky,#game.at-paper .g-planet-bg{display:block;opacity:0}
+/* ink on paper is set on the screens and on #game's other children, not on #game: a colour that changes on #game is inherited, so every tab switch restyled all 800+ elements (about 30 ms at 4x) */
+#g-start,#g-art,#g-mine,#game.at-start>:not(.g-screen),#game.at-paper>:not(.g-screen){color:#2B1342}
+/* start page at 360 px: one 16 px gutter and one 12 px gap for the grid, the tiles and the Hire chip (Visual QA) */
+#game .g-start{padding-left:var(--gut,16px);padding-right:var(--gut,16px)}
+#g-start .g-featured{column-gap:var(--gap,12px)}
+/* the idle doodle on the start page sits in the free paper just above the tab bar, small, so it never covers a polaroid or a caption */
+body.game-mode .idle-buddy.on-start{left:16px;right:16px;max-width:none;align-items:flex-end;gap:6px}
+.idle-buddy.on-start img{width:36px;height:36px}
+.idle-buddy.on-start .idle-bubble{margin:0;padding:0 9px;font-size:.75rem;line-height:1.5;box-shadow:0 2px 0 #2B1342;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+@media (max-width:760px){body:not(.game-mode) .g-mode-fab{left:calc(16px + env(safe-area-inset-left));bottom:calc(22px + env(safe-area-inset-bottom))}}   /* iPhone safe areas, see site.css */

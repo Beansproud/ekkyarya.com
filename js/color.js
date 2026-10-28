@@ -97,24 +97,26 @@ const cache={};
 function loadScript(src){return new Promise((ok,no)=>{const s=document.createElement("script");s.src=src;s.onload=ok;s.onerror=no;document.head.appendChild(s)})}
 function loadImg(src){return new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=src})}
 // Region index: for region r, its pixels are idx[start[r] .. start[r+1]).
+// Opening a page is several big passes over the 800 x 930 map; each stage runs in its own task so no frame waits on all of them.
+const breathe=()=>new Promise(r=>setTimeout(r));
 async function pageData(id){
   if(cache[id])return cache[id];
   let meta,ids;
   if(id==="scratch"){meta=SCRATCH;ids=new Uint16Array(meta.w*meta.h).fill(1)}
   else{const p=pages().find(x=>x.id===id);if(!p)throw new Error("no page "+id);
     if(!(window.COLOR_PAGE_DATA||{})[id])await loadScript(`assets/color/${id}/page.js`);
-    meta=COLOR_PAGE_DATA[id];const map=await loadImg(meta.mapData);
+    meta=COLOR_PAGE_DATA[id];const map=await loadImg(meta.mapData);await breathe();
     const c=document.createElement("canvas");c.width=meta.w;c.height=meta.h;const x=c.getContext("2d",{willReadFrequently:true});x.drawImage(map,0,0);
-    const d=x.getImageData(0,0,meta.w,meta.h).data;ids=new Uint16Array(meta.w*meta.h);for(let i=0;i<ids.length;i++)ids[i]=d[i*4]+d[i*4+1]*256}
-  const k=meta.regions,start=new Int32Array(k+2),idx=new Int32Array(ids.length);
-  for(let i=0;i<ids.length;i++)start[ids[i]+1]++;
-  for(let r=1;r<=k+1;r++)start[r]+=start[r-1];
-  const fillPos=start.slice();for(let i=0;i<ids.length;i++)idx[fillPos[ids[i]]++]=i;
-  const line=meta.line?await loadImg(`assets/color/${id}/${meta.line}`).catch(()=>null):null;
-  // rank: the order regions fill in the share video, a top-to-bottom sweep by each region's center
-  const cy=[];for(let r=1;r<=k;r++){let sy=0,sx=0,n=start[r+1]-start[r];for(let j=start[r];j<start[r+1];j++){sy+=Math.floor(idx[j]/meta.w);sx+=idx[j]%meta.w}cy.push([r,n?sy/n+sx/n*.25:0])}
-  const rank=new Int32Array(k+1);cy.sort((a,b)=>a[1]-b[1]).forEach(([r],i)=>rank[r]=i);
-  return cache[id]={id,meta,ids,start,idx,line,rank};
+    const d32=new Uint32Array(x.getImageData(0,0,meta.w,meta.h).data.buffer);ids=new Uint16Array(d32.length);
+    for(let i=0;i<ids.length;i++){const v=d32[i];ids[i]=(v&255)+(v>>8&255)*256}}   // little-endian RGBA: R + 256 * G
+  await breathe();
+  const pd={id,meta,ids,line:null};boxes(pd);   // pass 1: sizes, bounding boxes and rank together
+  await breathe();
+  const start=pd.start,idx=new Int32Array(ids.length),fillPos=start.slice();   // pass 2: the pixels of each region, together
+  for(let i=0;i<ids.length;i++)idx[fillPos[ids[i]]++]=i;
+  pd.idx=idx;
+  if(meta.line)pd.line=await loadImg(`assets/color/${id}/${meta.line}`).catch(()=>null);
+  return cache[id]=pd;
 }
 
 /* ---- drawing: fills (0 = paper, 1..12 = the page's colors, 13..15 = custom colors), Ekky's lines on top ---- */
@@ -128,34 +130,30 @@ function makeState(pd,saved){const k=pd.meta.regions;bboxAll(pd);const s={pd,fil
   if(pd.id==="scratch"&&!saved)s.fills[1]=1;
   return s}
 // Paint the fill layer of a state onto a canvas at the page's own size.
-function paint(s,cv){flushFades();const {meta,start,idx,line}=s.pd;cv.width=meta.w;cv.height=meta.h;const x=cv.getContext("2d");
+function paint(s,cv){const {meta,start,idx,line}=s.pd;cv.width=meta.w;cv.height=meta.h;const x=cv.getContext("2d");
   const img=x.createImageData(meta.w,meta.h),d=img.data;d.fill(255);
   for(let r=1;r<=meta.regions;r++){const v=s.fills[r];if(!v)continue;const [R,G2,B]=hexRgb(colorOf(s,v));
     for(let j=start[r];j<start[r+1];j++){const o=idx[j]*4;d[o]=R;d[o+1]=G2;d[o+2]=B}}
   x.putImageData(img,0,0);if(line)x.drawImage(line,0,0)}
 // Repaint only the bounding box of region r: paper, then each pixel's region color, then Ekky's lines on top.
-// fade: the new color fades into the shape over 250 ms (B39: shows which shape changed; reduced motion paints at once).
-// Smooth fills (owner: "some animation is very clunky"): the bounding box of each region is found once and cached, pixels are written
-// as 32-bit words, and a big region is built in slices of at most 10 ms so a 4x slower phone never stalls a frame. The new color
-// then fades in as an overlay canvas whose opacity is animated (compositor only), and is committed to the picture when it ends.
-const fading=[];
-function flushFades(){while(fading.length)fading.shift()()}
-function bboxAll(pd){if(pd.bb)return pd.bb;const {meta,start,idx}=pd,W=meta.w,b=pd.bb=new Int32Array((meta.regions+1)*4);   // every region's box in one pass, when the page opens
-  for(let r=0;r<=meta.regions;r++){let x0=W,y0=meta.h,x1=-1,y1=-1;for(let j=start[r],e=start[r+1];j<e;j++){const i=idx[j],py=(i/W)|0,px=i-py*W;if(px<x0)x0=px;if(px>x1)x1=px;if(py<y0)y0=py;if(py>y1)y1=py}
-    b[r*4]=x0;b[r*4+1]=y0;b[r*4+2]=x1;b[r*4+3]=y1}
-  return b}
+// Smooth fills (owner: "some animation is very clunky"): the bounding box of each region is found once when the page opens, pixels are
+// written as 32-bit words, and a big region is built in slices of at most 10 ms so a 4x slower phone never stalls a frame.
+// The tap's ripple (fillPop) shows which shape changed; the shape itself switches color in one draw.
+function boxes(pd){const {meta,ids}=pd,W=meta.w,H=meta.h,k=meta.regions,n=k+1,x0=new Int32Array(n).fill(W),y0=new Int32Array(n).fill(H),x1=new Int32Array(n).fill(-1),y1=new Int32Array(n).fill(-1),
+    cnt=new Int32Array(n),sy=new Float64Array(n),sx=new Float64Array(n),start=pd.start=new Int32Array(k+2);
+  for(let y=0,i=0;y<H;y++)for(let x=0;x<W;x++,i++){const r=ids[i];cnt[r]++;sx[r]+=x;sy[r]+=y;if(x<x0[r])x0[r]=x;if(x>x1[r])x1[r]=x;if(y<y0[r])y0[r]=y;y1[r]=y}   // y only grows
+  const b=pd.bb=new Int32Array(n*4),cy=[];
+  for(let r=0;r<=k;r++){start[r+1]=start[r]+cnt[r];b[r*4]=x0[r];b[r*4+1]=y0[r];b[r*4+2]=x1[r];b[r*4+3]=y1[r];if(r)cy.push([r,cnt[r]?sy[r]/cnt[r]+sx[r]/cnt[r]*.25:0])}
+  // rank: the order regions fill in the share video, a top-to-bottom sweep by each region's center
+  const rank=pd.rank=new Int32Array(n);cy.sort((a,b)=>a[1]-b[1]).forEach(([r],i)=>rank[r]=i)}
+const bboxAll=pd=>pd.bb||(boxes(pd),pd.bb)
 function bboxOf(pd,r){const b=bboxAll(pd),o=r*4;return [b[o],b[o+1],b[o+2],b[o+3]]}
-function paintRegion(s,cv,r,fade){flushFades();const {meta,line,ids}=s.pd,W=meta.w,x=cv.getContext("2d"),[x0,y0,x1,y1]=bboxOf(s.pd,r);
+function paintRegion(s,cv,r){const {meta,line,ids}=s.pd,W=meta.w,x=cv.getContext("2d"),[x0,y0,x1,y1]=bboxOf(s.pd,r);
   if(x1<x0)return;const w=x1-x0+1,h=y1-y0+1,box=document.createElement("canvas");box.width=w;box.height=h;
   const bx=box.getContext("2d"),img=bx.createImageData(w,h),d32=new Uint32Array(img.data.buffer),col=new Uint32Array(16),fills=s.fills;
   for(let v=0;v<16;v++){const c=hexRgb(colorOf(s,v));col[v]=(255<<24|c[2]<<16|c[1]<<8|c[0])>>>0}
   let yy=0;const rows=until=>{for(;yy<h&&performance.now()<until;yy++){const base=(y0+yy)*W+x0,o=yy*w;for(let xx=0;xx<w;xx++)d32[o+xx]=col[fills[ids[base+xx]]]}};
-  const done=()=>{bx.putImageData(img,0,0);if(line)bx.drawImage(line,x0,y0,w,h,0,0,w,h);
-    if(!fade||reduce){x.drawImage(box,x0,y0);return}
-    box.className="c-fadein";box.style.cssText=`left:${x0/W*100}%;top:${y0/meta.h*100}%;width:${w/W*100}%;height:${h/meta.h*100}%`;
-    stage.insertBefore(box,$("cPeek"));void box.offsetWidth;box.style.opacity=1;
-    let tm=0;const commit=()=>{clearTimeout(tm);const k=fading.indexOf(commit);if(k>=0)fading.splice(k,1);if(box.parentNode){x.drawImage(box,x0,y0);box.remove()}};
-    fading.push(commit);tm=setTimeout(commit,270)};
+  const done=()=>{bx.putImageData(img,0,0);if(line)bx.drawImage(line,x0,y0,w,h,0,0,w,h);x.drawImage(box,x0,y0)};
   rows(performance.now()+10);if(yy>=h)return done();
   const tick=()=>{rows(performance.now()+10);yy>=h?done():requestAnimationFrame(tick)};requestAnimationFrame(tick)}
 // Draw the whole picture (fills, lines, stickers) into a box on any canvas: thumbnails, reveal, share card, arrival.
@@ -195,7 +193,10 @@ function renderColors(){const cols=cur.pd.meta.colors;
     (feature("anyColor")?`<button class="c-sw c-any" data-any aria-label="${esc(t("color.any"))}">${ico("i-plus")}</button>`:"")}
 $("cColors").addEventListener("click",e=>{const b=e.target.closest(".c-sw");if(!b)return;Game.buzz(6);
   if(b.dataset.any!==undefined){openWheel();return}
-  color=+b.dataset.v;renderColors()});
+  pickColor(+b.dataset.v)});
+// Choosing a swatch only moves the "on" ring; the buttons are not rebuilt, so a tap costs no layout.
+function pickColor(v){if(v===color)return;const sw=$("cColors");color=v;
+  sw.querySelectorAll(".c-sw[data-v]").forEach(b=>{const on=+b.dataset.v===v;b.classList.toggle("on",on);b.setAttribute("aria-checked",on)})}
 function addCustom(c){let i=cur.custom.indexOf(c);
   if(i<0){if(cur.custom.length<MAX_CUSTOM){cur.custom.push(c);i=cur.custom.length-1}else{i=MAX_CUSTOM-1;cur.custom[i]=c;paint(cur,cv)}}
   color=13+i;renderColors();save()}
@@ -227,11 +228,11 @@ wheel.addEventListener("keydown",e=>{if(e.key==="Escape"){e.stopPropagation();cl
 /* a touch fill feels alive: a quick ripple from the tap point and a tiny pop of the swatch (about 300 ms; the CSS turns both off under reduced motion) */
 function fillPop(e){const r=stage.getBoundingClientRect(),d=document.createElement("i");d.className="c-ripple";d.style.cssText=`left:${e.clientX-r.left}px;top:${e.clientY-r.top}px;--c:${colorOf(cur,color)}`;
   stage.appendChild(d);setTimeout(()=>d.remove(),400);
-  const sw=$("cColors").querySelector(".c-sw.on");if(sw){sw.classList.remove("pop");void sw.offsetWidth;sw.classList.add("pop")}}
+  const sw=$("cColors").querySelector(".c-sw.on");if(sw&&sw.animate&&!reduce.matches)sw.animate([{transform:"scale(.8)"},{transform:"none"}],{duration:300,easing:"cubic-bezier(.34,1.56,.64,1)"})}
 function pagePoint(e){const r=cv.getBoundingClientRect();return [Math.floor((e.clientX-r.left)/r.width*cur.pd.meta.w),Math.floor((e.clientY-r.top)/r.height*cur.pd.meta.h)]}
 stage.addEventListener("pointerdown",e=>{if(!cur)return;if(gest){joinGesture(e);return}if(e.target.closest(".c-st"))return;
   const [x,y]=pagePoint(e);if(x<0||y<0||x>=cur.pd.meta.w||y>=cur.pd.meta.h)return;const r=cur.pd.ids[y*cur.pd.meta.w+x];if(!r||cur.fills[r]===color)return;
-  cur.undo.push([r,cur.fills[r]]);cur.fills[r]=color;paintRegion(cur,cv,r,true);Game.sfx("fill");Game.buzz(8);save();if(e.pointerType!=="mouse")fillPop(e)});
+  cur.undo.push([r,cur.fills[r]]);cur.fills[r]=color;paintRegion(cur,cv,r);Game.sfx("fill");Game.buzz(8);save();if(e.pointerType!=="mouse")fillPop(e)});
 // Undo history survives leaving and reopening a page (the owner: "undo button is not working in mewarnai": the colors came
 // back but the history did not, so Undo looked active and did nothing). The button is disabled when there is nothing to undo.
 function updUndo(){const b=$("cUndo");if(b)b.disabled=!(cur&&cur.undo.length)}
@@ -242,7 +243,7 @@ const peek=on=>{$("cPeek").classList.toggle("show",on&&!!$("cPeek").getAttribute
 $("cPeekBtn").addEventListener("pointerdown",e=>{e.preventDefault();peek(true)});["pointerup","pointerleave","pointercancel"].forEach(ev=>$("cPeekBtn").addEventListener(ev,()=>peek(false)));
 $("cPeekBtn").addEventListener("keydown",e=>{if(e.key===" "||e.key==="Enter")peek(true)});$("cPeekBtn").addEventListener("keyup",()=>peek(false));
 $("cBack").onclick=()=>{save(true);openPicker()};
-$("cDone").onclick=()=>{save(true);reveal()};
+$("cDone").onclick=reveal;   // the screen switches on the tap frame; the save (thumbnail, JSON) runs after the reveal has painted
 
 /* ---- stickers: tap one in the tray to add it; drag to move, pinch to scale and rotate, drag onto the bin to remove ---- */
 if($("cStickBtn")){
@@ -288,7 +289,7 @@ function popSticker(k){const el=$("cStickers").children[k];if(el){el.classList.a
 /* ---- autosave to Mine ---- */
 let saveT=0;
 function save(now){updUndo();if(!cur)return;clearTimeout(saveT);const run=()=>{if(!cur)return;const st=Game.st;st.colorings=st.colorings||{};
-  let thumb="";try{const c=document.createElement("canvas");c.width=240;c.height=Math.round(240*cur.pd.meta.h/cur.pd.meta.w);flushFades();compose(cur,c.getContext("2d"),0,0,240,1,cv);thumb=c.toDataURL("image/jpeg",.7)}catch{}
+  let thumb="";try{const c=document.createElement("canvas");c.width=240;c.height=Math.round(240*cur.pd.meta.h/cur.pd.meta.w);compose(cur,c.getContext("2d"),0,0,240,1,cv);thumb=c.toDataURL("image/jpeg",.7);c.width=c.height=0}catch{}
   st.colorings[cur.pd.id]={title:cur.title,fills:[...cur.fills],custom:cur.custom,stickers:cur.stickers.map(s=>({n:s.n,x:+s.x.toFixed(4),y:+s.y.toFixed(4),s:+s.s.toFixed(4),r:+s.r.toFixed(4)})),undo:cur.undo.slice(-UNDO_KEEP),at:Date.now(),thumb};Game.save();updUndo()};
   if(now)run();else saveT=setTimeout(()=>window.requestIdleCallback?requestIdleCallback(run,{timeout:1500}):run(),400)}
 
@@ -297,7 +298,7 @@ function reveal(){const s=cur,scratch=s.pd.id==="scratch",c=$("cYours"),{w,h}=s.
   c.width=480;c.height=Math.round(480*h/w);
   $("cRevTitle").textContent=scratch?t("color.scratch"):t("reveal.title");$("cEkkyFig").hidden=scratch;
   view("cReveal");   // the screen switches on the tap frame; the drawing, the image and the save follow, so the tap never waits on them
-  requestAnimationFrame(()=>{if(cur!==s)return;flushFades();compose(s,c.getContext("2d"),0,0,480,1,cv);Game.sfx("level");Game.st.firstDone=1;Game.save()});   // no confetti here: it covered the comparison (share playtest); the reveal itself is the reward
+  requestAnimationFrame(()=>{if(cur!==s)return;compose(s,c.getContext("2d"),0,0,480,1,cv);Game.sfx("level");Game.st.firstDone=1;requestAnimationFrame(()=>{if(cur===s){save(true);Game.save()}})});   // no confetti here: it covered the comparison (share playtest); the reveal itself is the reward
   if(scratch){ek.removeAttribute("src");return}
   ek.style.opacity=0;ek.src=s.pd.meta.original||(bySlug(s.pd.meta.slug)||{}).full||"";
   ek.decode().catch(()=>{}).then(()=>{ek.style.opacity=""})}

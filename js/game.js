@@ -258,7 +258,7 @@ function lifeStart(z,V){Life.V=V;Life.fx=z.querySelector(".v-fx");Life.live.clea
     document.addEventListener("visibilitychange",()=>lifeSet(!document.hidden&&screen==="map"))}
   stage(1400,()=>{Life.run=null;lifeSet(screen==="map")})}   // null: re-sync play or pause for the freshly drawn village   // null: re-sync play or pause for the freshly drawn village
 
-/* ---- Zoom (G1): pinch or drag with a finger, or the +/- buttons; 1x to 2x. A place is still one tap: a touch
+/* ---- Zoom (G1): pinch, drag or double-tap with a finger, or the +/- buttons with a mouse; 1x to 2x. A place is still one tap: a touch
    that moved more than 8 px is a pan, not a tap. Nothing animates; the view follows the finger. ---- */
 const Z={s:1,x:0,y:0,pts:new Map(),moved:false,start:null,raf:0,zs:null,r:{l:0,t:0},cw:0};
 // At 1x the map is its framed size. Zoomed, the frame widens to the full screen width at the same height, and the
@@ -359,7 +359,9 @@ function openSheet(html){let fresh=false;
   setTimeout(()=>$("gSheetX").focus({preventScroll:true}),50)}
 function closeSheet(){sheet.classList.remove("open");sheetHtml="";clearTimeout(warmT);warmT=setTimeout(()=>warmWhenIdle(),900);if(sheetFrom&&sheetFrom.focus)sheetFrom.focus({preventScroll:true})}
 $("gSheetX").onclick=closeSheet;sheet.addEventListener("click",e=>{if(e.target===sheet)closeSheet()});
-addEventListener("keydown",e=>{if(e.key==="Escape"&&sheet.classList.contains("open"))closeSheet()});
+addEventListener("keydown",e=>{if(e.key!=="Escape")return;
+  if(sheet.classList.contains("open"))return closeSheet();
+  const top=lstack[lstack.length-1],L=LAYERS.find(l=>l[0]===top);if(L&&top!=="lb"&&top!=="sheet"&&!e.defaultPrevented&&!document.querySelector("dialog[open]"))L[3](L[1]())});   // Esc closes the top layer (Color, share) like Back; the lightbox, a dialog, closes itself
 let sy=null;sheet.firstElementChild.addEventListener("touchstart",e=>{sy=sheet.firstElementChild.scrollTop>0?null:e.touches[0].clientY},{passive:true});
 sheet.firstElementChild.addEventListener("touchend",e=>{if(sy!==null&&e.changedTouches[0].clientY-sy>90)closeSheet();sy=null});
 // Every sheet ends with a Hire button (B07); the HUD chip above the sheet's backdrop stays tappable too.
@@ -404,12 +406,24 @@ function openHire(prefill,pl){const l=LEVELS[4];
     </form>`+madeFrom(pl));
   const c=$("gCopyMail");if(c)c.onclick=async()=>{try{await navigator.clipboard.writeText(CONFIG.email);say(t("hire.copied"),"i-check")}catch{say(CONFIG.email)}};
 }
+$("gSheetBody").addEventListener("input",e=>{const i=e.target;if(i.classList&&i.classList.contains("bad")&&i.validity.valid){i.classList.remove("bad");i.setAttribute("aria-invalid","false");i.parentElement.querySelector(".err").textContent=""}});
 $("gSheetBody").addEventListener("submit",e=>{e.preventDefault();const f=e.target;let ok=true;
-  f.querySelectorAll("[required]").forEach(i=>{const m=i.validity.valueMissing?"This one's needed":i.validity.tooShort?"A few more words, please":"";
-    i.parentElement.querySelector(".err").textContent=m;if(m)ok=false});
-  if(!ok){buzz([20,40,20]);if(!reduce)f.animate([{transform:"translateX(0)"},{transform:"translateX(-8px)"},{transform:"translateX(8px)"},{transform:"translateX(0)"}],{duration:300});return}
-  const d=Object.fromEntries(new FormData(f));sfx("level");if(typeof confetti==="function")confetti();closeSheet();say(t("hire.sent"),"i-check");
+  let first=null;   // empty fields are marked in place (red line plus a hint under each), the first one takes focus; no toast
+  f.querySelectorAll("[required]").forEach(i=>{const m=i.validity.valueMissing?t("hire.form.need"):i.validity.tooShort?t("hire.form.more"):"";
+    i.parentElement.querySelector(".err").textContent=m;i.classList.toggle("bad",!!m);i.setAttribute("aria-invalid",m?"true":"false");if(m){ok=false;first=first||i}});
+  if(!ok){buzz([20,40,20]);if(!reduce)f.animate([{transform:"translateX(0)"},{transform:"translateX(-8px)"},{transform:"translateX(8px)"},{transform:"translateX(0)"}],{duration:300});first.focus();return}
+  const d=Object.fromEntries(new FormData(f));sfx("level");if(typeof confetti==="function")confetti();
   const go=CONFIG.email?`mailto:${CONFIG.email}?subject=${encodeURIComponent(d.type+" project from "+d.name)}&body=${encodeURIComponent(d.message+"\n\n"+d.name)}`:hireTarget().href;
+  // the result stays inside the sheet (a toast at the top of the screen was clipped): what happens, and that it worked
+  const hh=f.previousElementSibling;if(hh&&hh.matches("h3"))hh.remove();
+  f.replaceWith(Object.assign(document.createElement("div"),{className:"g-sent",innerHTML:`<span class="g-sent-ico">${ico("i-check")}</span><h3>${esc(t("hire.sent.title"))}</h3>
+    <p>${esc(t("hire.sent.body"))}</p><p class="g-small">${esc(t("hire.sent"))}</p>
+    <a class="g-btn" href="${esc(go)}"${go.startsWith("mailto:")?"":' target="_blank" rel="noopener"'}>${ico("i-send")} ${esc(t("hire.sent.again"))}</a>
+    ${CONFIG.email?`<p class="g-small g-fallback">${esc(t("hire.sent.fallback"))}</p><p class="g-addr"><b>${esc(CONFIG.email)}</b><button class="g-btn alt sm" type="button" id="gSentCopy">${ico("i-copy")} ${esc(t("hire.copy"))}</button></p>`:""}
+    <button class="g-link" type="button" id="gSentDone">${esc(t("hire.sent.done"))}</button>`}));
+  const sc=$("gSentCopy");if(sc)sc.onclick=async()=>{try{await navigator.clipboard.writeText(CONFIG.email);say(t("hire.copied"),"i-check")}catch{say(CONFIG.email)}};
+  $("gSentDone").onclick=closeSheet;$("gSheetBody").querySelector(".g-sent").setAttribute("role","status");$("gSheetBody").querySelector(".g-sent").scrollIntoView({block:"nearest"});
+  sheetHtml="";   // the sheet is drawn fresh the next time it opens
   setTimeout(()=>{if(go.startsWith("mailto:"))location.href=go;else open(go,"_blank","noopener")},900)});
 
 /* ---- Art: every piece, free to view; rarity is only a frame color ---- */
@@ -431,12 +445,14 @@ $("gFilters").addEventListener("click",e=>{const b=e.target.closest("button");if
 $("gCards").addEventListener("click",e=>{const c=e.target.closest(".g-card");if(!c)return;buzz(15);sfx("flip");show(+c.dataset.i)});
 
 /* ---- Mine: things you made, never rewards ---- */
+// Mine is drawn again on every visit: the markup is written only when it changed, so a tab switch rebuilds, restyles and repaints nothing
+const setHTML=(el,h)=>{if(el.__h!==h){el.__h=h;el.innerHTML=h}};
 function renderMine(){
   const list=Object.entries(st.colorings||{}).sort((a,b)=>(b[1].at||0)-(a[1].at||0));
-  $("gMineList").innerHTML=list.length?list.map(([id,c])=>`<button class="g-mine-item" data-page="${esc(id)}" aria-label="${esc(c.title||id)}" style="--tilt:${typeof tiltOf==="function"?tiltOf({slug:id}):"-1deg"}">${c.thumb?`<img src="${c.thumb}" alt="">`:""}<b>${esc(c.title||id)}</b></button>`).join(""):`<p class="g-small">${esc(t("mine.empty"))}</p>`;
+  setHTML($("gMineList"),list.length?list.map(([id,c])=>`<button class="g-mine-item" data-page="${esc(id)}" aria-label="${esc(c.title||id)}" style="--tilt:${typeof tiltOf==="function"?tiltOf({slug:id}):"-1deg"}">${c.thumb?`<img src="${c.thumb}" alt="">`:""}<b>${esc(c.title||id)}</b></button>`).join(""):`<p class="g-small">${esc(t("mine.empty"))}</p>`);
   if($("gMineLinks")){const ls=[["linkedin","hire.linkedin"],["behance","hire.behance"]].filter(([k])=>CONFIG.links[k]).map(([k,c])=>[CONFIG.links[k],t(c)]);if(CONFIG.website)ls.push([CONFIG.website,t("hire.website")]);
-    $("gMineLinks").innerHTML=ls.map(([h,n])=>`<a class="g-link" href="${esc(h)}" target="_blank" rel="noopener">${esc(n)}</a>`).join("");$("gMineLinks").parentElement.hidden=!ls.length}
-  if($("gBest"))$("gBest").innerHTML=st.best?`${ico("s-star")} ${esc(t("mine.best",{n:st.best}))}`:esc(t("mine.best.none"));
+    setHTML($("gMineLinks"),ls.map(([h,n])=>`<a class="g-link" href="${esc(h)}" target="_blank" rel="noopener">${esc(n)}</a>`).join(""));$("gMineLinks").parentElement.hidden=!ls.length}
+  if($("gBest"))setHTML($("gBest"),st.best?`${ico("s-star")} ${esc(t("mine.best",{n:st.best}))}`:esc(t("mine.best.none")));
   syncToggles();
 }
 $("gMineList").addEventListener("click",e=>{const b=e.target.closest("[data-page]");if(b&&typeof Color!=="undefined")Color.open(b.dataset.page)});
@@ -451,6 +467,7 @@ $("gReset").onclick=()=>{if(!confirm(t("mine.reset.confirm")))return;st={...blan
 /* ---- sound (tiny synthesized blips, no files); off until turned on ---- */
 let actx;
 function sfx(type){if(!st.snd||!feature("sound"))return;try{actx=actx||new(window.AudioContext||window.webkitAudioContext)();
+  if(actx.state!=="running")actx.resume().catch(()=>{});   // iOS leaves it "suspended"/"interrupted" after a call, lock or app switch
   const seq={tap:[[660,.05]],coin:[[988,.05],[1319,.1]],hit:[[160,.22,"sawtooth"]],level:[[523,.09],[659,.09],[784,.09],[1047,.25]],
     flip:[[880,.04]],legend:[[784,.09],[988,.09],[1175,.09],[1568,.4]],count:[[440,.12]],go:[[880,.25]],fill:[[740,.04],[988,.06]]}[type];
   let t0=actx.currentTime;seq.forEach(([f,d,w])=>{const o=actx.createOscillator(),g=actx.createGain();o.type=w||"triangle";o.frequency.setValueAtTime(f,t0);
@@ -469,7 +486,7 @@ addEventListener("resize",()=>{tabX=null;moveInd()});
 /* ---- Star Catcher (B13): one rule, always the full 30 s, no lives, no game over ---- */
 // Balance numbers (Game Director): each range goes from the start of the round to the end.
 // Retuned after the r1a playtest (docs/playtest-r1a.md): slower and calmer; scripts/sim-stars.mjs checks idle and casual scores.
-const BALANCE={seconds:30,spawn:[.75,.45],speed:[110,240],speedRandom:40,hazardShare:[.12,.25],catchStar:30,catchHazard:26,hazardCost:2,
+const BALANCE={seconds:30,spawn:[.85,.52],speed:[110,240],speedRandom:40,hazardShare:[.12,.25],catchStar:30,catchHazard:26,hazardCost:2,
   mix:{glow:.08,palette:.20}};   // of the non-hazard items: 8% glowing star (+5), 20% palette (+3), the rest star (+1)
 const KINDS={star:["star",1,36],palette:["palette",3,40],glow:["glow",5,48],virus:["virus",-BALANCE.hazardCost,40]};
 function svgSprite(id){const sym=document.getElementById(id),i=new Image();
@@ -484,7 +501,9 @@ function startArcade(){if(!feature("starCatcher")||!cv)return;
   $("gArcade").classList.add("open");G.classList.add("playing");$("gResult").classList.remove("show");sizeCanvas();
   const W=cv.clientWidth,H=cv.clientHeight;
   A={W,H,score:0,t:BALANCE.seconds,items:[],parts:[],texts:[],px:W/2,tx:W/2,spawn:0,shake:0,run:false,stars:Array.from({length:50},()=>({x:Math.random()*W,y:Math.random()*H,s:Math.random()*2+.5,v:20+Math.random()*60}))};
-  hudA();cancelAnimationFrame(raf);let last=performance.now();const loop=now=>{const dt=Math.min(.05,(now-last)/1000);last=now;step(dt);draw();raf=requestAnimationFrame(loop)};raf=requestAnimationFrame(loop);
+  hudA();cancelAnimationFrame(raf);let last=performance.now();const loop=now=>{const dt=Math.min(.05,(now-last)/1000);last=now;step(dt);draw();
+    // once the round is over and the last sparks have faded, stop redrawing: the result card sits on a still frame (phone battery; the main thread stays free for its buttons)
+    if(A&&A.t<=0&&!A.run&&!A.parts.length&&!A.texts.length&&A.shake<=0){raf=0;return}raf=requestAnimationFrame(loop)};raf=requestAnimationFrame(loop);
   let n=3;const cd=$("gCount");const tick=()=>{if(!A)return;if(n>0){cd.innerHTML=`<span>${n}</span><p>${esc(t("stars.rule"))}</p>`;sfx("count");n--;setTimeout(tick,800)}else{cd.innerHTML=`<span>${esc(tt("stars.go","GO!"))}</span>`;sfx("go");A.run=true;setTimeout(()=>cd.innerHTML="",800)}};tick()}
 function hudA(){$("gScore").innerHTML=ico("s-star")+A.score;$("gTime").style.width=Math.max(0,A.t/BALANCE.seconds*100)+"%"}
 function step(dt){const a=A;if(!a)return;
@@ -530,13 +549,22 @@ function endArcade(){const a=A;a.run=false;lastScore=a.score;const rec=(st.best|
   $("gResTitle").textContent=rec?t("stars.record"):t("stars.end");$("gResScore").innerHTML=ico("s-star")+a.score;
   // the score counts points (a palette is 3, a glowing star 5, a virus minus 2), so the line says points, not stars
   $("gResText").textContent=tt("stars.resultPoints","{n} points. Your best: {best} points.",{n:a.score,best:st.best});$("gResult").classList.add("show");G.classList.remove("playing");
+  if(typeof Share!=="undefined")setTimeout(starBlob,500);
   sfx(rec?"legend":"level");if(rec&&typeof confetti==="function")confetti()}
 function quitArcade(){cancelAnimationFrame(raf);A=null;pausedByHide=false;$("gArcade").classList.remove("open");G.classList.remove("playing");$("gCount").innerHTML=""}
-let lastScore=0;
+let lastScore=0,starCard=null;
+// The stars card (1080 x 1920) is drawn and PNG-encoded once, a moment after the result shows, so Share and Download answer at
+// once instead of each drawing and encoding it (seconds on a busy phone, and the second tap queued behind the first).
+function starBlob(){if(starCard&&starCard.score===lastScore)return starCard.p;
+  const score=lastScore,p=(async()=>{try{const c=await Share.renderCard("stars",{score});return await new Promise(ok=>c.toBlob(ok,"image/png"))}catch(e){return null}})();
+  starCard={score,p};return p}
+addEventListener("ekky:lang",()=>{starCard=null});   // the card is written in the current language
+async function downloadStars(){if(typeof Share==="undefined")return;const blob=await starBlob();if(!blob)return Share.downloadStars(lastScore);
+  if(await Share.save(blob,`ekkyarya-stars-${lastScore}.png`)==="saved"&&typeof say==="function")say(t("dl.saved"),"i-check")}
 // G3: Share on the result, next to Download. It shares the same stars card (Share.renderCard) through the phone's
 // share sheet; where that can't take a file it falls back to the Download path (Share.downloadStars).
 async function shareStars(){if(typeof Share==="undefined")return;
-  try{const c=await Share.renderCard("stars",{score:lastScore}),blob=await new Promise(ok=>c.toBlob(ok,"image/png"));
+  try{const blob=await starBlob();if(!blob)throw new Error("no card");
     const file=new File([blob],`ekkyarya-stars-${lastScore}.png`,{type:"image/png"});
     if(navigator.canShare&&navigator.canShare({files:[file]})){const url=siteBase();   // a friend can open the game from the share
       await navigator.share({files:[file],text:tt("stars.shareText","I caught {n} points in Ekky's Star Catcher.",{n:lastScore}).replace("{n}",lastScore)+" "+url,url});return}
@@ -544,9 +572,10 @@ async function shareStars(){if(typeof Share==="undefined")return;
   Share.downloadStars(lastScore)}
 if(cv&&feature("shareCards")&&!$("gResShare")){$("gAgain").insertAdjacentHTML("afterend",`<button class="g-btn alt sm" id="gResShare">${ico("i-share")} <span>${esc(t("reveal.share"))}</span></button>`);
   $("gResShare").onclick=()=>{buzz(10);shareStars()}}
-if(cv){$("gResDl").onclick=()=>typeof Share!=="undefined"&&Share.downloadStars(lastScore);$("gArcadeX").onclick=quitArcade;$("gResBack").onclick=()=>{quitArcade();go("start")};$("gAgain").onclick=startArcade}
+if(cv){$("gResDl").onclick=downloadStars;$("gArcadeX").onclick=quitArcade;$("gResBack").onclick=()=>{quitArcade();go("start")};$("gAgain").onclick=startArcade}
 G.addEventListener("click",e=>{if(e.target.closest("[data-arcade]")){sfx("tap");startArcade()}});
 {const play=q.get("play");   // desktop "Play with Ekky's art" cards: ?game&play=color|stars
+  if(play){try{const u=new URL(location);u.searchParams.delete("play");history.replaceState(history.state,"",u)}catch(e){}}   // the address bar drops ?play= once it is acted on
   if(play==="color")setTimeout(()=>go("color"),600);
   else if(play==="stars"&&feature("starCatcher"))setTimeout(startArcade,600)}
 // A hidden tab pauses the round; it resumes only once the tab is visible again (r1a bug: it used to resume while hidden).
@@ -592,7 +621,7 @@ function prewarm(){if(!document.body.classList.contains("game-mode"))return;
   when(()=>{if(!artDone){artDone=true;renderArt()}
     })}   // the Art thumbnails stay lazy and the village waits for the Map tab: only the start screen's six load up front
 addEventListener("load",()=>{setTimeout(prewarm,2000);warmT=setTimeout(warmWhenIdle,2500)});
-function renderAll(){if(deep)setTimeout(renderStart,2500);else renderStart();renderMine();setTimeout(moveInd,60)}
+function renderAll(){if(deep)setTimeout(renderStart,2500);else renderStart();renderMine();setTimeout(()=>{measureTabs();moveInd()},60)}   // measured now, not on the first tab switch
 // Shared with js/color.js, js/share.js and js/links.js.
 window.Game={go,openHire,openSheet,closeSheet,sfx,buzz,save,get st(){return st},esc,contactReady,screen:()=>screen};
 window.openHire=openHire;

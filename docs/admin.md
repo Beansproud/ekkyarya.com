@@ -22,8 +22,8 @@ Owner's choices: **GitHub as the backend**, **PIN only**.
   Contents read and write on `rfim/ekkyarya.com`. He pastes it once in admin. It is kept only in that browser's
   localStorage, never sent anywhere but api.github.com, and can be removed with a "Forget this device" button. Without a
   token, admin works read-only.
-- **Admin code is loaded only after the PIN** (`js/admin.js`, a lazy `import()` or an injected script). Normal visitors
-  download none of it.
+- **Admin code loads in two steps.** A door loads only the PIN pad (`js/admin.js`); the admin screen (`js/admin-shell.js`
+  and the tab scripts) loads only after the right PIN. Normal visitors download none of it.
 
 ## Data: `data/site.json`
 
