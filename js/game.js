@@ -38,6 +38,18 @@ document.querySelectorAll("[data-classic]").forEach(b=>b.onclick=()=>{try{localS
   document.body.classList.remove("game-mode");const u=new URL(location);u.searchParams.delete("game");history.replaceState(null,"",u)});
 $("gFab").onclick=()=>{try{localStorage.removeItem("ekkyMode")}catch{};document.body.classList.add("game-mode");renderAll()};
 phone.addEventListener("change",setMode);
+// the Web shortcut sits just left of the Hire chip, whose width changes with the language
+// and steps down when the start title needs the room: full label, then the globe alone, then the title gives way
+// (only on the narrowest phones in Bahasa; the logo beside it still says who this is)
+{const h=document.querySelector("#game .g-hire-pin"),wb=document.querySelector("#game .g-web-pin"),tl=document.querySelector("#g-start .g-start-title");
+  // measured only while the start page shows (a hidden title has no width); the compact place is computed, not tried
+  const fit=()=>{if(!h||!h.offsetWidth)return;$("game").style.setProperty("--hire-w",h.offsetWidth+"px");if(!wb||!tl||!tl.offsetParent)return;
+    wb.classList.remove("compact");tl.classList.remove("gives-way");
+    const r=document.createRange();r.selectNodeContents(tl);const end=r.getBoundingClientRect().right+6,hireL=h.getBoundingClientRect().left;
+    if(wb.getBoundingClientRect().left>=end)return;
+    if(hireL-8-44>=end)wb.classList.add("compact");else{wb.classList.add("compact");tl.classList.add("gives-way")}};
+  window.fitWebPin=()=>requestAnimationFrame(fit);
+  if(h&&window.ResizeObserver){new ResizeObserver(()=>fitWebPin()).observe(h);addEventListener("resize",fitWebPin)}}
 
 /* ---- sky ---- */
 $("gSky").innerHTML=Array.from({length:60},()=>{const s=1+Math.random()*3;
@@ -46,6 +58,7 @@ $("gSky").innerHTML=Array.from({length:60},()=>{const s=1+Math.random()*3;
 /* ---- screens and tabs ---- */
 let screen="start";
 function go(to,fromPop){
+  if(to==="start"&&window.fitWebPin)setTimeout(fitWebPin,60);   // the start title is measurable again
   if(to==="color")return typeof Color!=="undefined"?Color.openPicker():null;
   if(to==="hire")return openHire();
   if(!fromPop&&to!==screen){try{history.pushState({s:to},"")}catch(e){}}   // Back returns to the previous screen
@@ -76,7 +89,7 @@ G.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(g){buzz(
   if(e.target.closest("[data-hire]")){buzz(10);openHire()}});
 
 /* ---- start screen: the featured six open the lightbox ---- */
-function renderStart(){const six=featuredSix().map(p=>({p,i:PROJECTS.indexOf(p)}));
+function renderStart(){if(window.fitWebPin)fitWebPin();const six=featuredSix().map(p=>({p,i:PROJECTS.indexOf(p)}));
   // each drawing opens big on tap; Download lives in the viewer, not on the tile (owner, 10-28)
   $("gFeatured").innerHTML=six.map(({p,i})=>`<div class="g-feat-cell"><button class="g-feat" data-i="${i}" aria-label="${esc(ptitle(p))}"><img src="${thumbOf(p)}" alt="" decoding="async" fetchpriority="high"><b>${esc(ptitle(p))}</b></button>`+
     `</div>`).join("")}

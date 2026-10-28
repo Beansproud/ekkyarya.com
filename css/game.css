@@ -109,7 +109,7 @@ body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family
 
 /* popups */
 .g-mode-fab{display:none}
-@media (max-width:760px){body:not(.game-mode) .g-mode-fab{display:flex;align-items:center;gap:8px;position:fixed;left:16px;bottom:22px;z-index:31;height:52px;padding:0 16px 0 8px;border-radius:16px;font-family:Fredoka;font-weight:700;font-size:1.05rem;color:#2B1342;background:#FFB400;box-shadow:0 5px 0 #b77e00,var(--shadow)}
+@media (max-width:760px),(pointer:coarse){body:not(.game-mode) .g-mode-fab{display:flex;align-items:center;gap:8px;position:fixed;left:16px;bottom:22px;z-index:31;height:52px;padding:0 16px 0 8px;border-radius:16px;font-family:Fredoka;font-weight:700;font-size:1.05rem;color:#2B1342;background:#FFB400;box-shadow:0 5px 0 #b77e00,var(--shadow)}
   .g-mode-fab img{width:38px;height:38px;object-fit:contain}}
 
 /* ===== game v2: 3-button bar, arcade, packs ===== */
@@ -1157,3 +1157,15 @@ body.game-mode #lightbox .lb-cat{color:#645F70}
 body.game-mode #lightbox .btn.ghost{color:#2B1342;border-color:#2B1342;background:transparent}
 body.game-mode #lightbox .lb-hire{color:#2B1342}
 body.game-mode #lightbox .lb-actions .btn.ghost.lb-dl{border:1.5px solid #2B1342;color:#2B1342}
+
+/* "Web" shortcut left of Hire Ekky on every game screen (owner, 10-28: "in left of hire ekky, add web version",
+   "quick shortcut if its mobile"); the same switch as Yours > "Just the art, please". JS keeps it beside the Hire chip. */
+.g-web-pin{display:none}
+#game .g-web-pin{display:flex;align-items:center;gap:6px;position:absolute;z-index:11;top:calc(env(safe-area-inset-top) + 12px);
+  right:calc(env(safe-area-inset-right) + 16px + var(--hire-w,124px) + 8px);height:44px;min-width:44px;padding:0 12px 0 10px;
+  border-radius:6px;border:1.5px solid #2B1342;background:#FFFDF8;color:#2B1342;font:600 .9rem Fredoka,sans-serif;box-shadow:0 2px 0 #2B1342}
+#game .g-web-pin .ico{width:20px;height:20px}
+#game .g-web-pin:active{transform:translateY(1px);box-shadow:0 1px 0 #2B1342}
+#game.playing .g-web-pin{visibility:hidden}
+#game .g-web-pin.compact span{display:none}#game .g-web-pin.compact{padding:0;justify-content:center;width:44px}
+#g-start .g-start-title.gives-way{visibility:hidden}

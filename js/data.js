@@ -217,6 +217,8 @@ const COPY = {
     "stars.challenge": "Challenge a friend",
     // Hire Ekky (B07, B17)
     "hire.chip": "Hire Ekky",
+    "web.chip": "Web",
+    "web.aria": "Open the web version",
     "hire.chipAria": "Hire Ekky, send a message",
     "hire.title": "Hire Ekky",
     "hire.body": "Tell me what you're making. I'll bring the characters.",
@@ -520,6 +522,8 @@ const COPY = {
     "stars.other": "Coba yang lain",
     "stars.challenge": "Tantang teman",
     "hire.chip": "Hubungi Ekky",
+    "web.chip": "Web",
+    "web.aria": "Buka versi web",
     "hire.chipAria": "Hubungi Ekky, kirim pesan",
     "hire.title": "Hubungi Ekky",
     "hire.body": "Cerita aja mau bikin apa. Karakternya urusanku.",
