@@ -227,7 +227,7 @@ function lifeSet(on){on=on&&!document.hidden&&!calm();if(on===Life.run)return;Li
 // always on: walkers walk their routes, clouds drift, stars twinkle, islands bob; started once per drawn village
 function lifeStart(z,V){Life.V=V;Life.fx=z.querySelector(".v-fx");Life.live.clear();if(!Life.fx||calm())return;
   const BOB={north:[6900,.9,0],mid:[8200,.6,-2300],south:[7400,.8,-4100]},isleAt=y=>y<260?"north":y>=500?"south":"mid";
-  const u=v=>(v/V.w*100).toFixed(3)+"cqw",tok=++Life.tok,stage=(ms,f,early)=>setTimeout(()=>{if(tok===Life.tok&&z.isConnected){f();if(!early&&$("gMapWrap").offsetParent===null)lifeAnims(a=>a.pause())}},ms+(early?0:2600));   // the village wakes up a little after the first look, one step every 350 ms, so opening the tab never does it all at once
+  const u=v=>(v/V.w*100).toFixed(3)+"cqw",tok=++Life.tok,stage=(ms,f,early)=>setTimeout(()=>{if(tok===Life.tok&&z.isConnected){f();if(!early&&screen!=="map")lifeAnims(a=>a.pause())}},ms+(early?0:2600));   // the village wakes up a little after the first look, one step every 350 ms, so opening the tab never does it all at once
   stage(700,()=>z.querySelectorAll(".v-walk").forEach(w=>{const r=V.walkers[+w.dataset.w];if(!r)return;
     const ig=z.querySelector(`.v-isleg[data-isle="${isleAt(r.route[0][1])}"]`);if(ig)ig.appendChild(w);   // it stands on its island and bobs with it
     const route=r.route,pts=[...route,...route.slice(0,-1).reverse()],T=36/1600;   // 1 tile (36 px) per 1.6 s
@@ -255,8 +255,8 @@ function lifeStart(z,V){Life.V=V;Life.fx=z.querySelector(".v-fx");Life.live.clea
   Life.cache=Life.cache||[];[...new Set(["doodle-cat","crab","waver","pickle","orange-monster"].map(n=>SK+n+".png").concat(["astronaut","cat","ghost","planet","palette"].map(n=>UI+n+".png")))].forEach((s,i)=>
     stage(500+i*200,()=>{const im=new Image();im.src=s;im.decode().catch(()=>{});Life.cache.push(im)},true));
   if(!Life.io){Life.io=new IntersectionObserver(es=>lifeSet(es[es.length-1].isIntersecting),{threshold:.05});Life.io.observe($("gMapWrap"));
-    document.addEventListener("visibilitychange",()=>lifeSet(!document.hidden&&$("gMapWrap").offsetParent!==null))}
-  stage(1400,()=>{Life.run=null;lifeSet($("gMapWrap").offsetParent!==null)})}   // null: re-sync play or pause for the freshly drawn village   // null: re-sync play or pause for the freshly drawn village
+    document.addEventListener("visibilitychange",()=>lifeSet(!document.hidden&&screen==="map"))}
+  stage(1400,()=>{Life.run=null;lifeSet(screen==="map")})}   // null: re-sync play or pause for the freshly drawn village   // null: re-sync play or pause for the freshly drawn village
 
 /* ---- Zoom (G1): pinch or drag with a finger, or the +/- buttons; 1x to 2x. A place is still one tap: a touch
    that moved more than 8 px is a pan, not a tap. Nothing animates; the view follows the finger. ---- */
