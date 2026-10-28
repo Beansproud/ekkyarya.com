@@ -114,7 +114,7 @@ const SiteData = (() => {
     if (openAdmin.busy) return;
     openAdmin.busy = true;
     const s = document.createElement("script");
-    s.src = "js/admin.js";
+    s.src = "js/admin.js?v=" + Date.now();   // admin is rare: always fetch the newest copy
     s.onload = () => { openAdmin.busy = false; window.Admin && window.Admin.open(); };
     s.onerror = () => { openAdmin.busy = false; s.remove(); };
     document.head.appendChild(s);
