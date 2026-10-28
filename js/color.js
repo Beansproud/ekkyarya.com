@@ -49,7 +49,7 @@ G.insertAdjacentHTML("beforeend",`<div class="c-over" id="gColor" role="dialog" 
     <div class="c-top"><button class="c-icon" id="cBack" aria-label="${tt("ui.back","Back")}">${ico("i-back")}</button><b id="cTitle"></b>
       <button class="g-hire sm" data-hire aria-label="${esc(t("hire.chip.aria"))}"><img src="assets/ui/monster-head.png" alt=""><span>${esc(t("hire.chip"))}</span></button>
       <button class="g-btn sm" id="cDone">${esc(t("color.done"))}</button></div>
-    <div class="c-stage-wrap"><div class="c-stage" id="cStage"><canvas id="cCanvas"></canvas><img class="c-peek" id="cPeek" alt=""><div class="c-stickers" id="cStickers"></div>
+    <div class="c-stage-wrap"><div class="c-stage" id="cStage"><canvas id="cCanvas" role="img"></canvas><img class="c-peek" id="cPeek" alt=""><div class="c-stickers" id="cStickers"></div>
       <div class="c-bin" id="cBin"><svg class="ico c-trash" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path class="c-lid" d="M4 7h16M9 7V4.5h6V7"/><path d="M6.5 7l1 13h9l1-13M10 11v5M14 11v5"/></svg><span>${esc(t("color.bin"))}</span></div><p class="c-hint" id="cHint"></p></div></div>
     <div class="c-colors" id="cColors" role="radiogroup" aria-label="${esc(tt("color.colors","Colors"))}"></div>
     <div class="c-tools"><button class="c-tool" id="cUndo">${ico("i-undo")}<span>${esc(t("color.undo"))}</span></button>
@@ -174,7 +174,7 @@ async function open(id,opts={}){
   const saved=opts.fresh?null:(Game.st.colorings||{})[id];
   cur=makeState(pd,saved);color=pd.id==="scratch"?4:1;
   const pr=bySlug(pd.meta.slug),title=id==="scratch"?t("color.scratch"):pr?ptitle(pr):pd.meta.title;cur.title=title;
-  $("cTitle").textContent=title;stage.style.aspectRatio=`${pd.meta.w}/${pd.meta.h}`;
+  $("cTitle").textContent=title;$("cCanvas").setAttribute("aria-label",title+". "+t("color.hint"));stage.style.aspectRatio=`${pd.meta.w}/${pd.meta.h}`;
   $("cPeek").src=id==="scratch"?"":pd.meta.original||(bySlug(pd.meta.slug)||{}).full||"";$("cPeekBtn").hidden=id==="scratch";
   paint(cur,cv);renderColors();renderStickers();$("cTray").hidden=true;
   view("cEdit");sizeStage();updUndo();
