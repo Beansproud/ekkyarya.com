@@ -19,6 +19,8 @@ const FEATURES = {
   pageLittlePlanet: true, // Little Planet coloring page (assets/color/little-planet/), Ekky original
   pageHands: true,       // Tangled Hands coloring page (assets/color/hands/), Ekky original
   pageNoodles: true,     // Noodle Bath coloring page (assets/color/noodles/), Ekky original
+  pageSummertime: true,  // Buried at the Beach coloring page (assets/color/summertime/), Ekky original
+  pageVirusAndWar: true, // Virus and War coloring page (assets/color/virus-and-war/), Ekky original
   pageShark: true,       // Big Catch coloring page (assets/color/shark/), Ekky original; lines regenerated without the baked-in back shading
   apkDownload: true,     // glowing "APK" chip on the start page, Android browsers only (owner, 10-28); links to the app-latest release (GitHub build)
   artDownload: true,     // lightbox Download: a copy of at most 1600 px with a subtle mark, never on fan art (owner: yes)

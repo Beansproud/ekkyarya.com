@@ -5,7 +5,7 @@
 const Color=(()=>{
 const G=document.getElementById("game");
 // A page with a switch stays hidden until FEATURES turns it on (Road Trip waits for Ekky's OK on the lines).
-const PAGES=[{id:"giraffe",slug:"giraffe"},{id:"road-trip",slug:"road-trip",flag:"pageRoadTrip"},{id:"monster",slug:"monster",flag:"pageMonster"},{id:"little-planet",slug:"little-planet",flag:"pageLittlePlanet"},{id:"hands",slug:"hands",flag:"pageHands"},{id:"noodles",slug:"noodles",flag:"pageNoodles"},{id:"shark",slug:"shark",flag:"pageShark"},{id:"day-in-life",slug:"day-in-life"},{id:"plug-hero",slug:"plug-hero",flag:"pagePlugHero"}];
+const PAGES=[{id:"giraffe",slug:"giraffe"},{id:"road-trip",slug:"road-trip",flag:"pageRoadTrip"},{id:"monster",slug:"monster",flag:"pageMonster"},{id:"little-planet",slug:"little-planet",flag:"pageLittlePlanet"},{id:"hands",slug:"hands",flag:"pageHands"},{id:"noodles",slug:"noodles",flag:"pageNoodles"},{id:"shark",slug:"shark",flag:"pageShark"},{id:"summertime",slug:"summertime",flag:"pageSummertime"},{id:"virus-and-war",slug:"virus-and-war",flag:"pageVirusAndWar"},{id:"day-in-life",slug:"day-in-life"},{id:"plug-hero",slug:"plug-hero",flag:"pagePlugHero"}];
 // The Doodle Scene: a plain paper page with one region (the background) and Ekky's palette.
 const SCRATCH={id:"scratch",slug:null,title:"Doodle Scene",w:800,h:1000,regions:1,
   colors:["#FFFFFF","#FFF4D6","#FFE08A","#FFB400","#FF6B6B","#F4C2D7","#C9A7FF","#9C91BD","#B8D5FF","#7ED9B0","#3E7C6A","#2B1342"]};
