@@ -2,7 +2,7 @@
 // Visual QA neatness probe: measures alignment and symmetry in px on an iPhone-emulated Chromium at 360x640 and 390x844,
 // light and dark, EN and ID. Prints one FINDING line for every offset over 2 px and exits 1 if there are any.
 //   FINDING <screen> | <element> | <what> | <offset> px | <combo> | <screenshot>
-// Covered: tab bar (3 icons and labels, Map face), Map face pixels (head vs circle), start grid, Hire chip vs Home button,
+// PARTS=base,map,admin selects what runs (default all). Covered: map zooms 1x, ~1.5x, 2x and 2x panned to two corners (labels, layer edges), the admin PIN pad and tabs, tab bar (3 icons and labels, Map face), Map face pixels (head vs circle), start grid, Hire chip vs Home button,
 // every sheet header, the coloring picker cards. INFO lines are measurements that are not rules (never fail the run).
 const {chromium,devices}=require('playwright');const http=require('http'),fs=require('fs'),px=require('path');
 const SITE=px.resolve(process.argv[2]||'.'),OUT=px.resolve(process.argv[3]||'neat-out');const LIMIT=2;
@@ -126,6 +126,69 @@ return {ox:C.x/s,oy:C.y/s,R:C.r/s,rin:rin/s,far:far/s,gap:(rin-far)/s,n:pts.leng
  ext:{top:(rin-Math.hypot(top[0],top[1]))/s,bottom:(rin-Math.hypot(bot[0],bot[1]))/s,left:(rin-Math.hypot(lef[0],lef[1]))/s,right:(rin-Math.hypot(rig[0],rig[1]))/s},
  bbox:{dy:(-top[1]-bot[1])/2/s,dx:(-lef[0]-rig[0])/2/s,up:-top[1]/s,down:bot[1]/s,left:-lef[0]/s,right:rig[0]/s}}})`;
 
+
+// Map at one zoom: labels (clipped, hidden, overlapping, centred on their place) and the layers (sky covers the frame, no island cut at an edge).
+// Returns {items, widths}; widths are compared across zooms (labels keep their 1x size).
+const MAP=(z)=>`(()=>{${LIB}
+const W=document.getElementById('gMapWrap'),L=document.getElementById('gMapZoom');if(!W||!vis(W))return {items:[{el:'map',what:'not visible',off:99}],widths:{}};
+const w=R(W),z=${JSON.stringify(z)},n='map '+z;const sc=new DOMMatrix(getComputedStyle(L).transform).a;
+const cover=[...document.querySelectorAll('.g-tabs,.g-hire-pin,.g-home')].filter(vis).map(e=>[e.className.includes('tabs')?'the tab bar':e.className.includes('home')?'the Home button':'the Hire chip',R(e)]);
+const ix=(a,b)=>Math.max(0,Math.min(a.r,b.r)-Math.max(a.l,b.l)),iy=(a,b)=>Math.max(0,Math.min(a.b,b.b)-Math.max(a.t,b.t));
+const labs=[...document.querySelectorAll('#gMapWrap .v-label')].filter(vis),widths={};
+labs.forEach((e,i)=>{const r=R(e),nm=(e.dataset.place||i),vw=ix(r,w)*iy(r,w);widths[nm]=r.w;
+  const pb=document.querySelector('#gMapWrap .v-place[data-place="'+nm+'"]'),pr=pb&&R(pb),seen=pr&&pr.cx>w.l&&pr.cx<w.r&&pr.cy>w.t&&pr.cy<w.b;   // only labels of places that are in view
+  const over=Math.max(0,w.l-r.l,r.r-w.r,w.t-r.t,r.b-w.b);if(seen&&vw>0&&over>0)F(n,'label "'+e.textContent+'" sliced by the map frame (its place is in view)',over);
+  cover.forEach(([cn,c])=>{const a=Math.min(ix(r,c),iy(r,c));if(seen&&ix(r,c)>0&&iy(r,c)>0)F(n,'label "'+e.textContent+'" under '+cn+' (its place is in view)',a)});
+  labs.slice(i+1).forEach(o=>{const q=R(o);if(ix(r,q)>0&&iy(r,q)>0)F(n,'labels "'+e.textContent+'" and "'+o.textContent+'" overlap',Math.min(ix(r,q),iy(r,q)))});
+  const pl=document.querySelector('#gMapWrap .v-place[data-place="'+nm+'"]');if(pl&&z==='1x')F(n,'label "'+e.textContent+'" centre vs its place centre',Math.abs(r.cx-R(pl).cx))});
+const sky=document.querySelector('#gMapWrap .v-skyimg');
+if(sky){const S=R(sky);F(n,'sky layer leaves a bare strip at the left of the frame',Math.max(0,S.l-w.l));F(n,'sky layer leaves a bare strip at the right of the frame',Math.max(0,w.r-S.r));F(n,'sky layer leaves a bare strip at the top of the frame',Math.max(0,S.t-w.t));F(n,'sky layer leaves a bare strip at the bottom of the frame',Math.max(0,w.b-S.b))}
+else F(n,'no sky layer',99);
+// an island is cut when opaque pixels touch its image border and that border is inside the frame
+const edges=[];
+document.querySelectorAll('#gMapWrap img.v-isle:not(.v-ufo)').forEach(im=>{if(!im.complete||!im.naturalWidth)return;const r=R(im);const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0);
+  const nm=(im.getAttribute('src')||'').split('/').pop(),sx=r.w/c.width,sy=r.h/c.height;
+  const run=(px,py,dx,dy,len)=>{let k=0;for(let i=0;i<len;i++){if(x.getImageData(px+dx*i,py+dy*i,1,1).data[3]>40)k++}return k};
+  const sides=[['left',0,0,0,1,c.height,r.l>w.l+1&&r.l<w.r-1,sy],['right',c.width-1,0,0,1,c.height,r.r>w.l+1&&r.r<w.r-1,sy],['top',0,0,1,0,c.width,r.t>w.t+1&&r.t<w.b-1,sx],['bottom',0,c.height-1,1,0,c.width,r.b>w.t+1&&r.b<w.b-1,sx]];
+  sides.forEach(([nmS,px,py,dx,dy,len,inside,k])=>{if(!inside)return;const v=run(px,py,dx,dy,len)*k;F(n,'island "'+nm+'" has a flat cut at its '+nmS+' edge (opaque run on the image border, a hard edge unless covered)',v)})});
+F(n,'map scale is '+sc.toFixed(2)+'x (info)',0,true);
+return {items:out,widths}})()`;
+
+// PIN pad (opened by the real door: 7 taps on the logo)
+const PAD=`(()=>{${LIB}
+const d=document.querySelector('dialog.adm-pad'),c=d&&d.querySelector('.adm-card'),n='PIN pad';if(!d||!vis(c))return [{el:n,what:'not visible',off:99}];
+const C=R(c);F(n,'card centre vs screen centre (x)',Math.abs(C.cx-innerWidth/2));F(n,'card centre vs screen centre (y)',Math.abs(C.cy-innerHeight/2));
+F(n,'card spills off the screen',Math.max(0,-C.l,-C.t,C.r-innerWidth,C.b-innerHeight));
+const keys=[...c.querySelectorAll('.adm-keys button')].filter(vis).map(R);
+F(n,'key sizes differ',Math.max(spread(keys.map(r=>r.w)),spread(keys.map(r=>r.h))));F(n,'key smaller than 44 px',Math.max(0,44-Math.min(...keys.map(r=>Math.min(r.w,r.h)))));
+const rows=[];keys.forEach(r=>{const q=rows.find(o=>Math.abs(o[0].t-r.t)<4);q?q.push(r):rows.push([r])});
+rows.forEach((row,i)=>{if(row.length>1)F(n,'row '+(i+1)+': column gaps differ',spread(row.slice(1).map((r,k)=>r.l-row[k].r)))});
+const gaps=rows.flatMap(r=>r.slice(1).map((q,k)=>q.l-r[k].r)),vg=rows.slice(1).map((r,k)=>r[0].t-rows[k][0].b);
+F(n,'column gap vs row gap',Math.abs((gaps[0]||0)-(vg[0]||0)));if(vg.length>1)F(n,'row gaps differ',spread(vg));
+F(n,'columns not aligned between rows',spread(rows.filter(r=>r.length===3).map(r=>r[0].l)));
+const ku=union(keys);F(n,'key grid centre vs card centre',Math.abs(ku.cx-C.cx));
+const dots=[...c.querySelectorAll('.adm-dots i')].filter(vis).map(R);if(dots.length>1){const du=union(dots);F(n,'dots centre vs card centre',Math.abs(du.cx-C.cx));F(n,'dot gaps differ',spread(dots.slice(1).map((r,k)=>r.l-dots[k].r)));F(n,'dot sizes differ',spread(dots.map(r=>r.w)))}
+const h=c.querySelector('h2'),p=c.querySelector('p'),x=c.querySelector('.adm-x');
+if(h)F(n,'title centre vs card centre',Math.abs(textR(h).cx-C.cx));if(p&&p.textContent.trim())F(n,'hint centre vs card centre',Math.abs(textR(p).cx-C.cx));
+if(x){const X=R(x);F(n,'close button centre vs card centre',Math.abs(X.cx-C.cx));F(n,'close button smaller than 44 px',Math.max(0,44-X.h));F(n,'close button width vs key grid width',Math.abs(X.w-ku.w),true)}
+return out})()`;
+
+// Admin shell: top bar, tabs, content gutters. Run once per tab.
+const ADM=(tab)=>`(()=>{${LIB}
+const root=document.getElementById('adminRoot'),n='admin '+${JSON.stringify(tab)};if(!root||!vis(root))return [{el:n,what:'not visible',off:99}];
+const top=root.querySelector('.adm-top'),bs=[...top.children].filter(vis).map(R);
+F(n,'top bar items not on one centre line',spread(bs.map(r=>r.cy)));F(n,'top bar left gutter vs right gutter',Math.abs(bs[0].l-(innerWidth-bs[bs.length-1].r)));
+F(n,'top bar buttons shorter than 44 px',Math.max(0,44-Math.min(...[...top.querySelectorAll('button')].filter(vis).map(e=>R(e).h))));
+const tb=[...root.querySelectorAll('.adm-tabs button')].filter(vis),tr=tb.map(R);
+if(tr.length>1){F(n,'tab heights differ',spread(tr.map(r=>r.h)));F(n,'tab gaps differ',spread(tr.slice(1).map((r,k)=>r.l-tr[k].r)));F(n,'tab smaller than 44 px high',Math.max(0,44-Math.min(...tr.map(r=>r.h))));F(n,'tabs not on one line',spread(tr.map(r=>r.t)))}
+F(n,'first tab left edge vs top bar left edge',Math.abs(tr[0].l-bs[0].l));
+tb.forEach(e=>{if(e.scrollWidth>e.clientWidth+1)F(n,'tab text clipped ("'+e.textContent+'")',e.scrollWidth-e.clientWidth)});
+const m=root.querySelector('.adm-main');F(n,'content scrolls sideways',Math.max(0,m.scrollWidth-m.clientWidth));
+const mr=R(m);const spill=[...m.querySelectorAll('*')].filter(vis).map(e=>R(e).r-mr.r).filter(v=>v>1);F(n,'an element spills past the right edge of the content',spill.length?Math.max(...spill):0);
+const kids=[...m.querySelectorAll(':scope>*, :scope>*>*')].filter(vis).filter(e=>R(e).w>mr.w*.6).map(R);if(kids.length){const u=union(kids);F(n,'content left gutter vs right gutter',Math.abs((u.l-mr.l)-(mr.r-u.r)))}
+const small=[...m.querySelectorAll('button,a,input,select,textarea')].filter(vis).map(e=>[e,R(e)]).filter(([e,r])=>r.h<43.5);if(small.length)F(n,'control under 44 px high ('+(small[0][0].textContent||small[0][0].name||small[0][0].tagName).trim().slice(0,24)+')',44-Math.min(...small.map(([e,r])=>r.h)));
+return out})()`;
+
 const rnd=v=>Math.round(v*10)/10;
 const all=[];   // {screen, el, what, off, combo, shot}
 
@@ -133,15 +196,53 @@ async function settle(p){await p.evaluate(()=>Promise.all(document.getAnimations
 async function shot(p,name){await settle(p);const f=px.join(OUT,name+'.png');await p.screenshot({path:f});return f}
 function record(items,screen,combo,shotPath){for(const it of items){all.push({screen,el:it.el,what:it.what,off:it.off,info:it.info,combo,shot:shotPath})}}
 
+
+async function mapPart(p,combo,tag){
+  await p.evaluate(()=>Game.go('map'));await p.waitForTimeout(2500);
+  const lw={};
+  const step=async(z,name)=>{await p.waitForTimeout(500);const sh=await shot(p,`map-${name}-${tag}`);const r=await p.evaluate(MAP(z));record(r.items,'map '+z,combo,sh);lw[z]=r.widths;return r};
+  await step('1x','1x');
+  // about 1.5x: four ctrl+wheel steps of 1.1 (1.46x)
+  await p.evaluate(()=>{const W=document.getElementById('gMapWrap'),r=W.getBoundingClientRect();
+    for(let i=0;i<4;i++){W.dispatchEvent(new WheelEvent('wheel',{ctrlKey:true,deltaY:-1,clientX:r.left+r.width/2,clientY:r.top+r.height/2,bubbles:true,cancelable:true}))}});
+  await step('1.5x','1p5x');
+  await p.evaluate(()=>document.querySelector('#gMapWrap [data-zoom="1"]').click());await p.waitForTimeout(300);
+  await step('2x','2x');
+  // pan the 2x map to its corners, where the layer edges would show
+  const box=await p.evaluate(()=>{const r=document.getElementById('gMapWrap').getBoundingClientRect();return {l:r.left,t:r.top,w:r.width,h:r.height}});
+  // pointer events dispatched directly (a mouse drag does not reach the map's pointer handlers in the touch emulation)
+  const drag=async(dx,dy)=>{await p.evaluate(([dx,dy])=>{const W=document.getElementById('gMapWrap'),r=W.getBoundingClientRect(),x0=r.left+r.width/2,y0=r.top+r.height/2;
+      const ev=(t,x,y)=>W.dispatchEvent(new PointerEvent(t,{pointerId:7,isPrimary:true,pointerType:'touch',clientX:x,clientY:y,bubbles:true,cancelable:true}));
+      ev('pointerdown',x0,y0);for(let i=1;i<=8;i++)ev('pointermove',x0+dx*i/8,y0+dy*i/8);ev('pointerup',x0+dx,y0+dy)},[dx,dy]);await p.waitForTimeout(400)};
+  await drag(2000,2000);await step('2x top-left','2x-tl');
+  await drag(-4000,-4000);await step('2x bottom-right','2x-br');
+  // labels keep their 1x size at every zoom
+  for(const z of ['1.5x','2x','2x top-left','2x bottom-right'])for(const k of Object.keys(lw['1x']||{})){if(lw[z]&&lw[z][k]!=null)record([{el:'map '+z,what:'label "'+k+'" width changes from its 1x width',off:Math.abs(lw[z][k]-lw['1x'][k])}],'map '+z,combo,px.join(OUT,`map-${z.replace(/[ .]/g,'-')}-${tag}.png`))}
+  await p.evaluate(()=>{const b=document.querySelector('#gMapWrap [data-zoom="-1"]');if(b){b.click();b.click()}});await p.waitForTimeout(300)}
+
+async function adminPart(p,combo,tag){
+  await p.evaluate(()=>Game.go('start'));await p.waitForTimeout(700);
+  // the real door: 7 taps on the logo
+  await p.evaluate(()=>{const e=document.querySelector('#g-start .g-logo,#g-start .g-logo-text');for(let i=0;i<7;i++)e.click()});await p.waitForTimeout(1200);
+  const ps=await shot(p,`pin-${tag}`);record(await p.evaluate(PAD),'PIN pad',combo,ps);
+  await p.keyboard.press('Escape');await p.waitForTimeout(300);
+  // past the PIN (the PIN itself is never used here): unlock the already loaded admin and show the shell
+  const ok=await p.evaluate(()=>new Promise(res=>{if(!window.Admin)return res(false);Admin.unlocked=true;if(Admin.shell){Admin.shell.show();return res(true)}const sc=document.createElement('script');sc.src='js/admin-shell.js';sc.onload=()=>{Admin.shell&&Admin.shell.show();res(!!Admin.shell)};sc.onerror=()=>res(false);document.head.appendChild(sc)}));if(!ok){record([{el:'admin',what:'shell did not open',off:99}],'admin',combo,ps);return}await p.waitForTimeout(1500);
+  const tabs=await p.evaluate(()=>[...document.querySelectorAll('#adminRoot .adm-tabs button[data-tab]')].map(b=>b.dataset.tab));
+  for(const t of tabs){await p.evaluate(x=>document.querySelector(`#adminRoot .adm-tabs [data-tab="${x}"]`).click(),t);await p.waitForTimeout(900);
+    const sh=await shot(p,`admin-${t}-${tag}`);record(await p.evaluate(ADM(t)),'admin '+t,combo,sh)}
+  await p.evaluate(()=>{const b=document.querySelector('#adminRoot [data-adm="close"]');if(b)b.click()});await p.waitForTimeout(500)}
+
 (async()=>{await new Promise(r=>srv.listen(0,r));const url=`http://localhost:${srv.address().port}/`;const b=await chromium.launch();
 const sizes=process.env.QUICK?[[390,844]]:[[360,640],[390,844]],schemes=process.env.QUICK?['light']:['light','dark'],langs=process.env.QUICK?['en']:['en','id'];
-const errs=[];
+const errs=[];const PARTS=(process.env.PARTS||'base,map,admin').split(',');const has=k=>PARTS.includes(k);
 for(const [w,h] of sizes)for(const scheme of schemes)for(const L of langs){
   const combo=`${w}x${h} ${scheme} ${L}`,tag=`${w}x${h}-${scheme}-${L}`;
   const ctx=await b.newContext({...devices['iPhone 13'],viewport:{width:w,height:h},screen:{width:w,height:h},deviceScaleFactor:4,colorScheme:scheme});
   await ctx.addInitScript(l=>{try{localStorage.setItem('lang',l);localStorage.setItem('seen','1')}catch(e){}},L);
   const p=await ctx.newPage();p.on('pageerror',e=>errs.push(combo+' '+e.message));
   await p.goto(url);await p.waitForTimeout(3500);
+  if(has('base')){
   // start screen: tab bar, start grid, Map face
   await p.evaluate(()=>scrollTo(0,0));const sShot=await shot(p,`start-${tag}`);
   record(await p.evaluate(TABS),'start',combo,sShot);
@@ -161,6 +262,8 @@ for(const [w,h] of sizes)for(const scheme of schemes)for(const L of langs){
       {el:'Map face',what:'extreme points\' distance to circle edge differs (top '+rnd(r.ext.top)+', bottom '+rnd(r.ext.bottom)+', left '+rnd(r.ext.left)+', right '+rnd(r.ext.right)+')',off:spreadN([r.ext.top,r.ext.bottom,r.ext.left,r.ext.right]),info:true}];
       record(it,'start',combo,fShot)}
   }
+  }
+  if(has('base')){
   // Map screen: Hire chip vs Home, tabs on the map, sheets
   await p.evaluate(()=>Game.go('map'));await p.waitForTimeout(1500);const mShot=await shot(p,`map-${tag}`);
   record(await p.evaluate(CHIP),'map',combo,mShot);
@@ -174,11 +277,16 @@ for(const [w,h] of sizes)for(const scheme of schemes)for(const L of langs){
   if(vk){await p.waitForTimeout(900);const sh=await shot(p,`sheet-villager-${tag}`);record(await p.evaluate(HEADER({name:'sheet Villager',sheet:'.g-sheet-in',title:'#gSheetTitle',close:'#gSheetX'})),'sheet Villager',combo,sh);
     await p.evaluate(()=>document.getElementById('gSheetX').click());await p.waitForTimeout(700)}
   for(const t of ['art','mine']){await p.evaluate(x=>Game.go(x),t);await p.waitForTimeout(1200);const ts=await shot(p,`${t}-${tag}`);record(await p.evaluate(CHIP),t,combo,ts)}
+  }
+  if(has('map'))await mapPart(p,combo,tag);
+  if(has('admin'))await adminPart(p,combo,tag);
+  if(has('base')){
   // coloring picker
   await p.evaluate(()=>Game.go('start'));await p.waitForTimeout(600);
   await p.evaluate(()=>Color.openPicker());await p.waitForTimeout(1800);const ps=await shot(p,`picker-${tag}`);
   record(await p.evaluate(PICK),'coloring picker',combo,ps);
   record(await p.evaluate(HEADER({name:'picker header',sheet:'#cPick',title:'#cPick .g-title',close:'#cPickX'})),'coloring picker',combo,ps);
+  }
   await ctx.close()}
 await b.close();srv.close();
 
