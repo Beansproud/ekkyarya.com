@@ -1226,3 +1226,6 @@ body.game-mode #lightbox .lb-flow{margin-top:2px}
 .c-tip{margin:0;font-family:Poppins;font-size:.82rem;color:#645F70}
 @media (hover:hover){.c-kt,.c-op{transition:translate .24s ease-out,scale .24s ease-out}.c-kt:hover,.c-op:hover{translate:0 -2px;scale:1.04}}
 @media (prefers-reduced-motion:reduce){.c-kt,.c-op{transition:none}}
+/* pinch zoom: the page scales inside its frame */
+.c-stage-wrap{overflow:hidden}
+.c-stage{transform-origin:0 0}
