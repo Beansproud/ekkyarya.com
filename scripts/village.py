@@ -1,7 +1,7 @@
 """Ekky's Village, first frame (B42 V1): one pre-composited image plus the positions of every place and gallery frame.
 
 Usage: python3 scripts/village.py     writes assets/village/village.png, village.json and village.js
-The ground, sea, paths, plank bridges and the gallery block are plain shapes in Ekky's palette (plan asset rule 4);
+The ground, sea, paths, plank bridges and the gallery's ramen shop are plain shapes in Ekky's palette (plan asset rule 4);
 every character, building and prop is one of his cut-outs from assets/sprites/ (scripts/sprites.py), placed as is.
 The four gallery frames are left empty: js/village.js hangs featuredPick(4) real pieces in them on every visit.
 Coordinates are image pixels (720 x 880, shown at about half size on a phone); y grows downwards.
@@ -282,14 +282,114 @@ def bridge(d, a, b, n):
         d.polygon(P([(x - 13, y), (x, y - 6), (x + 13, y), (x, y + 6)]), fill=PLANK, outline=PLANK_EDGE, width=S)
 
 
-def block(d, cx, cy, hw, hh, height):
-    """The gallery: a plain block with a flat roof; returns the two front walls as (top-left, top-right, ...) corners."""
+RAMEN_RED, RAMEN_RED_D, RAMEN_RED_L = (226, 70, 64), (178, 44, 56), (244, 112, 92)
+WOOD, WOOD_D = (150, 96, 52), (110, 66, 40)
+LANTERN, LANTERN_D = (236, 58, 58), (176, 30, 46)
+
+
+def lerp(a, b, t):
+    return (a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t)
+
+
+def chochin(d, x, y, r=6):
+    """A red paper lantern hanging from (x, y): cord, ink caps, ribs and a white band (one stroke hints at a word)."""
+    d.line(P([(x, y), (x, y + 3)]), fill=INK, width=S)
+    top, h = y + 3, r * 2.6
+    d.rectangle(P([(x - r * .55, top), (x + r * .55, top + 2)]), fill=INK)
+    d.ellipse(P([(x - r, top + 1.5), (x + r, top + h)]), fill=LANTERN, outline=INK, width=S + 1)
+    for k in (.45, .75):
+        d.arc(P([(x - r * k, top + 2), (x + r * k, top + h - .5)]), 90, 270, fill=LANTERN_D, width=S)
+        d.arc(P([(x - r * k, top + 2), (x + r * k, top + h - .5)]), -90, 90, fill=LANTERN_D, width=S)
+    d.line(P([(x, top + h * .32), (x, top + h * .7)]), fill=INK, width=S + 1)
+    d.rectangle(P([(x - r * .55, top + h - .5), (x + r * .55, top + h + 1.5)]), fill=INK)
+    d.line(P([(x, top + h + 1.5), (x, top + h + 4)]), fill=INK, width=S)
+    return x, top + h / 2
+
+
+def katakana_sign(d, x, y, w, h):
+    """The shop's hanging board, "ラーメン" (ramen) written top to bottom in hand-drawn ink strokes."""
+    d.line(P([(x + 2, y - 6), (x + 2, y)]), fill=INK, width=S)
+    d.line(P([(x + w - 2, y - 6), (x + w - 2, y)]), fill=INK, width=S)
+    d.rounded_rectangle(P([(x, y), (x + w, y + h)]), radius=2 * S, fill=(255, 250, 240), outline=INK, width=2 * S)
+    c, g, u = x + w / 2, h / 4, w * .3    # one glyph per quarter, u = half a glyph's width
+    ln = lambda pts, k=1.6: d.line(P(pts), fill=INK, width=int(S * k), joint="curve")
+    t = y + 2                                                   # ラ
+    ln([(c - u * .7, t + 1.5), (c + u * .7, t + 1.5)])
+    ln([(c - u, t + 4), (c + u, t + 4), (c + u * .6, t + 7.5), (c - u * .5, t + g - 1.5)])
+    t += g                                                      # ー, drawn upright in vertical writing
+    ln([(c, t + 1.5), (c, t + g - 2)])
+    t += g                                                      # メ
+    ln([(c + u, t + 1.5), (c + u * .2, t + 5), (c - u, t + g - 1.5)])
+    ln([(c - u * .5, t + 3.5), (c + u * .8, t + g - 2)])
+    t += g                                                      # ン
+    ln([(c - u, t + 1.5), (c - u * .3, t + 3)])
+    ln([(c - u, t + g - 2), (c + u * .4, t + g - 3.5), (c + u, t + 1.5)])
+
+
+def ramen_bowl(d, cx, cy, rx):
+    """A big ramen bowl, the shop's rooftop sign: red bowl with a white wave, broth, noodles, egg, naruto, nori, chopsticks."""
+    ry = rx * .36
+    d.line(P([(cx - rx * .35, cy - ry * .2), (cx + rx * .95, cy - rx * 1.45)]), fill=WOOD_D, width=3 * S)   # the far chopstick
+    d.polygon(P([(cx + rx * .32, cy - ry * .9), (cx + rx * .72, cy - ry * .7), (cx + rx * .66, cy - rx * .95), (cx + rx * .3, cy - rx * 1.02)]),
+              fill=(46, 84, 60), outline=INK, width=S)                                                      # nori standing in the broth
+    d.ellipse(P([(cx - rx * 1.1, cy + rx * .62), (cx + rx * 1.1, cy + rx * 1.02)]), fill=(140, 30, 44))   # its shadow on the roof
+    d.rounded_rectangle(P([(cx - rx * .34, cy + rx * .62), (cx + rx * .34, cy + rx * .86)]), radius=S, fill=RAMEN_RED_D, outline=INK, width=S + 1)   # the foot
+    body = [(cx - rx + rx * 2 * k / 24, cy + math.sin(math.pi * k / 24) * rx * .7) for k in range(25)]
+    d.polygon(P(body), fill=LANTERN, outline=INK, width=2 * S)
+    wave = [(cx - rx * .7 + rx * 1.4 * k / 24, cy + rx * .42 + math.sin(k * math.pi / 3) * 1.4) for k in range(25)]
+    d.line(P(wave), fill=(255, 250, 240), width=2 * S, joint="curve")
+    d.ellipse(P([(cx - rx, cy - ry), (cx + rx, cy + ry)]), fill=(255, 250, 240), outline=INK, width=2 * S)
+    d.ellipse(P([(cx - rx * .86, cy - ry * .78), (cx + rx * .86, cy + ry * .8)]), fill=(240, 162, 82))
+    for j in range(4):                                                                                       # noodles
+        yy = cy - ry * .35 + j * ry * .3
+        d.line(P([(cx - rx * .62 + k * 2.2, yy + (1 if k % 2 else -1) * .8) for k in range(int(rx * .55))]), fill=(255, 226, 120), width=int(S * 1.4))
+    d.ellipse(P([(cx - rx * .62, cy - ry * .55), (cx - rx * .18, cy + ry * .35)]), fill=(255, 252, 244), outline=INK, width=S)   # half an egg
+    d.ellipse(P([(cx - rx * .5, cy - ry * .35), (cx - rx * .3, cy + ry * .15)]), fill=(255, 176, 40))
+    d.ellipse(P([(cx + rx * .08, cy - ry * .3), (cx + rx * .44, cy + ry * .5)]), fill=(255, 252, 244), outline=INK, width=S)     # naruto
+    d.arc(P([(cx + rx * .17, cy - ry * .1), (cx + rx * .35, cy + ry * .3)]), 0, 300, fill=(255, 128, 168), width=S + 1)
+    d.line(P([(cx - rx * .55, cy + ry * .15), (cx + rx * 1.15, cy - rx * 1.3)]), fill=WOOD, width=3 * S)   # the near chopstick
+    d.line(P([(cx - rx * .55, cy + ry * .15), (cx + rx * 1.15, cy - rx * 1.3)]), fill=(214, 160, 100), width=S)
+
+
+def ramen_shop(d, cx, cy, hw, hh, height):
+    """The gallery is Ekky's ramen shop: posters on the walls (the frames), a striped awning, a red tiled roof with
+    paper lanterns at the eaves, a "ラーメン" board on the front corner and a big bowl on top. Returns the two front walls as (left, bottom, right) corners, the lantern spots and the bowl's steam spot."""
     left, bottom, right = (cx - hw, cy), (cx, cy + hh), (cx + hw, cy)
-    up = lambda p: (p[0], p[1] - height)
-    d.polygon(P([left, bottom, up(bottom), up(left)]), fill=WALL_L, outline=INK, width=2 * S)
-    d.polygon(P([bottom, right, up(right), up(bottom)]), fill=WALL_R, outline=INK, width=2 * S)
-    d.polygon(P(diamond(cx, cy - height, hw, hh)), fill=ROOF, outline=INK, width=2 * S)
-    return left, bottom, right
+    up = lambda p, k=height: (p[0], p[1] - k)
+    for a, b, wall in ((left, bottom, WALL_L), (bottom, right, WALL_R)):
+        d.polygon(P([a, b, up(b), up(a)]), fill=wall, outline=INK, width=2 * S)
+        d.polygon(P([a, b, up(b, 9), up(a, 9)]), fill=WOOD if wall == WALL_L else WOOD_D, outline=INK, width=2 * S)   # wooden skirting
+        n = 9
+        for k in range(n):   # the striped awning along the top of the wall, with a scalloped hem
+            p0, p1 = lerp(a, b, k / n), lerp(a, b, (k + 1) / n)
+            col = (RAMEN_RED if wall == WALL_L else RAMEN_RED_D) if k % 2 == 0 else (255, 250, 240)
+            d.polygon(P([up(p0), up(p1), up(p1, height - 9), up(p0, height - 9)]), fill=col)
+            m = lerp(p0, p1, .5)
+            hr = (p1[0] - p0[0]) / 2
+            d.chord(P([(m[0] - hr, m[1] - height + 9 - 3), (m[0] + hr, m[1] - height + 9 + 3)]), 0, 180, fill=col)
+        d.line(P([up(a), up(b)]), fill=INK, width=2 * S)
+    d.line(P([bottom, up(bottom)]), fill=INK, width=2 * S)
+    # the roof: eaves over the walls, a dark wooden fascia, four tiled faces up to a small cap
+    ey, ew, eh, rise = cy - height - 5, hw + 8, hh + 4, 34
+    L, T, R, B = (cx - ew, ey), (cx, ey - eh), (cx + ew, ey), (cx, ey + eh)
+    A = (cx, ey - rise)
+    for p, q in ((L, B), (B, R)):
+        d.polygon(P([p, q, (q[0], q[1] + 5), (p[0], p[1] + 5)]), fill=WOOD_D, outline=INK, width=2 * S)
+    faces = ((L, T, RAMEN_RED_L), (T, R, RAMEN_RED_L), (L, B, RAMEN_RED), (B, R, RAMEN_RED_D))
+    for p, q, col in faces:
+        d.polygon(P([p, q, A]), fill=col, outline=INK, width=2 * S)
+    for p, q, col in faces[2:]:   # tile rows, parallel to the eave
+        for t in (.25, .5, .75):
+            d.line(P([lerp(p, A, t), lerp(q, A, t)]), fill=RAMEN_RED_D if col == RAMEN_RED else (140, 30, 44), width=S + 1)
+        for k in range(1, 8):
+            d.line(P([lerp(p, q, k / 8), lerp(lerp(p, q, k / 8), A, .25)]), fill=RAMEN_RED_D if col == RAMEN_RED else (140, 30, 44), width=S)
+    for p in (L, B, R):
+        d.line(P([p, A]), fill=INK, width=3 * S)
+    d.line(P([L, B, R]), fill=INK, width=2 * S)
+    lights = [chochin(d, L[0] + 3, L[1] + 4, 7), chochin(d, R[0] - 3, R[1] + 4, 7)]   # at the side corners: the frames' pictures cover the walls
+    katakana_sign(d, cx - 7, B[1] + 10, 14, 46)
+    ramen_bowl(d, cx, A[1] + 10, 30)
+    return (left, bottom, right), lights, (cx, A[1] - 4)
 
 
 def radial(im, cx, cy, rx, ry, rgb, a, k):
@@ -509,7 +609,7 @@ def build():
         path(dm, [home, to])
     path(dn, [(360, 268), (360, 225)])
     path(ds, [(396, 688), (400, 742)])
-    walls = block(dm, 532, 452, 112, 56, 96)
+    walls, shop_lights, bowl = ramen_shop(dm, 532, 452, 112, 56, 96)
     lamps = [lamp_post(ds, 282, 768), lamp_post(ds, 496, 774, 34)]   # the lantern posts' light is added below
     L = {}
     for name, im in (("sky", sky), ("mid", mid), ("north", north), ("south", south)):
@@ -534,7 +634,8 @@ def build():
     paste(L["north"], "radio-explorer", (404, 228), 70)
     paste(L["north"], "planet", (468, 204), 34, shadow=False)   # a small ringed planet at the island's edge
     places["gallery"] = [420, 300, 645, 510]
-    paste(L["mid"], "palette", (532, 362), 44)
+    for x, y in shop_lights:
+        radial(L["mid"], x, y, 22, 22, (255, 120, 80), .35, Z)   # the shop's lanterns glow
     folk["fire-spirit"] = paste(L["mid"], "fire-spirit", (588, 468), 52)   # peeks out behind the Toybox (its cut edge is hidden)
     paste(L["mid"], "toybox", (604, 506), 62)
     folk["noodle-bath"] = paste(L["mid"], "noodle-bath", (112, 502), 74)
@@ -591,7 +692,13 @@ def build():
     for name in ("north", "mid", "south"):
         x0, y0, x1, y1 = L[name].getchannel("A").point(lambda v: 255 if v else 0).getbbox()
         x0, y0, x1, y1 = x0 // Z - 6, y0 // Z - 6, -(-x1 // Z) + 6, -(-y1 // Z) + 6   # whole canvas units, with a clear margin so no shape ends in a straight line on the image border
-        Q[name].crop((x0 * Z, y0 * Z, x1 * Z, y1 * Z)).save(os.path.join(OUT, "island-%s.png" % name), optimize=True)
+        lay = Q[name].crop((x0 * Z, y0 * Z, x1 * Z, y1 * Z))
+        a = np.array(lay)
+        clear = int(a[0, 0]) if lay.convert("RGBA").getpixel((0, 0))[3] == 0 else int(np.argmin(np.array(lay.convert("RGBA")).reshape(-1, 4)[:, 3]))
+        a[:6], a[-6:], a[:, :6], a[:, -6:] = clear, clear, clear, clear   # a clear border: faint edge strips drew a pale line on the map
+        out_im = Image.fromarray(a, "P")
+        out_im.putpalette(lay.getpalette(rawmode="RGBA"), rawmode="RGBA")
+        out_im.save(os.path.join(OUT, "island-%s.png" % name), optimize=True)
         layers[name] = dict(src="assets/village/island-%s.png" % name, x=x0, y=y0, w=x1 - x0, h=y1 - y0)
     img = small
     folk["ufo"] = ubox
@@ -611,7 +718,7 @@ def build():
     out["lantern"] = [round(lx - ox, 1), round(ly - oy, 1)]
     out["ufo"] = dict(src="assets/sprites/ufo.png", box=[ubox[0] - ox, ubox[1] - oy, ubox[2] - ox, ubox[3] - oy], layer="north")
     nb = folk["noodle-bath"]
-    out["smoke"] = [[round((nb[0] + nb[2]) / 2 - ox, 1), round(nb[1] + 18 - oy, 1)]]
+    out["smoke"] = [[round((nb[0] + nb[2]) / 2 - ox, 1), round(nb[1] + 18 - oy, 1)], [round(bowl[0] - ox, 1), round(bowl[1] - oy, 1)]]   # the noodle bath, the ramen bowl
     # walkers (content): each walks its route along a path, pauses at the ends, and turns to face where it goes.
     # face = the way the drawing looks (-1 left, 1 right, 0 either); h = height in image pixels.
     for name, h, face, route in WALKERS:
