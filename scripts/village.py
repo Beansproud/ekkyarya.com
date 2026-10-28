@@ -355,17 +355,22 @@ def galaxy(base):
         ad.ellipse(box, fill=c[3])
     g = col.filter(ImageFilter.GaussianBlur(40)).convert("RGBA")
     g.putalpha(al.filter(ImageFilter.GaussianBlur(40)))
-    gd = ImageDraw.Draw(g)
+    nebula = g.copy()   # the soft cloud alone; the stars below are saved as a crisp vector (stars.svg), not as pixels
+    prim = []           # svg shapes, in canvas units
+    gd = ImageDraw.Draw(g)   # a scratch copy, so the star positions come out exactly as before
     for _ in range(140):   # stars inside the cloud
         x, y = rnd.gauss(360, 170), rnd.gauss(480, 200)
         if 0 < x < W and 0 < y < H and g.getpixel((int(x), int(y)))[3] > 40:
             r = rnd.choice([.6, .8, 1, 1.4])
-            gd.ellipse((x - r, y - r, x + r, y + r), fill=(255, 255, 255, rnd.randint(140, 255)))
+            al_ = rnd.randint(140, 255)
+            gd.ellipse((x - r, y - r, x + r, y + r), fill=(255, 255, 255, al_))
+            prim.append('<circle cx="%.1f" cy="%.1f" r="%.1f" fill="#fff" fill-opacity="%.2f"/>' % (x, y, r, al_ / 255))
     for _ in range(8):   # a few sparkles
         x, y = rnd.gauss(360, 150), rnd.gauss(480, 180)
         if 0 < x < W and 0 < y < H and g.getpixel((int(x), int(y)))[3] > 60:
             gd.line((x - 4, y, x + 4, y), fill=(255, 240, 255, 220), width=1)
             gd.line((x, y - 4, x, y + 4), fill=(255, 240, 255, 220), width=1)
+            prim.append('<path d="M%.1f %.1fh8M%.1f %.1fv8" stroke="#FFF0FF" stroke-opacity=".86" stroke-width="1" fill="none"/>' % (x - 4, y, x, y - 4))
     # constellation pattern: small groups of gold stars joined by thin lines, plus four-point sparkles
     gold, line = (255, 214, 120), (255, 226, 160)
     for _ in range(60):
@@ -377,17 +382,21 @@ def galaxy(base):
             px, py = pts[-1]
             pts.append((px + rnd.uniform(-38, 38), py + rnd.uniform(-30, 30)))
         gd.line(pts, fill=line + (190,), width=1)
+        prim.append('<polyline points="%s" stroke="#FFE2A0" stroke-opacity=".75" stroke-width="1" fill="none"/>' % " ".join("%.1f,%.1f" % q for q in pts))
         for i, (px, py) in enumerate(pts):
             r = 2.8 if i == 0 else rnd.choice([1.6, 2, 2.4])
             gd.ellipse((px - r, py - r, px + r, py + r), fill=gold + (235,))
+            prim.append('<circle cx="%.1f" cy="%.1f" r="%.1f" fill="#FFD678" fill-opacity=".92"/>' % (px, py, r))
     for _ in range(40):   # four-point sparkles
         x, y = rnd.uniform(60, 660), rnd.uniform(120, 900)
         if g.getpixel((int(x), int(y)))[3] < 25:
             continue
         r = rnd.uniform(5, 10)
         gd.polygon([(x, y - r), (x + r * .22, y - r * .22), (x + r, y), (x + r * .22, y + r * .22), (x, y + r), (x - r * .22, y + r * .22), (x - r, y), (x - r * .22, y - r * .22)], fill=gold + (230,))
-    base.alpha_composite(g.resize(base.size, Image.LANCZOS))
-    return g
+        prim.append('<path d="M%.1f %.1fL%.1f %.1fL%.1f %.1fL%.1f %.1fL%.1f %.1fL%.1f %.1fL%.1f %.1fL%.1f %.1fz" fill="#FFD678" fill-opacity=".9"/>' % (
+            x, y - r, x + r * .22, y - r * .22, x + r, y, x + r * .22, y + r * .22, x, y + r, x - r * .22, y + r * .22, x - r, y, x - r * .22, y - r * .22))
+    base.alpha_composite(nebula.resize(base.size, Image.LANCZOS))
+    return nebula, prim
 
 
 def frames_of(walls):
@@ -424,7 +433,7 @@ def build():
     os.makedirs(OUT, exist_ok=True)
     new = lambda: Image.new("RGBA", (W * S, H * S))
     sky, mid, north, south = new(), new(), new(), new()
-    g = galaxy(sky)   # the galaxy cloud and its constellations are the sky layer
+    g, stars = galaxy(sky)   # the galaxy cloud is the sky layer; its stars and constellations are a separate vector
     # north: the cool cosmic observatory, its cold halo is part of the sky layer
     radial(sky, 360, 215, 250, 140, (96, 150, 255), .6, S)
     island(north, 360, 205, 140, 70, 18, seed=2, tips=((-.3, .4), (.25, .5)), T=NORTH)
@@ -489,6 +498,16 @@ def build():
     crop = (ox * Z, oy * Z, ex * Z, ey * Z)
     Q = {}   # each layer gets its own 256-colour palette (with alpha): flat art and smooth sky both stay clean, at a fifth of the size
     for name in L:
+        if name == "sky":   # the smooth cloud is never palette-quantized (that made visible bands); half size is plenty for a soft glow
+            sk = L[name].crop(crop).resize(((ex - ox) // 2 + 1, (ey - oy) // 2 + 1), Image.LANCZOS)
+            a = np.array(sk).astype(float)
+            yy, xx = np.mgrid[0:sk.height, 0:sk.width]
+            edge = np.minimum(np.minimum(xx, sk.width - 1 - xx), np.minimum(yy, sk.height - 1 - yy)) / 22.0   # fades to nothing before the frame's edge
+            edge = np.clip(edge, 0, 1)
+            a[..., 3] *= edge * edge * (3 - 2 * edge)
+            Q[name] = Image.fromarray(a.astype(np.uint8))
+            L[name] = Q[name].resize(((ex - ox) * Z, (ey - oy) * Z), Image.BILINEAR)
+            continue
         Q[name] = quantize(L[name].crop(crop))
         L[name] = Q[name].convert("RGBA")
     img = L["sky"].copy()
@@ -505,11 +524,13 @@ def build():
     sh = Image.new("LA", small.size, (255, 0))
     sh.putalpha(Image.fromarray((neb * 140).astype(np.uint8)).filter(ImageFilter.GaussianBlur(3)))
     sh.save(os.path.join(OUT, "shimmer.png"), optimize=True)
-    img.save(os.path.join(OUT, "village.png"), optimize=True)   # the whole village in one image: the fallback if the layers do not load
     # the layers for the living village (same 601 x 827 space as village.json): the sky, and one cropped image per island.
     # x, y, w, h say where each cropped image sits; the UFO is not in any layer (assets/sprites/ufo.png floats over the north island)
-    layers = {"sky": dict(src="assets/village/sky.png", x=0, y=0, w=ex - ox, h=ey - oy)}
-    Q["sky"].save(os.path.join(OUT, "sky.png"), optimize=True)
+    layers = {"sky": dict(src="assets/village/nebula.png", x=0, y=0, w=ex - ox, h=ey - oy),
+              "stars": dict(src="assets/village/stars.svg", x=0, y=0, w=ex - ox, h=ey - oy)}
+    Q["sky"].save(os.path.join(OUT, "nebula.png"), optimize=True)
+    with open(os.path.join(OUT, "stars.svg"), "w") as f:   # stars and gold constellations: vector, so they stay sharp at any zoom
+        f.write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %d %d"><g transform="translate(%d %d)">%s</g></svg>\n' % (ex - ox, ey - oy, -ox, -oy, "".join(stars)))
     for name in ("north", "mid", "south"):
         x0, y0, x1, y1 = L[name].getchannel("A").point(lambda v: 255 if v else 0).getbbox()
         x0, y0, x1, y1 = x0 // Z, y0 // Z, -(-x1 // Z), -(-y1 // Z)   # whole canvas units, so the layers line up exactly
@@ -553,7 +574,7 @@ def build():
         f.write("\n")
     with open(os.path.join(OUT, "village.js"), "w") as f:   # the same data for the browser (works from file:// too)
         f.write("// Generated by scripts/village.py from village.json. Do not edit.\nwindow.VILLAGE=" + json.dumps(out) + ";\n")
-    print("wrote assets/village/village.png", os.path.getsize(os.path.join(OUT, "village.png")) // 1024, "KB")
+    print("wrote assets/village layers:", ", ".join("%s %d KB" % (n, os.path.getsize(os.path.join(ROOT, l["src"])) // 1024) for n, l in layers.items()))
 
 
 if __name__ == "__main__":

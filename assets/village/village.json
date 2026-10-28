@@ -3,7 +3,14 @@
  "h": 827,
  "layers": {
   "sky": {
-   "src": "assets/village/sky.png",
+   "src": "assets/village/nebula.png",
+   "x": 0,
+   "y": 0,
+   "w": 601,
+   "h": 827
+  },
+  "stars": {
+   "src": "assets/village/stars.svg",
    "x": 0,
    "y": 0,
    "w": 601,

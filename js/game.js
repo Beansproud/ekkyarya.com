@@ -95,11 +95,11 @@ const PLACES=[
   {id:"hire",        key:"town.hire",    icon:"assets/sprites/gate.png",      open:p=>openHire("",p), hire:true},
 ];
 const pct=(v,of)=>(v/of*100).toFixed(3)+"%";
-// the ground is the galaxy plus one picture per island (so each can bob on its own), then the UFO; one picture if the layers are missing
-function groundHTML(V){const L=V.layers;if(!L)return `<img class="v-ground" src="assets/village/village.png" alt="" decoding="async" fetchpriority="high">`;
+// the ground is the galaxy cloud (a smooth picture) and its stars and gold constellations (a vector, sharp at any zoom), then one picture per island (so each can bob on its own) and the UFO
+function groundHTML(V){const L=V.layers;
   const im=(n,cls)=>{const l=L[n];return `<img class="v-ground ${cls}" data-isle="${n}" src="${l.src}" alt="" decoding="async"${n==="sky"?' fetchpriority="high"':""} style="left:${pct(l.x,V.w)};top:${pct(l.y,V.h)};width:${pct(l.w,V.w)};height:${pct(l.h,V.h)}">`};
   const u=V.ufo,b=u&&u.box;
-  return im("sky","v-skyimg")+im("mid","v-isle")+im("north","v-isle")+im("south","v-isle")+
+  return im("sky","v-skyimg")+im("stars","v-skyimg")+im("mid","v-isle")+im("north","v-isle")+im("south","v-isle")+
     (u?`<img class="v-ground v-isle v-ufo" data-isle="north" src="${u.src}" alt="" decoding="async" style="left:${pct(b[0],V.w)};top:${pct(b[1],V.h)};width:${pct(b[2]-b[0],V.w)};height:${pct(b[3]-b[1],V.h)}">`:"")}
 let mapTok=0;
 function renderMap(){
@@ -118,7 +118,7 @@ function renderMap(){
   // the villagers and scenery come a moment later, in an idle slice: the first visit lays out the island and the places only
   const mt=++mapTok;(window.requestIdleCallback||(f=>setTimeout(f,30)))(()=>{const z=$("gMapZoom");if(mt===mapTok&&z){z.insertAdjacentHTML("beforeend",villageLife(V)+`<div class="v-fx" aria-hidden="true"></div>`);lifeStart(z,V)}},{timeout:500});
   W.insertAdjacentHTML("beforeend",`<div class="v-zoomctl"><button class="g-round" data-zoom="1" aria-label="${esc(tt("town.zoomIn","Zoom in"))}">${ico("i-plus")}</button><button class="g-round" data-zoom="-1" aria-label="${esc(tt("town.zoomOut","Zoom out"))}"><b aria-hidden="true">&minus;</b></button></div>`);
-  Z.base=null;Z.s=1;zoomTo(1,0,0);
+  Z.base=null;Z.lb=null;Z.s=1;zoomTo(1,0,0);
   $("gMapList").innerHTML=places.map(p=>`<li><button class="v-row${p.hire?" hire":""}" data-place="${p.id}"><img src="${p.icon}" alt="" loading="lazy">${esc(t(p.key))}</button></li>`).join("");
 }
 // a revisit hangs four new pieces on the gallery walls without rebuilding the village
@@ -270,12 +270,17 @@ function widen(on){const W=$("gMapWrap"),L=$("gMapZoom");
 // Pan and zoom: gesture math runs on cached numbers (Z.r = the frame's rect, Z.cw = its width, both read once per gesture
 // by geom(), not per move); the transform is written at most once per frame, and --zs only when the scale changed.
 function geom(){const W=$("gMapWrap"),r=W.getBoundingClientRect();Z.r={l:r.left,t:r.top};Z.cw=W.clientWidth}
+// a label is shown whole or not at all: one that would be cut by the frame's edge fades out until the map is moved back
+function edgeLabels(){if(!Z.lb){const V=window.VILLAGE,k=Z.base.w/V.w;
+    Z.lb=[...$("gMapWrap").querySelectorAll(".v-label")].map(el=>{const p=V.places[el.dataset.place].label;return {el,x:p[0]*k,y:p[1]*Z.base.h/V.h,w:el.offsetWidth,h:el.offsetHeight,off:false}})}
+  const m=6,cw=Z.cw,ch=Z.base.h;
+  for(const l of Z.lb){const x=Z.x+l.x*Z.s,y=Z.y+l.y*Z.s,off=x-l.w/2<m||x+l.w/2>cw-m||y<m||y+l.h>ch-m;if(off!==l.off){l.off=off;l.el.classList.toggle("edge",off)}}}
 function paintZoom(){Z.raf=0;const L=$("gMapZoom");if(!L||!Z.base)return;
-  L.style.transform=`translate3d(${Z.x}px,${Z.y}px,0) scale(${Z.s})`;
+  L.style.transform=`translate3d(${Z.x}px,${Z.y}px,0) scale(${Z.s})`;edgeLabels();
   if(Z.zs!==Z.s){Z.zs=Z.s;L.style.setProperty("--zs",(1/Z.s).toFixed(3))}}
 function zoomTo(s,x,y){const W=$("gMapWrap"),L=$("gMapZoom");if(!L)return;
   Z.s=Math.max(1,Math.min(2,s));if(Z.s===1)widen(false);
-  if(!Z.base){cancelAnimationFrame(Z.raf);Z.raf=0;Z.zs=null;L.style.transform="";L.style.removeProperty("--zs");W.classList.remove("zoomed");Z.x=Z.y=0;return}
+  if(!Z.base){cancelAnimationFrame(Z.raf);Z.raf=0;Z.zs=null;Z.lb=null;W.querySelectorAll(".v-label.edge").forEach(e=>e.classList.remove("edge"));L.style.transform="";L.style.removeProperty("--zs");W.classList.remove("zoomed");Z.x=Z.y=0;return}
   const cw=Z.cw,w=Z.base.w*Z.s,h=Z.base.h;
   Z.x=w<=cw?(cw-w)/2:Math.min(0,Math.max(cw-w,x));Z.y=Math.min(0,Math.max(h-h*Z.s,y));
   W.classList.add("zoomed");if(!Z.raf)Z.raf=requestAnimationFrame(paintZoom)}
@@ -290,7 +295,10 @@ function zoomAt(k,cx,cy){const ns=Math.max(1,Math.min(2,Z.s*k));if(ns>1&&!Z.base
     if(Z.pts.size===2&&Z.pinch){lifeHold(true);const [a,b]=[...Z.pts.values()],d=Math.hypot(a.x-b.x,a.y-b.y);zoomAt(Z.pinch.s*d/Z.pinch.d/Z.s,(a.x+b.x)/2,(a.y+b.y)/2)}
     else if(Z.pts.size===1&&Z.start&&Z.s>1){const dx=e.clientX-Z.start.x,dy=e.clientY-Z.start.y;
       if(Math.hypot(dx,dy)>8)Z.moved=true;if(Z.moved){lifeHold(true);zoomTo(Z.s,Z.start.zx+dx,Z.start.zy+dy)}}});
-  const up=e=>{Z.pts.delete(e.pointerId);if(Z.pts.size<2)Z.pinch=null;if(!Z.pts.size){Z.start=null;lifeHold(false)}};
+  // double-tap on empty ground zooms in at that spot (or back out); the +/- buttons stay for mouse users only
+  const up=e=>{Z.pts.delete(e.pointerId);if(Z.pts.size<2)Z.pinch=null;if(!Z.pts.size){const st=Z.start;Z.start=null;lifeHold(false);
+    if(e.type==="pointerup"&&st&&!Z.moved&&e.pointerType==="touch"&&!e.target.closest(".v-place,.v-label,.v-folk,.v-walker,.v-zoomctl")){const n=performance.now(),d=Z.tap&&Math.hypot(e.clientX-Z.tap.x,e.clientY-Z.tap.y);
+      if(Z.tap&&n-Z.tap.t<320&&d<30){Z.tap=null;buzz(8);geom();if(Z.s>1)zoomTo(1,0,0);else zoomAt(2,e.clientX,e.clientY)}else Z.tap={t:n,x:e.clientX,y:e.clientY}}}};
   W.addEventListener("pointerup",up);W.addEventListener("pointercancel",up);
   // a pan or pinch is not a tap on whatever was under the finger
   W.addEventListener("click",e=>{if(Z.moved&&!e.target.closest(".v-zoomctl")){e.stopPropagation();e.preventDefault();Z.moved=false}},true);
@@ -525,7 +533,7 @@ const warmed=[];function warmVillage(){const V=window.VILLAGE;if(!V||!V.layers||
   [...Object.values(V.layers).map(l=>l.src)].forEach((s,i)=>setTimeout(()=>{const im=new Image();im.src=s;im.decode().catch(()=>{});warmed.push(im)},i*400))}
 addEventListener("load",()=>setTimeout(()=>(window.requestIdleCallback||(f=>f()))(warmVillage),4000));
 let artDone=false,mapBuilt=false;const dirty={start:false,art:false,map:false};   // screens are built once and kept; a language switch redraws only the one in view
-// The village (village.png and its sprites, about 1 MB) is built when the map opens (go("map")), not at load, so the
+// The village (its layers and sprites, about 0.6 MB) is built when the map opens (go("map")), not at load, so the
 // start screen's drawings come first on a slow phone (S5, Developer B).
 /* ---- Language switched in place (js/site.js dispatches "ekky:lang" at the dim point): redraw what was built with t() ---- */
 let sheetRe=null;

@@ -239,9 +239,11 @@ async function runConfig(browser,url,scheme,lang){
   await T('map: villager sheet',async p=>{await boot(p);await tab(p,'map');await must(p,'#gMapWrap .v-walker, #gMapWrap .v-folk','no villagers',8000);await sleep(800);
     await p.evaluate(()=>document.querySelector('#gMapWrap .v-folk,#gMapWrap .v-walker').click());await sleep(900);if(!await p.evaluate(()=>document.getElementById('gSheet').classList.contains('open')))throw new Error('villager sheet did not open');
     await audit(p,'villager sheet')});
-  await T('map: zoom + / -',async p=>{await boot(p);await tab(p,'map');await must(p,'#gMapWrap [data-zoom]','no zoom buttons',8000);await sleep(800);
+  await T('map: double-tap zoom in and out (touch has no +/- buttons)',async p=>{await boot(p);await tab(p,'map');await must(p,'#gMapZoom','no village',8000);await sleep(800);
     const tf=()=>p.evaluate(()=>{const z=document.getElementById('gMapZoom');const s=getComputedStyle(z);return s.transform+'|'+z.getBoundingClientRect().width.toFixed(1)});
-    const a=await tf();await p.tap('[data-zoom="1"]');await sleep(600);const b=await tf();if(a===b)throw new Error('zoom + changed nothing');await p.tap('[data-zoom="-1"]');await sleep(600);const c=await tf();if(c===b)throw new Error('zoom - changed nothing')});
+    if(await p.evaluate(()=>[...document.querySelectorAll('#gMapWrap [data-zoom]')].some(e=>e.offsetParent)))throw new Error('+/- buttons show on a touch screen');
+    const bb=await p.locator('#gMapWrap').boundingBox(),x=bb.x+14,y=bb.y+14,dbl=async()=>{await p.touchscreen.tap(x,y);await sleep(120);await p.touchscreen.tap(x,y);await sleep(700)};
+    const a=await tf();await dbl();const b2=await tf();if(a===b2)throw new Error('double-tap did not zoom in');await dbl();const c=await tf();if(c===b2)throw new Error('double-tap did not zoom out')});
 
   // --- Hire chip on every screen ---
   const hireOn=async(p,what)=>{if(!await vis(p,'[data-hire]:visible',500))throw new Error('no Hire chip on '+what);
