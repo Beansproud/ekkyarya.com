@@ -307,7 +307,29 @@ def radial(im, cx, cy, rx, ry, rgb, a, k):
     im.alpha_composite(Image.fromarray(lay), (x0, y0))
 
 
-def paste(img, name, foot, h, flip=False, shadow=True):
+INK_PAD = 6 * Z
+
+
+def inked(sp, name):
+    """Ekky's cut-out with one shared, slightly wobbly dark ink outline (about 2 px on a phone) around its silhouette,
+    so every character and prop on the islands reads as drawn on the same page. The wobble is a fixed noise per name."""
+    import random
+    rnd = np.random.RandomState(sum(map(ord, name)))
+    pad = INK_PAD
+    big = Image.new("RGBA", (sp.width + 2 * pad, sp.height + 2 * pad))
+    big.alpha_composite(sp, (pad, pad))
+    a = big.getchannel("A").point(lambda v: 255 if v > 40 else 0)
+    thin, thick = a.filter(ImageFilter.MaxFilter(2 * int(1.4 * Z) + 1)), a.filter(ImageFilter.MaxFilter(2 * int(2.4 * Z) + 1))
+    n = Image.fromarray((rnd.rand(big.height // 24 + 2, big.width // 24 + 2) * 255).astype(np.uint8)).resize(big.size, Image.BICUBIC)
+    n = n.filter(ImageFilter.GaussianBlur(4)).point(lambda v: 255 if v > 118 else 0)
+    ring = Image.composite(thick, thin, n).filter(ImageFilter.GaussianBlur(.6))
+    out = Image.new("RGBA", big.size, INK + (0,))
+    out.putalpha(ring)
+    out.alpha_composite(big)
+    return out
+
+
+def paste(img, name, foot, h, flip=False, shadow=True, ink=True):
     """Stand a cut-out with its bottom center on `foot` (canvas units), scaled to height h; img is Z times the canvas.
     Returns its box in canvas units."""
     sp = Image.open(os.path.join(ROOT, "assets", "sprites" if os.path.exists(os.path.join(ROOT, "assets", "sprites", name + ".png")) else "ui", name + ".png")).convert("RGBA")
@@ -320,8 +342,12 @@ def paste(img, name, foot, h, flip=False, shadow=True):
         sh = Image.new("RGBA", img.size)
         ImageDraw.Draw(sh).ellipse(((foot[0] - w * .38) * Z, (foot[1] - 7) * Z, (foot[0] + w * .38) * Z, (foot[1] + 7) * Z), fill=INK + (60,))
         img.alpha_composite(sh.filter(ImageFilter.GaussianBlur(3 * Z)))
+    box = [x // Z, y // Z, (x + w * Z) // Z, (y + h * Z) // Z]
+    if ink:
+        sp = inked(sp, name)
+        x, y = x - INK_PAD, y - INK_PAD
     img.alpha_composite(sp, (x, y))
-    return [x // Z, y // Z, (x + w * Z) // Z, (y + h * Z) // Z]
+    return box
 
 
 # name, height, facing, route (image pixels, on the paths and bridges drawn above)
@@ -514,7 +540,7 @@ def build():
     for name in ("mid", "north", "south"):
         img.alpha_composite(L[name])
     uimg = Image.new("RGBA", (W * Z, H * Z))
-    ubox = paste(uimg, "ufo", ufo["foot"], ufo["h"], shadow=False)
+    ubox = paste(uimg, "ufo", ufo["foot"], ufo["h"], shadow=False, ink=False)
     img.alpha_composite(uimg.crop(crop))
     # galaxy glow layer: white wherever the nebula shows between the islands, for its slow 10 % pulse
     small = img.resize((ex - ox, ey - oy), Image.LANCZOS)

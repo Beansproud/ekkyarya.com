@@ -313,7 +313,15 @@ function openVillager(b){const k=+b.dataset.piece,p=PROJECTS[k];if(!p)return;
     ${plabel(p)?`<p><span class="tag">${esc(plabel(p))}</span></p>`:""}<p>${esc(pdesc(p))}</p><p><button class="g-btn" data-see="${k}">${ico("i-eye")} ${esc(t("town.seeArt"))}</button></p></div>`+hireChip())}
 $("gMapWrap").addEventListener("click",e=>{const v=e.target.closest(".v-folk,.v-walker");if(v){buzz(10);sfx("tap");return openVillager(v)}
   const b=e.target.closest(".v-place,.v-label");if(!b)return;buzz(15);sfx("tap");
-  const pl=PLACES.find(p=>p.id===b.dataset.place);pl.open(pl)});
+  const pl=PLACES.find(p=>p.id===b.dataset.place);placeTap(pl,()=>pl.open(pl))});
+// One small drawn reaction (300 ms) before a place opens: its label lifts and a ring of gold sparks flies out of the place.
+function placeTap(pl,open){const V=window.VILLAGE,W=$("gMapWrap"),z=$("gMapZoom"),box=V.places[pl.id].box;
+  if(calm()||!z||!z.isConnected){open();return}
+  const lab=W.querySelector(`.v-label[data-place="${pl.id}"]`);if(lab){lab.classList.add("go");setTimeout(()=>lab.classList.remove("go"),420)}
+  const cx=(box[0]+box[2])/2,cy=(box[1]+box[3])/2,k=100/V.w,fx=document.createElement("div");fx.className="v-burst";fx.style.cssText=`left:${pct(cx,V.w)};top:${pct(cy,V.h)}`;
+  for(let i=0;i<8;i++){const a=i/8*Math.PI*2+.3,r=(box[2]-box[0])*.55,s=document.createElement("i");fx.appendChild(s);
+    s.animate([{transform:"translate(0,0) scale(.3)",opacity:0},{opacity:1,offset:.25},{transform:`translate(${(Math.cos(a)*r*k).toFixed(2)}cqw,${(Math.sin(a)*r*k*.8).toFixed(2)}cqw) scale(1)`,opacity:0}],{duration:300,easing:EZI})}
+  z.appendChild(fx);setTimeout(()=>fx.remove(),340);setTimeout(open,300)}
 $("gMapList").addEventListener("click",e=>{const b=e.target.closest("[data-place]");if(b){buzz(10);sfx("tap");const pl=PLACES.find(p=>p.id===b.dataset.place);pl.open(pl)}});
 // The list view replaces the island on the same screen (each place once, 48 px rows); the same link switches back.
 $("gMapListBtn").onclick=()=>{const l=$("gMapList"),open=l.hidden,b=$("gMapListBtn");l.hidden=!open;$("gMapWrap").hidden=open;
