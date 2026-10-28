@@ -940,6 +940,11 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 .aa-chk{display:flex;align-items:center;gap:10px;min-height:44px;font-size:15px}
 .aa-chk input{width:24px;height:24px;flex:none;accent-color:#2B1342}
 .aa-dim{opacity:.55}
+<<<<<<< HEAD
+#g-map .v-map{align-self:center;margin:auto 0;max-width:460px;border-radius:0}   /* centred in the band under the title, edge to edge on a phone */
+.v-map .v-label{font-size:clamp(12px,2.35cqw,13.5px);padding:2px 8px;border-radius:6px;background:#FFF3DC;border:2px solid #2B1342;color:#2B1342;box-shadow:0 2px 0 rgba(43,19,66,.55);rotate:-1.6deg}
+.v-map span.v-label:nth-of-type(even){rotate:1.4deg}   /* paper tags, each at its own fixed tilt */
+.v-map .v-label.hire{background:#FFB400;border-color:#2B1342;color:#2B1342}
 /* World squad */
 #g-map{contain:layout paint}   /* the village screen is its own box: its layout and paint never reach the other screens */
 /* the galaxy sky and planet stay laid out and are faded, not display:none, so leaving the paper screens costs no style or layout work */
