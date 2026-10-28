@@ -344,7 +344,9 @@ function openSheet(html){let fresh=false;
   setTimeout(()=>$("gSheetX").focus({preventScroll:true}),50)}
 function closeSheet(){sheet.classList.remove("open");sheetHtml="";clearTimeout(warmT);warmT=setTimeout(()=>warmWhenIdle(),900);if(sheetFrom&&sheetFrom.focus)sheetFrom.focus({preventScroll:true})}
 $("gSheetX").onclick=closeSheet;sheet.addEventListener("click",e=>{if(e.target===sheet)closeSheet()});
-addEventListener("keydown",e=>{if(e.key==="Escape"&&sheet.classList.contains("open"))closeSheet()});
+addEventListener("keydown",e=>{if(e.key!=="Escape")return;
+  if(sheet.classList.contains("open"))return closeSheet();
+  const top=lstack[lstack.length-1],L=LAYERS.find(l=>l[0]===top);if(L&&top!=="lb"&&top!=="sheet"&&!e.defaultPrevented&&!document.querySelector("dialog[open]"))L[3](L[1]())});   // Esc closes the top layer (Color, share) like Back; the lightbox, a dialog, closes itself
 let sy=null;sheet.firstElementChild.addEventListener("touchstart",e=>{sy=sheet.firstElementChild.scrollTop>0?null:e.touches[0].clientY},{passive:true});
 sheet.firstElementChild.addEventListener("touchend",e=>{if(sy!==null&&e.changedTouches[0].clientY-sy>90)closeSheet();sy=null});
 // Every sheet ends with a Hire button (B07); the HUD chip above the sheet's backdrop stays tappable too.
@@ -389,12 +391,24 @@ function openHire(prefill,pl){const l=LEVELS[4];
     </form>`+madeFrom(pl));
   const c=$("gCopyMail");if(c)c.onclick=async()=>{try{await navigator.clipboard.writeText(CONFIG.email);say(t("hire.copied"),"i-check")}catch{say(CONFIG.email)}};
 }
+$("gSheetBody").addEventListener("input",e=>{const i=e.target;if(i.classList&&i.classList.contains("bad")&&i.validity.valid){i.classList.remove("bad");i.setAttribute("aria-invalid","false");i.parentElement.querySelector(".err").textContent=""}});
 $("gSheetBody").addEventListener("submit",e=>{e.preventDefault();const f=e.target;let ok=true;
-  f.querySelectorAll("[required]").forEach(i=>{const m=i.validity.valueMissing?"This one's needed":i.validity.tooShort?"A few more words, please":"";
-    i.parentElement.querySelector(".err").textContent=m;if(m)ok=false});
-  if(!ok){buzz([20,40,20]);if(!reduce)f.animate([{transform:"translateX(0)"},{transform:"translateX(-8px)"},{transform:"translateX(8px)"},{transform:"translateX(0)"}],{duration:300});return}
-  const d=Object.fromEntries(new FormData(f));sfx("level");if(typeof confetti==="function")confetti();closeSheet();say(t("hire.sent"),"i-check");
+  let first=null;   // empty fields are marked in place (red line plus a hint under each), the first one takes focus; no toast
+  f.querySelectorAll("[required]").forEach(i=>{const m=i.validity.valueMissing?t("hire.form.need"):i.validity.tooShort?t("hire.form.more"):"";
+    i.parentElement.querySelector(".err").textContent=m;i.classList.toggle("bad",!!m);i.setAttribute("aria-invalid",m?"true":"false");if(m){ok=false;first=first||i}});
+  if(!ok){buzz([20,40,20]);if(!reduce)f.animate([{transform:"translateX(0)"},{transform:"translateX(-8px)"},{transform:"translateX(8px)"},{transform:"translateX(0)"}],{duration:300});first.focus();return}
+  const d=Object.fromEntries(new FormData(f));sfx("level");if(typeof confetti==="function")confetti();
   const go=CONFIG.email?`mailto:${CONFIG.email}?subject=${encodeURIComponent(d.type+" project from "+d.name)}&body=${encodeURIComponent(d.message+"\n\n"+d.name)}`:hireTarget().href;
+  // the result stays inside the sheet (a toast at the top of the screen was clipped): what happens, and that it worked
+  const hh=f.previousElementSibling;if(hh&&hh.matches("h3"))hh.remove();
+  f.replaceWith(Object.assign(document.createElement("div"),{className:"g-sent",innerHTML:`<span class="g-sent-ico">${ico("i-check")}</span><h3>${esc(t("hire.sent.title"))}</h3>
+    <p>${esc(t("hire.sent.body"))}</p><p class="g-small">${esc(t("hire.sent"))}</p>
+    <a class="g-btn" href="${esc(go)}"${go.startsWith("mailto:")?"":' target="_blank" rel="noopener"'}>${ico("i-send")} ${esc(t("hire.sent.again"))}</a>
+    ${CONFIG.email?`<p class="g-small g-fallback">${esc(t("hire.sent.fallback"))}</p><p class="g-addr"><b>${esc(CONFIG.email)}</b><button class="g-btn alt sm" type="button" id="gSentCopy">${ico("i-copy")} ${esc(t("hire.copy"))}</button></p>`:""}
+    <button class="g-link" type="button" id="gSentDone">${esc(t("hire.sent.done"))}</button>`}));
+  const sc=$("gSentCopy");if(sc)sc.onclick=async()=>{try{await navigator.clipboard.writeText(CONFIG.email);say(t("hire.copied"),"i-check")}catch{say(CONFIG.email)}};
+  $("gSentDone").onclick=closeSheet;$("gSheetBody").querySelector(".g-sent").setAttribute("role","status");$("gSheetBody").querySelector(".g-sent").scrollIntoView({block:"nearest"});
+  sheetHtml="";   // the sheet is drawn fresh the next time it opens
   setTimeout(()=>{if(go.startsWith("mailto:"))location.href=go;else open(go,"_blank","noopener")},900)});
 
 /* ---- Art: every piece, free to view; rarity is only a frame color ---- */
@@ -531,6 +545,7 @@ if(cv&&feature("shareCards")&&!$("gResShare")){$("gAgain").insertAdjacentHTML("a
 if(cv){$("gResDl").onclick=()=>typeof Share!=="undefined"&&Share.downloadStars(lastScore);$("gArcadeX").onclick=quitArcade;$("gResBack").onclick=()=>{quitArcade();go("start")};$("gAgain").onclick=startArcade}
 G.addEventListener("click",e=>{if(e.target.closest("[data-arcade]")){sfx("tap");startArcade()}});
 {const play=q.get("play");   // desktop "Play with Ekky's art" cards: ?game&play=color|stars
+  if(play){try{const u=new URL(location);u.searchParams.delete("play");history.replaceState(history.state,"",u)}catch(e){}}   // the address bar drops ?play= once it is acted on
   if(play==="color")setTimeout(()=>go("color"),600);
   else if(play==="stars"&&feature("starCatcher"))setTimeout(startArcade,600)}
 // A hidden tab pauses the round; it resumes only once the tab is visible again (r1a bug: it used to resume while hidden).

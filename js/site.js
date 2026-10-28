@@ -233,7 +233,7 @@ document.getElementById("form").addEventListener("submit",e=>{e.preventDefault()
   f.querySelectorAll("[required]").forEach(i=>{const err=i.parentElement.querySelector(".err");
     const msg=i.validity.valueMissing?"This one's needed":i.validity.typeMismatch?"Hmm, that email looks off":i.validity.tooShort?"A few more words, please":"";
     err.textContent=msg;if(msg)ok=false});
-  if(!ok)return say("Please check the form");
+  if(!ok){f.querySelector("[required]:invalid")?.focus();return}   // the fields are marked inline; no toast
   const d=Object.fromEntries(new FormData(f));
   if(!CONFIG.email){open(hireTarget().href,"_blank","noopener");return}
   location.href=`mailto:${CONFIG.email}?subject=${encodeURIComponent(d.type+" project from "+d.name)}&body=${encodeURIComponent(d.message+"\n\n"+d.name+" ("+d.email+")")}`;
