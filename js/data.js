@@ -93,9 +93,9 @@ const PROJECTS = [
 // Morumelons: the landing page art, then its characters as a set and one of them moving (Sprint 3: morumelons below).
 /* ---- Sprint 3: morumelons ---- */
 // The 12 characters the Color squad picked from the owner's 48 GIFs (docs/morumelons.md): a 320 px thumb (first view),
-// an 800 px poster and a play-once animated WebP each, fetched only on tap or hover (js/site.js mmPlay). Portfolio and
-// card only until the owner says whether Morumelons is a client job or Ekky's own collection: no sticker, coloring, game
-// or village use, so they live inside the project, not in PROJECTS.
+// an 800 px poster and a play-once animated WebP each, fetched only on tap or hover (js/site.js mmPlay). Owner (10-28 15:1x,
+// via the lead): "its ekky own collection, can be shown publicly". They live inside the project (portfolio and the Art
+// card's viewer); creative roles (sticker, game, village) can follow where a character fits.
 const MM_DIR="assets/projects/morumelons/";
 const MORUMELONS_CAST=[
   ["c01","C01","C01"],["c02","C02","C02"],["c03","C03","C03"],["c04","C04","C04"],["c05","C05","C05"],["c06","C06","C06"],
