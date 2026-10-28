@@ -172,12 +172,10 @@ function messagesTab(el, ctx) {
     h("p", { class: "as-note" }, pick(ctx, "A real inbox inside admin needs a backend, which comes later.", "Kotak masuk sungguhan di admin butuh backend, nanti.")));
 }
 
-function register(Admin) {
-  Admin.registerTab("links", { title: "Links", render: linksTab });
-  Admin.registerTab("settings", { title: "Settings", render: settingsTab });
-  Admin.registerTab("text", { title: "Text", render: textTab });
-  Admin.registerTab("messages", { title: "Messages", render: messagesTab });
-}
+const TABS = [["links", "Links", linksTab], ["settings", "Settings", settingsTab], ["text", "Text", textTab], ["messages", "Messages", messagesTab]];
+function register(Admin) { TABS.forEach(([id, title, render]) => Admin.registerTab(id, { title, render })); }
+// Admin not loaded yet: queue the tabs on window.AdminTabs ({id, title, render}) for the shell to pick up
 if (typeof Admin !== "undefined" && Admin.registerTab) register(Admin);
+else (window.AdminTabs = window.AdminTabs || []).push(...TABS.map(([id, title, render]) => ({ id, title, render })));
 return { register, linksTab, settingsTab, textTab, messagesTab, HTTPS };
 })();
