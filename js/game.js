@@ -212,7 +212,7 @@ const MOMENTS=[
 function nextWallPiece(){const shown=new Set([...$("gMapWrap").querySelectorAll(".v-frame")].map(i=>i.getAttribute("src")));
   const o=PROJECTS.filter(p=>creative(p)&&p.kind==="original"&&!shown.has(thumbOf(p)));return o.length?pick(o):null}
 function lifeSpawn(){const busy=new Set([...Life.live.values()].map(m=>m.r)),ids=Life.recent;
-  const ok=MOMENTS.filter(m=>!Life.live.has(m.id)&&!busy.has(m.r)&&!ids.includes(m.id));if(!ok.length)return;
+  const ok=MOMENTS.filter(m=>!Life.live.has(m.id)&&!busy.has(m.r)&&!ids.includes(m.id)&&!(Z.s>1&&m.id==="cloudride"));if(!ok.length)return;
   const m=pick(ok),k=lifeKit();Life.recent=[...ids,m.id].slice(-6);Life.live.set(m.id,m);Life.kits.add(k);
   try{m.run(k)}catch(e){}
   setTimeout(()=>{k.els.forEach(e=>e.remove());k.anims.forEach(a=>{try{a.cancel()}catch(e){}});Life.live.delete(m.id);Life.kits.delete(k)},m.d+100)}
@@ -278,12 +278,12 @@ function widen(on){const W=$("gMapWrap"),L=$("gMapZoom");
     Object.assign(W.style,{width:Z.base.css,height:"",aspectRatio:`${window.VILLAGE.w}/${window.VILLAGE.h}`});Z.base=null}}
 // Pan and zoom: gesture math runs on cached numbers (Z.r = the frame's rect, Z.cw = its width, both read once per gesture
 // by geom(), not per move); the transform is written at most once per frame, and --zs only when the scale changed.
-function geom(){const W=$("gMapWrap"),r=W.getBoundingClientRect();Z.r={l:r.left,t:r.top};Z.cw=W.clientWidth}
+function geom(){const W=$("gMapWrap"),r=W.getBoundingClientRect(),tb=document.querySelector(".g-tabs");Z.r={l:r.left,t:r.top};Z.cw=W.clientWidth;Z.tb=tb?tb.getBoundingClientRect().top-r.top:1e4}
 // a label is shown whole or not at all: one that would be cut by the frame's edge fades out until the map is moved back
 function edgeLabels(){if(!Z.lb){const V=window.VILLAGE,k=Z.base.w/V.w;
     Z.lb=[...$("gMapWrap").querySelectorAll(".v-label")].map(el=>{const p=V.places[el.dataset.place].label,n=LABEL_NUDGE[el.dataset.place]||[0,0];return {el,x:(p[0]+n[0])*k,y:(p[1]+n[1])*Z.base.h/V.h,w:el.offsetWidth,h:el.offsetHeight,off:false}})}
-  const m=6,cw=Z.cw,ch=Z.base.h;
-  for(const l of Z.lb){const x=Z.x+l.x*Z.s,y=Z.y+l.y*Z.s,off=x-l.w/2<m||x+l.w/2>cw-m||y<m||y+l.h>ch-m;if(off!==l.off){l.off=off;l.el.classList.toggle("edge",off)}}}
+  const m=6,mv=26,cw=Z.cw,ch=Math.min(Z.base.h,Z.tb||1e4);   // the top and bottom fade 22 px into the galaxy, and the tab bar counts as the frame's bottom
+  for(const l of Z.lb){const x=Z.x+l.x*Z.s,y=Z.y+l.y*Z.s,off=x-l.w/2<m||x+l.w/2>cw-m||y<mv||y+l.h>ch-mv;if(off!==l.off){l.off=off;l.el.classList.toggle("edge",off)}}}
 function paintZoom(){Z.raf=0;const L=$("gMapZoom");if(!L||!Z.base)return;
   L.style.transform=`translate3d(${Z.x}px,${Z.y}px,0) scale(${Z.s})`;edgeLabels();
   if(Z.zs!==Z.s){Z.zs=Z.s;L.style.setProperty("--zs",(1/Z.s).toFixed(3))}}
