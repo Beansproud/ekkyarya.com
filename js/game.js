@@ -78,7 +78,7 @@ G.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(g){buzz(
 /* ---- start screen: the featured six open the lightbox ---- */
 function renderStart(){const six=featuredSix().map(p=>({p,i:PROJECTS.indexOf(p)}));
   // each drawing opens big on tap; Download lives in the viewer, not on the tile (owner, 10-28)
-  $("gFeatured").innerHTML=six.map(({p,i})=>`<div class="g-feat-cell"><button class="g-feat" data-i="${i}" aria-label="${esc(ptitle(p))}"><img src="${thumbOf(p)}" alt="" decoding="async"><b>${esc(ptitle(p))}</b></button>`+
+  $("gFeatured").innerHTML=six.map(({p,i})=>`<div class="g-feat-cell"><button class="g-feat" data-i="${i}" aria-label="${esc(ptitle(p))}"><img src="${thumbOf(p)}" alt="" decoding="async" fetchpriority="high"><b>${esc(ptitle(p))}</b></button>`+
     `</div>`).join("")}
 $("gFeatured").addEventListener("click",e=>{const b=e.target.closest(".g-feat");if(b){buzz(10);show(+b.dataset.i)}});
 

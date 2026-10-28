@@ -61,7 +61,7 @@ document.addEventListener("click",async e=>{if(!e.target.closest("[data-install]
   const ev=installEvt;installEvt=null;ev.prompt();let out="";try{out=(await ev.userChoice).outcome}catch{}
   if(out==="accepted")showInstall(false)});
 /* ===== The classic hero image (300 KB) loads only when the classic site is showing, never under game mode ===== */
-function heroArt(){if(document.body.classList.contains("game-mode"))return;const i=document.querySelector(".hero-art[data-src]");if(i){i.src=i.dataset.src;i.removeAttribute("data-src")}}
+function heroArt(){if(document.body.classList.contains("game-mode"))return;const i=document.querySelector(".hero-art[data-src]");if(i){const w=i.previousElementSibling;if(w&&w.dataset.srcset){w.srcset=w.dataset.srcset;w.removeAttribute("data-srcset")}i.src=i.dataset.src;i.removeAttribute("data-src")}}   // WebP where supported, the PNG elsewhere
 // after every deferred script (js/game.js decides game mode), so the 300 KB desktop hero never loads behind the phone game
 addEventListener("DOMContentLoaded",()=>{document.documentElement.classList.remove("pre-game");heroArt()});document.addEventListener("click",e=>{if(e.target.closest("[data-classic]"))setTimeout(heroArt,0)});
 /* ===== Feature switches: entry points of a switched-off feature disappear (js/features.js) ===== */
