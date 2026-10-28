@@ -505,3 +505,14 @@ body.game-mode .idle-buddy{left:16px;right:auto;flex-direction:row;bottom:calc(e
   .socials,.status{grid-column:1/-1}
   .theme-toggle{justify-self:start}
 }
+
+/* Desktop fresh eyes: the lightbox picture leaves room for the title, Hire, Download and the arrows, whatever the window height;
+   tiles show a paper-tone slot until the drawing fades in (tape and tilt unchanged). */
+@media (min-width:761px){
+  .lb-art img{max-height:min(70vh,calc(100vh - 330px));max-height:min(70vh,calc(100dvh - 330px))}
+}
+.tile .art{background:var(--paper-2)}
+/* Narrow desktop: the sidebar is 240 px wide, so the dark-mode switch drops its text label (still named for screen readers) */
+@media (min-width:981px) and (max-width:1100px){
+  .theme-toggle #themeLabel{display:none}
+}
