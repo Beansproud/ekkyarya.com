@@ -51,7 +51,7 @@ function go(to,fromPop){
   if(!fromPop&&to!==screen){try{history.pushState({s:to},"")}catch(e){}}   // Back returns to the previous screen
   screen=to;G.classList.toggle("at-start",to==="start");G.classList.toggle("at-paper",to==="art"||to==="mine");   // S1: Art and Mine on paper
   G.querySelectorAll(".g-screen").forEach(s=>s.classList.toggle("active",s.id==="g-"+to));
-  G.querySelectorAll(".g-tabs button").forEach(b=>b.classList.toggle("active",b.dataset.tab===to));
+  G.querySelectorAll(".g-tabs button").forEach(b=>{b.classList.toggle("active",b.dataset.tab===to);if(b.dataset.tab===to)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
   if(to==="mine")renderMine();
   if(to==="start"&&dirty.start){dirty.start=false;renderStart()}
   if(to==="art"&&(!artDone||dirty.art)){artDone=true;dirty.art=false;renderArt()}
@@ -78,7 +78,7 @@ G.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(g){buzz(
 /* ---- start screen: the featured six open the lightbox ---- */
 function renderStart(){const six=featuredSix().map(p=>({p,i:PROJECTS.indexOf(p)}));
   // each drawing opens big on tap; Download lives in the viewer, not on the tile (owner, 10-28)
-  $("gFeatured").innerHTML=six.map(({p,i})=>`<div class="g-feat-cell"><button class="g-feat" data-i="${i}" aria-label="${esc(ptitle(p))}"><img src="${thumbOf(p)}" alt="" decoding="async"><b>${esc(ptitle(p))}</b></button>`+
+  $("gFeatured").innerHTML=six.map(({p,i})=>`<div class="g-feat-cell"><button class="g-feat" data-i="${i}" aria-label="${esc(ptitle(p))}"><img src="${thumbOf(p)}" alt="" decoding="async" fetchpriority="high"><b>${esc(ptitle(p))}</b></button>`+
     `</div>`).join("")}
 $("gFeatured").addEventListener("click",e=>{const b=e.target.closest(".g-feat");if(b){buzz(10);show(+b.dataset.i)}});
 
@@ -227,7 +227,7 @@ function lifeSet(on){on=on&&!document.hidden&&!calm();if(on===Life.run)return;Li
 // always on: walkers walk their routes, clouds drift, stars twinkle, islands bob; started once per drawn village
 function lifeStart(z,V){Life.V=V;Life.fx=z.querySelector(".v-fx");Life.live.clear();if(!Life.fx||calm())return;
   const BOB={north:[6900,.9,0],mid:[8200,.6,-2300],south:[7400,.8,-4100]},isleAt=y=>y<260?"north":y>=500?"south":"mid";
-  const u=v=>(v/V.w*100).toFixed(3)+"cqw",tok=++Life.tok,stage=(ms,f,early)=>setTimeout(()=>{if(tok===Life.tok&&z.isConnected)f()},ms+(early?0:2600));   // the village wakes up a little after the first look, one step every 350 ms, so opening the tab never does it all at once
+  const u=v=>(v/V.w*100).toFixed(3)+"cqw",tok=++Life.tok,stage=(ms,f,early)=>setTimeout(()=>{if(tok===Life.tok&&z.isConnected){f();if(!early&&$("gMapWrap").offsetParent===null)lifeAnims(a=>a.pause())}},ms+(early?0:2600));   // the village wakes up a little after the first look, one step every 350 ms, so opening the tab never does it all at once
   stage(700,()=>z.querySelectorAll(".v-walk").forEach(w=>{const r=V.walkers[+w.dataset.w];if(!r)return;
     const ig=z.querySelector(`.v-isleg[data-isle="${isleAt(r.route[0][1])}"]`);if(ig)ig.appendChild(w);   // it stands on its island and bobs with it
     const route=r.route,pts=[...route,...route.slice(0,-1).reverse()],T=36/1600;   // 1 tile (36 px) per 1.6 s
@@ -254,9 +254,9 @@ function lifeStart(z,V){Life.V=V;Life.fx=z.querySelector(".v-fx");Life.live.clea
   // the moments' sprites are decoded one by one beforehand, so none hitches when it first appears
   Life.cache=Life.cache||[];[...new Set(["doodle-cat","crab","waver","pickle","orange-monster"].map(n=>SK+n+".png").concat(["astronaut","cat","ghost","planet","palette"].map(n=>UI+n+".png")))].forEach((s,i)=>
     stage(500+i*200,()=>{const im=new Image();im.src=s;im.decode().catch(()=>{});Life.cache.push(im)},true));
-  stage(1400,()=>{if(!Life.io){Life.io=new IntersectionObserver(es=>lifeSet(es[es.length-1].isIntersecting),{threshold:.05});Life.io.observe($("gMapWrap"));
+  if(!Life.io){Life.io=new IntersectionObserver(es=>lifeSet(es[es.length-1].isIntersecting),{threshold:.05});Life.io.observe($("gMapWrap"));
     document.addEventListener("visibilitychange",()=>lifeSet(!document.hidden&&$("gMapWrap").offsetParent!==null))}
-  Life.run=null;lifeSet($("gMapWrap").offsetParent!==null)})}   // null: re-sync play or pause for the freshly drawn village
+  stage(1400,()=>{Life.run=null;lifeSet($("gMapWrap").offsetParent!==null)})}   // null: re-sync play or pause for the freshly drawn village   // null: re-sync play or pause for the freshly drawn village
 
 /* ---- Zoom (G1): pinch or drag with a finger, or the +/- buttons; 1x to 2x. A place is still one tap: a touch
    that moved more than 8 px is a pan, not a tap. Nothing animates; the view follows the finger. ---- */
@@ -331,6 +331,21 @@ $("gMapListBtn").onclick=()=>{const l=$("gMapList"),open=l.hidden,b=$("gMapListB
   if(open)l.querySelector("button")?.focus({preventScroll:true})};
 
 /* ---- sheets ---- */
+/* Keyboard (a11y): a closed overlay is inert, so its buttons leave the Tab order; Tab stays inside the open one on top,
+   Escape closes it and focus goes back to the control that opened it. The sheet keeps its own open/close (below). */
+const OVERS=["gArcade","gShare","gColor"],overFrom={};
+const overOn=()=>OVERS.map(id=>$(id)).find(e=>e&&e.classList.contains("open"));
+function inertOvers(){[...OVERS,"gSheet"].forEach(id=>{const e=$(id);if(!e)return;const on=e.classList.contains("open");
+  if(on&&e.inert)overFrom[id]=document.activeElement;
+  else if(!on&&!e.inert){const f=overFrom[id];overFrom[id]=null;if(id!=="gSheet"&&f&&f.isConnected&&(e.contains(document.activeElement)||document.activeElement===document.body))f.focus({preventScroll:true})}
+  e.inert=!on})}
+addEventListener("load",()=>{const mo=new MutationObserver(inertOvers);[...OVERS,"gSheet"].forEach(id=>{const e=$(id);if(e)mo.observe(e,{attributes:true,attributeFilter:["class"]})});inertOvers()});
+addEventListener("keydown",e=>{if(document.querySelector("dialog[open]"))return;const sh=$("gSheet").classList.contains("open"),o=sh?$("gSheet"):overOn();if(!o)return;
+  if(e.key==="Escape"&&!sh){const x=o.querySelector("#gArcadeX,#sX");if(x)x.click();else if(o.id==="gColor"&&typeof Color!=="undefined")Color.close();return}
+  if(e.key!=="Tab")return;
+  const f=[...o.querySelectorAll('button,a[href],input,select,textarea,[tabindex]:not([tabindex="-1"])')].filter(x=>!x.disabled&&x.getClientRects().length&&!x.closest("[inert],[hidden]"));if(!f.length)return;
+  const a=document.activeElement,i=f.indexOf(a);
+  if(!o.contains(a)){e.preventDefault();f[0].focus()}else if(e.shiftKey&&i===0){e.preventDefault();f[f.length-1].focus()}else if(!e.shiftKey&&i===f.length-1){e.preventDefault();f[0].focus()}});
 const sheet=$("gSheet");let sheetFrom=null;
 // The Hire sheet is the heaviest one (form inputs: first style and layout), so it is built hidden while the app is idle
 // (warmHire) and opening it only slides the finished sheet in. sheetHtml is what the body holds now; a different html
@@ -406,7 +421,7 @@ function renderArt(){
   const list=PROJECTS.map((p,i)=>({p,i})).filter(x=>gFilter==="all"||x.p.cat===gFilter);
   // eight cards now, the rest in idle slices: the first visit lays out a screenful, not the whole grid
   const card=({p,i},k)=>`<button class="g-card" data-i="${i}" style="--tilt:${typeof tiltOf==="function"?tiltOf(p):"-1deg"}"><div class="inner">
-      <span class="gcat">${catImg(p.cat,"")}</span><div class="art">${artOf(p)}</div><div class="info"><b>${esc(ptitle(p))}</b>${p.label?`<span class="g-tag">${esc(plabel(p))}</span>`:""}</div></div></button>`;
+      <span class="gcat">${catImg(p.cat,"")}</span><div class="art" aria-hidden="true">${artOf(p)}</div><div class="info"><b>${esc(ptitle(p))}</b>${p.label?`<span class="g-tag">${esc(plabel(p))}</span>`:""}</div></div></button>`;
   const tok=++artTok,rest=list.slice(8),idle=window.requestIdleCallback||(f=>setTimeout(f,30));
   $("gCards").innerHTML=list.slice(0,8).map(card).join("");
   (function more(){if(tok!==artTok||!rest.length)return;idle(()=>{if(tok!==artTok)return;$("gCards").insertAdjacentHTML("beforeend",rest.splice(0,10).map(card).join(""));more()},{timeout:600})})();
@@ -506,6 +521,9 @@ function draw(){const a=A;if(!a)return;const sx=(Math.random()-.5)*a.shake,sy=(M
   ctx.save();ctx.translate(a.px,py+bob);ctx.rotate(Math.max(-.3,Math.min(.3,tilt)));if(heroImg.complete&&heroImg.naturalWidth)ctx.drawImage(heroImg,-pw/2,-ph*.55,pw,ph);ctx.restore();
   ctx.restore()}
 function aim(e){if(!A)return;const r=cv.getBoundingClientRect(),x=(e.touches?e.touches[0].clientX:e.clientX)-r.left;A.tx=Math.max(40,Math.min(A.W-40,x))}
+// a11y: arrow keys (and A/D) move the catcher too, a tenth of the field per press; holding a key repeats
+addEventListener("keydown",e=>{if(!A||!$("gArcade").classList.contains("open"))return;const d={ArrowLeft:-1,a:-1,ArrowRight:1,d:1}[e.key];if(!d)return;
+  e.preventDefault();A.tx=Math.max(40,Math.min(A.W-40,(A.tx??A.W/2)+d*A.W/10))});
 if(cv){cv.addEventListener("pointerdown",aim);cv.addEventListener("pointermove",aim);cv.addEventListener("touchmove",e=>{aim(e);e.preventDefault()},{passive:false})}
 // "New best!" only when there was a best to beat (the first round is just "Time's up!")
 function endArcade(){const a=A;a.run=false;lastScore=a.score;const rec=(st.best||0)>0&&a.score>st.best;st.best=Math.max(st.best||0,a.score);save();

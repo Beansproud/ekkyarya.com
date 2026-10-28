@@ -20,7 +20,7 @@
 <meta name="description" content="Ekky Arya: illustrator and graphic designer making lively, playful illustrations, characters and brands.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/site.css">
 <link rel="stylesheet" href="css/game.css">
 <script defer src="js/data.js"></script>
@@ -127,7 +127,7 @@
     </div>
 
     <div class="scene reveal" id="scene" aria-hidden="true">
-      <img class="hero-art" data-src="assets/hero.png" alt="" loading="lazy" decoding="async" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+      <picture><source type="image/webp" data-srcset="assets/hero.webp"><img class="hero-art" data-src="assets/hero.png" alt="" width="540" height="780" decoding="async" onload="this.closest('.scene').classList.add('has-art')" onerror="this.remove()"></picture><script>/* desktop: start the hero while the page parses, not after the deferred scripts; phones (pre-game) skip it */(function(){if(document.documentElement.classList.contains("pre-game"))return;var i=document.querySelector(".hero-art[data-src]"),w=i&&i.previousElementSibling;if(!i)return;if(w&&w.dataset.srcset){w.srcset=w.dataset.srcset;w.removeAttribute("data-srcset")}i.src=i.dataset.src;i.removeAttribute("data-src")})();</script>
       <svg class="planet" viewBox="0 0 600 640">
         <defs>
           <radialGradient id="pg" cx="38%" cy="35%" r="70%">
@@ -248,7 +248,7 @@
   <section class="section" id="work">
     <div class="work-head">
       <div><p class="eyebrow reveal" data-t="hero.selected">Selected work</p><h2 class="h2 reveal" data-t="nav.portfolio" data-hand="portfolio">Portfolio</h2></div>
-      <div class="filters reveal" id="filters" role="tablist" aria-label="Filter projects">
+      <div class="filters reveal" id="filters" role="group" aria-label="Filter projects">
         <button class="active" data-filter="all" data-t="filter.all">All</button>
         <button data-filter="illustration" data-t="filter.illustration">Illustration</button>
         <button data-filter="web" data-t="filter.web">Web &amp; UI</button>
@@ -320,16 +320,16 @@
   <div class="g-planet-bg"></div>
 
 
-  <button class="g-home" data-go="start" data-t-aria="home.aria"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg><img src="assets/logo.png" alt="" fetchpriority="low" onerror="this.remove()"><span aria-hidden="true">EKKY<br>ARYA</span></button>
-  <button class="g-hire g-hire-pin" data-hire data-t-aria="hire.chip.aria"><img src="assets/ui/monster-head.png" alt="" fetchpriority="low"><span data-t="hire.chip"></span></button>
+  <button class="g-home" data-go="start" data-t-aria="home.aria"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg><img loading="lazy" src="assets/logo.png" alt="" fetchpriority="low" onerror="this.remove()"><span aria-hidden="true">EKKY<br>ARYA</span></button>
+  <button class="g-hire g-hire-pin" data-hire data-t-aria="hire.chip.aria"><img loading="lazy" src="assets/ui/monster-head.png" alt="" fetchpriority="low"><span data-t="hire.chip"></span></button>
   <section class="g-screen g-start active" id="g-start">
-    <div class="g-start-head"><img class="g-logo" src="assets/logo.png" alt="Ekky Arya" fetchpriority="low" onerror="this.outerHTML='<div class=&quot;g-logo-text&quot;>EKKY<br>ARYA</div>'">
+    <div class="g-start-head"><img class="g-logo" src="assets/logo.png" alt="Ekky Arya" decoding="async" onerror="this.outerHTML='<div class=&quot;g-logo-text&quot;>EKKY<br>ARYA</div>'">
       <div><h1 class="g-start-title" data-t="map.title"></h1><p class="g-tagline" data-t="start.tagline"></p></div></div>
     <div class="g-row-head"><h2 class="g-row-title" data-t="start.featured" data-hand="sketchbook"></h2><p class="g-hint"><span><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span data-tt="start.hint.view|View"></span></span><a class="g-apk" data-apk hidden href="https://github.com/rfim/ekkyarya.com/releases/download/app-latest/ekky-arya.apk" data-tta="start.apk.aria|Download the Android app (APK)"><b><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg><span data-tt="start.apk|APK"></span></b></a></p></div>
     <div class="g-featured" id="gFeatured"></div>
     <div class="g-tiles">
-      <button class="g-tile" data-go="color"><img src="assets/ui/pen-hand.png" alt="" fetchpriority="low"><span data-t="start.color" data-hand="color"></span></button>
-      <button class="g-tile" data-arcade data-feature="starCatcher"><img src="assets/ui/helmet.png" alt="" fetchpriority="low"><span data-t="start.catch"></span></button>
+      <button class="g-tile" data-go="color"><img loading="lazy" src="assets/ui/pen-hand.png" alt="" fetchpriority="low"><span data-t="start.color" data-hand="color"></span></button>
+      <button class="g-tile" data-arcade data-feature="starCatcher"><img loading="lazy" src="assets/ui/helmet.png" alt="" fetchpriority="low"><span data-t="start.catch"></span></button>
     </div>
   </section>
 
@@ -355,15 +355,15 @@
       <div class="g-row"><span data-t="mine.vibration"></span><button class="g-switch on" id="gVib" role="switch" aria-checked="true" data-t-aria="mine.vibration"></button></div>
       <div class="g-row" data-feature="pwa" data-install-row hidden><span data-t="app.install"></span><button class="g-btn sm alt" data-install data-tta="app.install|Install the app"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg></button></div>
       <div class="g-row"><span data-t="lang.label"></span><div class="lang-switch" role="group" data-t-aria="lang.label"><button data-lang="en">EN</button><button data-lang="id">ID</button></div></div>
-      <div class="g-row"><span data-t="start.classic"></span><button class="g-btn sm alt" data-classic aria-label="Open"><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></button></div>
+      <div class="g-row"><span data-t="start.classic"></span><button class="g-btn sm alt" data-classic data-t-aria="start.classic" aria-label="Just the art, please"><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></button></div>
       <div class="g-row" hidden><div class="g-mine-links" id="gMineLinks"></div></div>
       <div class="g-row"><button class="g-link g-reset" id="gReset" data-t="mine.reset"></button></div>
     </div>
   </section>
 
   <nav class="g-tabs" aria-label="Game menu">
-    <button data-tab="art"><span class="g-ico"><img src="assets/ui/palette.png" alt="" fetchpriority="low"></span><span data-t="tab.art"></span></button>
-    <button data-tab="map" class="center"><span class="g-face"><img class="g-face-img" src="assets/ui/face-pop.png" alt="" width="56" height="56"></span><small data-tt="tab.map|Map"></small></button>
+    <button data-tab="art"><span class="g-ico"><img loading="lazy" src="assets/ui/palette.png" alt="" fetchpriority="low"></span><span data-t="tab.art"></span></button>
+    <button data-tab="map" class="center"><span class="g-face"><img loading="lazy" class="g-face-img" src="assets/ui/face-pop.png" alt="" width="56" height="56"></span><small data-tt="tab.map|Map"></small></button>
     <button data-tab="mine"><span class="g-ico g-ico-line"><svg class="ico" aria-hidden="true"><use href="#i-frame"/></svg></span><span data-t="tab.mine"></span></button>
   </nav>
 
@@ -382,7 +382,7 @@
       <button class="g-btn" id="gAgain"><svg class="ico" aria-hidden="true"><use href="#i-replay"/></svg> <span data-t="stars.again"></span></button>
       <button class="g-btn alt sm" id="gResDl"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg> <span data-t="dl.button"></span></button>
       <button class="g-btn alt sm" id="gResBack" data-t="stars.other"></button>
-      <button class="g-hire" data-hire data-t-aria="hire.chip.aria"><img src="assets/ui/monster-head.png" alt=""><span data-t="hire.chip"></span></button>
+      <button class="g-hire" data-hire data-t-aria="hire.chip.aria"><img loading="lazy" src="assets/ui/monster-head.png" alt=""><span data-t="hire.chip"></span></button>
     </div>
   </div>
 </div>
