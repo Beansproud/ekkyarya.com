@@ -172,6 +172,13 @@ async function runConfig(browser,url,scheme,lang){
     await p.tap('[data-go=color]').catch(()=>{});await tab(p,'start').catch(()=>{});
     await tab(p,'mine');await p.tap(`#g-mine [data-lang="${from}"]`);await sleep(900);await check('back')});
 
+  await T('color: language switch after closing Mewarnai does not reopen the picker',async p=>{await boot(p);await p.tap('[data-go=color]');await must(p,'#cPages .c-page','picker has no pages');await sleep(600);await p.tap('#cPickX');await sleep(600);
+    if(await p.isVisible('#cPick'))throw new Error('picker did not close');
+    await tab(p,'mine');await p.tap(`#g-mine [data-lang="${lang==='en'?'id':'en'}"]`);await sleep(900);
+    if(await p.evaluate(()=>document.getElementById('gColor').classList.contains('open')))throw new Error('language switch reopened Color');
+    if(await p.isVisible('#cPick'))throw new Error('language switch popped the picker over the screen');
+    await p.tap(`#g-mine [data-lang="${lang}"]`);await sleep(500)});
+
   // --- Map tab face button ---
   await T('map face button renders, label not clipped',async p=>{await boot(p);
     for(const st of ['start','map']){if(st==='map')await tab(p,'map');await sleep(500);
