@@ -1,6 +1,36 @@
 {
  "w": 601,
  "h": 827,
+ "layers": {
+  "sky": {
+   "src": "assets/village/sky.png",
+   "x": 0,
+   "y": 0,
+   "w": 601,
+   "h": 827
+  },
+  "north": {
+   "src": "assets/village/island-north.png",
+   "x": 149,
+   "y": 27,
+   "w": 282,
+   "h": 223
+  },
+  "mid": {
+   "src": "assets/village/island-mid.png",
+   "x": 14,
+   "y": 167,
+   "w": 584,
+   "h": 508
+  },
+  "south": {
+   "src": "assets/village/island-south.png",
+   "x": 176,
+   "y": 501,
+   "w": 336,
+   "h": 323
+  }
+ },
  "frames": [
   {
    "wall": "left",
@@ -239,6 +269,16 @@
   320.4,
   617.1
  ],
+ "ufo": {
+  "src": "assets/sprites/ufo.png",
+  "box": [
+   116,
+   35,
+   178,
+   91
+  ],
+  "layer": "north"
+ },
  "smoke": [
   [
    44.5,

@@ -417,7 +417,7 @@ def lamp_post(d, x, y, h=40):
 
 
 def quantize(im):
-    return im.quantize(256, method=Image.FASTOCTREE, dither=Image.FLOYDSTEINBERG).convert("RGBA")
+    return im.quantize(256, method=Image.FASTOCTREE, dither=Image.FLOYDSTEINBERG)
 
 
 def build():
@@ -487,8 +487,10 @@ def build():
     # crop to the galaxy glow (plus a small margin), so the island fills the phone's width and no sky is wasted above it
     ox, oy, ex, ey = CROP
     crop = (ox * Z, oy * Z, ex * Z, ey * Z)
-    for name in L:   # each layer gets its own 256-colour palette (with alpha): flat art and smooth sky both stay clean, at a fifth of the size
-        L[name] = quantize(L[name].crop(crop))
+    Q = {}   # each layer gets its own 256-colour palette (with alpha): flat art and smooth sky both stay clean, at a fifth of the size
+    for name in L:
+        Q[name] = quantize(L[name].crop(crop))
+        L[name] = Q[name].convert("RGBA")
     img = L["sky"].copy()
     for name in ("mid", "north", "south"):
         img.alpha_composite(L[name])
@@ -503,14 +505,23 @@ def build():
     sh = Image.new("LA", small.size, (255, 0))
     sh.putalpha(Image.fromarray((neb * 140).astype(np.uint8)).filter(ImageFilter.GaussianBlur(3)))
     sh.save(os.path.join(OUT, "shimmer.png"), optimize=True)
-    img.save(os.path.join(OUT, "village.png"), optimize=True)
+    img.save(os.path.join(OUT, "village.png"), optimize=True)   # the whole village in one image: the fallback if the layers do not load
+    # the layers for the living village (same 601 x 827 space as village.json): the sky, and one cropped image per island.
+    # x, y, w, h say where each cropped image sits; the UFO is not in any layer (assets/sprites/ufo.png floats over the north island)
+    layers = {"sky": dict(src="assets/village/sky.png", x=0, y=0, w=ex - ox, h=ey - oy)}
+    Q["sky"].save(os.path.join(OUT, "sky.png"), optimize=True)
+    for name in ("north", "mid", "south"):
+        x0, y0, x1, y1 = L[name].getchannel("A").point(lambda v: 255 if v else 0).getbbox()
+        x0, y0, x1, y1 = x0 // Z, y0 // Z, -(-x1 // Z), -(-y1 // Z)   # whole canvas units, so the layers line up exactly
+        Q[name].crop((x0 * Z, y0 * Z, x1 * Z, y1 * Z)).save(os.path.join(OUT, "island-%s.png" % name), optimize=True)
+        layers[name] = dict(src="assets/village/island-%s.png" % name, x=x0, y=y0, w=x1 - x0, h=y1 - y0)
     img = small
     folk["ufo"] = ubox
 
     # label anchors (bottom center of each place) and the buttons' hit boxes, in image pixels
     for f in frames:
         f["x"], f["y"] = round(f["x"] - ox, 1), round(f["y"] - oy, 1)
-    out = dict(w=img.width, h=img.height, frames=frames, places={}, folk={}, walkers=[], scenery=[])
+    out = dict(w=img.width, h=img.height, layers=layers, frames=frames, places={}, folk={}, walkers=[], scenery=[])
     sprites = json.load(open(os.path.join(ROOT, "assets", "sprites", "index.json")))
     for k, b in folk.items():
         out["folk"][k] = dict(piece=sprites[k]["piece"], box=[b[0] - ox, b[1] - oy, b[2] - ox, b[3] - oy])
@@ -520,6 +531,7 @@ def build():
         out["scenery"].append(dict(name=name, piece=piece, src=sp["file"], box=[fx - w / 2 - ox, fy - h - oy, fx + w / 2 - ox, fy - oy]))
     # the gate's lantern (in the Hidden Monster cut-out at 105, 216 of 255 x 320), for its 6 s pulse
     out["lantern"] = [round(lx - ox, 1), round(ly - oy, 1)]
+    out["ufo"] = dict(src="assets/sprites/ufo.png", box=[ubox[0] - ox, ubox[1] - oy, ubox[2] - ox, ubox[3] - oy], layer="north")
     nb = folk["noodle-bath"]
     out["smoke"] = [[round((nb[0] + nb[2]) / 2 - ox, 1), round(nb[1] + 18 - oy, 1)]]
     # walkers (content): each walks its route along a path, pauses at the ends, and turns to face where it goes.
