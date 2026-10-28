@@ -309,3 +309,8 @@ new MutationObserver(()=>{if(langDirty&&!document.body.classList.contains("game-
     requestAnimationFrame(()=>requestAnimationFrame(()=>{i.style.transition=""}));
     new MutationObserver(()=>sync(i)).observe(i,{attributes:true,attributeFilter:["style"]})};
   hook();new MutationObserver(hook).observe(tabs,{childList:true})})();
+
+// The Star Catcher time bar scales with transform: game.js still writes style.width, which is mirrored into --tp (0 to 1).
+(()=>{const bar=document.getElementById("gTime");if(!bar)return;
+  const sync=()=>{const w=parseFloat(bar.style.width);if(!isNaN(w)){const v=(w/100).toFixed(3);if(bar.style.getPropertyValue("--tp")!==v)bar.style.setProperty("--tp",v)}};
+  new MutationObserver(sync).observe(bar,{attributes:true,attributeFilter:["style"]});sync()})();

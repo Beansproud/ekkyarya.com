@@ -14,10 +14,9 @@ body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family
 .g-sub{color:#cbbfe3;text-align:center;font-family:Poppins;font-size:.9rem}
 
 /* buttons */
-.g-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#FFB400;color:#2B1342;font-family:Fredoka;font-weight:700;font-size:1.15rem;padding:13px 24px;border-radius:18px;box-shadow:0 6px 0 #b77e00,0 12px 22px rgba(0,0,0,.35);transition:transform .08s,box-shadow .08s}
-.g-btn:active{transform:translateY(5px);box-shadow:0 1px 0 #b77e00,0 4px 10px rgba(0,0,0,.3)}
+.g-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#FFB400;color:#2B1342;font-family:Fredoka;font-weight:700;font-size:1.15rem;padding:13px 24px;border-radius:18px;box-shadow:0 6px 0 #b77e00,0 12px 22px rgba(0,0,0,.35);transition:transform .12s ease-out}
+.g-btn:active{transform:translateY(5px)}
 .g-btn.alt{background:#7ED9B0;box-shadow:0 6px 0 #3f9f74,0 12px 22px rgba(0,0,0,.35)}
-.g-btn.alt:active{box-shadow:0 1px 0 #3f9f74}
 .g-link{color:#cbbfe3;font-size:.85rem;text-decoration:underline;text-underline-offset:3px;font-family:Poppins}
 
 /* start screen */
@@ -137,7 +136,7 @@ body.game-mode #game{display:block;position:fixed;inset:0;color:#fff;font-family
 .g-ahud .pill{color:#fff;background:#2f1f47cc;border:2px solid #3e2a5c;border-radius:16px;padding:6px 12px;font-weight:700;display:inline-flex;align-items:center;gap:6px;font-size:1.05rem}
 .g-ahud .ico{width:20px;height:20px;vertical-align:0}
 .g-time{flex:1;height:12px;border-radius:8px;background:#2f1f47;overflow:hidden;border:2px solid #3e2a5c}
-.g-time i{display:block;height:100%;background:linear-gradient(90deg,#7ED9B0,#FFB400,#FF6B6B);width:100%}
+.g-time i{display:block;height:100%;background:linear-gradient(90deg,#7ED9B0,#FFB400,#FF6B6B);width:100%!important;transform:scaleX(var(--tp,1));transform-origin:left center}
 .g-count{position:absolute;inset:0;display:grid;place-items:center;font-size:6rem;font-weight:700;color:#FFB400;text-shadow:0 8px 0 #2B1342;pointer-events:none;z-index:3}
 .g-count span{animation:countFade .8s var(--ease-move) both}
 @keyframes countFade{0%{opacity:0}25%,75%{opacity:1}100%{opacity:0}}
@@ -747,6 +746,23 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 .t-burst.big{width:42px;height:42px;animation-duration:.6s}
 .t-popin{animation:t-pop .4s ease-out}
 @media (prefers-reduced-motion:reduce){.t-popin{animation:none}}
+
+/* Done reveal ("Yours and Ekky's"): the view and the two pictures rise in with opacity and translate only, then a gentle
+   one-shot glint crosses each picture. Runs once each time the reveal opens; never loops. */
+@keyframes t-revealin{from{opacity:0;translate:0 14px;scale:.96}}
+@keyframes t-glint{0%{opacity:0;scale:.2;rotate:-30deg}45%{opacity:1;scale:1}100%{opacity:0;scale:.6;rotate:20deg}}
+.c-pair figure{position:relative}
+.c-pair figure::before,.c-pair figure::after{content:"";position:absolute;width:20px;height:20px;background:#FFB400;opacity:0;pointer-events:none;
+  clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%)}
+.c-pair figure::before{top:8px;right:10px}
+.c-pair figure::after{left:12px;bottom:46px;width:14px;height:14px}
+.c-reveal.active .c-pair figure{animation:t-revealin .36s ease-out backwards}
+.c-reveal.active .c-pair figure:nth-child(2){animation-delay:.08s}
+.c-reveal.active .c-pair figure::before{animation:t-glint .6s ease-out .5s backwards}
+.c-reveal.active .c-pair figure::after{animation:t-glint .6s ease-out .75s backwards}
+.c-reveal.active .c-pair figure:nth-child(2)::before{animation-delay:.65s}
+.c-reveal.active .c-pair figure:nth-child(2)::after{animation-delay:.9s}
+@media (prefers-reduced-motion:reduce){.c-reveal.active .c-pair figure,.c-reveal.active .c-pair figure::before,.c-reveal.active .c-pair figure::after{animation:none}}
 
 /* Developer 3: touch */
 /* Touch response, added by js/site.js on pointerdown (touch only, once, removed on animationend). Uses the individual
