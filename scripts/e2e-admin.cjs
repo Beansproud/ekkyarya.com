@@ -201,7 +201,7 @@ async function runConfig(browser,url,dev,lang){
   T('merged: links override the built-in ones',async p=>{const c=p.context();await merged(p,c);
     const r=await p.evaluate(()=>({ig:CONFIG.links.instagram,be:CONFIG.links.behance,dom:[...document.querySelectorAll('a[href]')].some(a=>a.href==='https://example.com/qa-ig')}));
     if(r.ig!=='https://example.com/qa-ig')throw new Error('CONFIG.links.instagram not overridden: '+r.ig);if(!/behance/.test(r.be||''))throw new Error('an untouched link was lost: '+r.be);
-    if(!r.dom&&!phone)skip('KNOWN BUG (admin core + shell): desktop [data-link] socials and #mailLink are bound once in js/site.js:222 and ignore merged links/email')});
+    if(!r.dom&&!phone)throw new Error('no anchor on the page uses the overridden Instagram link (desktop [data-link] must follow the merged links)')});
   T('merged: fan art rules are enforced',async p=>{const c=p.context();await merged(p,c);
     const r=await p.evaluate(()=>{const f=PROJECTS.find(x=>x.title==='QA Fan Piece');return f&&{roles:f.roles,own:f.own,col:withRole('coloring').includes(f),stk:withRole('sticker').includes(f),spr:withRole('sprite').includes(f),game:withRole('game').includes(f),village:withRole('village').includes(f),feat:withRole('featured').includes(f)}});
     if(!r)throw new Error('the fan piece was dropped; it should stay in the portfolio');
