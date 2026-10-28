@@ -155,8 +155,8 @@ for(const [w,h] of sizes)for(const scheme of schemes)for(const L of langs){
     if(r.err)record([{el:'Map face',what:r.err,off:99}],'start',combo,fShot);
     else{const it=[
       {el:'Map face',what:'head enclosing-circle centre off the circle centre (x, y: '+rnd(r.ox)+', '+rnd(r.oy)+')',off:Math.hypot(r.ox,r.oy)},
-      {el:'Map face',what:'head vertical: gap above vs below (top gap '+rnd(r.bbox.up)+' px from centre, bottom '+rnd(r.bbox.down)+')',off:Math.abs(r.bbox.dy*2)},
-      {el:'Map face',what:'head horizontal: left vs right (left '+rnd(r.bbox.left)+', right '+rnd(r.bbox.right)+')',off:Math.abs(r.bbox.dx*2)},
+      {el:'Map face',what:'head vertical: gap above vs below (top gap '+rnd(r.bbox.up)+' px from centre, bottom '+rnd(r.bbox.down)+')',off:Math.abs(r.bbox.dy*2),info:true},
+      {el:'Map face',what:'head horizontal: left vs right (left '+rnd(r.bbox.left)+', right '+rnd(r.bbox.right)+')',off:Math.abs(r.bbox.dx*2),info:true},
       {el:'Map face',what:'head touches the circle edge (clearance '+rnd(r.gap)+' px, needs 2)',off:Math.max(0,2-r.gap)},
       {el:'Map face',what:'extreme points\' distance to circle edge differs (top '+rnd(r.ext.top)+', bottom '+rnd(r.ext.bottom)+', left '+rnd(r.ext.left)+', right '+rnd(r.ext.right)+')',off:spreadN([r.ext.top,r.ext.bottom,r.ext.left,r.ext.right]),info:true}];
       record(it,'start',combo,fShot)}
