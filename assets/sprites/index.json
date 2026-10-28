@@ -95,6 +95,22 @@
   "role": "place:home",
   "w": 240
  },
+ "mm-clown": {
+  "cut": "assets/ui",
+  "file": "assets/projects/morumelons/sticker-11.png",
+  "h": 128,
+  "piece": "morumelons",
+  "role": "villager",
+  "w": 128
+ },
+ "mm-popstar": {
+  "cut": "assets/ui",
+  "file": "assets/projects/morumelons/sticker-08.png",
+  "h": 128,
+  "piece": "morumelons",
+  "role": "villager",
+  "w": 128
+ },
  "noodle-bath": {
   "cut": "color",
   "file": "assets/sprites/noodle-bath.png",

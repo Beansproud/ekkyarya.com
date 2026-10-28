@@ -97,11 +97,10 @@ const PROJECTS = [
 // via the lead): "its ekky own collection, can be shown publicly". They live inside the project (portfolio and the Art
 // card's viewer); creative roles (sticker, game, village) can follow where a character fits.
 const MM_DIR="assets/projects/morumelons/morumelons-";
-const MORUMELONS_CAST=[   // working names (no official names yet, docs/morumelons.md)
-  ["Astronaut","Astronaut"],["Robot Pilot","Pilot Robot"],["Mermaid","Putri Duyung"],["Samurai","Samurai"],
-  ["Dino Hoodie","Hoodie Dino"],["Mummy","Mumi"],["Fishbowl Diver","Penyelam Akuarium"],["Unicorn Girl","Gadis Unicorn"],
-  ["Wooden Boy","Bocah Kayu"],["Wizard","Penyihir"],["Clown","Badut"],["Dark Knight","Ksatria Gelap"]
-].map(([en,id],k)=>{const n=MM_DIR+String(k+1).padStart(2,"0");return {img:n+"-thumb.webp",full:n+".webp",anim:n+"-anim.webp",name:{en,id}}});
+const MORUMELONS_CAST=[   // the collection's official names (owner, 10-28 16:2x: a screen recording of the listing); a name is the same in both languages
+  "Astro","Destroyer Mech","Mermaid Princess","Samurai Warrior","Kaiju Costume","Invisible",
+  "Fishbowl Head","Popstar","Living Puppet","Dark Wizard","Clown","Dark Lord"
+].map((nm,k)=>{const n=MM_DIR+String(k+1).padStart(2,"0"),name=nm+" Melon";return {img:n+"-thumb.webp",full:n+".webp",anim:n+"-anim.webp",name:{en:name,id:name}}});
 const MM_STAR=MORUMELONS_CAST[4];   // the Animation step: the dino's fire breath; the Characters step's cover is 02 Robot Pilot (docs/morumelons.md)
 const MORUMELONS_FLOW={flow:"series",steps:[
   {img:"assets/work/thumb/morumelons.jpg",full:"assets/work/morumelons.jpg",caption:{en:"The landing page",id:"Halaman utama"}},
