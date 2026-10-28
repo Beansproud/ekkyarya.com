@@ -1183,6 +1183,8 @@ body.game-mode #lightbox .lb-actions .btn.ghost.lb-dl{border:1.5px solid #2B1342
   #game .g-screen:not(#g-start){padding-top:calc(env(safe-area-inset-top) + 92px)}
   #game .g-screen{padding-bottom:calc(env(safe-area-inset-bottom) + 136px)}
 }
+/* the way back to the game must never hide: where the sidebar stays open (wider than 980 px, e.g. a sideways iPad), Play sits beside it, not under it */
+@media (min-width:981px) and (pointer:coarse){body:not(.game-mode) .g-mode-fab{left:calc(var(--side-w) + 16px)}}
 
 /* ---- Sprint 3: flow ---- */
 /* The project flow in the game's lightbox (light paper in both themes): ink title and arrows. Layout in css/site.css. */
@@ -1201,4 +1203,3 @@ body.game-mode #lightbox .lb-flow{margin-top:2px}
 .aa-steps legend{font-size:14px;font-weight:600;padding:0 4px}
 .aa-steps>small{font-size:13px;opacity:.75}
 .aa-step .aa-meta input{width:100%;box-sizing:border-box;min-height:44px;padding:8px 10px;font:inherit;font-size:16px;color:#2B1342;background:#FFFDF8;border:1.5px solid #E4DCCB;border-radius:2px}
-.aa-steps-list{counter-reset:none}
