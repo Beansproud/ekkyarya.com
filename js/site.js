@@ -255,9 +255,9 @@ function mmPlay(img){const anim=img&&img.dataset.anim;if(!anim||reduceFlow()||im
     img.mmStop=()=>{clearTimeout(img.mmT);img.mmStop=null;if(img.getAttribute("src")===u)img.src=still;URL.revokeObjectURL(u);host.classList.remove("mm-on");delete img.dataset.mmOn};
     img.mmT=setTimeout(img.mmStop,ms+60)},()=>{delete img.dataset.mmOn})}
 const mmStopAll=()=>lb.querySelectorAll("img[data-mm-on]").forEach(i=>i.mmStop&&i.mmStop());
+const MM_INK=["#FFB400","#FF6B6B","#7ED9B0","#B8D5FF"];   // each character sticker's offset shadow, in turn
 const mmName=c=>(c.name&&(c.name[LANG]||c.name.en))||"";
 // the hook (docs/flow.md): a step with a set gets its grid inside the flow box, under the diagram
-const MM_INK=["#FFB400","#FF6B6B","#7ED9B0","#B8D5FF"];   // the character stickers' shadow colours (the flow plates are one lavender)
 function mmRenderSet(box,p,steps){mmStopAll();
   const k=steps.findIndex(st=>Array.isArray(st.set)&&st.set.length>=2),st=k<0?null:steps[k];if(!st)return;
   const still=reduceFlow(),cap=flowCap(st,k),tag=still?"div":"button",sec=document.createElement("section");

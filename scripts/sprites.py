@@ -63,6 +63,10 @@ REUSE = {
     "ghost": dict(piece="doodles", file="assets/ui/ghost.png", role="place:doodle"),
     "astronaut": dict(piece="nft-3", file="assets/ui/astronaut.png", role="place:observatory"),
     "radio-explorer": dict(piece="nft-9", file="assets/ui/radio-explorer.png", role="place:observatory"),
+    # Morumelons characters (sprint 3; owner: "Add the characters to stickers and the village too"), cut by
+    # scripts/morumelons-stickers.py; they open the Morumelons piece
+    "mm-popstar": dict(piece="morumelons", file="assets/projects/morumelons/sticker-08.png", role="villager"),
+    "mm-clown": dict(piece="morumelons", file="assets/projects/morumelons/sticker-11.png", role="villager"),
     "palette": dict(piece="little-planet", file="assets/ui/palette.png", role="sign:gallery"),
     "pen-hand": dict(piece="little-planet", file="assets/ui/pen-hand.png", role="sign:studio"),
     "helmet": dict(piece="nft-3", file="assets/ui/helmet.png", role="sign:observatory"),
