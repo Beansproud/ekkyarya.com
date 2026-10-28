@@ -298,7 +298,7 @@ function zoomAt(k,cx,cy){const ns=Math.max(1,Math.min(2,Z.s*k));if(ns>1&&!Z.base
   // double-tap on empty ground zooms in at that spot (or back out); the +/- buttons stay for mouse users only
   const up=e=>{Z.pts.delete(e.pointerId);if(Z.pts.size<2)Z.pinch=null;if(!Z.pts.size){const st=Z.start;Z.start=null;lifeHold(false);
     if(e.type==="pointerup"&&st&&!Z.moved&&e.pointerType==="touch"&&!e.target.closest(".v-place,.v-label,.v-folk,.v-walker,.v-zoomctl")){const n=performance.now(),d=Z.tap&&Math.hypot(e.clientX-Z.tap.x,e.clientY-Z.tap.y);
-      if(Z.tap&&n-Z.tap.t<320&&d<30){Z.tap=null;buzz(8);geom();if(Z.s>1)zoomTo(1,0,0);else zoomAt(2,e.clientX,e.clientY)}else Z.tap={t:n,x:e.clientX,y:e.clientY}}}};
+      if(Z.tap&&n-Z.tap.t<450&&d<36){Z.tap=null;buzz(8);geom();if(Z.s>1)zoomTo(1,0,0);else zoomAt(2,e.clientX,e.clientY)}else Z.tap={t:n,x:e.clientX,y:e.clientY}}}};
   W.addEventListener("pointerup",up);W.addEventListener("pointercancel",up);
   // a pan or pinch is not a tap on whatever was under the finger
   W.addEventListener("click",e=>{if(Z.moved&&!e.target.closest(".v-zoomctl")){e.stopPropagation();e.preventDefault();Z.moved=false}},true);

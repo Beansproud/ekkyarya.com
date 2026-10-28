@@ -242,7 +242,7 @@ async function runConfig(browser,url,scheme,lang){
   await T('map: double-tap zoom in and out (touch has no +/- buttons)',async p=>{await boot(p);await tab(p,'map');await must(p,'#gMapZoom','no village',8000);await sleep(800);
     const tf=()=>p.evaluate(()=>{const z=document.getElementById('gMapZoom');const s=getComputedStyle(z);return s.transform+'|'+z.getBoundingClientRect().width.toFixed(1)});
     if(await p.evaluate(()=>[...document.querySelectorAll('#gMapWrap [data-zoom]')].some(e=>e.offsetParent)))throw new Error('+/- buttons show on a touch screen');
-    const bb=await p.locator('#gMapWrap').boundingBox(),x=bb.x+14,y=bb.y+14,dbl=async()=>{await p.touchscreen.tap(x,y);await sleep(120);await p.touchscreen.tap(x,y);await sleep(700)};
+    const bb=await p.locator('#gMapWrap').boundingBox(),x=bb.x+14,y=bb.y+14,dbl=async()=>{await p.touchscreen.tap(x,y);await sleep(60);await p.touchscreen.tap(x,y);await sleep(800)};
     const a=await tf();await dbl();const b2=await tf();if(a===b2)throw new Error('double-tap did not zoom in');await dbl();const c=await tf();if(c===b2)throw new Error('double-tap did not zoom out')});
 
   // --- Hire chip on every screen ---
