@@ -143,18 +143,21 @@ async function runConfig(browser,url,scheme,lang){
     const cnt=()=>p.$$eval('#cStickers .c-st',e=>e.length);const n1=await cnt();if(!n1)throw new Error('sticker not added');
     const [x0,y0]=await pos();const st=await p.$eval('#cStage',e=>{const b=e.getBoundingClientRect();return [b.left,b.top,b.width,b.height]});
     const tx=Math.min(st[0]+st[2]*.75,x0+90),ty=Math.min(st[1]+st[3]*.6,y0+90);
-    await p.mouse.move(x0,y0);await p.mouse.down();for(let i=1;i<=10;i++){await p.mouse.move(x0+(tx-x0)*i/10,y0+(ty-y0)*i/10);await sleep(20)}await p.mouse.up();await sleep(400);
+    await p.mouse.move(x0,y0);await p.mouse.down();for(let i=1;i<=10;i++){await p.mouse.move(x0+(tx-x0)*i/10,y0+(ty-y0)*i/10);await sleep(20)}await p.mouse.up();
+    // wait for the result (poll up to 3 s), not a fixed 400 ms: under a loaded CPU the drag and undo can land late
+    const until=async(f,t=3000)=>{const end=Date.now()+t;let v;do{v=await f();if(v)return v;await sleep(100)}while(Date.now()<end);return v};
+    await until(async()=>{const [a,b]=await pos();return Math.hypot(a-x0,b-y0)>=20});
     const [x1,y1]=await pos();if(Math.hypot(x1-x0,y1-y0)<20)throw new Error('dragging the sticker did not move it');
-    await p.tap('#cUndo');await sleep(400);const n2=await cnt();const back=n2?await pos():null;if(n2===n1&&back&&Math.hypot(back[0]-x1,back[1]-y1)<5)throw new Error('undo after a sticker drag changed nothing');
+    await p.tap('#cUndo');await until(async()=>{const n=await cnt();if(n!==n1)return true;const [a,b]=await pos();return Math.hypot(a-x1,b-y1)>=5});const n2=await cnt();const back=n2?await pos():null;if(n2===n1&&back&&Math.hypot(back[0]-x1,back[1]-y1)<5)throw new Error('undo after a sticker drag changed nothing');
     // drop on the bin removes it
     await p.tap('#cStickBtn').catch(()=>{});if(!await cnt()){await p.tap('#cUndo');await sleep(300)}
-    if(!await p.isVisible('#cTray')){await p.tap('#cStickBtn')}await p.tap('#cTray [data-n]');await sleep(500);const n3=await cnt();const [x2,y2]=await pos();
+    if(!await p.isVisible('#cTray')){await p.tap('#cStickBtn')}const n2b=await cnt();await p.tap('#cTray [data-n]');await until(async()=>await cnt()>n2b);await sleep(200);const n3=await cnt();const [x2,y2]=await pos();
     await p.mouse.move(x2,y2);await p.mouse.down();await p.mouse.move(x2+6,y2+6);await p.mouse.move(x2+14,y2+10);await sleep(500);
     const bin=await p.$eval('#cBin',e=>{const b=e.getBoundingClientRect();return [b.left+b.width/2,b.top+b.height/2]});
-    for(let i=1;i<=10;i++)await p.mouse.move(x2+(bin[0]-x2)*i/10,y2+(bin[1]-y2)*i/10);await sleep(300);
-    if(!await p.$eval('#cBin',e=>e.classList.contains('hot')))throw new Error('bin did not light up under the dragged sticker');await p.mouse.up();await sleep(500);
+    for(let i=1;i<=10;i++)await p.mouse.move(x2+(bin[0]-x2)*i/10,y2+(bin[1]-y2)*i/10);await until(()=>p.$eval('#cBin',e=>e.classList.contains('hot')));
+    if(!await p.$eval('#cBin',e=>e.classList.contains('hot')))throw new Error('bin did not light up under the dragged sticker');await p.mouse.up();await until(async()=>await cnt()<n3);
     if(await cnt()>=n3)throw new Error('dropping a sticker on the bin did not delete it');
-    await p.tap('#cUndo');await sleep(400);if(await cnt()<n3)throw new Error('undo did not bring the deleted sticker back')});
+    await p.tap('#cUndo');await until(async()=>await cnt()>=n3);if(await cnt()<n3)throw new Error('undo did not bring the deleted sticker back')});
 
   // --- language switch in place ---
   await T('lang: switch in place, no stale text',async p=>{await boot(p);await p.evaluate(()=>{window.__m=1});
@@ -246,8 +249,10 @@ async function runConfig(browser,url,scheme,lang){
     const a=await tf();await p.tap('[data-zoom="1"]');await sleep(600);const b=await tf();if(a===b)throw new Error('zoom + changed nothing');await p.tap('[data-zoom="-1"]');await sleep(600);const c=await tf();if(c===b)throw new Error('zoom - changed nothing')});
 
   // --- Hire chip on every screen ---
-  const hireOn=async(p,what)=>{if(!await vis(p,'[data-hire]:visible',500))throw new Error('no Hire chip on '+what);
-    await p.evaluate(()=>{const e=[...document.querySelectorAll('[data-hire]')].find(x=>x.offsetParent&&x.getBoundingClientRect().height>0);e.click()});await sleep(900);
+  const hireOn=async(p,what)=>{if(!await vis(p,'[data-hire]:visible',4000))throw new Error('no Hire chip on '+what);
+    await p.evaluate(()=>{const e=[...document.querySelectorAll('[data-hire]')].find(x=>x.offsetParent&&x.getBoundingClientRect().height>0);e.click()});
+    // wait for the sheet to open (state), then let it finish sliding in before the audit
+    await p.waitForFunction(()=>document.getElementById('gSheet').classList.contains('open')||document.querySelectorAll('dialog[open]').length>0,null,{timeout:4000,polling:50}).catch(()=>{});await sleep(600);
     if(!await p.evaluate(()=>document.getElementById('gSheet').classList.contains('open')||[...document.querySelectorAll('dialog[open]')].length>0))throw new Error('Hire sheet did not open from '+what);
     await audit(p,'hire sheet')};
   for(const t of ['start','art','map','mine'])await T('hire chip: '+t,async p=>{await boot(p);if(t!=='start')await tab(p,t);await hireOn(p,t)});
