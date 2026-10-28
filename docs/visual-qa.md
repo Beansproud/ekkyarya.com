@@ -5,3 +5,5 @@
 Measured: the tab bar (3 icons and labels, spacing, baseline, Map face centring), the Map face pixels (head vs circle), the start grid (gutters, gaps, alignment; the polaroid tilt is switched off while measuring), the Hire chip vs the Home button, every sheet header, the coloring picker cards.
 
 Output: `FINDING <screen> | <element> | <what> | <offset> px | <combo> | <screenshot>`, a deduplicated SUMMARY, and INFO lines (measurements that are not rules). Screenshots go to the out dir.
+
+Also measured: the map at 1x, about 1.5x, 2x and 2x panned to two corners (labels sliced, hidden under the chrome, overlapping, off their place; sky covering the frame; flat cuts on island image borders); the admin PIN pad (opened by the real door, 7 logo taps) and every admin tab (top bar, tabs, gutters, 44 px targets). `PARTS=base,map,admin` selects what runs.
