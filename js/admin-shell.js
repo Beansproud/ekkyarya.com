@@ -305,13 +305,13 @@
 
   const HELP = {
     en: `<h2>Help</h2><p><b>PIN and token.</b> The PIN only opens this screen. To publish you also need a GitHub token.</p>
-      <ol><li>On github.com open Settings, Developer settings, Personal access tokens, Fine-grained tokens, then Generate new token.</li>
+      <ol><li>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com: new fine-grained token</a> (or Settings, Developer settings, Personal access tokens, Fine-grained tokens, Generate new token).</li>
       <li>Repository access: only <b>rfim/ekkyarya.com</b>.</li><li>Permissions: <b>Contents</b>, Read and write. Nothing else.</li>
       <li>Pick an expiry date, generate it, copy it and paste it in the box below, then Save token.</li></ol>
       <p><b>Where it is kept.</b> Only in this browser, on this device. It is sent to api.github.com and nowhere else. Press <b>Forget this device</b> to remove it.</p>
       <p>Publish makes one change on the site, live in about a minute. Preview shows your waiting changes on the site without publishing.</p>`,
     id: `<h2>Bantuan</h2><p><b>PIN dan token.</b> PIN hanya membuka layar ini. Untuk menerbitkan kamu juga perlu token GitHub.</p>
-      <ol><li>Di github.com buka Settings, Developer settings, Personal access tokens, Fine-grained tokens, lalu Generate new token.</li>
+      <ol><li>Buka <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com: token fine-grained baru</a> (atau Settings, Developer settings, Personal access tokens, Fine-grained tokens, Generate new token).</li>
       <li>Repository access: hanya <b>rfim/ekkyarya.com</b>.</li><li>Permissions: <b>Contents</b>, Read and write. Tidak ada yang lain.</li>
       <li>Pilih tanggal kedaluwarsa, buat tokennya, salin, tempel di kotak di bawah, lalu Simpan token.</li></ol>
       <p><b>Disimpan di mana.</b> Hanya di browser ini, di perangkat ini. Token hanya dikirim ke api.github.com. Tekan <b>Lupakan perangkat ini</b> untuk menghapusnya.</p>
