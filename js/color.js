@@ -290,10 +290,14 @@ function save(now){updUndo();if(!cur)return;clearTimeout(saveT);const run=()=>{i
   if(now)run();else saveT=setTimeout(()=>window.requestIdleCallback?requestIdleCallback(run,{timeout:1500}):run(),400)}
 
 /* ---- reveal: yours and Ekky's, then the share preview ---- */
-function reveal(){const scratch=cur.pd.id==="scratch",c=$("cYours"),{w,h}=cur.pd.meta;c.width=480;c.height=Math.round(480*h/w);compose(cur,c.getContext("2d"),0,0,480);
-  $("cRevTitle").textContent=scratch?t("color.scratch"):t("reveal.title");$("cEkkyFig").hidden=scratch;$("cEkky").src=scratch?"":cur.pd.meta.original||(bySlug(cur.pd.meta.slug)||{}).full||"";
-  view("cReveal");Game.sfx("level");
-  Game.st.firstDone=1;Game.save()}   // no confetti here: it covered the comparison (share playtest); the reveal itself is the reward
+function reveal(){const s=cur,scratch=s.pd.id==="scratch",c=$("cYours"),{w,h}=s.pd.meta,ek=$("cEkky");
+  c.width=480;c.height=Math.round(480*h/w);
+  $("cRevTitle").textContent=scratch?t("color.scratch"):t("reveal.title");$("cEkkyFig").hidden=scratch;
+  view("cReveal");   // the screen switches on the tap frame; the drawing, the image and the save follow, so the tap never waits on them
+  requestAnimationFrame(()=>{if(cur!==s)return;flushFades();compose(s,c.getContext("2d"),0,0,480,1,cv);Game.sfx("level");Game.st.firstDone=1;Game.save()});   // no confetti here: it covered the comparison (share playtest); the reveal itself is the reward
+  if(scratch){ek.removeAttribute("src");return}
+  ek.style.opacity=0;ek.src=s.pd.meta.original||(bySlug(s.pd.meta.slug)||{}).full||"";
+  ek.decode().catch(()=>{}).then(()=>{ek.style.opacity=""})}
 $("cClose").onclick=close;$("cAgain").onclick=()=>{view("cEdit");sizeStage()};$("cAnother").onclick=openPicker;
 if($("cShare"))$("cShare").onclick=()=>typeof Share!=="undefined"&&Share.openPreview(shareData());
 if($("cDl"))$("cDl").onclick=()=>typeof Share!=="undefined"&&Share.download({...shareData(),name:Game.st.name||""});
