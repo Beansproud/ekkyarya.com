@@ -44,7 +44,7 @@ img,svg{display:block}
 .cats{display:flex;flex-direction:column;gap:8px}
 .cats button:first-child{font-weight:600}
 .side-foot{margin-top:auto;display:flex;flex-direction:column;gap:18px}
-.socials{display:flex;gap:10px}
+.socials{display:flex;flex-wrap:wrap;gap:10px}
 .socials a{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:var(--ink);background:var(--card);border:1px solid var(--line);transition:transform .2s,background .2s,color .2s}
 .socials a:hover{transform:translateY(-3px) rotate(-6deg);background:var(--accent);color:var(--accent-ink)}
 .status{display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--muted)}
@@ -518,6 +518,7 @@ body.game-mode .idle-buddy{left:16px;right:auto;flex-direction:row;bottom:calc(e
 @media (min-width:981px) and (max-width:1100px){
   .theme-toggle #themeLabel{display:none}
 }
+.socials a[hidden]{display:none}
 /* iPhone safe areas (viewport-fit=cover in index.html): keep the classic site off the notch in landscape and the fixed
    buttons above the home bar. env() is 0 on every other device, so nothing moves there. Game mode has its own insets. */
 body:not(.game-mode){padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}

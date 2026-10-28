@@ -226,7 +226,8 @@ const realLink=u=>{try{return new URL(u).pathname.replace(/\/+$/,"").length>0}ca
 // Applied at start-up and again when js/site-data.js merges data/site.json (admin changes to links and email). Hidden, not removed, so a later value can bring them back.
 function applyContact(){
   mail.textContent=CONFIG.email;mail.href="mailto:"+CONFIG.email;
-  document.querySelectorAll("[data-link]").forEach(a=>{const u=CONFIG.links[a.dataset.link];const ok=realLink(u);if(ok)a.href=u;a.style.display=ok?"":"none"});
+  document.querySelectorAll("[data-link]").forEach(a=>{const k=a.dataset.link,u=k==="website"?(CONFIG.links.website||CONFIG.website):CONFIG.links[k];
+    const ok=k==="website"?/^https?:\/\//.test(u||""):realLink(u);if(ok)a.href=u;a.hidden=!ok});
   const noMail=!CONFIG.email;
   document.querySelector(".mail").style.display=noMail?"none":"";
   const em=document.querySelector('.socials a[href="#contact"]');if(em)em.style.display=noMail?"none":"";
