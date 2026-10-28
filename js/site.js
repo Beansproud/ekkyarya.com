@@ -127,7 +127,7 @@ renderCats();
 let shown=12;
 function setFilter(f,keep){
   if(!keep)shown=12;setFilter.cur=f;let n=0;
-  document.querySelectorAll("#filters button").forEach(b=>b.classList.toggle("active",b.dataset.filter===f));
+  document.querySelectorAll("#filters button").forEach(b=>{b.classList.toggle("active",b.dataset.filter===f);b.setAttribute("aria-pressed",b.dataset.filter===f)});
   document.querySelectorAll("#sideCats button").forEach(b=>b.classList.toggle("active",b.dataset.filter===f));
   grid.querySelectorAll(".tile").forEach(t=>{const m=f==="all"||t.dataset.cat===f;t.classList.toggle("hide",!m||n>=shown);t.style.animationDelay=((m?n:0)%12)*45+"ms";if(m)n++;t.classList.add("in")});
   document.getElementById("loadMore").hidden=n<=shown;

@@ -51,7 +51,7 @@ function go(to,fromPop){
   if(!fromPop&&to!==screen){try{history.pushState({s:to},"")}catch(e){}}   // Back returns to the previous screen
   screen=to;G.classList.toggle("at-start",to==="start");G.classList.toggle("at-paper",to==="art"||to==="mine");   // S1: Art and Mine on paper
   G.querySelectorAll(".g-screen").forEach(s=>s.classList.toggle("active",s.id==="g-"+to));
-  G.querySelectorAll(".g-tabs button").forEach(b=>b.classList.toggle("active",b.dataset.tab===to));
+  G.querySelectorAll(".g-tabs button").forEach(b=>{b.classList.toggle("active",b.dataset.tab===to);if(b.dataset.tab===to)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
   if(to==="mine")renderMine();
   if(to==="start"&&dirty.start){dirty.start=false;renderStart()}
   if(to==="art"&&(!artDone||dirty.art)){artDone=true;dirty.art=false;renderArt()}
@@ -313,6 +313,21 @@ $("gMapListBtn").onclick=()=>{const l=$("gMapList"),open=l.hidden,b=$("gMapListB
   if(open)l.querySelector("button")?.focus({preventScroll:true})};
 
 /* ---- sheets ---- */
+/* Keyboard (a11y): a closed overlay is inert, so its buttons leave the Tab order; Tab stays inside the open one on top,
+   Escape closes it and focus goes back to the control that opened it. The sheet keeps its own open/close (below). */
+const OVERS=["gArcade","gShare","gColor"],overFrom={};
+const overOn=()=>OVERS.map(id=>$(id)).find(e=>e&&e.classList.contains("open"));
+function inertOvers(){[...OVERS,"gSheet"].forEach(id=>{const e=$(id);if(!e)return;const on=e.classList.contains("open");
+  if(on&&e.inert)overFrom[id]=document.activeElement;
+  else if(!on&&!e.inert){const f=overFrom[id];overFrom[id]=null;if(id!=="gSheet"&&f&&f.isConnected&&(e.contains(document.activeElement)||document.activeElement===document.body))f.focus({preventScroll:true})}
+  e.inert=!on})}
+addEventListener("load",()=>{const mo=new MutationObserver(inertOvers);[...OVERS,"gSheet"].forEach(id=>{const e=$(id);if(e)mo.observe(e,{attributes:true,attributeFilter:["class"]})});inertOvers()});
+addEventListener("keydown",e=>{if(document.querySelector("dialog[open]"))return;const sh=$("gSheet").classList.contains("open"),o=sh?$("gSheet"):overOn();if(!o)return;
+  if(e.key==="Escape"&&!sh){const x=o.querySelector("#gArcadeX,#sX");if(x)x.click();else if(o.id==="gColor"&&typeof Color!=="undefined")Color.close();return}
+  if(e.key!=="Tab")return;
+  const f=[...o.querySelectorAll('button,a[href],input,select,textarea,[tabindex]:not([tabindex="-1"])')].filter(x=>!x.disabled&&x.getClientRects().length&&!x.closest("[inert],[hidden]"));if(!f.length)return;
+  const a=document.activeElement,i=f.indexOf(a);
+  if(!o.contains(a)){e.preventDefault();f[0].focus()}else if(e.shiftKey&&i===0){e.preventDefault();f[f.length-1].focus()}else if(!e.shiftKey&&i===f.length-1){e.preventDefault();f[0].focus()}});
 const sheet=$("gSheet");let sheetFrom=null;
 // The Hire sheet is the heaviest one (form inputs: first style and layout), so it is built hidden while the app is idle
 // (warmHire) and opening it only slides the finished sheet in. sheetHtml is what the body holds now; a different html
@@ -388,7 +403,7 @@ function renderArt(){
   const list=PROJECTS.map((p,i)=>({p,i})).filter(x=>gFilter==="all"||x.p.cat===gFilter);
   // eight cards now, the rest in idle slices: the first visit lays out a screenful, not the whole grid
   const card=({p,i},k)=>`<button class="g-card" data-i="${i}" style="--tilt:${typeof tiltOf==="function"?tiltOf(p):"-1deg"}"><div class="inner">
-      <span class="gcat">${catImg(p.cat,"")}</span><div class="art">${artOf(p)}</div><div class="info"><b>${esc(ptitle(p))}</b>${p.label?`<span class="g-tag">${esc(plabel(p))}</span>`:""}</div></div></button>`;
+      <span class="gcat">${catImg(p.cat,"")}</span><div class="art" aria-hidden="true">${artOf(p)}</div><div class="info"><b>${esc(ptitle(p))}</b>${p.label?`<span class="g-tag">${esc(plabel(p))}</span>`:""}</div></div></button>`;
   const tok=++artTok,rest=list.slice(8),idle=window.requestIdleCallback||(f=>setTimeout(f,30));
   $("gCards").innerHTML=list.slice(0,8).map(card).join("");
   (function more(){if(tok!==artTok||!rest.length)return;idle(()=>{if(tok!==artTok)return;$("gCards").insertAdjacentHTML("beforeend",rest.splice(0,10).map(card).join(""));more()},{timeout:600})})();
