@@ -190,6 +190,8 @@ function wobPath(seed){const n=24,pts=[];
   return d+"Z"}
 const flowArrow=k=>{const j=4+3*Math.sin(k*2.7);
   return `<svg class="fl-arrow" viewBox="0 0 40 44" aria-hidden="true"><path d="M20 3C${(12+j).toFixed(1)} 14 ${(28-j).toFixed(1)} 24 20 35M11.5 27.5L20 38.5L28.5 28.5"/></svg>`};
+// a node shows only a small thumbnail (built-in pieces have 400 px copies in assets/work/s/); the full picture loads on open
+const flowThumb=src=>src.replace(/^assets\/work\/thumb\/([a-z0-9-]+\.jpg)$/,"assets/work/s/$1");
 const flowCap=(st,k)=>(st.caption&&(st.caption[LANG]||st.caption.en))||t("flow.step",{n:k+1});
 function renderFlow(p){
   lb.classList.remove("fl-viewing");
@@ -205,7 +207,7 @@ function renderFlow(p){
   box.innerHTML=`<h4 class="fl-title">${escH(title)}</h4><ol class="fl-list">${steps.map((st,k)=>{const me=st.full===p.full,cap=flowCap(st,k);
     return `<li class="fl-step" style="--i:${k};--c:${FLOW_INK[k%FLOW_INK.length]}"><button class="fl-node" type="button" data-step="${k}" aria-label="${escH(t("flow.open",{n:k+1,caption:cap}))}"${me?' aria-current="true"':""}>
       <svg class="fl-bub" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path class="fl-sh" d="${wobPath(k+1)}"/><path class="fl-bg" d="${wobPath(k+1)}"/></svg>
-      <span class="fl-num" aria-hidden="true">${k+1}</span><img src="${escH(st.img)}" alt="" loading="lazy" decoding="async">
+      <span class="fl-num" aria-hidden="true">${k+1}</span><img src="${escH(flowThumb(st.img))}" alt="" width="160" height="120" loading="lazy" decoding="async" fetchpriority="low">
       <span class="fl-cap">${escH(cap)}${me?`<small class="fl-this">${escH(t("flow.this"))}</small>`:""}</span></button>${k<steps.length-1?flowArrow(k):""}</li>`}).join("")}</ol>`;
   box.classList.remove("fl-in");void box.offsetWidth;box.classList.add("fl-in");
   // the stable hook (docs/flow.md): extra blocks (e.g. Morumelons' sets and animations) render after the diagram
