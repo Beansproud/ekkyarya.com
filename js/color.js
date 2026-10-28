@@ -105,7 +105,7 @@ async function pageData(id){
     if(!(window.COLOR_PAGE_DATA||{})[id])await loadScript(`assets/color/${id}/page.js`);
     meta=COLOR_PAGE_DATA[id];const map=await loadImg(meta.mapData);
     const c=document.createElement("canvas");c.width=meta.w;c.height=meta.h;const x=c.getContext("2d",{willReadFrequently:true});x.drawImage(map,0,0);
-    const d=x.getImageData(0,0,meta.w,meta.h).data;ids=new Uint16Array(meta.w*meta.h);for(let i=0;i<ids.length;i++)ids[i]=d[i*4]+d[i*4+1]*256}
+    const d=x.getImageData(0,0,meta.w,meta.h).data;c.width=c.height=0;ids=new Uint16Array(meta.w*meta.h);for(let i=0;i<ids.length;i++)ids[i]=d[i*4]+d[i*4+1]*256}
   const k=meta.regions,start=new Int32Array(k+2),idx=new Int32Array(ids.length);
   for(let i=0;i<ids.length;i++)start[ids[i]+1]++;
   for(let r=1;r<=k+1;r++)start[r]+=start[r-1];
@@ -138,6 +138,7 @@ function paint(s,cv){flushFades();const {meta,start,idx,line}=s.pd;cv.width=meta
 // Smooth fills (owner: "some animation is very clunky"): the bounding box of each region is found once and cached, pixels are written
 // as 32-bit words, and a big region is built in slices of at most 10 ms so a 4x slower phone never stalls a frame. The new color
 // then fades in as an overlay canvas whose opacity is animated (compositor only), and is committed to the picture when it ends.
+// Spent scratch canvases are shrunk to 0x0: iOS Safari counts canvas memory against a hard cap and frees it late.
 const fading=[];
 function flushFades(){while(fading.length)fading.shift()()}
 function bboxAll(pd){if(pd.bb)return pd.bb;const {meta,start,idx}=pd,W=meta.w,b=pd.bb=new Int32Array((meta.regions+1)*4);   // every region's box in one pass, when the page opens
@@ -151,10 +152,10 @@ function paintRegion(s,cv,r,fade){flushFades();const {meta,line,ids}=s.pd,W=meta
   for(let v=0;v<16;v++){const c=hexRgb(colorOf(s,v));col[v]=(255<<24|c[2]<<16|c[1]<<8|c[0])>>>0}
   let yy=0;const rows=until=>{for(;yy<h&&performance.now()<until;yy++){const base=(y0+yy)*W+x0,o=yy*w;for(let xx=0;xx<w;xx++)d32[o+xx]=col[fills[ids[base+xx]]]}};
   const done=()=>{bx.putImageData(img,0,0);if(line)bx.drawImage(line,x0,y0,w,h,0,0,w,h);
-    if(!fade||reduce){x.drawImage(box,x0,y0);return}
+    if(!fade||reduce){x.drawImage(box,x0,y0);box.width=box.height=0;return}
     box.className="c-fadein";box.style.cssText=`left:${x0/W*100}%;top:${y0/meta.h*100}%;width:${w/W*100}%;height:${h/meta.h*100}%`;
     stage.insertBefore(box,$("cPeek"));void box.offsetWidth;box.style.opacity=1;
-    let tm=0;const commit=()=>{clearTimeout(tm);const k=fading.indexOf(commit);if(k>=0)fading.splice(k,1);if(box.parentNode){x.drawImage(box,x0,y0);box.remove()}};
+    let tm=0;const commit=()=>{clearTimeout(tm);const k=fading.indexOf(commit);if(k>=0)fading.splice(k,1);if(box.parentNode){x.drawImage(box,x0,y0);box.remove()}box.width=box.height=0};
     fading.push(commit);tm=setTimeout(commit,270)};
   rows(performance.now()+10);if(yy>=h)return done();
   const tick=()=>{rows(performance.now()+10);yy>=h?done():requestAnimationFrame(tick)};requestAnimationFrame(tick)}
@@ -288,7 +289,7 @@ function popSticker(k){const el=$("cStickers").children[k];if(el){el.classList.a
 /* ---- autosave to Mine ---- */
 let saveT=0;
 function save(now){updUndo();if(!cur)return;clearTimeout(saveT);const run=()=>{if(!cur)return;const st=Game.st;st.colorings=st.colorings||{};
-  let thumb="";try{const c=document.createElement("canvas");c.width=240;c.height=Math.round(240*cur.pd.meta.h/cur.pd.meta.w);flushFades();compose(cur,c.getContext("2d"),0,0,240,1,cv);thumb=c.toDataURL("image/jpeg",.7)}catch{}
+  let thumb="";try{const c=document.createElement("canvas");c.width=240;c.height=Math.round(240*cur.pd.meta.h/cur.pd.meta.w);flushFades();compose(cur,c.getContext("2d"),0,0,240,1,cv);thumb=c.toDataURL("image/jpeg",.7);c.width=c.height=0}catch{}
   st.colorings[cur.pd.id]={title:cur.title,fills:[...cur.fills],custom:cur.custom,stickers:cur.stickers.map(s=>({n:s.n,x:+s.x.toFixed(4),y:+s.y.toFixed(4),s:+s.s.toFixed(4),r:+s.r.toFixed(4)})),undo:cur.undo.slice(-UNDO_KEEP),at:Date.now(),thumb};Game.save();updUndo()};
   if(now)run();else saveT=setTimeout(()=>window.requestIdleCallback?requestIdleCallback(run,{timeout:1500}):run(),400)}
 
