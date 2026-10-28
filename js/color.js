@@ -5,7 +5,8 @@
 const Color=(()=>{
 const G=document.getElementById("game");
 // A page with a switch stays hidden until FEATURES turns it on (Road Trip waits for Ekky's OK on the lines).
-const PAGES=[{id:"giraffe",slug:"giraffe"},{id:"road-trip",slug:"road-trip",flag:"pageRoadTrip"},{id:"monster",slug:"monster",flag:"pageMonster"},{id:"little-planet",slug:"little-planet",flag:"pageLittlePlanet"},{id:"hands",slug:"hands",flag:"pageHands"},{id:"noodles",slug:"noodles",flag:"pageNoodles"},{id:"shark",slug:"shark",flag:"pageShark"},{id:"summertime",slug:"summertime",flag:"pageSummertime"},{id:"virus-and-war",slug:"virus-and-war",flag:"pageVirusAndWar"},{id:"day-in-life",slug:"day-in-life"},{id:"plug-hero",slug:"plug-hero",flag:"pagePlugHero"}];
+// The 12 Morumelons first (owner, 10-28: "my kid would like to love every morumelon" to color, "make morumelon at top of the lists")
+const PAGES=[...Array.from({length:12},(_,k)=>({id:"mm-"+String(k+1).padStart(2,"0"),slug:"morumelons"})),{id:"giraffe",slug:"giraffe"},{id:"road-trip",slug:"road-trip",flag:"pageRoadTrip"},{id:"monster",slug:"monster",flag:"pageMonster"},{id:"little-planet",slug:"little-planet",flag:"pageLittlePlanet"},{id:"hands",slug:"hands",flag:"pageHands"},{id:"noodles",slug:"noodles",flag:"pageNoodles"},{id:"shark",slug:"shark",flag:"pageShark"},{id:"summertime",slug:"summertime",flag:"pageSummertime"},{id:"virus-and-war",slug:"virus-and-war",flag:"pageVirusAndWar"},{id:"day-in-life",slug:"day-in-life"},{id:"plug-hero",slug:"plug-hero",flag:"pagePlugHero"}];
 // The Doodle Scene: a plain paper page with one region (the background) and Ekky's palette.
 const SCRATCH={id:"scratch",slug:null,title:"Doodle Scene",w:800,h:1000,regions:1,
   colors:["#FFFFFF","#FFF4D6","#FFE08A","#FFB400","#FF6B6B","#F4C2D7","#C9A7FF","#9C91BD","#B8D5FF","#7ED9B0","#3E7C6A","#2B1342"]};
@@ -39,6 +40,9 @@ const STICKERS=[
 ];
 const MAX_STICKERS=12, MAX_CUSTOM=3;
 const bySlug=s=>PROJECTS.find(p=>p.slug===s);
+// a Morumelons page is titled by its character's official name (js/data.js MORUMELONS_CAST), not the project's
+const pieceOf=(id,slug)=>{const pr=bySlug(slug),m=/^mm-(\d+)$/.exec(id||""),c=m&&MORUMELONS_CAST[m[1]-1];
+  return pr&&c?{...pr,title:c.name.en,id:{...(pr.id||{}),title:c.name.id}}:pr};
 const okSlug=s=>s==null||creative(bySlug(s));
 const pages=()=>PAGES.filter(p=>okSlug(p.slug)&&(!p.flag||feature(p.flag)));
 const stickers=()=>feature("stickers")?STICKERS.filter(s=>okSlug(s.from)):[];
@@ -125,7 +129,7 @@ function close(){
 
 /* ---- picker ---- */
 function openPicker(){
-  $("cPages").innerHTML=pages().map((p,i)=>{const pr=bySlug(p.slug);return `<button class="c-page" data-page="${p.id}" style="--i:${i}"><img src="assets/color/${p.id}/line.png" alt="" loading="lazy"><b>${esc(ptitle(pr))}</b></button>`}).join("")+
+  $("cPages").innerHTML=pages().map((p,i)=>{const pr=pieceOf(p.id,p.slug);return `<button class="c-page" data-page="${p.id}" style="--i:${i}"><img src="assets/color/${p.id}/line.png" alt="" loading="lazy"><b>${esc(ptitle(pr))}</b></button>`}).join("")+
     (feature("doodleScene")?`<button class="c-page c-scratch" data-page="scratch" style="--i:${pages().length}">${ico("i-plus")}<b>${esc(t("color.scratch"))}</b><small>${esc(t("color.scratch.sub"))}</small></button>`:"");
   view("cPick");setTimeout(()=>$("cPickX").focus({preventScroll:true}),50)}
 $("cPages").addEventListener("click",e=>{const b=e.target.closest("[data-page]");if(b){Game.buzz(10);Game.sfx("tap");const im=b.querySelector("img"),r=(im||b).getBoundingClientRect();open(b.dataset.page,{from:{left:r.left,top:r.top,w:r.width}})}});
@@ -275,7 +279,7 @@ async function open(id,opts={}){
   const saved=opts.fresh?null:(Game.st.colorings||{})[id];
   cur=makeState(pd,saved);color=pd.id==="scratch"?2:1;   // the Doodle Scene starts on white paper with a soft cream brush; yellow stays a swatch
   
-  const pr=bySlug(pd.meta.slug),title=id==="scratch"?t("color.scratch"):pr?ptitle(pr):pd.meta.title;cur.title=title;
+  const pr=pieceOf(pd.id,pd.meta.slug),title=id==="scratch"?t("color.scratch"):pr?ptitle(pr):pd.meta.title;cur.title=title;
   $("cTitle").textContent=title;$("cCanvas").setAttribute("aria-label",title+". "+t("color.hint"));stage.style.aspectRatio=`${pd.meta.w}/${pd.meta.h}`;
   $("cPeek").src=id==="scratch"?"":pd.meta.original||(bySlug(pd.meta.slug)||{}).full||"";$("cPeekBtn").hidden=id==="scratch";
   cur.base=mk(1,1);cur.inkC=mk(1,1);liveAll();renderColors();renderStickers();renderKit();$("cTray").hidden=true;
@@ -492,7 +496,7 @@ function shareData(){const s=cur;return {art:s.pd.meta.slug||null,page:s.pd.id,g
 
 /* ---- arrival: a friend's coloring link (js/links.js) ---- */
 async function showArrival(id,fills,custom,stks,from){let pd;try{pd=await pageData(id)}catch{return false}
-  const s=makeState(pd,{fills,custom,stickers:stks}),pr=bySlug(pd.meta.slug),title=id==="scratch"?t("color.scratch"):ptitle(pr);s.title=title;
+  const s=makeState(pd,{fills,custom,stickers:stks}),pr=pieceOf(pd.id,pd.meta.slug),title=id==="scratch"?t("color.scratch"):ptitle(pr);s.title=title;
   const c=$("cArriveCanvas");c.width=560;c.height=Math.round(560*pd.meta.h/pd.meta.w);
   await Promise.all(s.stickers.map(x=>{const im=imgOf(x.n);return im.complete?0:new Promise(r=>{im.onload=im.onerror=r})}));
   compose(s,c.getContext("2d"),0,0,560);
@@ -520,7 +524,7 @@ function relang(){
   // A closed overlay keeps "active" on its last view, so only redraw views while the overlay is open.
   const shown=over.classList.contains("open");
   if(shown&&$("cPick").classList.contains("active"))openPicker();
-  if(cur){const pr=bySlug(cur.pd.meta.slug);cur.title=cur.pd.id==="scratch"?t("color.scratch"):pr?ptitle(pr):cur.pd.meta.title;$("cTitle").textContent=cur.title;
+  if(cur){const pr=pieceOf(cur.pd.id,cur.pd.meta.slug);cur.title=cur.pd.id==="scratch"?t("color.scratch"):pr?ptitle(pr):cur.pd.meta.title;$("cTitle").textContent=cur.title;
     $("cRevTitle").textContent=cur.pd.id==="scratch"?t("color.scratch"):t("reveal.title");renderColors();renderOpts();
     if(!$("cTray").hidden)$("cTray").innerHTML=stickers().map(s=>`<button class="c-tray-st" data-n="${s.n}" aria-label="${esc(nm("color.sticker","Sticker {n}",s.n))}"><img src="${s.src}" alt=""></button>`).join("")}
   if(shown&&arriveRe&&$("cArrive").classList.contains("active"))arriveRe()}

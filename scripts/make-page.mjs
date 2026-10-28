@@ -40,6 +40,15 @@ const PAGES = {
   "virus-and-war": { slug: "virus-and-war", lineMax: 78, inkSoft: 92 },
   "shark": { slug: "shark", lineMax: 110, inkSoft: 130, blueFillR: 8 },
 };
+// The 12 Morumelons (owner, 10-28: "my kid would like to color every morumelon"): each page is one character's poster
+// (src), under the Morumelons project's slug; title is the character's official name (js/data.js MORUMELONS_CAST)
+["Astro", "Destroyer Mech", "Mermaid Princess", "Samurai Warrior", "Kaiju Costume", "Invisible", "Fishbowl Head", "Popstar",
+  "Living Puppet", "Dark Wizard", "Clown", "Dark Lord"].forEach((nm, k) => {
+  const n = String(k + 1).padStart(2, "0");
+  const dark = [1, 6, 10, 12].includes(k + 1);   // night and shadow backgrounds sit close to the ink: a tighter threshold keeps them colorable
+  PAGES["mm-" + n] = { slug: "morumelons", src: `assets/projects/morumelons/morumelons-${n}.webp`, title: nm + " Melon",
+    lineMax: dark ? 44 : 66, inkSoft: dark ? 52 : 84 };
+});
 const MIN_AREA = 40, COLORS = 12;
 // Color split: areas above SPLIT_AREA px are divided by up to SPLIT_K of their own colors; patches under SPECK px fold
 // into the neighbor they touch, and colors closer than SPLIT_MERGE (RGB distance) count as one.
@@ -165,7 +174,7 @@ function build({ w, h, px }) {
     const h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return (h * 60 + 360) % 360 };
   const colors = cent.slice().sort((a, b) => hue(a) - hue(b)).map(hex);
   return { line: pngLines(w, h, line), regions: png(w, h, regions), own, k,
-    json: JSON.stringify({ page: name, slug: page.slug, title: piece.title, w, h, regions: k, colors,
+    json: JSON.stringify({ page: name, slug: page.slug, title: page.title || piece.title, w, h, regions: k, colors,
       ekky: regionColor.map(hex), original: `assets/color/${name}/original.jpg`, crop: page.crop || null, line: "line.png", map: "regions.png" }, null, 1) + "\n" };
 }
 // Split the big areas along Ekky's color shapes. Inside one area: k-means over its pixel colors (fixed start: the most
@@ -223,7 +232,7 @@ function splitByColor(px, w, h, id, k) {
 function dist(a, b) { return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]) }
 function nearest(cs, p) { let best = 0, bd = Infinity; cs.forEach((c, j) => { const d = dist(c, p); if (d < bd) { bd = d; best = j } }); return best }
 
-const img = await decode(piece.full, page.crop);
+const img = await decode(page.src || piece.full, page.crop);
 const out = build(img);
 const dir = join(ROOT, "assets", "color", name);
 if (flag === "--verify") {

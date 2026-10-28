@@ -105,7 +105,7 @@ async function runConfig(browser,url,scheme,lang){
   const waitIdle=async p=>{await sleep(500);for(let i=0;i<30;i++){if(!await p.evaluate(()=>document.getAnimations().some(a=>a.playState==='running'&&a.effect&&a.effect.target&&a.effect.target.closest&&a.effect.target.closest('#gColor'))))break;await sleep(100)}await sleep(300)};
   const openColor=async(p,page)=>{await p.tap('[data-go=color]');await must(p,'#cPages .c-page','picker has no pages');
     if(!await p.isVisible('#cPick'))throw new Error('picker not visible');
-    const id=page||await p.evaluate(()=>[...document.querySelectorAll('#cPages .c-page:not(.c-scratch)')][0].dataset.page);
+    const id=page||'giraffe';   // the tool tests measure on the giraffe; the 12 Morumelons now open the list (owner, 10-28), see 'color: Morumelons pages'
     await sleep(600);   // the picker slides in; a tap during the slide can be lost
     for(let k=0;k<3;k++){await p.tap(`#cPages .c-page[data-page="${id}"]`);if(await vis(p,'#cEdit #cCanvas',5000))break}
     await must(p,'#cEdit #cCanvas','editor did not open',8000);await waitIdle(p);return id};
@@ -164,6 +164,12 @@ async function runConfig(browser,url,scheme,lang){
     const all=[pts[0]];for(let i=1;i<pts.length;i++)for(let k=1;k<=6;k++)all.push([pts[i-1][0]+(pts[i][0]-pts[i-1][0])*k/6,pts[i-1][1]+(pts[i][1]-pts[i-1][1])*k/6]);
     await tp('touchStart',all[0]);for(const q of all.slice(1)){await tp('touchMove',q);await sleep(16)}await tp('touchEnd');await cdp.detach().catch(()=>{});await sleep(250)};
   const tool=async(p,k)=>{await p.tap(`#cKit [data-tool=${k}]`);await sleep(150);if(!await p.$eval(`#cKit [data-tool=${k}]`,e=>e.getAttribute('aria-checked')==='true'))throw new Error(k+' tool not on after tap')};
+  // owner: "my kid would like to love every morumelon" (to color) / "make morumelon at top of the lists": 12 pages first, each with its character's name
+  await T('color: Morumelons pages lead the list, a fill works',async p=>{await boot(p);await p.tap('[data-go=color]');await must(p,'#cPages .c-page','picker has no pages');
+    const ids=await p.$$eval('#cPages .c-page:not(.c-scratch)',a=>a.map(e=>e.dataset.page));
+    if(ids.slice(0,12).join()!==Array.from({length:12},(_,k)=>'mm-'+String(k+1).padStart(2,'0')).join())throw new Error('first pages: '+ids.slice(0,13));
+    await sleep(600);await p.tap('#cPages .c-page[data-page="mm-05"]');await must(p,'#cEdit #cCanvas','editor did not open',8000);await sleep(800);const t=await p.textContent('#cTitle');if(!/Kaiju Costume Melon/.test(t))throw new Error('title '+t);
+    const s=await bigShape(p);await snap(p);await p.touchscreen.tap(s.x,s.y);await sleep(500);if((await diff(p,s.r)).in<200)throw new Error('fill did nothing')});
   await T('color tools: brush stays inside the touched shape, eraser rubs it out',async p=>{await boot(p);await openColor(p);const s=await bigShape(p);await tool(p,'brush');await p.tap('#cOpts [data-size="2"]');await audit(p,'brush tool');
     await snap(p);await drag(p,[[s.x-44,s.y],[s.x,s.y+4],[s.x+44,s.y]]);const d=await diff(p,s.r);
     if(d.in<200)throw new Error('brush changed only '+d.in+' pixels in its shape');if(d.out>0)throw new Error('brush leaked into '+d.out+' pixels of other shapes');
