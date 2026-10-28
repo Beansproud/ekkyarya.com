@@ -375,10 +375,12 @@ function openHire(prefill,pl){const l=LEVELS[4];
     </form>`+madeFrom(pl));
   const c=$("gCopyMail");if(c)c.onclick=async()=>{try{await navigator.clipboard.writeText(CONFIG.email);say(t("hire.copied"),"i-check")}catch{say(CONFIG.email)}};
 }
+$("gSheetBody").addEventListener("input",e=>{const i=e.target;if(i.classList&&i.classList.contains("bad")&&i.validity.valid){i.classList.remove("bad");i.setAttribute("aria-invalid","false");i.parentElement.querySelector(".err").textContent=""}});
 $("gSheetBody").addEventListener("submit",e=>{e.preventDefault();const f=e.target;let ok=true;
-  f.querySelectorAll("[required]").forEach(i=>{const m=i.validity.valueMissing?"This one's needed":i.validity.tooShort?"A few more words, please":"";
-    i.parentElement.querySelector(".err").textContent=m;if(m)ok=false});
-  if(!ok){buzz([20,40,20]);if(!reduce)f.animate([{transform:"translateX(0)"},{transform:"translateX(-8px)"},{transform:"translateX(8px)"},{transform:"translateX(0)"}],{duration:300});return}
+  let first=null;   // empty fields are marked in place (red line plus a hint under each), the first one takes focus; no toast
+  f.querySelectorAll("[required]").forEach(i=>{const m=i.validity.valueMissing?t("hire.form.need"):i.validity.tooShort?t("hire.form.more"):"";
+    i.parentElement.querySelector(".err").textContent=m;i.classList.toggle("bad",!!m);i.setAttribute("aria-invalid",m?"true":"false");if(m){ok=false;first=first||i}});
+  if(!ok){buzz([20,40,20]);if(!reduce)f.animate([{transform:"translateX(0)"},{transform:"translateX(-8px)"},{transform:"translateX(8px)"},{transform:"translateX(0)"}],{duration:300});first.focus();return}
   const d=Object.fromEntries(new FormData(f));sfx("level");if(typeof confetti==="function")confetti();
   const go=CONFIG.email?`mailto:${CONFIG.email}?subject=${encodeURIComponent(d.type+" project from "+d.name)}&body=${encodeURIComponent(d.message+"\n\n"+d.name)}`:hireTarget().href;
   // the result stays inside the sheet (a toast at the top of the screen was clipped): what happens, and that it worked

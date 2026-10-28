@@ -968,3 +968,12 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 
 /* ===== Map fit (art critic a1): the village spans the screen width, through the 16 px side gutters ===== */
 #g-map .v-map{max-width:none;margin:auto 0;align-self:center;flex-shrink:0}
+/* Hire form: an empty field is marked in place */
+.g-sheet label .err{color:#B3261E;font-size:.82rem;font-weight:600;min-height:0}
+.g-sheet label .err:empty{display:none}
+.g-sheet input.bad,.g-sheet textarea.bad{border-color:#B3261E;box-shadow:0 2px 0 #B3261E}
+/* every sheet ends above the tab bar (and its raised centre button), so nothing of a sheet is ever under it */
+.g-sheet .g-sheet-in{bottom:calc(env(safe-area-inset-bottom) + 108px);border-radius:30px;padding-bottom:28px;max-height:calc(100% - env(safe-area-inset-top) - 68px - env(safe-area-inset-bottom) - 108px)}
+.g-sheet .g-sheet-in{transform:translateY(calc(100% + 140px))}
+.g-sheet.open .g-sheet-in{transform:none}
+#game:has(.c-over.open) .g-sheet .g-sheet-in{bottom:calc(env(safe-area-inset-bottom) + 12px);max-height:calc(100% - env(safe-area-inset-top) - 80px)}
