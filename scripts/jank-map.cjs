@@ -10,19 +10,20 @@ const openMap=p=>p.tap('.g-tabs button[data-tab="map"]');
 const CASES=[
  ['Map tab opens',async p=>{await sleep(500)},async p=>{await openMap(p)},2500],
  ['10 s idle on the map',async p=>{await openMap(p);await sleep(3000)},async()=>{},10000],
+ ['tabs map>art>map (awake)',async p=>{await openMap(p);await sleep(6500)},async p=>{await p.tap('.g-tabs button[data-tab="art"]');await sleep(900);await openMap(p)},1200],
  ['pan, zoomed',async p=>{await openMap(p);await sleep(3000);const b=await p.locator('#gMapWrap').boundingBox();await p.touchscreen.tap(b.x+14,b.y+14);await sleep(120);await p.touchscreen.tap(b.x+14,b.y+14);await sleep(900)},
   async p=>{const b=await p.locator('#gMapWrap').boundingBox(),x=b.x+b.width/2,y=b.y+b.height/2;await p.mouse.move(x,y);await p.mouse.down();
    for(let i=1;i<=30;i++){await p.mouse.move(x-i*4,y+i*2);await sleep(16)}await p.mouse.up()},800]];
 const stats=f=>{let over=0,worst=0;for(let i=1;i<f.length;i++){const d=f[i]-f[i-1];if(d>32)over++;if(d>worst)worst=d}return {n:f.length-1,over,worst:Math.round(worst)}};
 srv.listen(0,async()=>{const url=`http://localhost:${srv.address().port}/`,b=await chromium.launch(),rows=[];
- for(const [name,setup,run,settle] of CASES){if(process.env.ONLY&&!name.includes(process.env.ONLY))continue;let best=null,err='';
+ for(const [name,setup,run,settle] of CASES){if(process.env.ONLY&&!name.includes(process.env.ONLY))continue;let best=null,err='';const all=[];
   for(let k=0;k<RUNS;k++){const c=await b.newContext({...IPHONE});await c.addInitScript(()=>{try{localStorage.setItem('lang','en')}catch(e){}});const p=await c.newPage();
    try{await p.goto(url+'?game=1');await p.waitForSelector('#g-start.active',{state:'visible',timeout:8000});await sleep(8000);
     const cdp=await c.newCDPSession(p);await cdp.send('Emulation.setCPUThrottlingRate',{rate:RATE});
     await p.evaluate(()=>{window.__f=[];window.__rec=true;const l=t=>{if(window.__rec)window.__f.push(t);requestAnimationFrame(l)};requestAnimationFrame(l)});
     await setup(p);await p.evaluate(()=>{window.__f=[]});await run(p);await sleep(settle);
-    const s=stats(await p.evaluate(()=>{window.__rec=false;return window.__f}));if(!best||s.over>best.over||(s.over===best.over&&s.worst>best.worst))best=s}
+    const s=stats(await p.evaluate(()=>{window.__rec=false;return window.__f}));all.push(s);if(!best||s.over>best.over||(s.over===best.over&&s.worst>best.worst))best=s}
    catch(e){err=String(e.message).split('\n')[0].slice(0,80)}await c.close()}
-  rows.push({name,best,err})}
- await b.close();srv.close();console.log(`\nCPU ${RATE}x, ${RUNS} run(s) each (worst run)`);console.log('action'.padEnd(26)+'frames'.padStart(8)+'>32ms'.padStart(8)+'worst ms'.padStart(10));
- for(const r of rows)console.log(r.name.padEnd(26)+(r.best?String(r.best.n).padStart(8)+String(r.best.over).padStart(8)+String(r.best.worst).padStart(10):'  ERROR '+r.err));process.exit(0)});
+  const med=k=>{const v=all.map(x=>x[k]).sort((a,b)=>a-b);return v.length?v[v.length>>1]:0};if(best){best.mo=med('over');best.mw=med('worst')}rows.push({name,best,err})}
+ await b.close();srv.close();console.log(`\nCPU ${RATE}x, ${RUNS} run(s) each (worst run)`);console.log('action'.padEnd(26)+'frames'.padStart(8)+'>32ms'.padStart(8)+'worst ms'.padStart(10)+'  median >32 / worst');
+ for(const r of rows)console.log(r.name.padEnd(26)+(r.best?String(r.best.n).padStart(8)+String(r.best.over).padStart(8)+String(r.best.worst).padStart(10)+('  '+r.best.mo+' / '+r.best.mw):'  ERROR '+r.err));process.exit(0)});
