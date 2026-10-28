@@ -253,7 +253,8 @@ async function runConfig(browser,url,dev,lang){
   const merged=async(p,c)=>{if(!SITEDATA)skip('js/site-data.js not landed yet');await route(c,JSON.stringify(site));await boot(p);if(!await waitFor(()=>p.evaluate(()=>PROJECTS.some(x=>x.title==='QA New Piece')),5000))throw new Error('a project added in data/site.json is not in PROJECTS')};
   T('merged: an added project shows on the site',async p=>{const c=p.context();await merged(p,c);
     if(!phone){if(!await waitFor(()=>p.evaluate(()=>document.body.innerText.includes('QA New Piece')||[...document.querySelectorAll('img')].some(i=>/QA New/.test(i.alt))),4000))throw new Error('QA New Piece is in PROJECTS but not on the page')}
-    else{await p.tap('.g-tabs button[data-tab="art"]');await sleep(900);if(!await p.evaluate(()=>document.querySelector('#g-art').innerText.includes('QA New Piece')||[...document.querySelectorAll('#g-art img')].some(i=>/QA New/.test(i.alt))))throw new Error('QA New Piece is not in the Art tab')}});
+    // the Art tab draws 8 cards at once and the rest in idle slices, so wait for the card rather than a fixed time
+    else{await p.tap('.g-tabs button[data-tab="art"]');if(!await waitFor(()=>p.evaluate(()=>document.querySelector('#g-art').innerText.includes('QA New Piece')||[...document.querySelectorAll('#g-art img')].some(i=>/QA New/.test(i.alt))),4000))throw new Error('QA New Piece is not in the Art tab')}});
   T('merged: a hidden project disappears',async p=>{const c=p.context();await merged(p,c);
     if(await p.evaluate(()=>PROJECTS.some(x=>x.title==='Hidden Monster')))throw new Error('Hidden Monster still in PROJECTS');
     if(await p.evaluate(()=>[...document.querySelectorAll('body *')].some(e=>!e.children.length&&e.getClientRects().length&&getComputedStyle(e).visibility!=='hidden'&&(/Hidden Monster/.test(e.textContent)||/Hidden Monster/.test(e.alt||'')))))throw new Error('Hidden Monster still visible on the page')});
@@ -292,6 +293,12 @@ async function runConfig(browser,url,dev,lang){
     await p.fill('#aaTe','QA Steps');
     await p.setInputFiles('#aaStepFile',[img2,img]);if(!await waitFor(()=>p.evaluate(()=>document.querySelectorAll('#qaArt .aa-step').length===2),8000))throw new Error('two step pictures were not added');
     await p.click('#aaStepSelf');if(await p.$$eval('#qaArt .aa-step',n=>n.length)!==3)throw new Error('the piece itself was not added as a step');
+    // Edit a step picture in the image editor (stubbed): a result replaces it, Cancel (null) leaves it untouched
+    const thumb0=()=>p.$eval('#qaArt .aa-step[data-k="0"] img',i=>i.getAttribute('src'));const before=await thumb0();
+    await p.evaluate(()=>{window.AdminEditor={open:()=>null}});await p.click('[data-sedit="0"]');await sleep(300);if(await thumb0()!==before)throw new Error('Cancel in the editor changed the step picture');
+    await p.evaluate(()=>{window.AdminEditor={open:()=>new Promise(r=>{const c=document.createElement('canvas');c.width=c.height=40;c.getContext('2d').fillRect(0,0,40,40);c.toBlob(r,'image/png')})}});
+    await p.click('[data-sedit="0"]');if(!await waitFor(async()=>(await thumb0())!==before,4000))throw new Error('an edited step picture did not replace the old one');
+    if(await p.$('[data-sedit="2"]'))throw new Error('the piece\'s own picture should be edited with the main Edit, not as a step');
     await p.fill('[data-cap-en="0"]','First sketch');await p.fill('[data-cap-id="0"]','Sketsa pertama');
     await p.click('[data-sdel="1"]');if(await p.$$eval('#qaArt .aa-step',n=>n.length)!==2)throw new Error('remove did not remove');
     if(await p.inputValue('[data-cap-en="0"]')!=='First sketch')throw new Error('a caption was lost on redraw');

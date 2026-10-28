@@ -24,7 +24,7 @@
       steps: "Project flow (optional)", stepsHint: "The pictures of this project in order: sketch, process, final, or more from the same project. 2 to 8 pictures; the site draws them as a diagram.",
       flowKind: "What the pictures show", flowKinds: { process: "How it was made (sketch to final)", series: "More from the same project" },
       stepAdd: "Add pictures", stepSelf: "Add this piece's own picture", stepCapEn: "Caption (English)", stepCapId: "Caption (Bahasa Indonesia)", stepPhEn: "English", stepPhId: "Indonesian",
-      stepN: "Picture {n}", stepThis: "this piece", stepRemove: "Remove picture",
+      stepN: "Picture {n}", stepThis: "this piece", stepRemove: "Remove picture", stepEdit: "Edit",
       e: { img: "Choose an image.", titleEn: "Add an English title.", descEn: "Add an English description.", titleId: "Add an Indonesian title.", descId: "Add an Indonesian description.",
         emoji: "Remove emoji and symbols from", cat: "Pick a category.", kind: "Pick a kind.", dup: "Another piece already has this title.", fan: "Fan art can only have portfolio and card.", client: "Client work can only have portfolio and card.", feat: "Only your own original pieces can be featured.", six: "At most six featured pieces.", role: "Unknown role", ref: "A featured or hidden entry points to a piece that does not exist",
         stepsMin: "A project flow needs at least 2 pictures (or none).", stepsMax: "A project flow holds at most 8 pictures.", stepCap: "Write the caption in both languages, or leave both empty, for picture", stepLong: "Keep the caption under 60 characters, picture" }
@@ -49,7 +49,7 @@
       steps: "Alur proyek (boleh kosong)", stepsHint: "Gambar-gambar proyek ini secara berurutan: sketsa, proses, final, atau gambar lain dari proyek yang sama. 2 sampai 8 gambar; situs menggambarnya sebagai diagram.",
       flowKind: "Isi gambarnya", flowKinds: { process: "Proses pembuatan (sketsa sampai final)", series: "Gambar lain dari proyek yang sama" },
       stepAdd: "Tambah gambar", stepSelf: "Tambahkan gambar karya ini", stepCapEn: "Keterangan (Inggris)", stepCapId: "Keterangan (Bahasa Indonesia)", stepPhEn: "Inggris", stepPhId: "Indonesia",
-      stepN: "Gambar {n}", stepThis: "karya ini", stepRemove: "Hapus gambar",
+      stepN: "Gambar {n}", stepThis: "karya ini", stepRemove: "Hapus gambar", stepEdit: "Sunting",
       e: { img: "Pilih gambar.", titleEn: "Isi judul bahasa Inggris.", descEn: "Isi deskripsi bahasa Inggris.", titleId: "Isi judul bahasa Indonesia.", descId: "Isi deskripsi bahasa Indonesia.",
         emoji: "Hapus emoji dan simbol dari", cat: "Pilih kategori.", kind: "Pilih jenis.", dup: "Karya lain sudah memakai judul ini.", fan: "Fan art hanya boleh portofolio dan kartu.", client: "Karya klien hanya boleh portofolio dan kartu.", feat: "Hanya karya asli yang boleh dipilih.", six: "Paling banyak enam karya pilihan.", role: "Peran tidak dikenal", ref: "Ada entri pilihan atau sembunyi yang menunjuk karya yang tidak ada",
         stepsMin: "Alur proyek butuh paling sedikit 2 gambar (atau kosongkan).", stepsMax: "Alur proyek paling banyak 8 gambar.", stepCap: "Tulis keterangan dalam dua bahasa, atau kosongkan keduanya, untuk gambar", stepLong: "Keterangan maksimal 60 karakter, gambar" }
@@ -246,7 +246,7 @@
           <div class="aa-meta"><b>${esc(t.stepN.replace("{n}", k + 1))}${x.self ? ` <small>(${esc(t.stepThis)})</small>` : ""}</b>
             <input type="text" maxlength="60" data-cap-en="${k}" aria-label="${esc(t.stepCapEn)}" placeholder="${esc(t.stepPhEn)}" value="${esc(x.caption.en)}">
             <input type="text" maxlength="60" data-cap-id="${k}" aria-label="${esc(t.stepCapId)}" placeholder="${esc(t.stepPhId)}" value="${esc(x.caption.id)}"></div>
-          <div class="aa-act"><button type="button" class="aa-btn" data-sup="${k}" aria-label="${esc(t.up)}"${k ? "" : " disabled"}>${ICON.up}</button>
+          <div class="aa-act">${x.self ? "" : `<button type="button" class="aa-btn aa-txt" data-sedit="${k}" aria-label="${esc(t.stepEdit + ": " + t.stepN.replace("{n}", k + 1))}">${esc(t.stepEdit)}</button>`}<button type="button" class="aa-btn" data-sup="${k}" aria-label="${esc(t.up)}"${k ? "" : " disabled"}>${ICON.up}</button>
             <button type="button" class="aa-btn" data-sdown="${k}" aria-label="${esc(t.down)}"${k < st.length - 1 ? "" : " disabled"}>${ICON.down}</button>
             <button type="button" class="aa-btn" data-sdel="${k}" aria-label="${esc(t.stepRemove)}">${ICON.x}</button></div></li>`).join("")}</ol>` : ""}
         <div class="aa-bar"><label class="aa-btn aa-txt aa-file${full ? " aa-dim" : ""}">${esc(t.stepAdd)}<input id="aaStepFile" type="file" accept="image/*" multiple${full ? " disabled" : ""}></label>
@@ -260,12 +260,19 @@
       box.querySelectorAll("[data-sup]").forEach(b => b.onclick = () => move(+b.dataset.sup, +b.dataset.sup - 1));
       box.querySelectorAll("[data-sdown]").forEach(b => b.onclick = () => move(+b.dataset.sdown, +b.dataset.sdown + 1));
       box.querySelectorAll("[data-sdel]").forEach(b => b.onclick = () => { readForm(); f.steps.splice(+b.dataset.sdel, 1); redo(); });
+      // Edit a step picture in the image editor (docs/admin-editor.md); Cancel leaves it untouched
+      box.querySelectorAll("[data-sedit]").forEach(b => b.onclick = async () => {
+        readForm(); const x = f.steps[+b.dataset.sedit]; if (!x) return;
+        const blob = await editImage(x.src || x.full, lang()).catch(() => null); if (!blob) return;
+        try { const r = await resizeFile(blob); x.files = r; x.src = blob; x.preview = r.thumb.url; } catch (err) { return; }
+        redo();
+      });
       const self = box.querySelector("#aaStepSelf");
       if (self) self.onclick = () => { readForm(); f.steps.push({ self: true, img: "", full: "", caption: { en: "", id: "" } }); redo(); };
       box.querySelector("#aaStepFile").onchange = async e => {
         const files = Array.from(e.target.files || []).slice(0, 8 - f.steps.length); if (!files.length) return;
         readForm(); f.busy = true; el.querySelector("#aaBusy").textContent = T().resizing;
-        for (const file of files) { try { const r = await resizeFile(file); f.steps.push({ img: "", full: "", files: r, preview: r.thumb.url, caption: { en: "", id: "" } }); } catch (err) { /* skip a file the browser cannot read */ } }
+        for (const file of files) { try { const r = await resizeFile(file); f.steps.push({ img: "", full: "", files: r, src: file, preview: r.thumb.url, caption: { en: "", id: "" } }); } catch (err) { /* skip a file the browser cannot read */ } }
         f.busy = false; redo();
       };
       // drag by the handle (pointer events, so a finger works too)
@@ -366,7 +373,7 @@
       const steps = f.steps.map(x => {
         const c = { en: x.caption.en.trim(), id: x.caption.id.trim() };
         if (x.self) return { img: piece.img, full: piece.full, caption: c };
-        if (x.files && !x.full) { const n = freeName(); x.full = `assets/work/u/${slug}-s${n}.jpg`; x.img = `assets/work/thumb/u/${slug}-s${n}.jpg`; }
+        if (x.files && !/^assets\/work\/u\//.test(x.full || "")) { const n = freeName(); x.full = `assets/work/u/${slug}-s${n}.jpg`; x.img = `assets/work/thumb/u/${slug}-s${n}.jpg`; }
         return { img: x.img, full: x.full, caption: c };
       });
       if (steps.length) { piece.flow = f.flow === "series" ? "series" : "process"; piece.steps = steps; }
