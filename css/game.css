@@ -865,3 +865,8 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 @keyframes cPop{from{opacity:0;transform:translateY(14px) scale(.92)}}
 .c-pages .c-page{animation:cPop .28s var(--ease-move,ease-out) backwards;animation-delay:calc(var(--i,0) * 30ms)}
 @media (prefers-reduced-motion:reduce){.c-pages .c-page{animation:none}}
+
+/* Shell squad */
+.g-screen:not(.active){content-visibility:hidden;contain-intrinsic-size:auto 100vh}   /* hidden screens cost no style, layout or paint */
+.g-card .art,#g-mine .art{animation:none!important}   /* the shimmer moved background-position: a main-thread repaint of every card on each frame of a tab switch; a still paper tile instead */
+.g-screen:not(.active){transition:none}   /* only the incoming screen animates: one layer to composite, not two */
