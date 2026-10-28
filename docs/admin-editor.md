@@ -65,3 +65,11 @@ quality 0.95; the form then runs the usual `resizeFile`. Cancel returns nothing 
 `AdminEditor.open(source, {lang})` takes a Blob, File, image URL or canvas and resolves to a Blob, or `null` on Cancel.
 `AdminEditor.debug()` returns the size, layers and history count, and `AdminEditor.sample(x, y)` the flattened colour
 at a picture pixel; `scripts/e2e-admin.cjs` uses them to test the editor without the admin PIN.
+
+## The hook in the Art tab
+
+The only change in `js/admin-art.js`: an "Edit" (ID "Sunting") button next to the chosen picture, and
+`AdminArt.editImage(src, lang)`, which loads the editor on first use and resolves to the edited Blob or `null`. The
+form keeps the picked file (`form.src`) so a second Edit continues from the last result; an existing piece opens from
+its `full` path. The flow squad's step pictures (`docs/flow.md`) can use the same call: an Edit button next to a step
+runs `AdminArt.editImage(step file or step.full)` and feeds the Blob to `resizeFile` like a newly picked file.
