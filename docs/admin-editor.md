@@ -77,5 +77,8 @@ runs `AdminArt.editImage(step file or step.full)` and feeds the Blob to `resizeF
 ## Reversible (owner rule, sprint 3)
 
 - Cancel, Esc and the phone's Back close the editor and return nothing: the form keeps its picture exactly as it was.
+  Esc and Back first close what is open inside (the phone panel, then a crop frame in progress); with unsaved edits they
+  ask "Leave the editor without your changes?" and "stay" keeps everything. The editor has its own browser history
+  entry (a capture `popstate` listener), so Back never reaches the admin or game screen under it.
 - Inside the editor every step is in History and can be undone; Reset goes back to the opened picture (and can be redone).
 - After Apply the form shows "Back to original" ("Kembali ke asli"), which restores the picture as it was first picked.
