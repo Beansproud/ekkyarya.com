@@ -835,3 +835,16 @@ body.game-mode #game.at-paper{background:var(--paper,#FBF7EE) var(--grain);color
 
 /* the Art grid draws and lays out only the cards near the screen (smoother tab switch and scroll) */
 #gCards .g-card{content-visibility:auto;contain-intrinsic-height:auto 230px}
+
+/* APK chip on the start page (owner, 10-28): a small amber pill with a soft glow that breathes three times on arrival and
+   then stays lit; the link around it keeps a 44 px tap area. Shown only on Android browsers by js/site.js. */
+.g-apk{display:inline-flex;align-items:center;min-height:44px;min-width:44px;margin:-12px -4px -12px 0;padding:0 4px;text-decoration:none;color:#2B1342}
+.g-apk[hidden]{display:none!important}
+.g-apk b{position:relative;display:inline-flex;align-items:center;gap:3px;height:24px;padding:0 9px 0 7px;border-radius:999px;background:#FFB400;
+  font:700 .74rem/1 Fredoka,sans-serif;letter-spacing:.02em;box-shadow:0 0 0 1.5px #2B1342,0 0 10px rgba(255,180,0,.75)}
+.g-apk .ico{width:12px;height:12px;color:#2B1342}
+.g-apk b::after{content:"";position:absolute;inset:-5px;border-radius:inherit;background:radial-gradient(closest-side,rgba(255,180,0,.6),transparent);
+  z-index:-1;opacity:.45;animation:apkGlow 1.6s ease-in-out 3}
+@keyframes apkGlow{0%,100%{opacity:.45;scale:1}50%{opacity:1;scale:1.3}}
+.g-apk:active b{scale:.92}
+@media (prefers-reduced-motion:reduce){.g-apk b::after{animation:none}}
