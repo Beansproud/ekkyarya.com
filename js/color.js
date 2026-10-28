@@ -254,7 +254,7 @@ async function open(id,opts={}){
   $("cTitle").textContent=title;$("cCanvas").setAttribute("aria-label",title+". "+t("color.hint"));stage.style.aspectRatio=`${pd.meta.w}/${pd.meta.h}`;
   $("cPeek").src=id==="scratch"?"":pd.meta.original||(bySlug(pd.meta.slug)||{}).full||"";$("cPeekBtn").hidden=id==="scratch";
   cur.base=mk(1,1);cur.inkC=mk(1,1);liveAll();renderColors();renderStickers();renderKit();$("cTray").hidden=true;
-  view("cEdit");sizeStage();updUndo();
+  zReset();view("cEdit");sizeStage();updUndo();
   // shared-element feel: the page grows from the card that was tapped (transform and opacity only, one shot)
   if(opts.from&&stage.animate&&!matchMedia("(prefers-reduced-motion:reduce)").matches){const r=stage.getBoundingClientRect(),k=opts.from.w/r.width;
     if(r.width&&isFinite(k))stage.animate([{transformOrigin:"0 0",transform:`translate(${opts.from.left-r.left}px,${opts.from.top-r.top}px) scale(${k})`,opacity:.4},{transformOrigin:"0 0",transform:"none",opacity:1}],{duration:320,easing:"cubic-bezier(.2,.8,.2,1)"})}
@@ -303,7 +303,7 @@ $("cWNo").addEventListener("click",closeWheel);
 $("cWYes").addEventListener("click",()=>{addCustom(hsl2hex(hsl));closeWheel()});
 wheel.addEventListener("keydown",e=>{if(e.key==="Escape"){e.stopPropagation();closeWheel()}});
 /* a touch fill feels alive: a quick ripple from the tap point and a tiny pop of the swatch (about 300 ms; the CSS turns both off under reduced motion) */
-function fillPop(e){const r=stage.getBoundingClientRect(),d=document.createElement("i");d.className="c-ripple";d.style.cssText=`left:${e.clientX-r.left}px;top:${e.clientY-r.top}px;--c:${colorOf(cur,color)}`;
+function fillPop(e){const r=stage.getBoundingClientRect(),d=document.createElement("i");d.className="c-ripple";d.style.cssText=`left:${(e.clientX-r.left)/zoom.z}px;top:${(e.clientY-r.top)/zoom.z}px;--c:${colorOf(cur,color)}`;
   stage.appendChild(d);setTimeout(()=>d.remove(),400);
   const sw=$("cColors").querySelector(".c-sw.on");if(sw&&sw.animate&&!reduce.matches)sw.animate([{transform:"scale(.8)"},{transform:"none"}],{duration:300,easing:"cubic-bezier(.34,1.56,.64,1)"})}
 function pagePoint(e){const r=cv.getBoundingClientRect();return [(e.clientX-r.left)/r.width*cur.pd.meta.w,(e.clientY-r.top)/r.height*cur.pd.meta.h]}
@@ -328,23 +328,27 @@ $("cOpts").addEventListener("click",e=>{const b=e.target.closest(".c-op");if(!b)
 // Every change is one Undo step; a new change clears Redo.
 function push(u){cur.undo.push(u);cur.redo.length=0}
 stage.addEventListener("pointerdown",e=>{if(!cur)return;if(gest){joinGesture(e);return}if(e.target.closest(".c-st"))return;
-  if(draw)return;   // one finger draws; a second finger on the page is ignored
+  if(pinch)return;
+  if(draw){if(e.pointerType==="touch"&&draw.pointer==="touch")startPinch(e);return}   // a second finger zooms and pans; the first finger's stroke is let go
   const [x,y]=pagePoint(e),{w,h}=cur.pd.meta;if(x<0||y<0||x>=w||y>=h)return;const r=regionAt(x,y),c=colorOf(cur,color);
-  if(tool==="fill"||tool==="pattern"){if(!r)return;const f=tool==="pattern"?{k:pat,a:c}:null,old=cur.fx[r]||0;
-    if(cur.fills[r]===color&&JSON.stringify(old||null)===JSON.stringify(f))return;
-    push([r,cur.fills[r],old]);cur.fills[r]=color;if(f)cur.fx[r]=f;else delete cur.fx[r];paintRegion(cur,r);Game.sfx("fill");Game.buzz(8);save();if(e.pointerType!=="mouse")fillPop(e);return}
-  if(tool==="fade"){if(!r)return;mask(cur.pd,r)}
-  draw={id:e.pointerId,r,cx:e.clientX,cy:e.clientY,x,y,moved:false,done:0,k:cv.width/cv.getBoundingClientRect().width};
+  if(!r&&tool!=="brush"&&tool!=="eraser"&&e.pointerType!=="touch")return;
+  if(tool==="fade"&&r)mask(cur.pd,r);
+  draw={pointer:e.pointerType,id:e.pointerId,r,cx:e.clientX,cy:e.clientY,x,y,moved:false,done:0,k:cv.width/cv.getBoundingClientRect().width};
   if(tool==="brush"||tool==="eraser"){const op={c:tool==="eraser"?"#000000":c,w:SIZES[size]*(tool==="eraser"?1.4:1),r:free?0:r,p:[Math.round(x),Math.round(y)]};if(tool==="eraser")op.e=1;draw.op=op;inkSoon()}
   try{stage.setPointerCapture(e.pointerId)}catch{}e.preventDefault()});
 let inkRaf=0;const inkSoon=()=>{if(!inkRaf)inkRaf=requestAnimationFrame(inkFrame)};
 // Strokes draw once per frame, only the new points, and only their box is composed again (no full repaint per move).
 function inkFrame(){inkRaf=0;if(!draw||!draw.op||!cur)return;const n=draw.op.p.length/2;if(draw.done>=n)return;
   refresh(inkOp(cur.pd,cur.inkC.getContext("2d"),draw.op,Math.max(0,draw.done-1)));draw.done=n}
-stage.addEventListener("pointermove",e=>{if(!draw||e.pointerId!==draw.id)return;if(Math.hypot(e.clientX-draw.cx,e.clientY-draw.cy)>8)draw.moved=true;
+stage.addEventListener("pointermove",e=>{if(pinch){movePinch(e);return}if(!draw||e.pointerId!==draw.id)return;draw.lx=e.clientX;draw.ly=e.clientY;if(Math.hypot(e.clientX-draw.cx,e.clientY-draw.cy)>8)draw.moved=true;
   if(!draw.op)return;const p=draw.op.p,evs=e.getCoalescedEvents?e.getCoalescedEvents():[e];
   for(const ev of (evs.length?evs:[e])){const [x,y]=pagePoint(ev),a=Math.round(x),b=Math.round(y);if(Math.hypot(a-p[p.length-2],b-p[p.length-1])>=2.5)p.push(a,b)}inkSoon()});
-function endDraw(e){if(!draw||e.pointerId!==draw.id)return;const d=draw;draw=null;if(inkRaf){cancelAnimationFrame(inkRaf);inkRaf=0}
+// Fill and Pattern act when the finger lifts (on the shape first touched), so a two-finger zoom never fills a shape by accident.
+function fillAt(e,r){const c=colorOf(cur,color),f=tool==="pattern"?{k:pat,a:c}:null,old=cur.fx[r]||0;
+  if(!r||cur.fills[r]===color&&JSON.stringify(old||null)===JSON.stringify(f))return;
+  push([r,cur.fills[r],old]);cur.fills[r]=color;if(f)cur.fx[r]=f;else delete cur.fx[r];paintRegion(cur,r);Game.sfx("fill");Game.buzz(8);save();if(e.pointerType!=="mouse")fillPop(e)}
+function endDraw(e){if(pinch){endPinch(e);return}if(!draw||e.pointerId!==draw.id)return;const d=draw;draw=null;if(inkRaf){cancelAnimationFrame(inkRaf);inkRaf=0}
+  if(tool==="fill"||tool==="pattern"){if(e.type==="pointerup")fillAt(e,d.r);return}
   if(d.op){const n=d.op.p.length/2;if(d.done<n)refresh(inkOp(cur.pd,cur.inkC.getContext("2d"),d.op,Math.max(0,d.done-1)));
     if(d.op.e&&!d.moved&&d.r){   // a tap with the eraser clears the shape back to paper: its color, gradient or pattern and the ink inside it
       const r=d.r;push(["m",[[r,cur.fills[r],cur.fx[r]||0],["ink","pop"]]]);cur.ink.push({x:r});cur.fills[r]=0;delete cur.fx[r];
@@ -355,6 +359,20 @@ function endDraw(e){if(!draw||e.pointerId!==draw.id)return;const d=draw;draw=nul
     const f=d.moved?{k:"lin",a:A,b,p:[d.x,d.y,x,y].map(Math.round)}:{k:"rad",a:A,b,p:[Math.round(d.x),Math.round(d.y),Math.round(Math.max(...[[x0,y0],[x1,y0],[x0,y1],[x1,y1]].map(([u,v])=>Math.hypot(u-d.x,v-d.y))))]};
     push([r,cur.fills[r],cur.fx[r]||0]);cur.fills[r]=color;cur.fx[r]=f;paintRegion(cur,r);Game.sfx("fill");Game.buzz(8);save();if(e.pointerType!=="mouse")fillPop(e)}}
 const inkCount=()=>cur.ink.reduce((n,o)=>n+(o.p?o.p.length:1),0);
+/* ---- two fingers: pinch to zoom (1x to 4x) and pan; the page is moved with a transform only, once per frame, and comes back to 1x when let go near it ---- */
+let pinch=null,zoom={z:1,x:0,y:0},zRaf=0;
+const zApply=()=>{zRaf=0;stage.style.transform=zoom.z===1&&!zoom.x&&!zoom.y?"":`translate3d(${zoom.x}px,${zoom.y}px,0) scale(${zoom.z})`};
+function zReset(){zoom={z:1,x:0,y:0};pinch=null;zApply()}
+function startPinch(e){const d=draw;draw=null;if(inkRaf){cancelAnimationFrame(inkRaf);inkRaf=0}if(d&&d.op)redrawInk();   // the first finger's unfinished stroke is dropped
+  const P=new Map([[d.id,[d.lx??d.cx,d.ly??d.cy]],[e.pointerId,[e.clientX,e.clientY]]]);try{stage.setPointerCapture(e.pointerId)}catch{}
+  const R=stage.getBoundingClientRect();pinch={P,a:[...P.values()].map(v=>v.slice()),z0:{...zoom},w:stage.offsetWidth,h:stage.offsetHeight,O:[R.left-zoom.x,R.top-zoom.y]}}
+function endPinch(e){pinch.P.delete(e.pointerId);if(pinch.P.size)return;pinch=null;if(zoom.z<1.08){zoom={z:1,x:0,y:0};if(!zRaf)zRaf=requestAnimationFrame(zApply)}}
+function movePinch(e){if(!pinch.P.has(e.pointerId))return;pinch.P.set(e.pointerId,[e.clientX,e.clientY]);const [a,b]=pinch.a,[c,d]=[...pinch.P.values()],o=pinch.z0;
+  const z=Math.max(1,Math.min(4,o.z*Math.hypot(c[0]-d[0],c[1]-d[1])/(Math.hypot(a[0]-b[0],a[1]-b[1])||1))),m0=[(a[0]+b[0])/2,(a[1]+b[1])/2],m1=[(c[0]+d[0])/2,(c[1]+d[1])/2];
+  // the page point under the fingers' first midpoint stays under their midpoint now (O: the page's unmoved corner); never past the page's edges
+  const px=(m0[0]-pinch.O[0]-o.x)/o.z,py=(m0[1]-pinch.O[1]-o.y)/o.z;
+  zoom={z,x:Math.min(0,Math.max(pinch.w*(1-z),m1[0]-pinch.O[0]-z*px)),y:Math.min(0,Math.max(pinch.h*(1-z),m1[1]-pinch.O[1]-z*py))};
+  if(!zRaf)zRaf=requestAnimationFrame(zApply)}
 stage.addEventListener("pointerup",endDraw);stage.addEventListener("pointercancel",endDraw);
 // Undo history survives leaving and reopening a page (the owner: "undo button is not working in mewarnai": the colors came
 // back but the history did not, so Undo looked active and did nothing). The button is disabled when there is nothing to undo.
