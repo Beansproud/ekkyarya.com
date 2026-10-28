@@ -23,6 +23,10 @@ probe_pid=$!
 links=$(git ls-files -s | awk '$1==120000{print $4}')
 [ -z "$links" ] && ok symlinks || no symlinks "$links"
 
+# 1b. No leftover merge conflict markers (a stray one reached a squad branch on 2026-10-28).
+cm=$(git grep -nE '^(<<<<<<<|=======|>>>>>>>)( |$)' -- '*.css' '*.js' '*.mjs' '*.cjs' '*.html' '*.json' 2>/dev/null | head -3)
+[ -z "$cm" ] && ok markers || no markers "$cm"
+
 # 2. Content rules (emoji, fan art and client pieces only in PROJECTS).
 chk(){ node scripts/check.mjs >"$OUT/check.txt" 2>&1 && grep -q '^check passed' "$OUT/check.txt"; }
 # A check that printed nothing at all (killed under load) is retried; a real failure prints its reason.
