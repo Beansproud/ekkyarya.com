@@ -490,3 +490,8 @@ body.game-mode .idle-buddy{left:16px;right:auto;flex-direction:row;bottom:calc(e
 @media (min-width:1000px){
   .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
+
+/* Desktop: the Doodle to Done band hangs evenly around the page column, so its heading lines up with the other headings */
+@media (min-width:1000px){
+  .process-band{margin:0 calc(clamp(20px,8vw,150px) - clamp(24px,6vw,100px))}
+}
