@@ -116,6 +116,13 @@ Owner, 2026-10-29: "kaya icon2 itu gaween bisa diganti ya"; "add option to chang
   Places (`SiteData.PLACES`, CSS selectors in `js/site-data.js`): `hire` (the Hire Ekky button everywhere), `tabArt`,
   `tabMap`, `sketch`, `collab`, `stars`, `fab`, `playColor`, `playStars`, `heroWave`, `dividers`. A place takes one of the
   18 icons (and then follows the chosen style) or his own uploaded picture. Back to built-in undoes it.
+- **New art as an icon (owner: "if he upload some image, give him option to devour the image and became icon or
+  something component of the web or not"):** after a new picture is saved in the Art tab (`admin:art-saved`), admin asks
+  "Also use this art on the site?": "No, just the art" (nothing else changes) or "Make it an icon or button picture":
+  zoom and move a square crop, remove the background (flooded away from the edges, with a "how much" slider), then pick
+  where it goes: replace one icon everywhere, or only one button or place. Esc and Cancel change nothing. Only Ekky's
+  own pieces (`kind: "original"`) are offered, never fan art or client work. "Make an icon from your art" in the Icons
+  tab does the same for any of his own published pieces.
 - **Contract in `data/site.json`:**
   `"icons": {"style": "<style>", "map": {"<built-in icon>": "assets/ui/u/<file>.png"}, "places": {"<place>": "<built-in icon or assets/ui/u/<file>.png>"}}`.
   Files are written to `assets/ui/u/` (lowercase, digits and `-`, `.png` only); the shell refuses any other path. New

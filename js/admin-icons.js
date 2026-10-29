@@ -19,6 +19,15 @@ const AdminIcons = (() => {
     placesTitle: ["Icons for buttons and places", "Ikon untuk tombol dan tempat"],
     placesNote: ["Pick which icon one button or spot shows. The rest of the site keeps its icons.", "Pilih ikon untuk satu tombol atau tempat. Bagian lain situs tetap memakai ikonnya."],
     choose: ["Choose icon", "Pilih ikon"], hide: ["Done choosing", "Selesai memilih"], builtinPlace: ["Back to built-in", "Kembali ke bawaan"],
+    cancel: ["Cancel", "Batal"],
+    dvAsk: ["Also use this art on the site?", "Pakai juga karya ini di situs?"],
+    dvAskNote: ["It can become an icon or the picture on a button. The piece itself stays in your art either way.", "Bisa jadi ikon atau gambar di tombol. Karyanya tetap ada di daftar karyamu."],
+    dvYes: ["Make it an icon or button picture", "Jadikan ikon atau gambar tombol"], dvNo: ["No, just the art", "Tidak, cukup jadi karya"],
+    dvTitle: ["Make an icon from your art", "Buat ikon dari karyamu"], dvZoom: ["Zoom", "Perbesar"], dvX: ["Left and right", "Kiri dan kanan"], dvY: ["Up and down", "Atas dan bawah"],
+    dvCut: ["Remove the background", "Hapus latar belakang"], dvTol: ["How much background", "Seberapa banyak latar"],
+    dvWhere: ["Where does it go?", "Dipakai di mana?"], dvIcon: ["Replace an icon everywhere", "Ganti satu ikon di semua tempat"], dvPlace: ["Only on one button or place", "Hanya di satu tombol atau tempat"],
+    dvUse: ["Use it", "Pakai"], dvPick: ["Pick where it goes first.", "Pilih dulu tempatnya."], dvDone: ["Done. Preview or Publish at the top.", "Selesai. Pratinjau atau Terbitkan di atas."],
+    fromArt: ["Make an icon from your art", "Buat ikon dari karyamu"], fromArtNote: ["Your own pieces only: fan art and client work stay as art.", "Hanya karyamu sendiri: fan art dan karya klien tetap jadi karya."],
     ownPlace: ["My own picture", "Gambarku sendiri"], chosen: ["chosen", "dipilih"], current: ["In use:", "Dipakai:"], fail: ["Could not make the icons: ", "Gagal membuat ikon: "]
   };
   const STYLES = [
@@ -198,6 +207,83 @@ const AdminIcons = (() => {
             <label class="ai-btn" tabindex="0" role="button" data-own="place-${id}">${esc(s("ownPlace"))}<input type="file" accept="image/png,image/webp,image/jpeg,image/gif" data-pfile="${id}" hidden></label></div>` : ""}</div>`; }).join("")}</div>`;
   }
 
+  // ---- devour: a piece of art becomes an icon or the picture of a button/place ----
+  // Opened after a new piece is saved in the Art tab ("admin:art-saved"), or from "Make an icon from your art" here.
+  const dv = { on: false, ask: false, bm: null, title: "", zoom: 1, x: 0.5, y: 0.5, cut: true, tol: 40, target: null, list: false, err: "" };
+  function dvCanvas() {
+    const W = 256, cv = document.createElement("canvas"); cv.width = W; cv.height = W;
+    const b = dv.bm; if (!b) return cv;
+    const side = Math.min(b.width, b.height) / dv.zoom, sx = (b.width - side) * dv.x, sy = (b.height - side) * dv.y;
+    const x = cv.getContext("2d"); x.imageSmoothingQuality = "high"; x.drawImage(b, sx, sy, side, side, 0, 0, W, W);
+    if (dv.cut) {   // flood the background away from the edges: pixels close to the edge colour become see-through
+      const im = x.getImageData(0, 0, W, W), d = im.data, seen = new Uint8Array(W * W), q = [];
+      let r = 0, g = 0, bl = 0, n = 0;
+      for (let i = 0; i < W; i++) for (const p of [i, (W - 1) * W + i, i * W, i * W + W - 1]) { r += d[p * 4]; g += d[p * 4 + 1]; bl += d[p * 4 + 2]; n++; }
+      r /= n; g /= n; bl /= n;
+      const near = p => Math.abs(d[p * 4] - r) + Math.abs(d[p * 4 + 1] - g) + Math.abs(d[p * 4 + 2] - bl) < dv.tol * 3;
+      for (let i = 0; i < W; i++) for (const p of [i, (W - 1) * W + i, i * W, i * W + W - 1]) if (!seen[p] && near(p)) { seen[p] = 1; q.push(p); }
+      while (q.length) { const p = q.pop(), px = p % W, py = (p / W) | 0; d[p * 4 + 3] = 0;
+        for (const o of [px > 0 ? p - 1 : -1, px < W - 1 ? p + 1 : -1, py > 0 ? p - W : -1, py < W - 1 ? p + W : -1]) if (o >= 0 && !seen[o] && near(o)) { seen[o] = 1; q.push(o); } }
+      x.putImageData(im, 0, 0);
+    }
+    return cv;
+  }
+  async function devour(src, title, ask) {
+    ctx = ctx || (window.Admin && window.Admin.ctx); if (!ctx) return;
+    try { dv.bm = await (src instanceof Blob ? createImageBitmap(src) : loadImg(src)); } catch (e) { return; }
+    Object.assign(dv, { on: true, ask: !!ask, title: title || "", zoom: 1, x: 0.5, y: 0.5, cut: true, tol: 40, target: null, list: false, err: "" });
+    dvPaint(ask ? "[data-dv=yes]" : "[data-dv=zoom]");
+  }
+  function dvClose() { dv.on = false; dv.bm = null; const o = document.getElementById("aiDevour"); if (o) o.remove(); const t = document.querySelector("#adminRoot .adm-main"); if (t) t.focus && t.focus({ preventScroll: true }); }
+  function dvApply() {
+    if (!dv.target) { dv.err = s("dvPick"); return dvPaint("[data-dv=use]"); }
+    const url = toData(dvCanvas()), [kind, k] = dv.target.split("|");
+    if (kind === "place") setPlace(k, null, url);
+    else { const d = JSON.parse(JSON.stringify(data())); setIcon(d, k, url, "own"); ctx.setData(() => d); }
+    st.msg = s("dvDone"); st.err = false; dvClose(); paint();
+  }
+  function ownPieces() { return (typeof PROJECTS !== "undefined" ? PROJECTS : []).filter(p => p.own && p.kind === "original" && p.full); }
+  function dvPaint(focus) {
+    const root = document.getElementById("adminRoot"); if (!root || !dv.on) return;
+    let o = document.getElementById("aiDevour");
+    if (!o) {
+      o = document.createElement("div"); o.id = "aiDevour"; o.className = "ai-ov"; o.setAttribute("role", "dialog"); o.setAttribute("aria-modal", "true"); root.appendChild(o);
+      o.addEventListener("keydown", e => { if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); dvClose(); } });
+      o.addEventListener("click", e => { const b = e.target.closest("[data-dv],[data-dvt],[data-dvp]"); if (!b) return;
+        if (b.dataset.dvp) return pickPiece(b.dataset.dvp);
+        if (b.dataset.dvt) { dv.target = b.dataset.dvt; dv.err = ""; return dvPaint(`[data-dvt="${b.dataset.dvt}"]`); }
+        ({ yes: () => { dv.ask = false; dvPaint("[data-dv=zoom]"); }, no: dvClose, cancel: dvClose, use: dvApply })[b.dataset.dv]?.(); });
+      o.addEventListener("input", e => { const k = e.target.dataset.dvi; if (!k) return; dv[k] = e.target.type === "checkbox" ? e.target.checked : +e.target.value;
+        const c = o.querySelector(".ai-dv-prev"); if (c) { const n = dvCanvas(); c.width = n.width; c.height = n.height; c.getContext("2d").drawImage(n, 0, 0); } });
+    }
+    o.setAttribute("aria-label", dv.ask ? s("dvAsk") : s("dvTitle"));
+    const pl = Object.keys(PLACE);
+    o.innerHTML = `<div class="ai-ov-card">${dv.list ? `<h2>${esc(s("fromArt"))}</h2><p class="ai-note">${esc(s("fromArtNote"))}</p>
+        <div class="ai-picker">${ownPieces().map((p, i) => `<button type="button" class="ai-pk ai-pk-art" data-dvp="${i}" title="${esc(p.title)}"><img src="${esc(p.img)}" alt="${esc(p.title)}" loading="lazy"></button>`).join("")}</div>
+        <div class="ai-acts"><button type="button" class="ai-btn" data-dv="cancel">${esc(s("cancel"))}</button></div>`
+      : dv.ask ? `<h2>${esc(s("dvAsk"))}</h2>${dv.title ? `<p><b>${esc(dv.title)}</b></p>` : ""}<p class="ai-note">${esc(s("dvAskNote"))}</p>
+        <div class="ai-acts"><button type="button" class="ai-btn pri" data-dv="yes">${esc(s("dvYes"))}</button><button type="button" class="ai-btn" data-dv="no">${esc(s("dvNo"))}</button></div>`
+      : `<h2>${esc(s("dvTitle"))}</h2>${dv.title ? `<p><b>${esc(dv.title)}</b></p>` : ""}
+        <canvas class="ai-dv-prev" width="256" height="256" aria-hidden="true"></canvas>
+        <label class="ai-lab">${esc(s("dvZoom"))}<input type="range" min="1" max="5" step="0.05" value="${dv.zoom}" data-dvi="zoom" data-dv-r="zoom"></label>
+        <label class="ai-lab">${esc(s("dvX"))}<input type="range" min="0" max="1" step="0.01" value="${dv.x}" data-dvi="x"></label>
+        <label class="ai-lab">${esc(s("dvY"))}<input type="range" min="0" max="1" step="0.01" value="${dv.y}" data-dvi="y"></label>
+        <label class="ai-check"><input type="checkbox" data-dvi="cut"${dv.cut ? " checked" : ""}> ${esc(s("dvCut"))}</label>
+        <label class="ai-lab">${esc(s("dvTol"))}<input type="range" min="5" max="120" step="1" value="${dv.tol}" data-dvi="tol"></label>
+        <h3>${esc(s("dvWhere"))}</h3><p class="ai-note">${esc(s("dvIcon"))}</p>
+        <div class="ai-picker">${ICONS().map(k => `<button type="button" class="ai-pk" data-dvt="icon|${esc(k)}" aria-pressed="${dv.target === "icon|" + k}" title="${esc(base(k))}"><img src="${esc(shown(k))}" alt="${esc(base(k))}"></button>`).join("")}</div>
+        <p class="ai-note">${esc(s("dvPlace"))}</p>
+        <div class="ai-acts">${pl.map(id => `<button type="button" class="ai-btn" data-dvt="place|${id}" aria-pressed="${dv.target === "place|" + id}">${esc(PLACE[id][lg()])}</button>`).join("")}</div>
+        ${dv.err ? `<p class="ai-msg err" role="alert">${esc(dv.err)}</p>` : ""}
+        <div class="ai-acts"><button type="button" class="ai-btn pri" data-dv="use">${esc(s("dvUse"))}</button><button type="button" class="ai-btn" data-dv="cancel">${esc(s("cancel"))}</button></div>`}</div>`;
+    const c = o.querySelector(".ai-dv-prev"); if (c) c.getContext("2d").drawImage(dvCanvas(), 0, 0);
+    const f = focus && o.querySelector(focus.replace("[data-dv=zoom]", "[data-dvi=zoom]")); if (f) f.focus({ preventScroll: true });
+  }
+  async function pickPiece(i) { const p = ownPieces()[+i]; if (!p) return; dv.list = false; await devour(p.full, p.title, false); }
+  function fromArt() { ctx = ctx || (window.Admin && window.Admin.ctx); Object.assign(dv, { on: true, list: true, ask: false }); dvPaint(".ai-pk-art"); }
+  // The Art tab tells us when a new piece is saved; only Ekky's own pieces are offered (never fan art or client work).
+  addEventListener("admin:art-saved", e => { const x = e.detail || {}; if (x.kind === "original" && x.src) devour(x.src, x.title, true); });
+
   // ---- the screen ----
   async function samples() {
     if (st.samples) return;
@@ -218,6 +304,7 @@ const AdminIcons = (() => {
         <span class="ai-sample">${((st.samples || {})[id] || []).map(u => `<img src="${u}" alt="">`).join("")}</span><b>${esc(lg() ? idn : en)}</b></button>`).join("")}</div>
       <label class="ai-check"><input type="checkbox" data-also${st.alsoOwn ? " checked" : ""}> ${esc(s("alsoOwn"))}</label>
       ${st.msg ? `<p class="ai-msg${st.err ? " err" : ""}" role="${st.err ? "alert" : "status"}">${esc(st.msg)}</p>` : ""}
+      <div class="ai-acts"><button type="button" class="ai-btn" data-fromart>${esc(s("fromArt"))}</button></div>
       ${placesHtml()}
       <h3>${esc(s("iconsTitle"))}</h3><p class="ai-note">${esc(s("ownNote"))}</p>
       <div class="ai-grid">${ICONS().map(k => { const to = m[k]; return `<div class="ai-card" data-k="${esc(k)}">
@@ -261,6 +348,16 @@ const AdminIcons = (() => {
 #adminRoot .ai-pk{width:52px;height:52px;padding:4px;border-radius:12px;border:2px solid var(--line);background:#fff;cursor:pointer}
 #adminRoot .ai-pk[aria-pressed=true]{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink) inset}
 #adminRoot .ai-pk img{width:100%;height:100%;object-fit:contain}
+#adminRoot .ai-ov{position:fixed;inset:0;z-index:6;background:rgba(43,19,66,.55);display:flex;align-items:center;justify-content:center;padding:16px}
+#adminRoot .ai-ov-card{width:min(560px,100%);max-height:100%;overflow:auto;background:var(--paper);color:var(--ink);border-radius:20px;padding:16px;display:grid;gap:10px}
+#adminRoot .ai-ov-card h2{margin:0;font-size:1.15rem}#adminRoot .ai-ov-card p{margin:0}
+#adminRoot .ai-dv-prev{width:160px;height:160px;justify-self:center;border-radius:14px;border:2px solid var(--line);background:conic-gradient(#eee 25%,#fff 0 50%,#eee 0 75%,#fff 0) 0 0/16px 16px}
+#adminRoot .ai-lab{display:grid;gap:2px;font-weight:600;font-size:.9rem}
+#adminRoot .ai-lab input[type=range],#adminRoot .ai-check input{accent-color:var(--ink)}
+#adminRoot .ai-lab input[type=range]{width:100%;min-height:44px}
+#adminRoot .ai-btn.pri{background:var(--accent);border-color:#b77e00;box-shadow:0 3px 0 #b77e00}
+#adminRoot .ai-btn[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+#adminRoot .ai-pk-art{width:64px;height:64px;padding:0;overflow:hidden}#adminRoot .ai-pk-art img{object-fit:cover}
 #adminRoot .ai-btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 12px;border-radius:14px;border:2px solid var(--line);background:#fff;color:var(--ink);font:600 .88rem Fredoka,Poppins,sans-serif;cursor:pointer;text-align:center}
 `;
   function render_(target, c) {
@@ -270,6 +367,7 @@ const AdminIcons = (() => {
       el.dataset.ai = "1";
       el.addEventListener("click", e => {
         if (el.id !== "admTab-icons") return;
+        if (e.target.closest("[data-fromart]")) return fromArt();
         const b = e.target.closest("[data-style],[data-back],[data-pick],[data-unplace],[data-place]"); if (!b) return;
         if (b.dataset.style) applyStyle(b.dataset.style);
         else if (b.dataset.back) backIcon(b.dataset.back);
@@ -291,5 +389,5 @@ const AdminIcons = (() => {
   const def = { title: { en: "Icons", id: "Ikon" }, render: render_ };
   if (window.Admin && window.Admin.registerTab) window.Admin.registerTab("icons", def);
   else (window.AdminTabs = window.AdminTabs || []).push(["icons", def]);
-  return { render: render_, renderStyle: render, STYLES };
+  return { render: render_, renderStyle: render, STYLES, devour };
 })();

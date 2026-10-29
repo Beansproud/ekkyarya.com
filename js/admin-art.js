@@ -384,6 +384,8 @@
       patch(n => { n.projects = userOf(n).filter(p => p.uid !== editing); const at = old ? userOf(get()).findIndex(p => p.uid === editing) : -1;
         if (at >= 0) n.projects.splice(at, 0, piece); else n.projects.push(piece); });
       state.form = null; state.editing = null; state.errors = []; state.note = T().saved; draw();
+      // a new picture: the Icons tab (js/admin-icons.js) offers to turn it into an icon or a button picture too
+      if (f.files) dispatchEvent(new CustomEvent("admin:art-saved", { detail: { uid, title: piece.title, kind: piece.kind, src: "data:image/jpeg;base64," + f.files.full.base64 } }));
     }
 
     function wireLists() {

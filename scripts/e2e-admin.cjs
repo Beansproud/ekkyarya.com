@@ -169,6 +169,7 @@ async function runConfig(browser,url,dev,lang){
     const fields=p.locator('#adminRoot input:not([type=file]):not([type=checkbox]):not([type=radio]):not([type=password]):not([type=search]),textarea');let n=0;
     for(let i=0;i<await fields.count();i++){const f=fields.nth(i);if(await f.isVisible()&&await f.isEditable()&&!(await f.inputValue())){await f.fill('QA piece '+(++n));}}
     const sv=p.locator('#adminRoot button').filter({hasText:/^(Save piece|Simpan karya)$/});if(!await sv.count())throw new Error('no Save piece button');await sv.click();await sleep(600);
+    if(await p.locator('#aiDevour [data-dv=no]').count())await p.click('#aiDevour [data-dv=no]');   // "also use it on the site?": no, just the art
     const pb=publishBtn(p).first();if(!await pb.count())throw new Error('no Publish button');if(!await pb.isEnabled())throw new Error('Publish is disabled with a token and a new piece');await pb.click();
     if(!await waitFor(()=>committed(gh).files.length>0,6000))throw new Error('Publish sent nothing to the mocked GitHub API (unhandled: '+gh.unknown.slice(0,3).join(', ')+')');await sleep(800);
     const k=committed(gh);if(k.commitCount!==1)throw new Error(`${k.commitCount} commits for one change, expected 1`);
@@ -270,6 +271,22 @@ async function runConfig(browser,url,dev,lang){
     if(await p.evaluate(()=>document.querySelector('.g-tabs [data-tab="art"] img').getAttribute('src'))!=='assets/ui/palette.png')throw new Error('another place changed too');
     await p.locator('#adminRibbon [data-rb=back]').click();await waitFor(()=>adminOpen(p),3000);
     await p.click('#adminRoot [data-unplace=hire]');if(await p.evaluate(()=>!!(((Admin.ctx.data.icons||{}).places||{}).hire)))throw new Error('Back to built-in did not undo the choice')});
+  T('icons: new art can become a button picture, or stay just art',async p=>{needAdmin();if(!ICONSTAB)skip('js/admin-icons.js not landed yet');await openAdmin(p);
+    await p.evaluate(()=>document.querySelectorAll('dialog.adm-pad[open]').forEach(d=>d.close()));
+    const art=k=>p.evaluate(k=>{const c=document.createElement('canvas');c.width=400;c.height=300;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,400,300);x.fillStyle='#e76f51';x.beginPath();x.arc(200,150,90,0,7);x.fill();
+      dispatchEvent(new CustomEvent('admin:art-saved',{detail:{uid:'u-qa',title:'QA art',kind:k,src:c.toDataURL('image/jpeg',.9)}}))},k);
+    await art('fan');await sleep(500);if(await p.locator('#aiDevour').count())throw new Error('fan art was offered as an icon');
+    await art('original');if(!await waitFor(()=>p.locator('#aiDevour [data-dv=yes]').count().then(n=>n>0),3000))throw new Error('no "also use it on the site?" question after new art');
+    await p.keyboard.press('Escape');await sleep(200);if(await p.locator('#aiDevour').count())throw new Error('Esc did not close the question');if(!await adminOpen(p))throw new Error('Esc closed admin');
+    const before=await p.evaluate(()=>JSON.stringify(Admin.ctx.data.icons||null));
+    await art('original');await waitFor(()=>p.locator('#aiDevour [data-dv=yes]').count().then(n=>n>0),3000);await p.click('#aiDevour [data-dv=no]');
+    if(await p.evaluate(()=>JSON.stringify(Admin.ctx.data.icons||null))!==before)throw new Error('"No, just the art" changed the icons');
+    await art('original');await waitFor(()=>p.locator('#aiDevour [data-dv=yes]').count().then(n=>n>0),3000);await p.click('#aiDevour [data-dv=yes]');
+    await p.click('#aiDevour [data-dv=use]');if(!await p.locator('#aiDevour [role=alert]').count())throw new Error('Use without a place did not ask where');
+    await p.click('#aiDevour [data-dvt="place|hire"]');await p.click('#aiDevour [data-dv=use]');
+    const r=await p.evaluate(()=>({v:((Admin.ctx.data.icons||{}).places||{}).hire,staged:Admin.ctx.staged()}));
+    if(!/^assets\/ui\/u\/place-hire-own-[a-z0-9]+\.png$/.test(r.v||'')||!r.staged.includes(r.v))throw new Error('the art did not become the Hire button picture: '+JSON.stringify(r));
+    if(!await waitFor(()=>p.evaluate(()=>!document.getElementById('aiDevour')),2000))throw new Error('the dialog stayed open')});
   T('merged: icons map swaps the pictures, bad entries are dropped',async p=>{const c=p.context();if(!SITEDATA)skip('js/site-data.js not landed yet');
     await c.route('**/assets/ui/u/qa-monster.png',r=>r.fulfill({status:200,contentType:'image/png',body:fs.readFileSync(px.join(SITE,'assets/ui/monster-head.png'))}));
     await route(c,JSON.stringify({version:1,icons:{style:'qa',places:{tabArt:'assets/ui/virus.png',hire:'javascript:x',nope:'assets/ui/cat.png'},map:{'assets/ui/monster-head.png':'assets/ui/u/qa-monster.png','assets/ui/cat.png':'https://example.com/x.png','js/data.js':'assets/ui/u/qa-a.png','assets/ui/ghost.png':'assets/ui/u/../../x.png'}}}));await boot(p);
