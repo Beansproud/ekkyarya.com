@@ -197,9 +197,10 @@ const AdminIcons = (() => {
     paint(`[data-pick="${id}"]`);
   }
   function placesHtml() {
-    const pl = placesOf();
+    const pl = placesOf(), sel = (typeof SiteData !== "undefined" && SiteData.PLACES) || {};
+    const ids = Object.keys(PLACE).filter(id => !sel[id] || pl[id] || document.querySelector(sel[id]));   // a spot the page no longer has is not offered
     return `<h3>${esc(s("placesTitle"))}</h3><p class="ai-note">${esc(s("placesNote"))}</p>
-      <div class="ai-places">${Object.keys(PLACE).map(id => { const v = pl[id] || PLACE[id][2], open = st.pick === id;
+      <div class="ai-places">${ids.map(id => { const v = pl[id] || PLACE[id][2], open = st.pick === id;
         return `<div class="ai-place${open ? " on" : ""}"><div class="ai-prow"><img src="${esc(shownAny(v))}" alt=""><span><b>${esc(PLACE[id][lg()])}</b>${pl[id] ? ` <span class="ai-note">(${esc(s("chosen"))})</span>` : ""}</span></div>
           <div class="ai-acts"><button type="button" class="ai-btn" data-pick="${id}" aria-expanded="${open}">${esc(open ? s("hide") : s("choose"))}</button>
           ${pl[id] ? `<button type="button" class="ai-btn" data-unplace="${id}">${esc(s("builtinPlace"))}</button>` : ""}</div>
@@ -257,7 +258,7 @@ const AdminIcons = (() => {
         const c = o.querySelector(".ai-dv-prev"); if (c) { const n = dvCanvas(); c.width = n.width; c.height = n.height; c.getContext("2d").drawImage(n, 0, 0); } });
     }
     o.setAttribute("aria-label", dv.ask ? s("dvAsk") : s("dvTitle"));
-    const pl = Object.keys(PLACE);
+    const sel = (typeof SiteData !== "undefined" && SiteData.PLACES) || {}, pl = Object.keys(PLACE).filter(id => !sel[id] || document.querySelector(sel[id]));
     o.innerHTML = `<div class="ai-ov-card">${dv.list ? `<h2>${esc(s("fromArt"))}</h2><p class="ai-note">${esc(s("fromArtNote"))}</p>
         <div class="ai-picker">${ownPieces().map((p, i) => `<button type="button" class="ai-pk ai-pk-art" data-dvp="${i}" title="${esc(p.title)}"><img src="${esc(p.img)}" alt="${esc(p.title)}" loading="lazy"></button>`).join("")}</div>
         <div class="ai-acts"><button type="button" class="ai-btn" data-dv="cancel">${esc(s("cancel"))}</button></div>`

@@ -410,10 +410,11 @@ const AdminCopy = (() => {
   }
 
   // ---- the 5-second impression test ----
+  const screens = () => SCREENS.filter(x => x[3].some(k => base("en", k) !== undefined));   // screens whose words still exist
   function impHtml() {
-    const i = st.impSel || SCREENS[0][0], l = st.impLang || ["en", "id"][lg()];
+    const i = st.impSel || screens()[0][0], l = st.impLang || ["en", "id"][lg()];
     return `<h2>${esc(s("impTitle"))}</h2><p>${esc(s("impIntro"))}</p>
-      <div class="aw-chips" role="group" aria-label="${esc(s("impTitle"))}">${SCREENS.map(x => `<button type="button" class="aw-chip" data-a="impSel" data-v="${x[0]}" aria-pressed="${x[0] === i}">${esc(lg() ? x[2] : x[1])}</button>`).join("")}</div>
+      <div class="aw-chips" role="group" aria-label="${esc(s("impTitle"))}">${screens().map(x => `<button type="button" class="aw-chip" data-a="impSel" data-v="${x[0]}" aria-pressed="${x[0] === i}">${esc(lg() ? x[2] : x[1])}</button>`).join("")}</div>
       <div class="aw-chips" role="group" aria-label="${esc(s("impLang"))}">${LANGS.map(x => `<button type="button" class="aw-chip" data-a="impLang" data-v="${x}" aria-pressed="${x === l}">${esc(s(x))}</button>`).join("")}</div>
       <div class="aw-acts"><button type="button" class="aw-btn pri" data-a="impStart">${esc(s("start"))}</button><button type="button" class="aw-btn" data-a="closePanel">${esc(s("close"))}</button></div>
       ${st.runs.length ? `<h3>${esc(s("runs"))}</h3><ul class="aw-runs">${st.runs.map(r => `<li>${esc(r.name)}, ${r.lang.toUpperCase()}: <b>${r.pct}%</b> (${esc(s("missed"))}: ${esc(r.missed.join(", ") || "-")})</li>`).join("")}</ul>` : ""}
@@ -433,7 +434,7 @@ const AdminCopy = (() => {
       ${m.phase === "show" ? `<div class="aw-acts"><button type="button" class="aw-btn" data-a="impCancel">${esc(s("cancel"))}</button></div>` : ""}</div></div>`;
   }
   function impStart() {
-    const id = st.impSel || SCREENS[0][0], lang = st.impLang || ["en", "id"][lg()];
+    const id = st.impSel || screens()[0][0], lang = st.impLang || ["en", "id"][lg()];
     clearTimeout(st.impT);
     st.imp = { id, lang, phase: "show" }; paint(".aw-ov [data-a=impCancel]");
     st.impT = setTimeout(() => { if (st.imp && st.imp.phase === "show") { st.imp.phase = "ask"; paint("#awRecall"); } }, 5000);

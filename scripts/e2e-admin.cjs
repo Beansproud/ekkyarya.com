@@ -221,7 +221,7 @@ async function runConfig(browser,url,dev,lang){
   T('words: LanguageTool (mocked) shows a match and a one-tap fix',async(p,c)=>{needWords();let body='';
     await c.route('https://api.languagetool.org/**',r=>{body=r.request().postData()||'';const text=new URLSearchParams(body).get('text')||'';const at=text.indexOf('teh');
       r.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify({matches:at<0?[]:[{message:'Possible spelling mistake found.',shortMessage:'Spelling mistake',offset:at,length:3,replacements:[{value:'the'},{value:'tea'}],rule:{id:'MORFOLOGIK_RULE_EN_US',issueType:'misspelling'}}]})})});
-    await openAdmin(p);await wordsOpen(p,'story.title');await p.fill('#aw-en-0','Every project starts as teh doodle');
+    await openAdmin(p);await wordsOpen(p,'hire.body');await p.fill('#aw-en-0','Every project starts as teh doodle');
     await p.click('#adminRoot .aw-ed [data-a=lt]');if(!await waitFor(()=>p.evaluate(()=>/Possible spelling mistake/.test(document.querySelector('#adminRoot .aw-ed').innerText)),5000))throw new Error('the LanguageTool match did not show');
     if(!/language=en-US/.test(body))throw new Error('LanguageTool was not asked for en-US: '+body.slice(0,80));
     await p.locator('#adminRoot .aw-ed [data-a=fix]').first().click();if(await p.inputValue('#aw-en-0')!=='Every project starts as the doodle')throw new Error('the suggestion was not applied: '+await p.inputValue('#aw-en-0'));
@@ -229,7 +229,7 @@ async function runConfig(browser,url,dev,lang){
     await c.unroute('https://api.languagetool.org/**');await c.route('https://api.languagetool.org/**',r=>r.abort());
     await p.fill('#aw-en-0','Every project starts as a little doodle');await p.click('#adminRoot .aw-ed [data-a=lt]');
     if(!await waitFor(()=>p.locator('#adminRoot .aw-ed [role=alert].aw-warn').count().then(n=>n>0),5000))throw new Error('no message when LanguageTool cannot be reached');
-    await p.click('#adminRoot .aw-ed [data-a=save]');if(!await waitFor(()=>p.evaluate(()=>(((Admin.ctx.data.copy||{}).en||{})['story.title']||'')==='Every project starts as a little doodle'),3000))throw new Error('saving was blocked by the failed check')});
+    await p.click('#adminRoot .aw-ed [data-a=save]');if(!await waitFor(()=>p.evaluate(()=>(((Admin.ctx.data.copy||{}).en||{})['hire.body']||'')==='Every project starts as a little doodle'),3000))throw new Error('saving was blocked by the failed check')});
   T('merged: copy overrides are plain text, keep placeholders, show in place',async p=>{const c=p.context();if(!SITEDATA)skip('js/site-data.js not landed yet');
     await route(c,JSON.stringify({version:1,copy:{en:{'start.tagline':'QA <b>merged</b> tagline','stars.score':'No number here','nav.about':'QA About','fact.count':'99','not.a.key':'x','hero.words':'only|two'},id:{'start.tagline':'QA slogan'}}}));await boot(p);
     if(!await waitFor(()=>p.evaluate(()=>COPY.en['start.tagline']==='QA bmerged/b tagline'),5000))throw new Error('the override was not merged as plain text: '+await p.evaluate(()=>COPY.en['start.tagline']));
