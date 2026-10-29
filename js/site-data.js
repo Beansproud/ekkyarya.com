@@ -27,6 +27,24 @@ const SiteData = (() => {
     }).filter(Boolean).slice(0, 8);
     return steps.length >= 2 ? { flow: FLOW_KINDS.includes(raw.flow) ? raw.flow : "process", steps } : null;
   }
+  // One COPY override (the admin Words tab), or null to keep the built-in text. Only keys that exist, as plain text
+  // (clean above: no markup, no emoji), at most 600 letters; every {placeholder} of the built-in text kept; a "a|b" text keeps
+  // its number of parts; a list (hire.types) stays a list of the same length; a trailing space of the built-in is kept.
+  const LOCKED = ["fact.count"];
+  const PH = /\{\w+\}/g;
+  function copyText(base, v, k) {
+    if (LOCKED.includes(k)) return null;
+    if (Array.isArray(base)) {
+      if (!Array.isArray(v) || v.length !== base.length) return null;
+      const a = v.map(x => clean(x).slice(0, 120));
+      return a.every(Boolean) ? a : null;
+    }
+    if (typeof base !== "string") return null;
+    let s = clean(v).slice(0, 600);
+    if (!s || (base.match(PH) || []).some(p => !s.includes(p)) || s.split("|").length !== base.split("|").length) return null;
+    if (/\s$/.test(base)) s += " ";
+    return s;
+  }
   const KINDS = ["original", "client", "fan"], CATS = ["illustration", "web", "branding", "social"];
   const ROLES = ["portfolio", "card", "featured", "share", "coloring", "sticker", "sprite", "level", "scene", "avatar", "game", "village"];
   const key = p => [p.title, p.uid, p.slug];
@@ -81,7 +99,7 @@ const SiteData = (() => {
       }
       if (isObj(d.features)) for (const k in d.features) if (typeof d.features[k] === "boolean") { g.FEATURES[k] = d.features[k]; changed = true; }
       if (isObj(d.copy)) for (const l of ["en", "id"]) if (isObj(d.copy[l]) && g.COPY[l]) for (const k in d.copy[l]) {
-        const s = clean(d.copy[l][k]); if (s) { g.COPY[l][k] = s; changed = true; } }
+        const s = copyText(g.COPY[l][k], d.copy[l][k], k); if (s !== null) { g.COPY[l][k] = s; changed = true; } }
       if (Array.isArray(d.projects)) for (const raw of d.projects) {
         const p = piece(g, raw);
         if (p && !g.PROJECTS.some(q => q.full === p.full || (p.uid && q.uid === p.uid))) { g.PROJECTS.push(p); changed = true; }
@@ -92,6 +110,8 @@ const SiteData = (() => {
       const hidden = Array.isArray(d.hidden) ? d.hidden.map(str).filter(Boolean) : [];
       for (let i = g.PROJECTS.length - 1; i >= 0; i--) if (matches(g.PROJECTS[i], hidden)) { g.PROJECTS.splice(i, 1); changed = true; }
       SiteData.order = Array.isArray(d.order) ? d.order.map(str).filter(Boolean) : [];
+      SiteData.icons = iconsOf(d.icons); SiteData.places = placesOf(d.icons);
+      if (Object.keys(SiteData.icons).length + Object.keys(SiteData.places).length) changed = true;
     } catch (e) { /* a broken file never breaks the site */ }
     return changed;
   }
@@ -102,15 +122,85 @@ const SiteData = (() => {
     return first.concat(pieces.filter(p => !first.includes(p))).slice(0, n);
   }
 
-  const api = { merge, ordered, preview, order: [], builtin: null, data: null, ready: null, changed: false, load, openAdmin };
+  // ---- icons (the admin Icons tab): "icons": {"style": "<name>", "map": {"<built-in icon>": "assets/ui/u/<file>.png"},
+  //      "places": {"<place>": "<built-in icon or assets/ui/u/<file>.png>"}} ----
+  // Only the drawn icons below can be swapped, only for a PNG uploaded under assets/ui/u/. Every <img> that shows a swapped
+  // icon gets the new file: those in the page, those added later, and `new Image()` sprites (src set through the property).
+  const ICONS = ["astronaut", "cat", "ekky", "face-pop", "face", "ghost", "helmet", "monster-head", "palette", "pen-hand", "planet", "radio-explorer", "virus"]
+    .map(n => "assets/ui/" + n + ".png").concat(["all", "illustration", "web", "branding", "social"].map(n => "assets/cat-" + n + ".png"));
+  const SAFE_ICON = /^assets\/ui\/u\/[a-z0-9-]+\.png$/;
+  function iconsOf(raw) {
+    const m = {}, map = isObj(raw) && isObj(raw.map) ? raw.map : {};
+    for (const k of ICONS) if (SAFE_ICON.test(str(map[k]))) m[k] = str(map[k]);
+    return m;
+  }
+  // Places: one button or spot can show another icon than its built-in one ("places": {"<place>": "<icon or upload>"}).
+  // The value is a built-in icon (then the chosen style applies to it too) or a PNG uploaded under assets/ui/u/.
+  const PLACES = {
+    hire: ".g-hire img", tabArt: '.g-tabs [data-tab="art"] img', tabMap: '.g-tabs [data-tab="map"] img',
+    sketch: ".g-start-sketch img", collab: ".g-start-collab img", stars: ".g-intro-stars img, .g-stars-head img",
+    fab: "#gFab img", playColor: '.play-card[href*="play=color"] img', playStars: '.play-card[href*="play=stars"] img',
+    heroWave: ".wave img", dividers: ".doodle-rule img"
+  };
+  function placesOf(raw) {
+    const m = {}, pl = isObj(raw) && isObj(raw.places) ? raw.places : {};
+    for (const k in PLACES) { const v = str(pl[k]); if (ICONS.includes(v) || SAFE_ICON.test(v)) m[k] = v; }
+    return m;
+  }
+  // What an <img> showing icon k should show: its place's choice first, else the icon (swapped or not).
+  function want(img, k) {
+    for (const id in api.places) if (img.matches && img.matches(PLACES[id])) return iconFor(api.places[id]);
+    return iconFor(k);
+  }
+  let iconHooked = false, iconObs = null;
+  const ICO_RE = /(?:^|\/)(assets\/(?:ui\/[a-z-]+|cat-[a-z]+)\.png)$/;
+  // The file an icon path shows now: the swapped one (a preview's unpublished picture first), else the path itself.
+  function iconFor(v) {
+    if (typeof v === "string" && SAFE_ICON.test(v)) return api.iconBlobs[v] || v;   // a place's own upload
+    const m = typeof v === "string" && v.match(ICO_RE), k = m && m[1];
+    if (!k || !ICONS.includes(k)) return v;
+    const to = api.icons[k];
+    return to ? (api.iconBlobs[to] || to) : k;
+  }
+  // data-ico: the built-in icon the <img> stands for; data-ico-set: what this code put in its src (so a later change can redo it).
+  function swapImg(img) {
+    const cur = img.getAttribute("src") || "", m = cur.match(ICO_RE), was = img.getAttribute("data-ico");
+    let k = m && ICONS.includes(m[1]) ? m[1] : null;
+    if (!k && was) { if (img.getAttribute("data-ico-set") === cur) k = was; else { img.removeAttribute("data-ico"); img.removeAttribute("data-ico-set"); return; } }   // a reused <img> now shows something else
+    if (!k) return;
+    const to = want(img, k);
+    if (to !== k || was) { img.setAttribute("data-ico", k); img.setAttribute("data-ico-set", to); if (cur !== to) img.setAttribute("src", to); }
+  }
+  function applyIcons() {
+    const any = Object.keys(api.icons).length + Object.keys(api.places).length;
+    if (!any && !iconHooked) return;
+    if (!iconHooked) {
+      iconHooked = true;
+      const d = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, "src");
+      if (d && d.set) Object.defineProperty(HTMLImageElement.prototype, "src", { configurable: true, enumerable: d.enumerable, get() { return d.get.call(this); },
+        set(v) { const m = String(v).match(ICO_RE), to = m && ICONS.includes(m[1]) ? want(this, m[1]) : v;
+          if (to !== v) { this.setAttribute("data-ico", m[1]); this.setAttribute("data-ico-set", to); } else { this.removeAttribute("data-ico"); this.removeAttribute("data-ico-set"); }
+          d.set.call(this, to); } });
+      iconObs = new MutationObserver(list => { for (const r of list) {
+        if (r.type === "attributes") { if (r.target.tagName === "IMG") swapImg(r.target); continue; }
+        for (const n of r.addedNodes) if (n.nodeType === 1) { if (n.tagName === "IMG") swapImg(n); else if (n.querySelector) n.querySelectorAll("img").forEach(swapImg); } } });
+      iconObs.observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["src"] });
+    }
+    document.querySelectorAll("img").forEach(swapImg);
+  }
+
+  const api = { merge, ordered, preview, order: [], builtin: null, data: null, ready: null, changed: false, load, openAdmin, ICONS, PLACES, icons: {}, places: {}, iconBlobs: {}, iconFor };
 
   // Fetch data/site.json once; merge it; tell the page (event "sitedata") only if something changed.
   function load() {
     api.ready = fetch("data/site.json", { cache: "no-cache" }).then(r => r.ok ? r.json() : null).catch(() => null).then(d => {
       api.data = isOk(d) ? d : null;
       if (api.data && hasContent(api.data)) api.builtin = snapshot();   // pristine, for "reset to built-in"
+      const before = JSON.stringify(COPY);
       api.changed = api.data ? merge({ CONFIG, FEATURES, PROJECTS, COPY }, api.data) : false;
       if (api.changed) dispatchEvent(new Event("sitedata"));
+      if (JSON.stringify(COPY) !== before) relang();
+      applyIcons();
       return api.changed;
     });
     return api.ready;
@@ -121,14 +211,18 @@ const SiteData = (() => {
   // Nothing is saved or sent anywhere; a reload shows the published site again.
   function preview(json) {
     if (!api.builtin) api.builtin = snapshot();   // nothing was merged at start-up, so the page is still the built-in data
-    const b = api.builtin;
+    const b = api.builtin, before = JSON.stringify(COPY);
     reset(CONFIG, b.config); reset(FEATURES, b.features); reset(COPY, b.copy);
     PROJECTS.splice(0, PROJECTS.length, ...JSON.parse(JSON.stringify(b.projects)));
-    api.order = [];
+    api.order = []; api.icons = {}; api.places = {};
     const d = json || api.data;
     if (d) merge({ CONFIG, FEATURES, PROJECTS, COPY }, d);
     dispatchEvent(new Event("sitedata"));
+    if (JSON.stringify(COPY) !== before) relang();
+    applyIcons();
   }
+  // New words: every text drawn with t() is set again in place, the same way a language switch does it (js/site.js).
+  function relang() { try { if (typeof applyText === "function") applyText(); dispatchEvent(new Event("ekky:lang")); } catch (e) {} }
   const hasContent = v => Array.isArray(v) ? v.some(hasContent) : isObj(v) ? Object.entries(v).some(([k, x]) => k !== "version" && hasContent(x)) : v !== "" && v !== null && v !== undefined && v !== false;
   const isOk = d => isObj(d) && d.version === 1;
 

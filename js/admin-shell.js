@@ -1,4 +1,4 @@
-// Admin shell: the screen behind the PIN. Tabs Art, Links, Settings, Text, Messages; each tab is a mount point that
+// Admin shell: the screen behind the PIN. Tabs Art, Icons, Links, Settings, Words, Messages; each tab is a mount point that
 // other scripts fill with Admin.registerTab(id, {title:{en,id}|string, render(el, ctx)}). Also the GitHub token and Publish.
 //
 // ctx given to render(el, ctx):
@@ -12,9 +12,9 @@
 (() => {
   const A = window.Admin;
   const REPO = "rfim/ekkyarya.com", API = "https://api.github.com", TOKEN_KEY = "admGhToken";
-  const TABS = ["art", "links", "settings", "text", "messages"];
+  const TABS = ["art", "icons", "links", "settings", "words", "messages"];   // Words (js/admin-copy.js) took over the Text tab
   const TAB_TITLE = { art: { en: "Art", id: "Karya" }, links: { en: "Links", id: "Tautan" }, settings: { en: "Settings", id: "Pengaturan" },
-    text: { en: "Text", id: "Teks" }, messages: { en: "Messages", id: "Pesan" } };
+    icons: { en: "Icons", id: "Ikon" }, words: { en: "Words", id: "Kata-kata" }, messages: { en: "Messages", id: "Pesan" } };
   const S = {
     title: { en: "Admin", id: "Admin" },
     close: { en: "Close", id: "Tutup" },
@@ -107,8 +107,8 @@
     const entries = [];
     const files = new Map(staged);
     if (JSON.stringify(data) !== base) files.set("data/site.json", b64(JSON.stringify(data, null, 2) + "\n"));
-    // Only these paths may be written: site.json and the two image folders (no "..", no other folder, no other type).
-    for (const path of files.keys()) if (path !== "data/site.json" && !/^assets\/work\/(?:thumb\/)?u\/[a-z0-9-]+\.jpg$/.test(path)) throw new Error("bad path: " + path);
+    // Only these paths may be written: site.json, the two art folders and the icon folder (no "..", no other folder, no other type).
+    for (const path of files.keys()) if (path !== "data/site.json" && !/^assets\/work\/(?:thumb\/)?u\/[a-z0-9-]+\.jpg$/.test(path) && !/^assets\/ui\/u\/[a-z0-9-]+\.png$/.test(path)) throw new Error("bad path: " + path);
     for (const [path, content] of files) {
       if (content === null) { entries.push({ path, mode: "100644", type: "blob", sha: null }); continue; }
       const blob = await post(`/repos/${REPO}/git/blobs`, { content, encoding: "base64" });
@@ -226,8 +226,8 @@
 .adm-btn{min-height:44px;padding:8px 16px;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-weight:600;font-size:.95rem}
 .adm-btn.pri{background:var(--accent);border-color:#b77e00;box-shadow:0 3px 0 #b77e00}
 .adm-btn:disabled{opacity:.5;cursor:default}
-.adm-tabs{display:flex;gap:4px;padding:8px 12px;border-bottom:2px solid var(--line)}
-.adm-tabs button{min-height:44px;flex:1 1 auto;padding:6px 6px;font-size:.78rem;white-space:nowrap;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-weight:600}
+.adm-tabs{display:flex;flex-wrap:wrap;gap:4px;padding:8px 12px;border-bottom:2px solid var(--line)}
+.adm-tabs button{min-height:44px;min-width:44px;flex:1 1 auto;padding:6px 6px;font-size:.78rem;white-space:nowrap;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-weight:600}
 .adm-tabs button[aria-selected=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .adm-tools{display:flex;gap:6px;padding:8px 12px;flex-wrap:nowrap;border-bottom:2px solid var(--line)}
 .adm-tools .adm-btn{padding:8px 10px;font-size:.9rem;white-space:nowrap;min-width:0}
@@ -259,7 +259,7 @@
         save: saveToken, forget: forgetDevice, preview: () => setPreview(!previewOn), help: () => togglePop("help"), undo: startUndo, undoYes: confirmUndo, popClose: () => togglePop(null) })[b.dataset.adm]?.();
     });
     root.addEventListener("cancel", e => { e.preventDefault(); close(); });
-    addEventListener("ekky:lang", () => { if (root.open) paintAll(); else if (ribbon && ribbon.open) paintRibbon(); });
+    addEventListener("ekky:lang", () => { if (root.dataset.lang === lang()) return; if (root.open) paintAll(); else if (ribbon && ribbon.open) paintRibbon(); });   // new words in a preview fire it too: repaint only for a new language
     paintAll();
   }
 
@@ -350,6 +350,7 @@
   }
 
   function paintAll() {
+    root.dataset.lang = lang();
     root.querySelector("[data-adm=title]").textContent = s("title");
     root.querySelector("[data-adm=close]").textContent = s("close");
     const lb = root.querySelector("[data-adm=lang]"); lb.textContent = s("language"); lb.setAttribute("aria-label", s("languageAria"));
@@ -409,7 +410,7 @@
   A.shell = { show };
 
   // The tab scripts register themselves; a missing one only leaves its tab saying "not ready yet".
-  ["js/admin-art.js", "js/admin-settings.js"].forEach(src => {
+  ["js/admin-art.js", "js/admin-icons.js", "js/admin-settings.js", "js/admin-copy.js"].forEach(src => {
     const el = document.createElement("script"); el.src = src + "?v=" + Date.now(); el.onerror = () => el.remove(); document.head.appendChild(el);
   });
 })();
