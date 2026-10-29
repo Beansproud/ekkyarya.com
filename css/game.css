@@ -1306,21 +1306,21 @@ body.intro-open #game .g-tabs,body.intro-open #game .g-home,body.intro-open #gam
 #g-start .g-peek-kick{font:700 .8rem Fredoka,system-ui,sans-serif!important;letter-spacing:.12em;text-transform:uppercase;color:#8A5A00!important}
 #g-start .g-peek-body{font:500 .88rem/1.45 Poppins,system-ui,sans-serif;color:#4a3a5c;margin:2px 0 4px}
 #g-start .g-page-flow{gap:10px}
-#g-start .g-deal{list-style:none;margin:0;padding:0 0 0 4px;display:flex;flex-direction:column;gap:0;flex:1 0 auto;justify-content:space-evenly;counter-reset:deal}
-#g-start .g-deal li{position:relative;display:flex;flex-direction:column;gap:1px;padding:6px 0 6px 50px;color:#2B1342;text-align:left}
-#g-start .g-deal li::before{counter-increment:deal;content:counter(deal);position:absolute;left:0;top:4px;width:34px;height:34px;display:grid;place-items:center;border-radius:50%;border:2.5px solid #2B1342;background:#FFFDF8;font:700 1rem Fredoka,system-ui,sans-serif;box-shadow:0 3px 0 #2B1342;transform:rotate(calc((var(--i) - 3) * 3deg))}
-#g-start .g-deal li:nth-child(4)::before{background:#FFB400}
-#g-start .g-deal li:not(:last-child)::after{content:"";position:absolute;left:16px;top:42px;bottom:-6px;border-left:2.5px dashed #2B1342;opacity:.45}
-#g-start .g-deal b{font:700 1.02rem Fredoka,system-ui,sans-serif}
-#g-start .g-deal span{font:500 .84rem/1.4 Poppins,system-ui,sans-serif;color:#4a3a5c}
-#g-start .g-deal-go{align-self:stretch;min-height:52px;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:14px;border:2.5px solid #2B1342;background:#FF8B8B;color:#2B1342;box-shadow:0 4px 0 #2B1342;font:700 1.05rem Fredoka,system-ui,sans-serif}
-#g-start .g-deal-go .ico{width:20px;height:20px}
+.g-deal{list-style:none;margin:0;padding:0 0 0 4px;display:flex;flex-direction:column;gap:0;flex:1 0 auto;justify-content:space-evenly;counter-reset:deal}
+.g-deal li{position:relative;display:flex;flex-direction:column;gap:1px;padding:6px 0 6px 50px;color:#2B1342;text-align:left}
+.g-deal li::before{counter-increment:deal;content:counter(deal);position:absolute;left:0;top:4px;width:34px;height:34px;display:grid;place-items:center;border-radius:50%;border:2.5px solid #2B1342;background:#FFFDF8;font:700 1rem Fredoka,system-ui,sans-serif;box-shadow:0 3px 0 #2B1342;transform:rotate(calc((var(--i) - 3) * 3deg))}
+.g-deal li:nth-child(4)::before{background:#FFB400}
+.g-deal li:not(:last-child)::after{content:"";position:absolute;left:16px;top:42px;bottom:-6px;border-left:2.5px dashed #2B1342;opacity:.45}
+.g-deal b{font:700 1.02rem Fredoka,system-ui,sans-serif}
+.g-deal span{font:500 .84rem/1.4 Poppins,system-ui,sans-serif;color:#4a3a5c}
+.g-deal-go{align-self:stretch;min-height:52px;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:14px;border:2.5px solid #2B1342;background:#FF8B8B;color:#2B1342;box-shadow:0 4px 0 #2B1342;font:700 1.05rem Fredoka,system-ui,sans-serif}
+.g-deal-go .ico{width:20px;height:20px}
 #g-start .g-starts .g-tile{color:#2B1342}
 #g-start .g-start-sketch{background:#FFB400}
 #g-start .g-start-collab{background:#7ED9B0}
 #g-start .g-starts .g-tile[aria-pressed="true"]{outline:3px solid #2B1342;outline-offset:2px}
 #g-start .g-starts .g-tile img{border-radius:8px}
-@media (max-height:700px){#g-start .g-peek-body{display:none}#g-start .g-deal span{font-size:.76rem;line-height:1.3}#g-start .g-deal li{padding:3px 0 3px 44px}#g-start .g-deal li::before{width:30px;height:30px;top:2px}#g-start .g-deal li:not(:last-child)::after{top:34px;left:14px}#g-start .g-deal-go{min-height:46px}}
+@media (max-height:700px){#g-start .g-peek-body{display:none}.g-deal span{font-size:.76rem;line-height:1.3}.g-deal li{padding:3px 0 3px 44px}.g-deal li::before{width:30px;height:30px;top:2px}.g-deal li:not(:last-child)::after{top:34px;left:14px}.g-deal-go{min-height:46px}}
 /* Catch stars lives under the intro terminal: "Bored?" */
 #game .g-intro-stars{display:flex;align-items:center;gap:10px;min-height:52px;padding:6px 16px 6px 8px;border-radius:16px;border:2.5px solid #2B1342;background:#7ED9B0;color:#2B1342;box-shadow:0 4px 0 #2B1342;text-align:left;opacity:0;transform:translateY(8px);transition:opacity .3s .35s ease-out,transform .35s .35s ease-out}
 #game .g-intro.ready .g-intro-stars{opacity:1;transform:none}
@@ -1339,8 +1339,39 @@ body.intro-open #game .g-tabs,body.intro-open #game .g-home,body.intro-open #gam
 #g-start .g-peek{padding:18px 18px 16px;gap:14px}
 #g-start .g-peek-txt b{font-size:1.3rem;line-height:1.15}
 #g-start .g-peek-body{font-size:.95rem;margin:4px 0 6px}
-#g-start .g-deal{justify-content:space-around}
-#g-start .g-deal li{padding:8px 0 8px 54px}
-#g-start .g-deal b{font-size:1.1rem}
-#g-start .g-deal span{font-size:.9rem}
-@media (max-height:700px){#g-start .g-peek-body{display:block;font-size:.85rem}#g-start .g-deal li{padding:4px 0 4px 46px}#g-start .g-deal b{font-size:.98rem}#g-start .g-deal span{font-size:.8rem}}
+.g-deal{justify-content:space-around}
+.g-deal li{padding:8px 0 8px 54px}
+.g-deal b{font-size:1.1rem}
+.g-deal span{font-size:.9rem}
+@media (max-height:700px){#g-start .g-peek-body{display:block;font-size:.85rem}.g-deal li{padding:4px 0 4px 46px}.g-deal b{font-size:.98rem}.g-deal span{font-size:.8rem}}
+/* the How we work steps live in the Hire sheet (owner, 10-29) */
+#gSheet .g-deal{flex:none;margin:4px 0 16px;gap:2px}
+#gSheet .g-deal li{padding:5px 0 5px 48px}
+/* Hire Ekky: the terminal flashes up as a pop-up, then the hiring flow (owner, 10-29) */
+#game .g-intro.flash{background:rgba(18,10,31,.55);gap:0;cursor:pointer;animation:g-flash-in .22s ease-out}
+#game .g-intro.flash .g-intro-logo,#game .g-intro.flash .g-intro-go,#game .g-intro.flash .g-intro-hint,#game .g-intro.flash .g-intro-stars{display:none}
+#game .g-intro.flash .g-term{width:min(100%,420px);animation:g-flash-pop .3s cubic-bezier(.34,1.56,.64,1)}
+#game .g-intro.flash .g-term-body{font-size:.9rem}
+@keyframes g-flash-in{from{opacity:0}}
+@keyframes g-flash-pop{from{transform:scale(.85) rotate(-3deg);opacity:0}}
+.g-hf-h{margin:0 0 8px}
+.g-hf-pager{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin:0 -20px;overscroll-behavior-x:contain}
+.g-hf-pager::-webkit-scrollbar{display:none}
+.g-hf-page{flex:0 0 100%;box-sizing:border-box;padding:4px 20px 8px;scroll-snap-align:start;scroll-snap-stop:always;display:flex;flex-direction:column;gap:10px}
+.g-hf-story{display:flex;flex-direction:column;gap:6px;padding:14px 16px 16px;border:3px solid #2B1342;border-radius:20px;background:#FFFDF8;color:#2B1342;box-shadow:0 5px 0 #2B1342;text-align:left;font-family:Fredoka,system-ui,sans-serif}
+.g-hf-pics{display:flex;justify-content:center;padding:6px 0 10px}
+.g-hf-pics img{width:34%;max-width:150px;aspect-ratio:4/5;object-fit:cover;border:5px solid #fff;border-bottom-width:15px;border-radius:3px;box-shadow:0 4px 10px rgba(43,19,66,.25);margin:0 -4%}
+.g-hf-pics img:nth-child(1){transform:rotate(-8deg) translateY(6px)}
+.g-hf-pics img:nth-child(2){transform:rotate(2deg);z-index:1}
+.g-hf-pics img:nth-child(3){transform:rotate(9deg) translateY(8px)}
+.g-hf-kick{font:700 .8rem Fredoka,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#8A5A00}
+.g-hf-story b{font-size:1.3rem;line-height:1.15}
+.g-hf-story span{font:500 .95rem/1.45 Poppins,system-ui,sans-serif;color:#4a3a5c}
+.g-hf-story small:last-child{font:600 .85rem Poppins,system-ui,sans-serif;color:#6e6680}
+.g-hf-go{min-height:52px;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:14px;border:2.5px solid #2B1342;background:#FF8B8B;color:#2B1342;box-shadow:0 4px 0 #2B1342;font:700 1.05rem Fredoka,system-ui,sans-serif}
+.g-hf-go .ico{width:20px;height:20px}
+.g-hf-dots{display:flex;justify-content:center;gap:8px;padding:6px 0 2px}
+.g-hf-dots i{width:9px;height:9px;border-radius:5px;background:#2B1342;opacity:.22;transition:width .25s,opacity .25s}
+.g-hf-dots i.on{width:24px;opacity:1;background:#FFB400;box-shadow:0 0 0 2px #2B1342}
+#gSheet .g-hf-page .g-deal{margin:0}
+@media (prefers-reduced-motion:reduce){#game .g-intro.flash,#game .g-intro.flash .g-term{animation:none}.g-hf-dots i{transition:none}}

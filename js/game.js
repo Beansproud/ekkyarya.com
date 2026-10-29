@@ -99,20 +99,21 @@ G.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(g){buzz(
 // The start page's terminal: three commands with their answers, typed once per visit, then a cursor that blinks a few
 // times and rests (nothing loops forever). Later visits, a language switch and reduced motion show the text at once.
 let termTyped=false,termTimer=0;
-function renderTerm(){const short=matchMedia("(max-height:560px)").matches,L=(short?[1,3]:[1,2,3]).map(k=>t("term."+k).split("|")),body=$("gTermBody");if(!body)return;   // short phones: who and status only
+let termKey="term",termFast=false,termDone=()=>introReady();
+function renderTerm(){const short=matchMedia("(max-height:560px)").matches,L=(short&&!termFast?[1,3]:[1,2,3]).map(k=>t(termKey+"."+k).split("|")),body=$("gTermBody");if(!body)return;   // short phones: who and status only
   $("gTermTitle").textContent=t("term.title");$("gTerm").setAttribute("aria-label",t("term.aria"));
   $("gTermText").textContent=L.map(([c,a])=>a).join(". ");
   const line=([c,a],cn,an)=>`<div class="g-term-ln"><b>$</b> <span class="g-term-cmd">${esc(c.slice(0,cn))}</span></div>`+(an>=0?`<div class="g-term-out">${esc(a.slice(0,an))}</div>`:"");
   const done=()=>{body.innerHTML=L.map(l=>line(l,l[0].length,l[1].length)).join("")+`<div class="g-term-ln"><b>$</b> <i class="g-term-cur"></i></div>`};
   clearTimeout(termTimer);
   done();body.style.minHeight="";body.style.minHeight=body.offsetHeight+"px";   // the finished text sets the height first, so typing never moves the page
-  if(termTyped||matchMedia("(prefers-reduced-motion: reduce)").matches){termTyped=true;done();return introReady()}
+  if(termTyped&&!termFast||matchMedia("(prefers-reduced-motion: reduce)").matches){termTyped=true;done();return termDone()}
   termTyped=true;let li=0,ci=0;
-  const step=()=>{if(li>=L.length){done();return introReady()}const [c,a]=L[li];
+  const step=()=>{if(li>=L.length){done();return termDone()}const [c,a]=L[li];
     if(li>=L.length)return;
-    if(ci<c.length){ci++;body.innerHTML=L.slice(0,li).map(l=>line(l,l[0].length,l[1].length)).join("")+line(L[li],ci,-1)+"";termTimer=setTimeout(step,55+Math.random()*60);return}
-    body.innerHTML=L.slice(0,li+1).map(l=>line(l,l[0].length,l[1].length)).join("");li++;ci=0;termTimer=setTimeout(step,380)};
-  termTimer=setTimeout(step,450)}
+    if(ci<c.length){ci++;body.innerHTML=L.slice(0,li).map(l=>line(l,l[0].length,l[1].length)).join("")+line(L[li],ci,-1)+"";termTimer=setTimeout(step,termFast?22+Math.random()*18:55+Math.random()*60);return}
+    body.innerHTML=L.slice(0,li+1).map(l=>line(l,l[0].length,l[1].length)).join("");li++;ci=0;termTimer=setTimeout(step,termFast?140:380)};
+  termTimer=setTimeout(step,termFast?180:450)}
 // The intro: once per visit (session), not on a deep link; tap anywhere, Enter or Esc goes to the start page.
 // Automated tests skip it (navigator.webdriver) unless the URL asks for it with ?intro.
 const introWanted=()=>{if(q.has("intro"))return true;if(!FEATURES.introTerminal||deep||navigator.webdriver)return false;try{return !sessionStorage.getItem("ekkyIntro")}catch{return true}};
@@ -121,7 +122,26 @@ function openIntro(){const el=$("gIntro");if(!el)return;el.hidden=false;document
 function closeIntro(){const el=$("gIntro");if(!el||el.hidden||el.classList.contains("out"))return;try{sessionStorage.setItem("ekkyIntro","1")}catch{}
   clearTimeout(termTimer);el.classList.add("out");document.body.classList.remove("intro-open");buzz(8);
   setTimeout(()=>{el.hidden=true;el.classList.remove("out","ready");$("gIntroGo").classList.remove("on")},matchMedia("(prefers-reduced-motion: reduce)").matches?0:320)}
-$("gIntro").addEventListener("click",closeIntro);
+$("gIntro").addEventListener("click",()=>{if($("gIntro").classList.contains("flash"))return flashEnd();closeIntro()});
+// Hire Ekky (owner, 10-29): the terminal flashes up as a pop-up and types who Ekky is, then the hiring flow opens: the
+// story card, then From hello to handshake, then Start a project shows the ways to reach him. A tap skips the flash.
+let flashNext=null;
+function flashEnd(){const el=$("gIntro");if(!flashNext)return;const go=flashNext;flashNext=null;clearTimeout(termTimer);
+  el.classList.add("out");setTimeout(()=>{el.hidden=true;el.classList.remove("out","flash","ready");termKey="term";termFast=false;termDone=()=>introReady()},matchMedia("(prefers-reduced-motion: reduce)").matches?0:220);go()}
+function flashTerm(next){const el=$("gIntro");if(!el){next();return}flashNext=next;termKey="termHire";termFast=true;termDone=()=>{termTimer=setTimeout(flashEnd,750)};
+  el.classList.add("flash");el.hidden=false;renderTerm()}
+function hireFlow(pl){const six=featuredSix().slice(0,3);
+  openSheet(`<h2 id="gSheetTitle" class="g-hf-h">${esc(t("hire.title"))}</h2>
+    <div class="g-hf-pager" id="gHfPager"><section class="g-hf-page"><button class="g-hf-story" data-hf="1"><span class="g-hf-pics" aria-hidden="true">${six.map(p=>`<img src="${thumbOf(p)}" alt="" decoding="async">`).join("")}</span>
+        <small class="g-hf-kick">${esc(t("story.kick"))}</small><b>${esc(t("story.title"))}</b><span>${esc(t("story.body"))}</span><small>${esc(t("story.swipe"))}</small></button></section>
+      <section class="g-hf-page"><h3 class="g-sheet-h3">${esc(t("deal.title"))}</h3><ol class="g-deal">${[1,2,3,4,5].map(k=>{const [h,b]=t("deal."+k).split("|");return `<li style="--i:${k}"><b>${esc(h)}</b><span>${esc(b)}</span></li>`}).join("")}</ol>
+        <button class="g-hf-go" data-hf-go>${esc(t("deal.go"))}${ico("i-next")}</button></section></div>
+    <div class="g-hf-dots" aria-hidden="true"><i class="on"></i><i></i></div>`);
+  const pg=$("gHfPager"),dots=[...document.querySelectorAll(".g-hf-dots i")];
+  const pages=[...pg.querySelectorAll(".g-hf-page")],sync=()=>{const k=Math.round(pg.scrollLeft/Math.max(1,pg.clientWidth));dots.forEach((d,i)=>d.classList.toggle("on",i===k));pages.forEach((p,i)=>{p.inert=i!==k})};   // the slide you are not on is inert
+  sync();pg.addEventListener("scroll",sync,{passive:true});
+  pg.querySelector("[data-hf]").addEventListener("click",()=>{buzz(8);pg.scrollTo({left:pg.clientWidth,behavior:"smooth"})});
+  pg.querySelector("[data-hf-go]").addEventListener("click",()=>{buzz(10);openHire("",pl,true)});sheetRe=()=>hireFlow(pl)}   // a language switch redraws the flow, without the flash
 addEventListener("keydown",e=>{if(!$("gIntro").hidden&&(e.key==="Escape"||e.key==="Enter"&&e.target===document.body)){e.preventDefault();closeIntro()}});
 function renderStart(){if(window.fitWebPin)fitWebPin();const six=featuredSix().map(p=>({p,i:PROJECTS.indexOf(p)}));
   // each drawing opens big on tap; Download lives in the viewer, not on the tile (owner, 10-28)
@@ -442,7 +462,8 @@ $("gSheetBody").addEventListener("click",e=>{const f=e.target.closest(".g-feat")
   const s=e.target.closest("[data-see]");if(s){buzz(10);show(+s.dataset.see)}});
 
 /* ---- Final Quest: the Hire sheet (B07, B17). Opens over the current screen; closing returns there. ---- */
-function openHire(prefill,pl){const l=LEVELS[4];
+function openHire(prefill,pl,direct){const l=LEVELS[4];
+  if(!prefill&&!direct&&!warming)return flashTerm(()=>hireFlow(pl));   // the Hire Ekky button: terminal, then the flow
   // Quick actions lead with the business email; every other channel shows only when CONFIG has it (B15).
   const links=[["instagram","hire.instagram"]].filter(([k])=>CONFIG.links[k]);   // owner: the sheet shows Email, Copy email and Instagram only; the other links live on Mine
   const quick=`<div class="g-quick">
