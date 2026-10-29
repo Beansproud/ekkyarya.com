@@ -164,6 +164,7 @@ const AdminCopyCheck = (() => {
       const f = document.createElement("iframe");
       f.setAttribute("aria-hidden", "true"); f.tabIndex = -1; f.title = "fit " + w;
       f.style.cssText = `position:fixed;left:-${w + 4000}px;top:0;width:${w}px;height:780px;border:0;visibility:hidden;pointer-events:none`;
+      f.style.setProperty("display", "block", "important");   // game mode hides the other children of body: it lives in the admin dialog
       f.src = "index.html?game=1&intro&fit=" + w;
       const to = setTimeout(() => rej(new Error("timeout")), 20000);
       f.onload = () => setTimeout(() => {
@@ -172,7 +173,7 @@ const AdminCopyCheck = (() => {
         try { win.eval("try{termTyped=true;renderTerm()}catch(e){};try{if(typeof warmHire==='function')warmHire()}catch(e){}"); } catch (e) {}
         res(win);
       }, 1500);
-      document.body.appendChild(f);
+      (document.getElementById("adminRoot") || document.body).appendChild(f);
     });
     frames[w].catch(() => { delete frames[w]; });
     return frames[w];
@@ -228,7 +229,7 @@ const AdminCopyCheck = (() => {
         const node = findNode(win, key, p.part);
         if (!node) return { part: p.part, found: false };
         const back = reveal(win, node);
-        try { const d = lay(win, node, fill(p.def)), n = lay(win, node, fill(p.now)); return { part: p.part, found: true, def: d.lines, now: n.lines, spill: n.spill && !d.spill }; }
+        try { const d = lay(win, node, fill(p.def)), n = lay(win, node, fill(p.now)); if (!d.lines) return { part: p.part, found: false }; return { part: p.part, found: true, def: d.lines, now: n.lines, spill: n.spill && !d.spill }; }
         catch (e) { return { part: p.part, found: false }; }
         finally { back(); }
       });

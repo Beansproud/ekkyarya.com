@@ -485,8 +485,8 @@ const AdminCopy = (() => {
       case "fix": return applyFix(k, b.dataset.l, +b.dataset.j, +b.dataset.fi);
       case "ignore": { const x = issuesOf(k).filter(y => y.l === b.dataset.l && y.src !== "fit")[+b.dataset.j]; if (x) st.ignored.add(k + "|" + x.l + "|" + x.part + "|" + (x.rule || x.code) + "|" + (x.bad || x.at)); return repaintEditor(k); }
       case "fit": return fitKey(k);
-      case "report": st.panel = st.panel === "report" ? null : "report"; needChecks().then(() => paint()); return paint('[data-a="report"]');
-      case "imp": st.panel = st.panel === "imp" ? null : "imp"; needChecks(); return paint('[data-a="imp"]');
+      case "report": st.panel = st.panel === "report" ? null : "report"; st.scroll = 0; needChecks().then(() => paint()); return paint('[data-a="report"]');
+      case "imp": st.panel = st.panel === "imp" ? null : "imp"; st.scroll = 0; needChecks(); return paint('[data-a="imp"]');
       case "closePanel": { const p = st.panel; st.panel = null; return paint(`[data-a="${p === "imp" ? "imp" : "report"}"]`); }
       case "checkAll": return checkAll();
       case "stopAll": if (st.all && st.all.ctl) st.all.ctl.abort(); return;
