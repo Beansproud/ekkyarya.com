@@ -367,32 +367,16 @@
     <p class="g-intro-hint" data-t="intro.hint"></p>
     <button class="g-intro-stars" data-arcade data-feature="starCatcher"><img src="assets/ui/helmet.png" alt="" decoding="async"><span><b data-t="intro.bored"></b><small data-t="intro.stars"></small></span></button></div>
   <section class="g-screen g-start active" id="g-start">
-    <!-- logo and tagline stay put; below them two pages you swipe between (owner, 10-29): home (a peek at the sketchbook, Color, Catch stars) and the sketchbook's six -->
+    <!-- after the terminal, the gallery and nothing else (Ekky, 10-29: "aku pngn orang bisa mnikmati galeriku sek ae, hak lngsung ditodong hire"); Hire Ekky stays in the corner -->
     <div class="g-start-head"><img class="g-logo" src="assets/logo.png" alt="Ekky Arya" decoding="async" onerror="this.outerHTML='<div class=&quot;g-logo-text&quot;>EKKY<br>ARYA</div>'">
       <div><h1 class="g-start-title" data-t="map.title"></h1></div></div>
     <div class="g-pager" id="gPager">
-      <div class="g-page g-page-home" id="gPageHome" aria-roledescription="page">
-        <!-- the story after the terminal (owner, 10-29): who Ekky is, his projects, how to work with him; swipe for the workflow -->
-        <button class="g-peek" id="gPeek"><span class="g-peek-pics" id="gPeekPics" aria-hidden="true"></span><span class="g-peek-row"><span class="g-peek-txt"><small class="g-peek-kick" data-t="story.kick"></small><b data-t="story.title"></b><span class="g-peek-body" data-t="story.body"></span><small data-t="story.swipe"></small></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></span></button>
-      </div>
-      <!-- the workflow up to an agreement (owner, 10-29: "the next slide is the workflow for agreement") -->
-      <div class="g-page g-page-flow" id="gPageFlow" aria-roledescription="page">
-        <div class="g-row-head"><h2 class="g-row-title" data-t="deal.title"></h2></div>
-        <ol class="g-deal" id="gDeal"></ol>
-        <button class="g-deal-go" data-hire><span data-t="deal.go"></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></button>
-      </div>
-      <div class="g-page g-page-sketch" id="gPageSketch" aria-roledescription="page">
+      <div class="g-page g-page-sketch" id="gPageSketch">
         <p class="g-tagline" data-t="start.tagline"></p>
       <div class="g-row-head"><h2 class="g-row-title" data-t="start.featured" data-hand="sketchbook"></h2><p class="g-hint"><span><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span data-tt="start.hint.view|View"></span></span><a class="g-apk" data-apk hidden href="https://github.com/rfim/ekkyarya.com/releases/download/app-latest/ekky-arya.apk" data-tta="start.apk.aria|Download the Android app (APK)"><b><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg><span data-tt="start.apk|APK"></span></b></a></p></div>
       <div class="g-featured" id="gFeatured"></div>
       </div>
     </div>
-    <!-- two starting points (owner, 10-29): my sketchbook, or collaborate on a project -->
-    <div class="g-tiles g-starts">
-      <button class="g-tile g-start-sketch" data-page-go="2"><img loading="lazy" src="assets/ui/pen-hand.png" alt="" fetchpriority="low"><span data-t="start.sketchbook"></span></button>
-      <button class="g-tile g-start-collab" data-page-go="1"><img loading="lazy" src="assets/ui/ekky.png" alt="" fetchpriority="low"><span data-t="start.collab"></span></button>
-    </div>
-    <div class="g-dots" id="gDots" role="tablist"><button role="tab" data-page="0" aria-selected="true"></button><button role="tab" data-page="1" aria-selected="false"></button><button role="tab" data-page="2" aria-selected="false"></button></div>
   </section>
 
   <section class="g-screen" id="g-map">
