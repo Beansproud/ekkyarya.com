@@ -451,7 +451,9 @@ function openHire(prefill,pl){const l=LEVELS[4];
     ${links.length?`<p class="g-links">${links.map(([k,c])=>`<a href="${esc(CONFIG.links[k])}" target="_blank" rel="noopener">${esc(t(c))}</a>`).join("")}</p>`:""}`;
   const types=t("hire.form.types").split("|");
   openSheet(`<h2 id="gSheetTitle">${uiImg(l.icon,"h-ico")}${esc(t("hire.title"))}</h2>
-    <p>${esc(t("hire.body"))}</p>${quick}<p class="g-small">${esc(t("hire.price"))}</p>
+    <p>${esc(t("hire.body"))}</p>
+    <h3 class="g-sheet-h3">${esc(t("deal.title"))}</h3><ol class="g-deal">${[1,2,3,4,5].map(k=>{const [h,b]=t("deal."+k).split("|");return `<li style="--i:${k}"><b>${esc(h)}</b><span>${esc(b)}</span></li>`}).join("")}</ol>
+    ${quick}<p class="g-small">${esc(t("hire.price"))}</p>
     <h3 class="g-sheet-h3">${esc(t("hire.form.title"))}</h3>
     <form id="gForm" novalidate>
       <label>${esc(t("hire.form.name"))}<input name="name" autocomplete="name" required><span class="err"></span></label>
