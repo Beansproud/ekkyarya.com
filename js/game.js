@@ -127,17 +127,21 @@ function renderStart(){if(window.fitWebPin)fitWebPin();const six=featuredSix().m
   // each drawing opens big on tap; Download lives in the viewer, not on the tile (owner, 10-28)
   $("gFeatured").innerHTML=six.map(({p,i})=>`<div class="g-feat-cell"><button class="g-feat" data-i="${i}" aria-label="${esc(ptitle(p))}${stepsOf(p).length?", "+esc(t("flow.count",{n:stepsOf(p).length})):""}"><img src="${thumbOf(p)}" alt="" decoding="async" fetchpriority="high"><b>${esc(ptitle(p))}</b>${flowMark(p,true)}</button>`+
     `</div>`).join("");
-  $("gPeekPics").innerHTML=six.slice(0,3).map(({p})=>`<img src="${thumbOf(p)}" alt="" decoding="async">`).join("");syncPage()}
+  renderDeal();$("gPeekPics").innerHTML=six.slice(0,3).map(({p})=>`<img src="${thumbOf(p)}" alt="" decoding="async">`).join("");syncPage()}
 // The start page's two pages: a native scroll-snap row (the finger drags the page itself), dots and the peek card jump
 // between them; the page you are not on is inert, so keyboards and screen readers stay on the visible one.
-const pager=$("gPager"),pages=[$("gPageHome"),$("gPageSketch")];let pageAt=0;
+const pager=$("gPager"),pages=[$("gPageHome"),$("gPageFlow"),$("gPageSketch")],PAGE_KEYS=["start.page.home","start.page.deal","start.page.sketch"];let pageAt=0;
 function setPage(k,smooth){pager.scrollTo({left:k*pager.clientWidth,behavior:smooth&&!matchMedia("(prefers-reduced-motion: reduce)").matches?"smooth":"auto"})}
-function syncPage(){const k=Math.round(pager.scrollLeft/Math.max(1,pager.clientWidth));if(k===pageAt&&pages[1-k].inert)return;pageAt=k;
+function syncPage(){const k=Math.round(pager.scrollLeft/Math.max(1,pager.clientWidth));if(k===pageAt&&pages.every((p,i)=>p.inert===(i!==k)))return;pageAt=k;
   pages.forEach((p,i)=>{p.inert=i!==k;p.setAttribute("aria-hidden",i!==k)});
-  $("gDots").querySelectorAll("button").forEach((b,i)=>{b.setAttribute("aria-selected",i===k);b.setAttribute("aria-label",t(i?"start.page.sketch":"start.page.home"))})}
+  $("gDots").querySelectorAll("button").forEach((b,i)=>{b.setAttribute("aria-selected",i===k);b.setAttribute("aria-label",t(PAGE_KEYS[i]))});
+  document.querySelectorAll("#g-start [data-page-go]").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.pageGo===k))}
 let pageRaf=0;pager.addEventListener("scroll",()=>{if(!pageRaf)pageRaf=requestAnimationFrame(()=>{pageRaf=0;syncPage()})},{passive:true});
 $("gDots").addEventListener("click",e=>{const b=e.target.closest("button");if(b){buzz(6);setPage(+b.dataset.page,true)}});
 $("gPeek").addEventListener("click",()=>{buzz(8);setPage(1,true)});
+$("g-start").addEventListener("click",e=>{const b=e.target.closest("[data-page-go]");if(b){buzz(8);setPage(+b.dataset.pageGo,true)}});
+// the workflow to an agreement: numbered steps, each a title and one line (EN and ID in js/data.js, "deal.N")
+function renderDeal(){$("gDeal").innerHTML=[1,2,3,4,5].map(k=>{const [h,b]=t("deal."+k).split("|");return `<li style="--i:${k}"><b>${esc(h)}</b><span>${esc(b)}</span></li>`}).join("")}
 addEventListener("resize",()=>setPage(pageAt,false));
 syncPage();
 $("gFeatured").addEventListener("click",e=>{const b=e.target.closest(".g-feat");if(b){buzz(10);show(+b.dataset.i)}});

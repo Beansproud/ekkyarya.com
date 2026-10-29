@@ -105,7 +105,7 @@ async function runConfig(browser,url,scheme,lang){
   await T('nav: history.back() to start',async p=>{await boot(p);const u0=p.url().split('?')[0];
     for(const t of ['art','map','mine']){await tab(p,t);await p.evaluate(()=>history.back()).catch(()=>{});await isActive(p,'g-start');
       if(!p.url().startsWith(u0))throw new Error('back from '+t+' left the app: '+p.url().slice(0,60));if(await active(p)!=='g-start')throw new Error('back from '+t+' stayed on '+await active(p))}});
-  await T('nav: back closes overlays',async p=>{await boot(p);await p.tap('[data-go=color]');await must(p,'#gColor','picker did not open');await p.evaluate(()=>history.back()).catch(()=>{});await sleep(1200);
+  await T('nav: back closes overlays',async p=>{await boot(p);await p.evaluate(()=>Game.go('color'));await must(p,'#gColor','picker did not open');await p.evaluate(()=>history.back()).catch(()=>{});await sleep(1200);
     if(!p.url().includes('localhost'))throw new Error('back from Color left the app');if(await p.isVisible('#cPick'))throw new Error('back did not close the Color picker')});
 
   // --- screens audit (size, scroll, off-screen, dark contrast) ---
@@ -114,7 +114,7 @@ async function runConfig(browser,url,scheme,lang){
 
   // --- Color ---
   const waitIdle=async p=>{await sleep(500);for(let i=0;i<30;i++){if(!await p.evaluate(()=>document.getAnimations().some(a=>a.playState==='running'&&a.effect&&a.effect.target&&a.effect.target.closest&&a.effect.target.closest('#gColor'))))break;await sleep(100)}await sleep(300)};
-  const openColor=async(p,page)=>{await p.tap('[data-go=color]');await must(p,'#cPages .c-page','picker has no pages');
+  const openColor=async(p,page)=>{await p.evaluate(()=>Game.go('color'));await must(p,'#cPages .c-page','picker has no pages');
     if(!await p.isVisible('#cPick'))throw new Error('picker not visible');
     const id=page||'giraffe';   // the tool tests measure on the giraffe; the 12 Morumelons now open the list (owner, 10-28), see 'color: Morumelons pages'
     await sleep(600);   // the picker slides in; a tap during the slide can be lost
@@ -151,7 +151,7 @@ async function runConfig(browser,url,scheme,lang){
     await p.keyboard.press('Escape');await sleep(300);if(!await vis(p,'#cShare',500))await p.evaluate(()=>{document.querySelectorAll('.open,[open]').forEach(e=>e.classList.remove('open'))});
     const before=await p.evaluate(()=>document.body.innerHTML.length);await p.tap('#cShare',{timeout:3000}).catch(()=>{throw new Error('Share button not tappable')});await sleep(1500);
     const seen=await p.evaluate(()=>[...document.querySelectorAll('[class*=share],[id*=hare],dialog[open],#toast,.toast')].some(e=>e.offsetParent&&e.getBoundingClientRect().height>20));if(!seen)throw new Error('Share: nothing appeared (no preview / sheet / toast)')});
-  await T('color: Doodle Scene (scratch) draw + sticker + undo',async p=>{await boot(p);await p.tap('[data-go=color]');await must(p,'#cPages .c-scratch','no Doodle Scene entry');await p.tap('#cPages .c-scratch');await must(p,'#cEdit #cCanvas','scratch editor did not open',8000);await sleep(800);
+  await T('color: Doodle Scene (scratch) draw + sticker + undo',async p=>{await boot(p);await p.evaluate(()=>Game.go('color'));await must(p,'#cPages .c-scratch','no Doodle Scene entry');await p.tap('#cPages .c-scratch');await must(p,'#cEdit #cCanvas','scratch editor did not open',8000);await sleep(800);
     const h0=await hash(p);const r=await p.evaluate(()=>{const b=document.getElementById('cStage').getBoundingClientRect();return [b.left,b.top,b.width,b.height]});
     await p.mouse.move(r[0]+r[2]*.2,r[1]+r[3]*.4);await p.mouse.down();for(let i=1;i<=8;i++)await p.mouse.move(r[0]+r[2]*(.2+i*.07),r[1]+r[3]*(.4+i*.02));await p.mouse.up();await sleep(400);
     const h1=await hash(p);if(h1===h0)throw new Error('drawing changed nothing');
@@ -176,7 +176,7 @@ async function runConfig(browser,url,scheme,lang){
     await tp('touchStart',all[0]);for(const q of all.slice(1)){await tp('touchMove',q);await sleep(16)}await tp('touchEnd');await cdp.detach().catch(()=>{});await sleep(250)};
   const tool=async(p,k)=>{await p.tap(`#cKit [data-tool=${k}]`);await sleep(150);if(!await p.$eval(`#cKit [data-tool=${k}]`,e=>e.getAttribute('aria-checked')==='true'))throw new Error(k+' tool not on after tap')};
   // owner: "my kid would like to love every morumelon" (to color) / "make morumelon at top of the lists": 12 pages first, each with its character's name
-  await T('color: Morumelons pages lead the list, a fill works',async p=>{await boot(p);await p.tap('[data-go=color]');await must(p,'#cPages .c-page','picker has no pages');
+  await T('color: Morumelons pages lead the list, a fill works',async p=>{await boot(p);await p.evaluate(()=>Game.go('color'));await must(p,'#cPages .c-page','picker has no pages');
     const ids=await p.$$eval('#cPages .c-page:not(.c-scratch)',a=>a.map(e=>e.dataset.page));
     if(ids.slice(0,12).join()!==Array.from({length:12},(_,k)=>'mm-'+String(k+1).padStart(2,'0')).join())throw new Error('first pages: '+ids.slice(0,13));
     await sleep(600);await p.tap('#cPages .c-page[data-page="mm-05"]');await must(p,'#cEdit #cCanvas','editor did not open',8000);await sleep(800);const t=await p.textContent('#cTitle');if(!/Kaiju Costume Melon/.test(t))throw new Error('title '+t);
@@ -244,7 +244,7 @@ async function runConfig(browser,url,scheme,lang){
     await back();if(!await vis(p,'#cPick',1500))throw new Error('Back from the editor did not go to the picker');
     await back();if(await p.isVisible('#cPick'))throw new Error('Back from the picker did not close Color');if(!p.url().includes('localhost'))throw new Error('Back left the app')});
 
-  await T('doodle: sticker drag, drop on bin, undo',async p=>{await boot(p);await p.tap('[data-go=color]');await must(p,'#cPages .c-scratch','no Doodle Scene entry');await p.tap('#cPages .c-scratch');await must(p,'#cEdit #cCanvas','scratch editor did not open',8000);await sleep(800);
+  await T('doodle: sticker drag, drop on bin, undo',async p=>{await boot(p);await p.evaluate(()=>Game.go('color'));await must(p,'#cPages .c-scratch','no Doodle Scene entry');await p.tap('#cPages .c-scratch');await must(p,'#cEdit #cCanvas','scratch editor did not open',8000);await sleep(800);
     await p.tap('#cStickBtn');await must(p,'#cTray [data-n]','no stickers');await p.tap('#cTray [data-n]');await sleep(1000);
     const pos=()=>p.$eval('#cStickers .c-st:last-child',e=>{const b=e.getBoundingClientRect();return [b.left+b.width/2,b.top+b.height/2]});
     const cnt=()=>p.$$eval('#cStickers .c-st',e=>e.length);const n1=await cnt();if(!n1)throw new Error('sticker not added');
@@ -281,10 +281,10 @@ async function runConfig(browser,url,scheme,lang){
     await tab(p,'mine');await p.tap(`#g-mine [data-lang="${to}"]`);await sleep(900);
     if(await p.evaluate(()=>document.documentElement.lang)!==to)throw new Error('html lang not updated');await check('to');
     // overlays redraw too: open the Color picker and the Hire sheet in the new language
-    await p.tap('[data-go=color]').catch(()=>{});await tab(p,'start').catch(()=>{});
+    await p.evaluate(()=>Game.go('color')).catch(()=>{});await sleep(900);await p.tap('#cPickX').catch(()=>{});await sleep(600);await tab(p,'start').catch(()=>{});
     await tab(p,'mine');await p.tap(`#g-mine [data-lang="${from}"]`);await sleep(900);await check('back')});
 
-  await T('color: language switch after closing Mewarnai does not reopen the picker',async p=>{await boot(p);await p.tap('[data-go=color]');await must(p,'#cPages .c-page','picker has no pages');await sleep(600);await p.tap('#cPickX');await sleep(600);
+  await T('color: language switch after closing Mewarnai does not reopen the picker',async p=>{await boot(p);await p.evaluate(()=>Game.go('color'));await must(p,'#cPages .c-page','picker has no pages');await sleep(600);await p.tap('#cPickX');await sleep(600);
     if(await p.isVisible('#cPick'))throw new Error('picker did not close');
     await tab(p,'mine');await p.tap(`#g-mine [data-lang="${lang==='en'?'id':'en'}"]`);await sleep(900);
     if(await p.evaluate(()=>document.getElementById('gColor').classList.contains('open')))throw new Error('language switch reopened Color');
@@ -304,7 +304,7 @@ async function runConfig(browser,url,scheme,lang){
       if(!r.label)throw new Error('Map label empty');if(r.lclip)throw new Error(`Map label "${r.label}" clipped/off-screen (${st})`);if(r.covered)throw new Error(`Map label "${r.label}" covered by the face (${st})`)}});
 
   // --- Noodle Bath page ---
-  await T('color: Noodle Bath page opens + fills',async p=>{await boot(p);await p.tap('[data-go=color]');await must(p,'#cPages .c-page','no pages');
+  await T('color: Noodle Bath page opens + fills',async p=>{await boot(p);await p.evaluate(()=>Game.go('color'));await must(p,'#cPages .c-page','no pages');
     if(!await p.$('#cPages .c-page[data-page="noodles"]'))throw new Error('no Noodle Bath entry in the picker');
     await p.evaluate(()=>document.querySelector('#cPages .c-page[data-page="noodles"]').scrollIntoView());await p.tap('#cPages .c-page[data-page="noodles"]');
     await must(p,'#cEdit #cCanvas','Noodle Bath editor did not open',8000);await sleep(900);
@@ -330,7 +330,8 @@ async function runConfig(browser,url,scheme,lang){
       const d=await restDiff(p,base);if(d>1)throw new Error(`effect ${k}: tiles ${d.toFixed(1)} px off rest after a tap`)}});
 
   // --- Catch stars ---
-  await T('stars: play, result, Share, Download, Hire',async p=>{await boot(p);await p.tap('#g-start [data-arcade]');await must(p,'#gArcade.open','arcade did not open',5000);await sleep(5000);
+  await T('stars: play, result, Share, Download, Hire',async p=>{await boot(p);await p.evaluate(()=>document.querySelector('#gIntro [data-arcade]').click());   // Catch stars lives under the intro terminal (owner, 10-29)
+    await must(p,'#gArcade.open','arcade did not open',5000);await sleep(5000);
     await audit(p,'arcade');
     if(!await vis(p,'#gResult.show',60000))throw new Error('no result screen within 65 s');await sleep(800);await audit(p,'star result');
     if(!await vis(p,'#gResult [data-hire]'))throw new Error('no Hire chip on star result');
@@ -488,7 +489,7 @@ async function runConfig(browser,url,scheme,lang){
     if(!await p.evaluate(()=>document.getElementById('gSheet').classList.contains('open')||[...document.querySelectorAll('dialog[open]')].length>0))throw new Error('Hire sheet did not open from '+what);
     await audit(p,'hire sheet')};
   for(const t of ['start','art','map','mine'])await T('hire chip: '+t,async p=>{await boot(p);if(t!=='start')await tab(p,t);await hireOn(p,t)});
-  await T('hire chip: color picker',async p=>{await boot(p);await p.tap('[data-go=color]');await must(p,'#cPick','picker did not open');await audit(p,'color picker');
+  await T('hire chip: color picker',async p=>{await boot(p);await p.evaluate(()=>Game.go('color'));await must(p,'#cPick','picker did not open');await audit(p,'color picker');
     if(!await vis(p,'#gColor [data-hire],[data-hire]:visible',500))throw new Error('no Hire chip on Color picker')});
   const q=jobs.slice();await Promise.all(Array.from({length:+process.env.POOL||4},async()=>{for(let j;(j=q.shift());)await runJob(j)}));
   return rows}
