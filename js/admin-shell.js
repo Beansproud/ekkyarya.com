@@ -1,4 +1,4 @@
-// Admin shell: the screen behind the PIN. Tabs Art, Links, Settings, Text, Messages; each tab is a mount point that
+// Admin shell: the screen behind the PIN. Tabs Art, Links, Settings, Words, Messages; each tab is a mount point that
 // other scripts fill with Admin.registerTab(id, {title:{en,id}|string, render(el, ctx)}). Also the GitHub token and Publish.
 //
 // ctx given to render(el, ctx):
@@ -12,9 +12,9 @@
 (() => {
   const A = window.Admin;
   const REPO = "rfim/ekkyarya.com", API = "https://api.github.com", TOKEN_KEY = "admGhToken";
-  const TABS = ["art", "links", "settings", "text", "messages"];
+  const TABS = ["art", "links", "settings", "words", "messages"];   // Words (js/admin-copy.js) took over the Text tab
   const TAB_TITLE = { art: { en: "Art", id: "Karya" }, links: { en: "Links", id: "Tautan" }, settings: { en: "Settings", id: "Pengaturan" },
-    text: { en: "Text", id: "Teks" }, messages: { en: "Messages", id: "Pesan" } };
+    words: { en: "Words", id: "Kata-kata" }, messages: { en: "Messages", id: "Pesan" } };
   const S = {
     title: { en: "Admin", id: "Admin" },
     close: { en: "Close", id: "Tutup" },
@@ -259,7 +259,7 @@
         save: saveToken, forget: forgetDevice, preview: () => setPreview(!previewOn), help: () => togglePop("help"), undo: startUndo, undoYes: confirmUndo, popClose: () => togglePop(null) })[b.dataset.adm]?.();
     });
     root.addEventListener("cancel", e => { e.preventDefault(); close(); });
-    addEventListener("ekky:lang", () => { if (root.open) paintAll(); else if (ribbon && ribbon.open) paintRibbon(); });
+    addEventListener("ekky:lang", () => { if (root.dataset.lang === lang()) return; if (root.open) paintAll(); else if (ribbon && ribbon.open) paintRibbon(); });   // new words in a preview fire it too: repaint only for a new language
     paintAll();
   }
 
@@ -350,6 +350,7 @@
   }
 
   function paintAll() {
+    root.dataset.lang = lang();
     root.querySelector("[data-adm=title]").textContent = s("title");
     root.querySelector("[data-adm=close]").textContent = s("close");
     const lb = root.querySelector("[data-adm=lang]"); lb.textContent = s("language"); lb.setAttribute("aria-label", s("languageAria"));
@@ -409,7 +410,7 @@
   A.shell = { show };
 
   // The tab scripts register themselves; a missing one only leaves its tab saying "not ready yet".
-  ["js/admin-art.js", "js/admin-settings.js"].forEach(src => {
+  ["js/admin-art.js", "js/admin-settings.js", "js/admin-copy.js"].forEach(src => {
     const el = document.createElement("script"); el.src = src + "?v=" + Date.now(); el.onerror = () => el.remove(); document.head.appendChild(el);
   });
 })();

@@ -27,6 +27,24 @@ const SiteData = (() => {
     }).filter(Boolean).slice(0, 8);
     return steps.length >= 2 ? { flow: FLOW_KINDS.includes(raw.flow) ? raw.flow : "process", steps } : null;
   }
+  // One COPY override (the admin Words tab), or null to keep the built-in text. Only keys that exist, as plain text
+  // (clean above: no markup, no emoji), at most 600 letters; every {placeholder} of the built-in text kept; a "a|b" text keeps
+  // its number of parts; a list (hire.types) stays a list of the same length; a trailing space of the built-in is kept.
+  const LOCKED = ["fact.count"];
+  const PH = /\{\w+\}/g;
+  function copyText(base, v, k) {
+    if (LOCKED.includes(k)) return null;
+    if (Array.isArray(base)) {
+      if (!Array.isArray(v) || v.length !== base.length) return null;
+      const a = v.map(x => clean(x).slice(0, 120));
+      return a.every(Boolean) ? a : null;
+    }
+    if (typeof base !== "string") return null;
+    let s = clean(v).slice(0, 600);
+    if (!s || (base.match(PH) || []).some(p => !s.includes(p)) || s.split("|").length !== base.split("|").length) return null;
+    if (/\s$/.test(base)) s += " ";
+    return s;
+  }
   const KINDS = ["original", "client", "fan"], CATS = ["illustration", "web", "branding", "social"];
   const ROLES = ["portfolio", "card", "featured", "share", "coloring", "sticker", "sprite", "level", "scene", "avatar", "game", "village"];
   const key = p => [p.title, p.uid, p.slug];
@@ -81,7 +99,7 @@ const SiteData = (() => {
       }
       if (isObj(d.features)) for (const k in d.features) if (typeof d.features[k] === "boolean") { g.FEATURES[k] = d.features[k]; changed = true; }
       if (isObj(d.copy)) for (const l of ["en", "id"]) if (isObj(d.copy[l]) && g.COPY[l]) for (const k in d.copy[l]) {
-        const s = clean(d.copy[l][k]); if (s) { g.COPY[l][k] = s; changed = true; } }
+        const s = copyText(g.COPY[l][k], d.copy[l][k], k); if (s !== null) { g.COPY[l][k] = s; changed = true; } }
       if (Array.isArray(d.projects)) for (const raw of d.projects) {
         const p = piece(g, raw);
         if (p && !g.PROJECTS.some(q => q.full === p.full || (p.uid && q.uid === p.uid))) { g.PROJECTS.push(p); changed = true; }
@@ -109,8 +127,10 @@ const SiteData = (() => {
     api.ready = fetch("data/site.json", { cache: "no-cache" }).then(r => r.ok ? r.json() : null).catch(() => null).then(d => {
       api.data = isOk(d) ? d : null;
       if (api.data && hasContent(api.data)) api.builtin = snapshot();   // pristine, for "reset to built-in"
+      const before = JSON.stringify(COPY);
       api.changed = api.data ? merge({ CONFIG, FEATURES, PROJECTS, COPY }, api.data) : false;
       if (api.changed) dispatchEvent(new Event("sitedata"));
+      if (JSON.stringify(COPY) !== before) relang();
       return api.changed;
     });
     return api.ready;
@@ -121,14 +141,17 @@ const SiteData = (() => {
   // Nothing is saved or sent anywhere; a reload shows the published site again.
   function preview(json) {
     if (!api.builtin) api.builtin = snapshot();   // nothing was merged at start-up, so the page is still the built-in data
-    const b = api.builtin;
+    const b = api.builtin, before = JSON.stringify(COPY);
     reset(CONFIG, b.config); reset(FEATURES, b.features); reset(COPY, b.copy);
     PROJECTS.splice(0, PROJECTS.length, ...JSON.parse(JSON.stringify(b.projects)));
     api.order = [];
     const d = json || api.data;
     if (d) merge({ CONFIG, FEATURES, PROJECTS, COPY }, d);
     dispatchEvent(new Event("sitedata"));
+    if (JSON.stringify(COPY) !== before) relang();
   }
+  // New words: every text drawn with t() is set again in place, the same way a language switch does it (js/site.js).
+  function relang() { try { if (typeof applyText === "function") applyText(); dispatchEvent(new Event("ekky:lang")); } catch (e) {} }
   const hasContent = v => Array.isArray(v) ? v.some(hasContent) : isObj(v) ? Object.entries(v).some(([k, x]) => k !== "version" && hasContent(x)) : v !== "" && v !== null && v !== undefined && v !== false;
   const isOk = d => isObj(d) && d.version === 1;
 

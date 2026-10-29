@@ -187,6 +187,58 @@ async function runConfig(browser,url,dev,lang){
     if(!np.id||typeof np.id!=='object'&&!np.tr)throw new Error('new project has no Indonesian title/description object');if(!String(np.full).includes(full)||!String(np.img).includes(thumb))throw new Error('project img/full do not point at the uploaded files');
     if(!await waitFor(()=>p.evaluate(()=>/about a minute|sekitar satu menit/i.test(document.body.innerText)),4000))throw new Error('no "Live in about a minute" note after publishing')});
 
+  // 5b. the Words tab (js/admin-copy.js): edit a line, preview it, publish only the changed keys; a lost {placeholder} blocks saving;
+  // LanguageTool is mocked (no text leaves the test). Opened without the PIN like the tests above.
+  const WORDS=have('js/admin-copy.js');const needWords=()=>{needAdmin();if(!WORDS)skip('js/admin-copy.js not landed yet')};
+  const wordsOpen=async(p,key)=>{await p.evaluate(()=>document.querySelectorAll('dialog.adm-pad[open]').forEach(d=>d.close()));   // opened without the PIN: the pad is still under the shell
+    await p.locator('#adminRoot [data-tab=words]').click();if(!await waitFor(()=>p.evaluate(()=>!!document.querySelector('#admTab-words #awSearch')),5000))throw new Error('the Words tab did not open');
+    if(key){await p.fill('#awSearch',key);const row=p.locator(`#adminRoot .aw-open[data-k="${key}"]`);if(!await waitFor(()=>row.count().then(n=>n>0),3000))throw new Error('search did not find '+key);
+      await row.click();if(!await waitFor(()=>p.locator('#aw-en-0').count().then(n=>n>0),3000))throw new Error('the line editor did not open for '+key)}};
+  T('words: edit, preview and publish only the changed keys',async(p,c)=>{needWords();const gh=mockGithub(c);await openAdmin(p);await pasteToken(p);await wordsOpen(p,'start.tagline');
+    const NEW='QA tagline, drawn with care.';await p.fill('#aw-en-0',NEW);await p.click('#adminRoot .aw-ed [data-a=save]');
+    if(!await waitFor(()=>p.evaluate(()=>!document.querySelector('#adminRoot .aw-ed')),3000))throw new Error('Save did not close the line');
+    const d=await p.evaluate(()=>JSON.stringify(Admin.ctx.data.copy));if(d!==JSON.stringify({en:{'start.tagline':NEW},id:{}}))throw new Error('working copy holds more than the changed key: '+d);
+    await p.locator('#adminRoot [data-adm=preview]').click();
+    if(!await waitFor(()=>p.evaluate(n=>COPY.en['start.tagline']===n,NEW),3000))throw new Error('Preview did not apply the new words');
+    if(phone&&lang==='en'&&!await waitFor(()=>p.evaluate(n=>document.querySelector('#g-start').innerText.includes(n),NEW),3000))throw new Error('the start page did not show the previewed words in place');
+    await p.locator('#adminRibbon [data-rb=stop]').click();if(!await waitFor(()=>p.evaluate(n=>COPY.en['start.tagline']!==n,NEW),3000))throw new Error('Stop preview did not bring the built-in words back');
+    if(!await waitFor(()=>adminOpen(p),3000))throw new Error('admin did not come back after Stop preview');
+    await publishBtn(p).first().click();if(!await waitFor(()=>committed(gh).files.length>0,6000))throw new Error('Publish sent nothing');await sleep(500);
+    const k=committed(gh),sj=JSON.parse(Buffer.from(k.files.find(f=>f.path==='data/site.json').b64,'base64').toString());
+    const en=(sj.copy||{}).en||{},id=(sj.copy||{}).id||{};
+    if(JSON.stringify(en)!==JSON.stringify({'start.tagline':NEW})||Object.keys(id).length)throw new Error('site.json copy is not only the changed key: '+JSON.stringify(sj.copy))});
+  T('words: a lost {placeholder} blocks saving',async p=>{needWords();await openAdmin(p);await wordsOpen(p,'stars.score');
+    const before=await p.evaluate(()=>JSON.stringify(Admin.ctx.data.copy||{}));await p.fill('#aw-en-0','You caught a lot of stars');await p.click('#adminRoot .aw-ed [data-a=save]');
+    if(!await waitFor(()=>p.locator('#adminRoot .aw-ed .aw-block').count().then(n=>n>0),5000))throw new Error('no red note about the lost placeholder');
+    if(await p.evaluate(()=>JSON.stringify(Admin.ctx.data.copy||{}))!==before)throw new Error('a line without {n} was saved');
+    if(!(await p.locator('#adminRoot .aw-ed [data-msg]').innerText()).trim())throw new Error('no message that nothing was saved');
+    // Esc asks instead of dropping the edit; Discard then closes the line and keeps admin open
+    await p.locator('#aw-en-0').focus();await p.keyboard.press('Escape');await sleep(200);
+    if(!await p.locator('#adminRoot .aw-ask').count())throw new Error('Esc with unsaved edits did not ask');if(!await adminOpen(p))throw new Error('Esc closed admin');
+    await p.click('#adminRoot .aw-ask [data-a=discard]');await sleep(200);if(await p.locator('#adminRoot .aw-ed').count())throw new Error('Discard did not close the line');
+    await wordsOpen(p,'stars.score');if(await p.inputValue('#aw-en-0')!==await p.evaluate(()=>SiteData.builtin?SiteData.builtin.copy.en['stars.score']:COPY.en['stars.score']))throw new Error('the discarded edit came back')});
+  T('words: LanguageTool (mocked) shows a match and a one-tap fix',async(p,c)=>{needWords();let body='';
+    await c.route('https://api.languagetool.org/**',r=>{body=r.request().postData()||'';const text=new URLSearchParams(body).get('text')||'';const at=text.indexOf('teh');
+      r.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify({matches:at<0?[]:[{message:'Possible spelling mistake found.',shortMessage:'Spelling mistake',offset:at,length:3,replacements:[{value:'the'},{value:'tea'}],rule:{id:'MORFOLOGIK_RULE_EN_US',issueType:'misspelling'}}]})})});
+    await openAdmin(p);await wordsOpen(p,'story.title');await p.fill('#aw-en-0','Every project starts as teh doodle');
+    await p.click('#adminRoot .aw-ed [data-a=lt]');if(!await waitFor(()=>p.evaluate(()=>/Possible spelling mistake/.test(document.querySelector('#adminRoot .aw-ed').innerText)),5000))throw new Error('the LanguageTool match did not show');
+    if(!/language=en-US/.test(body))throw new Error('LanguageTool was not asked for en-US: '+body.slice(0,80));
+    await p.locator('#adminRoot .aw-ed [data-a=fix]').first().click();if(await p.inputValue('#aw-en-0')!=='Every project starts as the doodle')throw new Error('the suggestion was not applied: '+await p.inputValue('#aw-en-0'));
+    // the network fails: say so, and saving still works
+    await c.unroute('https://api.languagetool.org/**');await c.route('https://api.languagetool.org/**',r=>r.abort());
+    await p.fill('#aw-en-0','Every project starts as a little doodle');await p.click('#adminRoot .aw-ed [data-a=lt]');
+    if(!await waitFor(()=>p.locator('#adminRoot .aw-ed [role=alert].aw-warn').count().then(n=>n>0),5000))throw new Error('no message when LanguageTool cannot be reached');
+    await p.click('#adminRoot .aw-ed [data-a=save]');if(!await waitFor(()=>p.evaluate(()=>(((Admin.ctx.data.copy||{}).en||{})['story.title']||'')==='Every project starts as a little doodle'),3000))throw new Error('saving was blocked by the failed check')});
+  T('merged: copy overrides are plain text, keep placeholders, show in place',async p=>{const c=p.context();if(!SITEDATA)skip('js/site-data.js not landed yet');
+    await route(c,JSON.stringify({version:1,copy:{en:{'start.tagline':'QA <b>merged</b> tagline','stars.score':'No number here','nav.about':'QA About','fact.count':'99','not.a.key':'x','hero.words':'only|two'},id:{'start.tagline':'QA slogan'}}}));await boot(p);
+    if(!await waitFor(()=>p.evaluate(()=>COPY.en['start.tagline']==='QA bmerged/b tagline'),5000))throw new Error('the override was not merged as plain text: '+await p.evaluate(()=>COPY.en['start.tagline']));
+    const r=await p.evaluate(()=>({score:COPY.en['stars.score'],count:COPY.en['fact.count'],bad:'not.a.key' in COPY.en,words:COPY.en['hero.words'],id:COPY.id['start.tagline'],about:COPY.en['nav.about']}));
+    if(!/\{n\}/.test(r.score))throw new Error('an override that lost {n} was used');if(r.count==='99')throw new Error('a locked key was overridden');if(r.bad)throw new Error('an unknown key was added');
+    if(r.words==='only|two')throw new Error('a list with the wrong number of parts was used');if(r.id!=='QA slogan'||r.about!=='QA About')throw new Error('a good override was dropped: '+JSON.stringify(r));
+    const want=lang==='id'?'QA slogan':'QA bmerged/b tagline';
+    if(phone){if(!await waitFor(()=>p.evaluate(w=>document.querySelector('#g-start').innerText.includes(w),want),4000))throw new Error('the start page does not show the merged words')}
+    else if(lang==='en'&&!await waitFor(()=>p.evaluate(()=>[...document.querySelectorAll('[data-t="nav.about"]')].some(e=>e.textContent==='QA About')),4000))throw new Error('the desktop nav does not show the merged words')});
+
   // 7. the image editor (docs/admin-editor.md): opened directly in the page through AdminEditor.open, so it needs no PIN
   const EDITOR=have('js/admin-editor.js');const needEditor=()=>{if(!EDITOR)skip('js/admin-editor.js not landed yet')};
   const edOpen=async(p,again)=>{needEditor();if(!again){await boot(p);await p.addScriptTag({url:'js/admin-editor.js'})}
