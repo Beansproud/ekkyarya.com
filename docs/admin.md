@@ -69,7 +69,7 @@ helper like the best in the industry grammar if english, and impression test".
   `fact.count` is a number the site counts with and is not editable. The Words tab replaces the old Text tab.
 - **Contract in `data/site.json`:** `"copy": {"en": {"<key>": "text"}, "id": {"<key>": "text"}}`, only keys whose text
   differs from the built-in one (Save drops a key that is back to the built-in text; an empty field means the built-in).
-  - A text with `|` (`term.N` command|answer, `deal.N` title|body, `hero.words`, `hire.form.types`) is edited as one
+  - A text with `|` (`term.N` and `termHire.N` command|answer, `deal.N` title|body, `hero.words`, `hire.form.types`) is edited as one
     field per part and stored joined with `|`; it must keep the built-in number of parts.
   - A list (`hire.types`) is stored as a list of the same length.
   - Every `{placeholder}` of the built-in text (`{n}`, `{name}`, `{title}`, `{caption}`, `{host}`, `{url}`, `{best}`)
@@ -93,8 +93,8 @@ helper like the best in the industry grammar if english, and impression test".
   - Fit on the phone: the line is set in its real place on the site in hidden 360 and 390 px frames (its own font and
     width) and the lines it takes are compared with the built-in text; more lines or spilling out of its box is flagged.
     Lines that only screen readers hear, or that show in a sheet, toast or share text the frame cannot open, say so.
-  - The 5-second impression test: pick a screen (terminal, story card, how we work, start page, Hire sheet, About,
-    desktop hero) and a language; its words show in a phone frame for 5 seconds, then hide; type what you remember and
+  - The 5-second impression test: pick a screen (the Hire flow: flash terminal, story card and steps; start page, Hire
+    contact, About, desktop hero) and a language; its words show in a phone frame for 5 seconds, then hide; type what you remember and
     the test lists the key words remembered and missed.
 - **Reversible:** a line opens in place; Save, Cancel and Back to the list close it. Back (phone), Esc, Cancel and Back
   to the list ask (Save, Discard changes, Keep editing) when the line has unsaved changes. Closing admin keeps an

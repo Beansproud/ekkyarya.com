@@ -50,7 +50,7 @@ const AdminCopyCheck = (() => {
   // Names and loanwords used on purpose in both languages.
   const NAMES = new Set("try ekky ekky's arya star catcher paint patrol doodle scene apk android app email whatsapp instagram behance linkedin dribbble tiktok youtube web website uncanny valley gmt wib morumelons ok oke".split(" "));
 
-  const codeKey = k => /^term\./.test(k);   // the terminal: shell commands and spaced columns on purpose
+  const codeKey = k => /^term(Hire)?\./.test(k);   // the terminal: shell commands and spaced columns on purpose
 
   // ---- house rules and local checks. sev: "block" (cannot save), "warn" (an issue), "soft" (a gentle note) ----
   // ctx: {key, lang, part, builtin (this part's built-in text), all (whole field text)}

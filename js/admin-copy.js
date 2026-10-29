@@ -53,8 +53,8 @@ const AdminCopy = (() => {
   };
   // Groups by screen, first match wins (a key that matches none goes to Other).
   const GROUPS = [
-    ["intro", "Phone intro: the terminal", "Intro HP: terminal", ["intro.", "term."]],
-    ["story", "Start page: story and how we work", "Halaman awal: cerita dan cara kerja", ["story.", "deal.", "start.page.", "start.sketchbook", "start.collab", "start.swipe"]],
+    ["hireflow", "Hire Ekky: flash terminal, story and steps", "Hubungi Ekky: terminal kilat, cerita dan langkah", ["termHire.", "story.", "deal."]],
+    ["intro", "Phone intro: the terminal (switched off for now)", "Intro HP: terminal (sedang dimatikan)", ["intro.", "term."]],
     ["start", "Start page", "Halaman awal", ["start.", "hud.", "home.", "tile.", "fab.", "web."]],
     ["map", "Map and the village", "Peta dan desa", ["map.", "level.", "town."]],
     ["about", "About Ekky", "Tentang Ekky", ["about."]],
@@ -81,12 +81,15 @@ const AdminCopy = (() => {
     "intro.bored": ["Small line under the terminal, before the star game link", "Baris kecil di bawah terminal, sebelum tautan game bintang"],
     "intro.stars": ["Link to Star Catcher under the terminal", "Tautan ke Star Catcher di bawah terminal"],
     "intro.hint": ["Hint under the Enter button", "Petunjuk di bawah tombol Masuk"],
-    "story.kick": ["Small line above the story card's title", "Baris kecil di atas judul kartu cerita"],
-    "story.title": ["Title of the story card on the start page", "Judul kartu cerita di halaman awal"],
+    "termHire.1": ["Flash terminal in the Hire sheet, line 1: command, then answer", "Terminal kilat di lembar Hubungi, baris 1: perintah, lalu jawaban"],
+    "termHire.2": ["Flash terminal in the Hire sheet, line 2: command, then answer", "Terminal kilat di lembar Hubungi, baris 2: perintah, lalu jawaban"],
+    "termHire.3": ["Flash terminal in the Hire sheet, line 3: command, then answer", "Terminal kilat di lembar Hubungi, baris 3: perintah, lalu jawaban"],
+    "story.kick": ["Small line above the story card's title (Hire sheet)", "Baris kecil di atas judul kartu cerita (lembar Hubungi)"],
+    "story.title": ["Title of the story card in the Hire sheet", "Judul kartu cerita di lembar Hubungi"],
     "story.body": ["The story card's text", "Teks kartu cerita"],
     "story.swipe": ["Hint at the bottom of the story card", "Petunjuk di bawah kartu cerita"],
-    "deal.title": ["Title of the How we work page", "Judul halaman Cara kerja"],
-    "deal.go": ["Button at the end of How we work: opens Hire Ekky", "Tombol di akhir Cara kerja: membuka Hubungi Ekky"],
+    "deal.title": ["Title of the steps in the Hire sheet", "Judul langkah di lembar Hubungi"],
+    "deal.go": ["Button at the end of the steps: on to the contact", "Tombol di akhir langkah: lanjut ke kontak"],
     "start.tagline": ["Line under the logo on the start page", "Baris di bawah logo di halaman awal"],
     "start.swipe": ["Hint to swipe to the six drawings", "Petunjuk geser ke enam gambar"],
     "start.sketchbook": ["Starting point 1: the sketchbook", "Titik mulai 1: buku sketsa"],
@@ -99,9 +102,9 @@ const AdminCopy = (() => {
   };
   // The 5-second test: the screens whose words are read at a glance.
   const SCREENS = [
-    ["term", "Phone intro: the terminal", "Intro HP: terminal", ["term.title", "term.1", "term.2", "term.3", "intro.bored", "intro.stars", "intro.enter"]],
-    ["story", "Start page: the story card", "Halaman awal: kartu cerita", ["story.kick", "story.title", "story.body", "story.swipe"]],
-    ["deal", "Start page: how we work", "Halaman awal: cara kerja", ["deal.title", "deal.1", "deal.2", "deal.3", "deal.4", "deal.5", "deal.go"]],
+    ["flash", "Hire: the flash terminal", "Hubungi: terminal kilat", ["term.title", "termHire.1", "termHire.2", "termHire.3"]],
+    ["story", "Hire: the story card", "Hubungi: kartu cerita", ["story.kick", "story.title", "story.body", "story.swipe"]],
+    ["deal", "Hire: the steps", "Hubungi: langkahnya", ["deal.title", "deal.1", "deal.2", "deal.3", "deal.4", "deal.5", "deal.go"]],
     ["start", "Start page: home", "Halaman awal: beranda", ["start.tagline", "start.role", "start.sketchbook", "start.collab", "start.featured", "start.swipe"]],
     ["hire", "Hire Ekky sheet", "Lembar Hubungi Ekky", ["hire.title", "hire.body", "hire.price", "hire.email", "hire.formTitle", "hire.messageHint", "hire.send"]],
     ["about", "About Ekky", "Tentang Ekky", ["about.title", "about.body", "about.fact.from", "about.fact.lang", "about.fact.hours", "about.fact.price", "about.workedWith"]],
@@ -135,7 +138,7 @@ const AdminCopy = (() => {
 
   function partNames(k, n) {
     if (n < 2) return [""];
-    if (/^term\.\d/.test(k)) return lg() ? ["Perintah", "Jawaban"] : ["Command", "Answer"];
+    if (/^term(Hire)?\.\d/.test(k)) return lg() ? ["Perintah", "Jawaban"] : ["Command", "Answer"];
     if (/^deal\.\d/.test(k)) return lg() ? ["Judul", "Isi"] : ["Title", "Body"];
     const w = /words$/.test(k) ? (lg() ? "Kata" : "Word") : /types$/.test(k) ? (lg() ? "Pilihan" : "Option") : (lg() ? "Bagian" : "Part");
     return Array.from({ length: n }, (_, i) => w + " " + (i + 1));

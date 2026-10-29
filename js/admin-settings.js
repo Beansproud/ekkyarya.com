@@ -1,4 +1,4 @@
-// Admin settings tabs (docs/admin.md): Links, Settings, Text, Messages. Loaded by js/admin.js after the PIN.
+// Admin settings tabs (docs/admin.md): Links, Settings, Messages (the Words tab, js/admin-copy.js, edits the text). Loaded by js/admin.js after the PIN.
 // Each tab edits a copy of data/site.json through ctx.setData(next) (the whole object); ctx.publish() commits it.
 // ctx.getData() returns the current object (ctx.data is accepted too). Built-in values come from ctx.builtin when the
 // loader keeps them, else from CONFIG, FEATURES and COPY.
@@ -119,49 +119,6 @@ function settingsTab(el, ctx) {
     h("div", { class: "as-switches" }, feats));
 }
 
-function textTab(el, ctx) {
-  const b = builtin(ctx).copy, keys = Object.keys(b.en || {}).filter(k => typeof b.en[k] === "string").sort();   // keys that hold a function are not editable text
-  const search = h("input", { class: "as-in", id: "as-search", type: "search", placeholder: pick(ctx, "Search a key or a word", "Cari kunci atau kata"), autocomplete: "off" });
-  const list = h("div", { class: "as-rows" });
-  const cur = (d, l, k) => ((d.copy || {})[l] || {})[k];
-  const draw = () => {
-    const q = search.value.trim().toLowerCase(), d = data(ctx);
-    const hits = keys.filter(k => !q || k.toLowerCase().includes(q) || (b.en[k] || "").toLowerCase().includes(q) || String(b.id[k] || "").toLowerCase().includes(q));
-    list.replaceChildren(...hits.slice(0, 30).map(k => row(k, d)),
-      h("p", { class: "as-note" }, hits.length > 30 ? pick(ctx, hits.length + " matches, showing 30. Search more to narrow.", hits.length + " cocok, 30 ditampilkan. Cari lebih spesifik.")
-        : hits.length ? pick(ctx, hits.length + " matches", hits.length + " cocok") : pick(ctx, "Nothing found.", "Tidak ditemukan.")));
-  };
-  const row = (k, d) => {
-    const msg = h("p", { class: "as-err", role: "alert" });
-    const areas = ["en", "id"].map(l => {
-      const a = h("textarea", { class: "as-in as-area", id: `as-t-${l}-${k}`, rows: "3", lang: l });
-      a.value = cur(d, l, k) ?? (b[l] || {})[k] ?? "";
-      a.addEventListener("input", () => {
-        const bad = EMOJI.test(a.value);
-        a.setAttribute("aria-invalid", bad ? "true" : "false");
-        msg.textContent = bad ? pick(ctx, "No emoji, please.", "Tanpa emoji, ya.") : "";
-        if (bad) return;
-        edit(ctx, x => {
-          x.copy = x.copy || {}; x.copy[l] = x.copy[l] || {};
-          if (a.value === (b[l] || {})[k]) delete x.copy[l][k]; else x.copy[l][k] = a.value;
-        });
-      });
-      return h("div", { class: "as-col" }, h("label", { class: "as-label", for: a.id }, l.toUpperCase()), a);
-    });
-    const reset = h("button", { type: "button", class: "as-btn", onclick: () => {
-      edit(ctx, x => { ["en", "id"].forEach(l => { if (x.copy && x.copy[l]) delete x.copy[l][k]; }); });
-      areas.forEach((c, i) => { c.querySelector("textarea").value = (b[["en", "id"][i]] || {})[k] ?? ""; });
-      msg.textContent = "";
-    } }, pick(ctx, "Reset to built-in text", "Kembalikan ke teks bawaan"));
-    return h("section", { class: "as-row" }, h("code", { class: "as-key" }, k), h("div", { class: "as-cols" }, areas), msg, reset);
-  };
-  search.addEventListener("input", draw);
-  el.replaceChildren(
-    h("p", { class: "as-intro" }, pick(ctx, "Change any line of the site, in English and Indonesian side by side.", "Ubah baris mana pun di situs, bahasa Inggris dan Indonesia berdampingan.")),
-    field("as-search", pick(ctx, "Find text", "Cari teks"), search), list);
-  draw();
-}
-
 function messagesTab(el, ctx) {
   const email = (data(ctx).contact || {}).email || builtin(ctx).config.email;
   el.replaceChildren(
@@ -172,10 +129,10 @@ function messagesTab(el, ctx) {
     h("p", { class: "as-note" }, pick(ctx, "A real inbox inside admin needs a backend, which comes later.", "Kotak masuk sungguhan di admin butuh backend, nanti.")));
 }
 
-const TABS = [["links", "Links", linksTab], ["settings", "Settings", settingsTab], ["text", "Text", textTab], ["messages", "Messages", messagesTab]];
+const TABS = [["links", "Links", linksTab], ["settings", "Settings", settingsTab], ["messages", "Messages", messagesTab]];
 function register(Admin) { TABS.forEach(([id, title, render]) => Admin.registerTab(id, { title, render })); }
 // Admin not loaded yet: queue the tabs on window.AdminTabs ({id, title, render}) for the shell to pick up
 if (typeof Admin !== "undefined" && Admin.registerTab) register(Admin);
 else (window.AdminTabs = window.AdminTabs || []).push(...TABS.map(([id, title, render]) => ({ id, title, render })));
-return { register, linksTab, settingsTab, textTab, messagesTab, HTTPS };
+return { register, linksTab, settingsTab, messagesTab, HTTPS };
 })();
