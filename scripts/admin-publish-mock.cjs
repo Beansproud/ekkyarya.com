@@ -7,9 +7,9 @@ const b64=o=>Buffer.from(typeof o==='string'?o:JSON.stringify(o)).toString('base
 const p=await (await b.newContext(IP)).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));const calls=[];let moved=false;
 await p.route('https://api.github.com/**',async route=>{const u=route.request().url().replace('https://api.github.com','');const m=route.request().method();calls.push(m+' '+u.slice(0,70));
  const j=o=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(o)});
- if(u==='/repos/rfim/ekkyarya.com')return j({default_branch:'main',permissions:{push:true}});
+ if(u==='/repos/Beansproud/ekkyarya.com')return j({default_branch:'main',permissions:{push:true}});
  if(u.includes('/commits?sha'))return j([{sha:'h1',commit:{message:'Admin: add Zed'}},{sha:'x0',commit:{message:'other'}}]);
- if(u.endsWith('/repos/rfim/ekkyarya.com/commits/h1'))return j({sha:'h1',parents:[{sha:'p0'}],commit:{message:'Admin: add Zed',author:{date:'2026-10-28T05:00:00Z'}},files:[{filename:'data/site.json',status:'modified',sha:'S1'},{filename:'assets/work/u/zed.jpg',status:'added',sha:'Z1'}]});
+ if(u.endsWith('/repos/Beansproud/ekkyarya.com/commits/h1'))return j({sha:'h1',parents:[{sha:'p0'}],commit:{message:'Admin: add Zed',author:{date:'2026-10-28T05:00:00Z'}},files:[{filename:'data/site.json',status:'modified',sha:'S1'},{filename:'assets/work/u/zed.jpg',status:'added',sha:'Z1'}]});
  if(u.includes('/contents/data/site.json?ref=main'))return j({sha:moved?'OTHER':'S1'});
  if(u.includes('/contents/assets/work/u/zed.jpg?ref=main'))return j({sha:'Z1'});
  if(u.includes('/contents/data/site.json?ref=p0'))return j({sha:'S0',content:b64({version:1,projects:[]})});

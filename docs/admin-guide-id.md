@@ -28,7 +28,7 @@ mengubahnya).
 3. **Token name:** nama yang mudah dikenali, misalnya `Admin Ekky, HP saya`.
 4. **Expiration:** pilih tanggal, misalnya 90 hari. Saat habis, Terbitkan berhenti bekerja dan kamu buat token baru
    (langkahnya sama).
-5. **Repository access:** pilih **Only select repositories** lalu pilih **rfim/ekkyarya.com**. Hanya yang ini.
+5. **Repository access:** pilih **Only select repositories** lalu pilih **Beansproud/ekkyarya.com**. Hanya yang ini.
 6. **Permissions**, di bagian Repository permissions: ubah **Contents** menjadi **Read and write**. Yang lain biarkan
    saja (GitHub menambahkan "Metadata: Read-only" sendiri, itu tidak apa-apa).
 7. Tekan **Generate token** lalu salin. GitHub hanya menampilkannya sekali.
@@ -187,7 +187,7 @@ Terbitkan lagi.
 
 | Admin menulis | Yang dilakukan |
 |---|---|
-| GitHub menolak token. Pastikan token punya akses Contents baca dan tulis untuk repositori ini. | Token sudah habis, sudah dihapus, atau dibuat tanpa **Contents: Read and write** untuk **rfim/ekkyarya.com**. Buat token baru (bagian 1), tekan **Lupakan perangkat ini**, tempel token baru, lalu Terbitkan lagi. |
+| GitHub menolak token. Pastikan token punya akses Contents baca dan tulis untuk repositori ini. | Token sudah habis, sudah dihapus, atau dibuat tanpa **Contents: Read and write** untuk **Beansproud/ekkyarya.com**. Buat token baru (bagian 1), tekan **Lupakan perangkat ini**, tempel token baru, lalu Terbitkan lagi. |
 | GitHub tidak menerima token ini untuk repositori. (saat menyimpan token) | Sama seperti di atas: periksa repositori dan izin Contents, atau salin ulang tokennya (seluruhnya). |
 | Tidak ada koneksi ke GitHub. | Periksa koneksi internet lalu tekan Terbitkan lagi. |
 | Hanya baca: tempel token GitHub untuk menerbitkan. | Belum ada token di perangkat ini. Lihat bagian 1. |

@@ -1,5 +1,5 @@
 # Builds the Android app (Capacitor) and publishes it as a direct download for the site's "Get the app" button:
-# https://github.com/rfim/ekkyarya.com/releases/download/app-latest/ekky-arya.apk
+# https://github.com/Beansproud/ekkyarya.com/releases/download/app-latest/ekky-arya.apk
 # Signed with the owner's fixed key when the ANDROID_KEYSTORE_* secrets are set (owner, 2026-10-28), so updates
 # install over the old app; phones that have a debug build installed uninstall it once. See docs/android-apk.md.
 name: Android APK

@@ -38,10 +38,10 @@ const snapshot=p=>p.evaluate(()=>({n:PROJECTS.length,titles:PROJECTS.map(x=>x.ti
 // ---- mocked GitHub ----
 function mockGithub(ctx,state={}){const log={reqs:[],puts:[],commits:[],blobs:{},trees:[],unknown:[]};let n=0;
   const site=JSON.stringify({version:1,projects:[],hidden:[]});const ok=(route,body,status=200)=>route.fulfill({status,contentType:'application/json',headers:{'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'*'},body:JSON.stringify(body)});
-  ctx.route('https://api.github.com/**',async route=>{const rq=route.request(),u=new URL(rq.url()),m=rq.method(),path=u.pathname.replace('/repos/rfim/ekkyarya.com','');
+  ctx.route('https://api.github.com/**',async route=>{const rq=route.request(),u=new URL(rq.url()),m=rq.method(),path=u.pathname.replace('/repos/Beansproud/ekkyarya.com','');
     if(m==='OPTIONS')return ok(route,{});log.reqs.push({m,path,auth:rq.headers()['authorization']||''});let body={};try{body=rq.postDataJSON()||{}}catch(e){}
     if(m==='GET'&&path==='/user')return ok(route,{login:'qa'});
-    if(m==='GET'&&u.pathname==='/repos/rfim/ekkyarya.com')return ok(route,{default_branch:'main',permissions:{push:true,admin:false,pull:true}});
+    if(m==='GET'&&u.pathname==='/repos/Beansproud/ekkyarya.com')return ok(route,{default_branch:'main',permissions:{push:true,admin:false,pull:true}});
     if(m==='GET'&&path==='/contents/data/site.json')return ok(route,{type:'file',path:'data/site.json',sha:'sha-site',encoding:'base64',content:Buffer.from(site).toString('base64')});
     if(m==='GET'&&path.startsWith('/contents/'))return ok(route,{message:'Not Found'},404);
     if(m==='PUT'&&path.startsWith('/contents/')){log.puts.push({path:decodeURIComponent(path.slice(10)),message:body.message,b64:body.content,sha:body.sha,branch:body.branch});return ok(route,{content:{sha:'c'+(++n)},commit:{sha:'k'+n}},201)}

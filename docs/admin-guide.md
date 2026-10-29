@@ -27,7 +27,7 @@ changes to the site. Make it on github.com with the GitHub account that owns the
 3. **Token name:** something you will recognise, for example `Ekky admin, my phone`.
 4. **Expiration:** pick a date, for example 90 days. When it runs out, Publish stops working and you make a new one
    (same steps).
-5. **Repository access:** choose **Only select repositories** and pick **rfim/ekkyarya.com**. Only this one.
+5. **Repository access:** choose **Only select repositories** and pick **Beansproud/ekkyarya.com**. Only this one.
 6. **Permissions**, under Repository permissions: set **Contents** to **Read and write**. Leave everything else as it
    is (GitHub adds "Metadata: Read-only" by itself, that is fine).
 7. Press **Generate token** and copy it. GitHub shows it only once.
@@ -181,7 +181,7 @@ Your changes stay waiting as long as you do not reload the page, so you can fix 
 
 | Admin says | What to do |
 |---|---|
-| GitHub refused the token. Check that it has Contents read and write for this repository. | The token has run out, was deleted, or was made without **Contents: Read and write** on **rfim/ekkyarya.com**. Make a new token (section 1), press **Forget this device**, paste the new one, then Publish again. |
+| GitHub refused the token. Check that it has Contents read and write for this repository. | The token has run out, was deleted, or was made without **Contents: Read and write** on **Beansproud/ekkyarya.com**. Make a new token (section 1), press **Forget this device**, paste the new one, then Publish again. |
 | GitHub did not accept this token for the repository. (when saving the token) | Same as above: check the repository and the Contents permission, or copy the token again (all of it). |
 | No connection to GitHub. | Check the internet connection and press Publish again. |
 | Read only: paste a GitHub token to publish. | No token on this device yet. See section 1. |

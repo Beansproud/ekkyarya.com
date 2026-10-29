@@ -146,8 +146,8 @@ const AdminHistory = (() => {
         <b>${x.kind === "undo" ? esc(s("undo")) + ": " : ""}${esc((lg() && x.titleId) || x.title || "")}</b></summary>
         <ul class="ah-ch">${(x.changes || []).map(c => `<li>${esc(lg() ? c.id || c.en : c.en)}</li>`).join("")}</ul>
         ${(x.uploads || []).length ? `<p class="ah-note"><b>${esc(s("uploadsT"))}</b></p><ul class="ah-up">${x.uploads.map(upHtml).join("")}</ul>` : ""}
-        ${(x.files || []).length ? `<p class="ah-note">${esc(s("files", x.files.length))}: ${esc(x.files.join(", "))}</p>` : ""}${x.sha ? `<a href="https://github.com/rfim/ekkyarya.com/commit/${esc(x.sha)}" target="_blank" rel="noopener">${esc(s("commit"))}</a>` : ""}</details></li>`).join("")}</ol>
-      <p><a class="ah-link" href="https://github.com/rfim/ekkyarya.com/commits/main/data/history.json" target="_blank" rel="noopener">${esc(s("all"))}</a></p></div>`;
+        ${(x.files || []).length ? `<p class="ah-note">${esc(s("files", x.files.length))}: ${esc(x.files.join(", "))}</p>` : ""}${x.sha ? `<a href="https://github.com/Beansproud/ekkyarya.com/commit/${esc(x.sha)}" target="_blank" rel="noopener">${esc(s("commit"))}</a>` : ""}</details></li>`).join("")}</ol>
+      <p><a class="ah-link" href="https://github.com/Beansproud/ekkyarya.com/commits/main/data/history.json" target="_blank" rel="noopener">${esc(s("all"))}</a></p></div>`;
     if (focus) { const f = el.querySelector(focus); if (f) { f.focus({ preventScroll: true }); if (f.setSelectionRange) f.setSelectionRange(f.value.length, f.value.length); } }
   }
   const STYLE = `

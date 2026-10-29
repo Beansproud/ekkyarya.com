@@ -22,7 +22,7 @@ Owner's choices: **GitHub as the backend**, **PIN only**.
   `7c804fa1e00adf130631ae11cf0d38b9d97ff9117663687fb625c850eaf332e2` and compares hashes (`crypto.subtle`).
   Never write the PIN itself in code, docs, commits or messages.
 - **The PIN only opens the admin screen.** Publishing needs the owner's GitHub token: a fine-grained token with
-  Contents read and write on `rfim/ekkyarya.com`. He pastes it once in admin. It is kept only in that browser's
+  Contents read and write on `Beansproud/ekkyarya.com`. He pastes it once in admin. It is kept only in that browser's
   localStorage, never sent anywhere but api.github.com, and can be removed with a "Forget this device" button. Without a
   token, admin works read-only.
 - **Admin code loads in two steps.** A door loads only the PIN pad (`js/admin.js`); the admin screen (`js/admin-shell.js`
@@ -154,7 +154,7 @@ Owner, 2026-10-29: "after upload etc it has some history log so he can remember 
 
 ## Publishing
 
-- One **Publish** button makes one commit through the GitHub contents API (`PUT /repos/rfim/ekkyarya.com/contents/...`),
+- One **Publish** button makes one commit through the GitHub contents API (`PUT /repos/Beansproud/ekkyarya.com/contents/...`),
   with the message `Admin: <what changed>`.
 - New art: the image is resized in the browser to 1600 px (full) and 480 px (thumb), saved as JPEG at about 0.82, and
   uploaded to `assets/work/u/` and `assets/work/thumb/u/`.
