@@ -25,8 +25,8 @@ const FEATURES = {
   apkDownload: true,     // glowing "APK" chip on the start page, Android browsers only (owner, 10-28); links to the app-latest release (GitHub build)
   artDownload: true,     // lightbox Download: a copy of at most 1600 px with a subtle mark, never on fan art (owner: yes)
   sound: true,           // sound effects and the sound toggle
-  introTerminal: true,   // the phone's typing-terminal intro (10-29). Ekky: no marketing push ("ngoyo bngt matketinge"), gallery first;
-                         // the owner: "terminal is ok, but different wording. see my gallery". It ends on "See my gallery".
+  introTerminal: false,  // the typing terminal as the site's opening (10-29). Off: the site opens on the gallery (Ekky: gallery first,
+                         // no hire push); the terminal now flashes as a pop-up when Hire Ekky is tapped (owner, 10-29). ?intro still shows it.
   handLettering: false,  // S3: headings with data-hand="<word>" show Ekky's lettering (assets/hand/<word>.png, listed in
                          // assets/hand/index.json); the heading text stays the accessible name. Off until Ekky's sheet arrives.
   aboutPhoto: false,     // S3: a photo or self-portrait in About (assets/hand/ekky.jpg, listed in assets/hand/index.json). Off until it arrives.
