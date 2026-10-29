@@ -33,7 +33,7 @@ const pref=()=>{try{return localStorage.getItem("ekkyMode")}catch{return null}};
 const q=new URLSearchParams(location.search);
 const deep=["color","challenge","card"].some(k=>q.has(k));   // any deep link opens game mode, on desktop too (B12)
 function setMode(){const on=native||deep||q.has("game")||(phone.matches&&pref()!=="classic");
-  document.body.classList.toggle("game-mode",on);if(on)renderAll()}
+  document.body.classList.toggle("game-mode",on);if(on){renderAll();if(introWanted()&&$("gIntro").hidden&&!setMode.done)openIntro()}setMode.done=true}
 document.querySelectorAll("[data-classic]").forEach(b=>b.onclick=()=>{try{localStorage.setItem("ekkyMode","classic")}catch{};
   document.body.classList.remove("game-mode");const u=new URL(location);u.searchParams.delete("game");history.replaceState(null,"",u)});
 $("gFab").onclick=()=>{try{localStorage.removeItem("ekkyMode")}catch{};document.body.classList.add("game-mode");renderAll()};
@@ -99,20 +99,31 @@ G.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(g){buzz(
 // The start page's terminal: three commands with their answers, typed once per visit, then a cursor that blinks a few
 // times and rests (nothing loops forever). Later visits, a language switch and reduced motion show the text at once.
 let termTyped=false,termTimer=0;
-function renderTerm(){const short=matchMedia("(max-height:700px)").matches,L=(short?[1,3]:[1,2,3]).map(k=>t("term."+k).split("|")),body=$("gTermBody");if(!body)return;   // short phones: who and status only
+function renderTerm(){const short=matchMedia("(max-height:560px)").matches,L=(short?[1,3]:[1,2,3]).map(k=>t("term."+k).split("|")),body=$("gTermBody");if(!body)return;   // short phones: who and status only
   $("gTermTitle").textContent=t("term.title");$("gTerm").setAttribute("aria-label",t("term.aria"));
   $("gTermText").textContent=L.map(([c,a])=>a).join(". ");
   const line=([c,a],cn,an)=>`<div class="g-term-ln"><b>$</b> <span class="g-term-cmd">${esc(c.slice(0,cn))}</span></div>`+(an>=0?`<div class="g-term-out">${esc(a.slice(0,an))}</div>`:"");
   const done=()=>{body.innerHTML=L.map(l=>line(l,l[0].length,l[1].length)).join("")+`<div class="g-term-ln"><b>$</b> <i class="g-term-cur"></i></div>`};
   clearTimeout(termTimer);
   done();body.style.minHeight="";body.style.minHeight=body.offsetHeight+"px";   // the finished text sets the height first, so typing never moves the page
-  if(termTyped||matchMedia("(prefers-reduced-motion: reduce)").matches){termTyped=true;return done()}
+  if(termTyped||matchMedia("(prefers-reduced-motion: reduce)").matches){termTyped=true;done();return introReady()}
   termTyped=true;let li=0,ci=0;
-  const step=()=>{if(li>=L.length)return done();const [c,a]=L[li];
+  const step=()=>{if(li>=L.length){done();return introReady()}const [c,a]=L[li];
+    if(li>=L.length)return;
     if(ci<c.length){ci++;body.innerHTML=L.slice(0,li).map(l=>line(l,l[0].length,l[1].length)).join("")+line(L[li],ci,-1)+"";termTimer=setTimeout(step,55+Math.random()*60);return}
     body.innerHTML=L.slice(0,li+1).map(l=>line(l,l[0].length,l[1].length)).join("");li++;ci=0;termTimer=setTimeout(step,380)};
   termTimer=setTimeout(step,450)}
-function renderStart(){if(window.fitWebPin)fitWebPin();renderTerm();const six=featuredSix().map(p=>({p,i:PROJECTS.indexOf(p)}));
+// The intro: once per visit (session), not on a deep link; tap anywhere, Enter or Esc goes to the start page.
+// Automated tests skip it (navigator.webdriver) unless the URL asks for it with ?intro.
+const introWanted=()=>{if(q.has("intro"))return true;if(deep||navigator.webdriver)return false;try{return !sessionStorage.getItem("ekkyIntro")}catch{return true}};
+function introReady(){const go=$("gIntroGo");if(go&&!$("gIntro").hidden){go.classList.add("on");$("gIntro").classList.add("ready");if(!matchMedia("(pointer:coarse)").matches)go.focus({preventScroll:true})}}   // keyboards get focus; a finger never sees a ring
+function openIntro(){const el=$("gIntro");if(!el)return;el.hidden=false;document.body.classList.add("intro-open");renderTerm()}
+function closeIntro(){const el=$("gIntro");if(!el||el.hidden||el.classList.contains("out"))return;try{sessionStorage.setItem("ekkyIntro","1")}catch{}
+  clearTimeout(termTimer);el.classList.add("out");document.body.classList.remove("intro-open");buzz(8);
+  setTimeout(()=>{el.hidden=true;el.classList.remove("out","ready");$("gIntroGo").classList.remove("on")},matchMedia("(prefers-reduced-motion: reduce)").matches?0:320)}
+$("gIntro").addEventListener("click",closeIntro);
+addEventListener("keydown",e=>{if(!$("gIntro").hidden&&(e.key==="Escape"||e.key==="Enter"&&e.target===document.body)){e.preventDefault();closeIntro()}});
+function renderStart(){if(window.fitWebPin)fitWebPin();const six=featuredSix().map(p=>({p,i:PROJECTS.indexOf(p)}));
   // each drawing opens big on tap; Download lives in the viewer, not on the tile (owner, 10-28)
   $("gFeatured").innerHTML=six.map(({p,i})=>`<div class="g-feat-cell"><button class="g-feat" data-i="${i}" aria-label="${esc(ptitle(p))}${stepsOf(p).length?", "+esc(t("flow.count",{n:stepsOf(p).length})):""}"><img src="${thumbOf(p)}" alt="" decoding="async" fetchpriority="high"><b>${esc(ptitle(p))}</b>${flowMark(p,true)}</button>`+
     `</div>`).join("")}
@@ -642,6 +653,7 @@ const hireRaw=openHire;openVillager=remember(openVillager);openLevel=remember(op
 function redrawScreens(){   // the screen in view is drawn again; the others are marked and drawn when opened
   renderMine();
   if(screen==="start")renderStart();else dirty.start=true;
+  if(!$("gIntro").hidden){renderTerm()}   // the intro shows its text at once in the new language
   if(artDone){if(screen==="art")renderArt();else dirty.art=true}
   if(mapBuilt){if(screen==="map"){const sv={s:Z.s,x:Z.x,y:Z.y};renderMap();if(sv.s>1){widen(true);zoomTo(sv.s,sv.x,sv.y)}}else dirty.map=true}}
 addEventListener("sitedata",redrawScreens);   // js/site-data.js merged data/site.json: new, hidden or reordered art and links show without a reload

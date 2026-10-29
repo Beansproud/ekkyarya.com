@@ -1250,19 +1250,32 @@ body.game-mode #lightbox .lb-flow{margin-top:2px}
 .c-tools .c-tool .ico{width:26px;height:26px}
 .c-kt.on{background:#FFF1C7;border-color:#FFB400;box-shadow:0 0 0 2px #FFB400}
 .c-stage-wrap{padding:6px}
-/* ---- Start page terminal (owner, 10-29): a cartoon terminal window that types what Ekky does ---- */
-#g-start .g-term{flex:none;margin:14px 0 4px;border:3px solid #2B1342;border-radius:18px;background:#2B1342;box-shadow:0 5px 0 #2B1342;overflow:hidden;transform:rotate(-.6deg)}
-#g-start .g-term-bar{display:flex;align-items:center;gap:7px;padding:8px 12px;background:#FFB400;border-bottom:3px solid #2B1342}
-#g-start .g-term-bar i{width:13px;height:13px;border-radius:50%;border:2.5px solid #2B1342;background:#FF8FB1}
-#g-start .g-term-bar i:nth-child(2){background:#FFFFFF}
-#g-start .g-term-bar i:nth-child(3){background:#7ED9B0}
-#g-start .g-term-bar span{margin-left:6px;font:700 .82rem Fredoka,system-ui,sans-serif;color:#2B1342;letter-spacing:.02em}
-#g-start .g-term-body{padding:10px 14px 12px;font:600 .86rem/1.45 ui-monospace,"SF Mono",Menlo,Consolas,monospace;color:#FFF3DC;text-align:left}
-#g-start .g-term-ln b{color:#FFB400;font-weight:800}
-#g-start .g-term-cmd{color:#7ED9B0}
-#g-start .g-term-out{color:#FFF3DC;opacity:.92;margin-bottom:2px}
-#g-start .g-term-cur{display:inline-block;width:.6em;height:1.05em;vertical-align:-.18em;background:#FFB400;border-radius:2px;animation:g-term-blink 1s steps(2,start) 6}
+/* ---- Intro terminal (owner, 10-29): the phone's first screen, a cartoon terminal that types what Ekky does, then Enter ---- */
+#game .g-intro{position:fixed;inset:0;z-index:150;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+  padding:calc(env(safe-area-inset-top) + 20px) calc(env(safe-area-inset-right) + 20px) calc(env(safe-area-inset-bottom) + 24px) calc(env(safe-area-inset-left) + 20px);
+  background:#FFFDF8;color:#2B1342;cursor:pointer;transition:opacity .3s ease-out,transform .3s ease-out}
+#game .g-intro[hidden]{display:none}
+#game .g-intro.out{opacity:0;transform:scale(1.04);pointer-events:none}
+body.intro-open #game .g-tabs,body.intro-open #game .g-home,body.intro-open #game .g-hire-pin,body.intro-open #game .g-web-pin{visibility:hidden}
+#game .g-intro-logo{width:96px;height:auto}
+#game .g-term{width:min(100%,460px);border:3px solid #2B1342;border-radius:18px;background:#2B1342;box-shadow:0 6px 0 #2B1342;overflow:hidden;transform:rotate(-.8deg)}
+#game .g-term-bar{display:flex;align-items:center;gap:7px;padding:9px 12px;background:#FFB400;border-bottom:3px solid #2B1342}
+#game .g-term-bar i{width:14px;height:14px;border-radius:50%;border:2.5px solid #2B1342;background:#FF8FB1}
+#game .g-term-bar i:nth-child(2){background:#FFFFFF}
+#game .g-term-bar i:nth-child(3){background:#7ED9B0}
+#game .g-term-bar span{margin-left:6px;font:700 .9rem Fredoka,system-ui,sans-serif;color:#2B1342;letter-spacing:.02em}
+#game .g-term-body{padding:14px 16px 16px;font:600 .98rem/1.5 ui-monospace,"SF Mono",Menlo,Consolas,monospace;color:#FFF3DC;text-align:left}
+#game .g-term-ln b{color:#FFB400;font-weight:800}
+#game .g-term-cmd{color:#7ED9B0}
+#game .g-term-out{color:#FFF3DC;opacity:.92;margin-bottom:4px}
+#game .g-term-cur{display:inline-block;width:.6em;height:1.05em;vertical-align:-.18em;background:#FFB400;border-radius:2px;animation:g-term-blink 1s steps(2,start) 6}
 @keyframes g-term-blink{to{visibility:hidden}}
-@media (max-height:700px){#g-start .g-term{margin:8px 0 2px}#g-start .g-term-bar{padding:5px 10px}#g-start .g-term-body{padding:7px 12px 8px;font-size:.76rem;line-height:1.35}}
-#g-start .g-term-sr{color:#FFF3DC;position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
-@media (prefers-reduced-motion:reduce){#g-start .g-term-cur{animation:none}#g-start .g-term{transform:none}}
+#game .g-term-sr{color:#FFF3DC;position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+#game .g-intro-go{display:inline-flex;align-items:center;gap:10px;min-height:56px;padding:0 28px;border-radius:16px;background:#FFB400;color:#2B1342;border:3px solid #2B1342;box-shadow:0 5px 0 #2B1342;
+  font:700 1.25rem Fredoka,system-ui,sans-serif;opacity:0;transform:translateY(10px) scale(.92);transition:opacity .3s ease-out,transform .35s cubic-bezier(.34,1.56,.64,1)}
+#game .g-intro-go.on{opacity:1;transform:none}
+#game .g-intro-go .ico{width:22px;height:22px}
+#game .g-intro-hint{margin:0;font:600 .9rem Poppins,system-ui,sans-serif;color:#6e6680;opacity:0;transition:opacity .3s .2s}
+#game .g-intro.ready .g-intro-hint{opacity:1}
+@media (max-height:560px){#game .g-intro{gap:10px}#game .g-intro-logo{width:64px}#game .g-term-body{font-size:.84rem;padding:9px 12px 10px}}
+@media (prefers-reduced-motion:reduce){#game .g-term-cur{animation:none}#game .g-term{transform:none}#game .g-intro,#game .g-intro-go{transition:none}}

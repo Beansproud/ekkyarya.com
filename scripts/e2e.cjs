@@ -87,13 +87,17 @@ async function runConfig(browser,url,scheme,lang){
       if(!top)throw new Error(w+': Play is covered');
       await p.tap('#gFab');await must(p,'#g-start.active',w+': Play did not bring the game back');
       await p.reload();await must(p,'#g-start.active',w+': game choice lost on reload',8000)}});
-  // owner, 10-29: the start page opens with a cartoon terminal that types Ekky's job; it types once and never moves the page
-  await T('start: terminal types who Ekky is, without moving the page',async p=>{await boot(p);await must(p,'#gTerm','no terminal');
-    const y0=await p.$eval('#gFeatured',e=>e.getBoundingClientRect().top);await sleep(6500);
+  // owner, 10-29: the phone's first screen is a cartoon terminal that types Ekky's job, then Enter (or a tap anywhere) opens
+  // the start page; it never moves while it types. Tests skip it unless the URL has ?intro.
+  await T('intro: terminal types who Ekky is, then Enter opens the start page',async p=>{await p.goto(url+'?game=1&intro');await must(p,'#gIntro .g-term','no intro terminal',8000);
+    const h0=await p.$eval('#gTermBody',e=>e.getBoundingClientRect().height);await must(p,'#gIntroGo.on','no Enter button after typing',12000);
     const txt=await p.$eval('#gTermBody',e=>e.textContent),want=await p.evaluate(()=>[1,3].map(k=>t("term."+k).split("|")[1]));
     for(const w of want)if(!txt.includes(w))throw new Error('terminal missing: '+w);
-    const y1=await p.$eval('#gFeatured',e=>e.getBoundingClientRect().top);if(Math.abs(y1-y0)>1)throw new Error('typing moved the page by '+(y1-y0)+' px');
-    if(!await p.$eval('#gTerm',e=>!!e.getAttribute('aria-label')))throw new Error('terminal has no name')});
+    const h1=await p.$eval('#gTermBody',e=>e.getBoundingClientRect().height);if(Math.abs(h1-h0)>1)throw new Error('typing changed the height by '+(h1-h0)+' px');
+    await audit(p,'intro');await p.tap('#gIntroGo');await sleep(600);
+    if(!await p.$eval('#gIntro',e=>e.hidden))throw new Error('intro still open after Enter');await must(p,'#g-start.active','start page not shown')});
+  await T('intro: a tap anywhere skips it',async p=>{await p.goto(url+'?game=1&intro');await must(p,'#gIntro .g-term','no intro terminal',8000);
+    await p.tap('#gIntro',{position:{x:20,y:20}});await sleep(600);if(!await p.$eval('#gIntro',e=>e.hidden))throw new Error('tap did not skip the intro')});
   await T('nav: tabs + Home logo',async p=>{await boot(p);
     for(const t of ['art','map','mine']){await tab(p,t);if(await active(p)!=='g-'+t)throw new Error('tab '+t+' did not open');
       if(!await vis(p,homeEl,3000))throw new Error('no Home logo visible on '+t+' screen');
