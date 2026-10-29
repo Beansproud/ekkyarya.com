@@ -16,7 +16,7 @@ function auditFn(){
   const out=[];const W=innerWidth,H=innerHeight;
   const shown=e=>{const r=e.getBoundingClientRect();if(r.width<1||r.height<1)return false;const s=getComputedStyle(e);if(s.visibility==='hidden'||s.display==='none'||+s.opacity<.05)return false;
     for(let n=e;n&&n!==document.body;n=n.parentElement){const c=getComputedStyle(n);if(c.display==='none'||c.visibility==='hidden'||+c.opacity<.05||(n.hasAttribute&&n.hasAttribute('hidden')))return false;
-      if(n.matches&&n.matches('.g-screen:not(.active)'))return false}return true};
+      if(n.matches&&n.matches('.g-screen:not(.active)'))return false;if(n.inert)return false}return true};   // the start page's other swipe page is inert: not on screen
   const name=e=>(e.id?'#'+e.id:'')+(e.className&&e.className.baseVal===undefined?'.'+String(e.className).trim().split(/\s+/).slice(0,2).join('.'):'')+' "'+((e.getAttribute('aria-label')||e.textContent||'').trim().slice(0,18))+'"';
   // an element sitting under an inactive overlay (closed sheet, hidden screen) is not visible to the user
   const btns=[...document.querySelectorAll('button,a[href],[role=button],[role=radio],[role=switch],input:not([type=hidden]):not(.c-any-input)')].filter(shown).filter(e=>{const r=e.getBoundingClientRect();const x=Math.min(Math.max(r.left+r.width/2,0),W-1),y=Math.min(Math.max(r.top+r.height/2,0),H-1);const t=document.elementFromPoint(x,y);return t&&(e.contains(t)||t.contains(e))||r.bottom<0||r.top>H});

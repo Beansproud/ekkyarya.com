@@ -1279,3 +1279,28 @@ body.intro-open #game .g-tabs,body.intro-open #game .g-home,body.intro-open #gam
 #game .g-intro.ready .g-intro-hint{opacity:1}
 @media (max-height:560px){#game .g-intro{gap:10px}#game .g-intro-logo{width:64px}#game .g-term-body{font-size:.84rem;padding:9px 12px 10px}}
 @media (prefers-reduced-motion:reduce){#game .g-term-cur{animation:none}#game .g-term{transform:none}#game .g-intro,#game .g-intro-go{transition:none}}
+/* ---- Start page in two swipe pages (owner, 10-29): home and the sketchbook's six ---- */
+#game #g-start{gap:10px}
+#g-start .g-pager{flex:1 1 auto;min-height:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none;margin:0 calc(-1 * var(--gut,16px));-webkit-overflow-scrolling:touch}
+#g-start .g-pager::-webkit-scrollbar{display:none}
+#g-start .g-page{flex:0 0 100%;min-width:0;display:flex;flex-direction:column;gap:16px;padding:2px var(--gut,16px) 6px;scroll-snap-align:start;scroll-snap-stop:always;box-sizing:border-box;overflow-y:auto;scrollbar-width:none}
+#g-start .g-page-sketch{gap:14px}
+#g-start .g-page-sketch .g-featured{flex:1 1 auto}
+#g-start .g-peek{flex:1 1 auto;min-height:150px;display:flex;flex-direction:column;align-items:stretch;gap:10px;padding:14px 16px 14px;border:3px solid #2B1342;border-radius:20px;background:#FFFDF8;color:#2B1342;box-shadow:0 5px 0 #2B1342;text-align:left;font-family:Fredoka,system-ui,sans-serif}
+#g-start .g-peek-pics{position:relative;flex:1 1 auto;min-height:90px;display:flex;justify-content:center;align-items:center}
+#g-start .g-peek-pics img{width:36%;max-width:200px;height:auto;max-height:100%;aspect-ratio:4/5;object-fit:cover;border:5px solid #fff;border-bottom-width:16px;border-radius:3px;box-shadow:0 4px 10px rgba(43,19,66,.25);margin:0 -4%}
+#g-start .g-peek-pics img:nth-child(1){transform:rotate(-8deg) translateY(6px)}
+#g-start .g-peek-pics img:nth-child(2){transform:rotate(2deg);z-index:1}
+#g-start .g-peek-pics img:nth-child(3){transform:rotate(9deg) translateY(8px)}
+#g-start .g-peek-row{flex:none;display:flex;align-items:center;gap:10px}
+#g-start .g-peek-txt{flex:1;display:flex;flex-direction:column;gap:2px}
+#g-start .g-peek-txt b{font-size:1.15rem;line-height:1.2}
+#g-start .g-peek-txt small{font:600 .85rem Poppins,system-ui,sans-serif;color:#6e6680}
+#g-start .g-peek .ico{flex:none;width:28px;height:28px;color:#2B1342}
+#g-start .g-page-home .g-tile{height:86px;min-height:86px;font-size:1.05rem}
+#g-start .g-page-home .g-tile img{width:36px;height:36px}
+#g-start .g-dots{flex:none;display:flex;justify-content:center;gap:4px;margin:-12px 0 -14px}
+#g-start .g-dots button{width:44px;height:44px;display:grid;place-items:center;background:none;border:0;padding:0}
+#g-start .g-dots button::after{content:"";width:9px;height:9px;border-radius:5px;background:#2B1342;opacity:.22;transition:width .25s ease-out,opacity .25s}
+#g-start .g-dots button[aria-selected="true"]::after{width:24px;opacity:1;background:#FFB400;box-shadow:0 0 0 2px #2B1342}
+@media (prefers-reduced-motion:reduce){#g-start .g-dots button::after{transition:none}}

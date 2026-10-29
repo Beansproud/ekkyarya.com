@@ -366,14 +366,23 @@
     <button class="g-intro-go" id="gIntroGo"><span data-t="intro.enter"></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></button>
     <p class="g-intro-hint" data-t="intro.hint"></p></div>
   <section class="g-screen g-start active" id="g-start">
+    <!-- logo and tagline stay put; below them two pages you swipe between (owner, 10-29): home (a peek at the sketchbook, Color, Catch stars) and the sketchbook's six -->
     <div class="g-start-head"><img class="g-logo" src="assets/logo.png" alt="Ekky Arya" decoding="async" onerror="this.outerHTML='<div class=&quot;g-logo-text&quot;>EKKY<br>ARYA</div>'">
       <div><h1 class="g-start-title" data-t="map.title"></h1><p class="g-tagline" data-t="start.tagline"></p></div></div>
-    <div class="g-row-head"><h2 class="g-row-title" data-t="start.featured" data-hand="sketchbook"></h2><p class="g-hint"><span><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span data-tt="start.hint.view|View"></span></span><a class="g-apk" data-apk hidden href="https://github.com/rfim/ekkyarya.com/releases/download/app-latest/ekky-arya.apk" data-tta="start.apk.aria|Download the Android app (APK)"><b><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg><span data-tt="start.apk|APK"></span></b></a></p></div>
-    <div class="g-featured" id="gFeatured"></div>
-    <div class="g-tiles">
-      <button class="g-tile" data-go="color"><img loading="lazy" src="assets/ui/pen-hand.png" alt="" fetchpriority="low"><span data-t="start.color" data-hand="color"></span></button>
-      <button class="g-tile" data-arcade data-feature="starCatcher"><img loading="lazy" src="assets/ui/helmet.png" alt="" fetchpriority="low"><span data-t="start.catch"></span></button>
+    <div class="g-pager" id="gPager">
+      <div class="g-page g-page-home" id="gPageHome" aria-roledescription="page">
+        <button class="g-peek" id="gPeek"><span class="g-peek-pics" id="gPeekPics" aria-hidden="true"></span><span class="g-peek-row"><span class="g-peek-txt"><b data-t="start.featured"></b><small data-t="start.swipe"></small></span><svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></span></button>
+      <div class="g-tiles">
+        <button class="g-tile" data-go="color"><img loading="lazy" src="assets/ui/pen-hand.png" alt="" fetchpriority="low"><span data-t="start.color" data-hand="color"></span></button>
+        <button class="g-tile" data-arcade data-feature="starCatcher"><img loading="lazy" src="assets/ui/helmet.png" alt="" fetchpriority="low"><span data-t="start.catch"></span></button>
+      </div>
+      </div>
+      <div class="g-page g-page-sketch" id="gPageSketch" aria-roledescription="page">
+      <div class="g-row-head"><h2 class="g-row-title" data-t="start.featured" data-hand="sketchbook"></h2><p class="g-hint"><span><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span data-tt="start.hint.view|View"></span></span><a class="g-apk" data-apk hidden href="https://github.com/rfim/ekkyarya.com/releases/download/app-latest/ekky-arya.apk" data-tta="start.apk.aria|Download the Android app (APK)"><b><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg><span data-tt="start.apk|APK"></span></b></a></p></div>
+      <div class="g-featured" id="gFeatured"></div>
+      </div>
     </div>
+    <div class="g-dots" id="gDots" role="tablist"><button role="tab" data-page="0" aria-selected="true"></button><button role="tab" data-page="1" aria-selected="false"></button></div>
   </section>
 
   <section class="g-screen" id="g-map">

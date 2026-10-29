@@ -126,7 +126,20 @@ addEventListener("keydown",e=>{if(!$("gIntro").hidden&&(e.key==="Escape"||e.key=
 function renderStart(){if(window.fitWebPin)fitWebPin();const six=featuredSix().map(p=>({p,i:PROJECTS.indexOf(p)}));
   // each drawing opens big on tap; Download lives in the viewer, not on the tile (owner, 10-28)
   $("gFeatured").innerHTML=six.map(({p,i})=>`<div class="g-feat-cell"><button class="g-feat" data-i="${i}" aria-label="${esc(ptitle(p))}${stepsOf(p).length?", "+esc(t("flow.count",{n:stepsOf(p).length})):""}"><img src="${thumbOf(p)}" alt="" decoding="async" fetchpriority="high"><b>${esc(ptitle(p))}</b>${flowMark(p,true)}</button>`+
-    `</div>`).join("")}
+    `</div>`).join("");
+  $("gPeekPics").innerHTML=six.slice(0,3).map(({p})=>`<img src="${thumbOf(p)}" alt="" decoding="async">`).join("");syncPage()}
+// The start page's two pages: a native scroll-snap row (the finger drags the page itself), dots and the peek card jump
+// between them; the page you are not on is inert, so keyboards and screen readers stay on the visible one.
+const pager=$("gPager"),pages=[$("gPageHome"),$("gPageSketch")];let pageAt=0;
+function setPage(k,smooth){pager.scrollTo({left:k*pager.clientWidth,behavior:smooth&&!matchMedia("(prefers-reduced-motion: reduce)").matches?"smooth":"auto"})}
+function syncPage(){const k=Math.round(pager.scrollLeft/Math.max(1,pager.clientWidth));if(k===pageAt&&pages[1-k].inert)return;pageAt=k;
+  pages.forEach((p,i)=>{p.inert=i!==k;p.setAttribute("aria-hidden",i!==k)});
+  $("gDots").querySelectorAll("button").forEach((b,i)=>{b.setAttribute("aria-selected",i===k);b.setAttribute("aria-label",t(i?"start.page.sketch":"start.page.home"))})}
+let pageRaf=0;pager.addEventListener("scroll",()=>{if(!pageRaf)pageRaf=requestAnimationFrame(()=>{pageRaf=0;syncPage()})},{passive:true});
+$("gDots").addEventListener("click",e=>{const b=e.target.closest("button");if(b){buzz(6);setPage(+b.dataset.page,true)}});
+$("gPeek").addEventListener("click",()=>{buzz(8);setPage(1,true)});
+addEventListener("resize",()=>setPage(pageAt,false));
+syncPage();
 $("gFeatured").addEventListener("click",e=>{const b=e.target.closest(".g-feat");if(b){buzz(10);show(+b.dataset.i)}});
 
 /* ---- map: Ekky's Village (B42 V1). One pre-composited picture (scripts/village.py: plain ground shapes plus Ekky's
