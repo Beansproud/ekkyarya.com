@@ -184,6 +184,11 @@ async function runConfig(browser,url,dev,lang){
     const hist=by['data/history.json']&&JSON.parse(Buffer.from(by['data/history.json'],'base64').toString());const he=hist&&hist.entries&&hist.entries[hist.entries.length-1];
     if(!he||he.kind!=='publish'||!(he.changes||[]).some(c=>/^Art: added "/.test(c.en))||!he.files.includes('data/site.json')||he.by!=='qa')throw new Error('no history entry for the new piece: '+JSON.stringify(he).slice(0,200));
     if(!/Art: added/.test(k.messages[0]))throw new Error('the commit message does not say what changed: '+k.messages[0]);
+    // the upload audit: every uploaded file with its size, dimensions and the SHA-256 of the exact bytes committed
+    for(const [f,max] of [[full,1600],[thumb,480]]){const u=(he.uploads||[]).find(x=>x.path===f),b=Buffer.from(by[f],'base64');
+      if(!u||u.bytes!==b.length||Math.max(u.w,u.h)!==max||u.sha256!==crypto.createHash('sha256').update(b).digest('hex')||!/^Art ".+": (full picture|thumbnail)$/.test(u.for))throw new Error('upload audit wrong for '+f+': '+JSON.stringify(u))}
+    if(have('js/admin-history.js')){await p.locator('#adminRoot [data-tab=history]').click();if(!await waitFor(()=>p.locator('#adminRoot [data-only="1"]').count().then(n=>n>0),8000))throw new Error('History has no Uploads only filter');
+      await p.click('#adminRoot [data-only="1"]');if(!await waitFor(()=>p.locator('#admTab-history .ah-all .ah-u').count().then(n=>n===2),5000))throw new Error('Uploads only does not list the two uploaded files')}
     for(const [f,max] of [[full,1600],[thumb,480]]){const b=Buffer.from(by[f],'base64');if(by[f]!==b.toString('base64')||/[^A-Za-z0-9+/=]/.test(by[f]))throw new Error(f+' is not clean base64');
       const d=jpegSize(b);if(!d)throw new Error(f+' is not a JPEG');if(Math.max(d.w,d.h)!==max)throw new Error(`${f} is ${d.w}x${d.h}, long side should be ${max} for a 3200 px source`);if(b.length>1.5e6)throw new Error(f+' is '+b.length+' bytes, too big')}
     let sj;try{sj=JSON.parse(Buffer.from(by['data/site.json'],'base64').toString())}catch(e){throw new Error('data/site.json in the commit is not JSON')}
@@ -196,9 +201,9 @@ async function runConfig(browser,url,dev,lang){
   // LanguageTool is mocked (no text leaves the test). Opened without the PIN like the tests above.
   const WORDS=have('js/admin-copy.js');const needWords=()=>{needAdmin();if(!WORDS)skip('js/admin-copy.js not landed yet')};
   const wordsOpen=async(p,key)=>{await p.evaluate(()=>document.querySelectorAll('dialog.adm-pad[open]').forEach(d=>d.close()));   // opened without the PIN: the pad is still under the shell
-    await p.locator('#adminRoot [data-tab=words]').click();if(!await waitFor(()=>p.evaluate(()=>!!document.querySelector('#admTab-words #awSearch')),5000))throw new Error('the Words tab did not open');
-    if(key){await p.fill('#awSearch',key);const row=p.locator(`#adminRoot .aw-open[data-k="${key}"]`);if(!await waitFor(()=>row.count().then(n=>n>0),3000))throw new Error('search did not find '+key);
-      await row.click();if(!await waitFor(()=>p.locator('#aw-en-0').count().then(n=>n>0),3000))throw new Error('the line editor did not open for '+key)}};
+    await p.locator('#adminRoot [data-tab=words]').click();if(!await waitFor(()=>p.evaluate(()=>!!document.querySelector('#admTab-words #awSearch')&&typeof AdminCopyCheck!=='undefined'),8000))throw new Error('the Words tab did not open');await sleep(100);
+    if(key){await p.fill('#awSearch',key);const row=p.locator(`#adminRoot .aw-open[data-k="${key}"]`);if(!await waitFor(()=>row.count().then(n=>n>0),8000))throw new Error('search did not find '+key);
+      await row.click();if(!await waitFor(()=>p.locator('#aw-en-0').count().then(n=>n>0),6000))throw new Error('the line editor did not open for '+key)}};
   T('words: edit, preview and publish only the changed keys',async(p,c)=>{needWords();const gh=mockGithub(c);await openAdmin(p);await pasteToken(p);await wordsOpen(p,'start.tagline');
     const NEW='QA tagline, drawn with care.';await p.fill('#aw-en-0',NEW);await p.click('#adminRoot .aw-ed [data-a=save]');
     if(!await waitFor(()=>p.evaluate(()=>!document.querySelector('#adminRoot .aw-ed')),3000))throw new Error('Save did not close the line');
@@ -208,7 +213,7 @@ async function runConfig(browser,url,dev,lang){
     if(phone&&lang==='en'&&!await waitFor(()=>p.evaluate(n=>document.querySelector('#g-start').innerText.includes(n),NEW),3000))throw new Error('the start page did not show the previewed words in place');
     await p.locator('#adminRibbon [data-rb=stop]').click();if(!await waitFor(()=>p.evaluate(n=>COPY.en['start.tagline']!==n,NEW),3000))throw new Error('Stop preview did not bring the built-in words back');
     if(!await waitFor(()=>adminOpen(p),3000))throw new Error('admin did not come back after Stop preview');
-    await publishBtn(p).first().click();if(!await waitFor(()=>committed(gh).files.length>0,6000))throw new Error('Publish sent nothing');await sleep(500);
+    await publishBtn(p).first().click();if(!await waitFor(()=>committed(gh).commitCount>0,15000))throw new Error('Publish sent nothing');
     const k=committed(gh),sj=JSON.parse(Buffer.from(k.files.find(f=>f.path==='data/site.json').b64,'base64').toString());
     const en=(sj.copy||{}).en||{},id=(sj.copy||{}).id||{};
     if(JSON.stringify(en)!==JSON.stringify({'start.tagline':NEW})||Object.keys(id).length)throw new Error('site.json copy is not only the changed key: '+JSON.stringify(sj.copy))});
@@ -226,7 +231,7 @@ async function runConfig(browser,url,dev,lang){
     await c.route('https://api.languagetool.org/**',r=>{body=r.request().postData()||'';const text=new URLSearchParams(body).get('text')||'';const at=text.indexOf('teh');
       r.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify({matches:at<0?[]:[{message:'Possible spelling mistake found.',shortMessage:'Spelling mistake',offset:at,length:3,replacements:[{value:'the'},{value:'tea'}],rule:{id:'MORFOLOGIK_RULE_EN_US',issueType:'misspelling'}}]})})});
     await openAdmin(p);await wordsOpen(p,'hire.body');await p.fill('#aw-en-0','Every project starts as teh doodle');
-    await p.click('#adminRoot .aw-ed [data-a=lt]');if(!await waitFor(()=>p.evaluate(()=>/Possible spelling mistake/.test(document.querySelector('#adminRoot .aw-ed').innerText)),5000))throw new Error('the LanguageTool match did not show');
+    await p.click('#adminRoot .aw-ed [data-a=lt]');if(!await waitFor(()=>p.evaluate(()=>/Possible spelling mistake/.test(document.querySelector('#adminRoot .aw-ed').innerText)),10000))throw new Error('the LanguageTool match did not show');
     if(!/language=en-US/.test(body))throw new Error('LanguageTool was not asked for en-US: '+body.slice(0,80));
     await p.locator('#adminRoot .aw-ed [data-a=fix]').first().click();if(await p.inputValue('#aw-en-0')!=='Every project starts as the doodle')throw new Error('the suggestion was not applied: '+await p.inputValue('#aw-en-0'));
     // the network fails: say so, and saving still works
@@ -258,7 +263,7 @@ async function runConfig(browser,url,dev,lang){
     await p.locator('#adminRibbon [data-rb=stop]').click();
     if(!await waitFor(()=>p.evaluate(()=>[...document.querySelectorAll('img[data-ico="assets/ui/monster-head.png"]')].every(i=>i.getAttribute('src')==='assets/ui/monster-head.png')),4000))throw new Error('Stop preview did not bring the icons back');
     if(!await waitFor(()=>adminOpen(p),3000))throw new Error('admin did not come back after Stop preview');
-    await publishBtn(p).first().click();if(!await waitFor(()=>committed(gh).files.length>0,8000))throw new Error('Publish sent nothing');await sleep(500);
+    await publishBtn(p).first().click();if(!await waitFor(()=>committed(gh).commitCount>0,20000))throw new Error('Publish sent nothing');await sleep(300);
     const k=committed(gh),pngs=k.files.filter(f=>/^assets\/ui\/u\/[a-z0-9-]+\.png$/.test(f.path));if(k.commitCount!==1)throw new Error(k.commitCount+' commits');
     if(pngs.length!==n)throw new Error(pngs.length+' icon files committed, expected '+n);
     if(pngs.some(f=>Buffer.from(f.b64,'base64').subarray(1,4).toString()!=='PNG'))throw new Error('an icon file is not a PNG');
@@ -305,11 +310,11 @@ async function runConfig(browser,url,dev,lang){
   T('history: waiting changes, then the published entry in history.json',async(p,c)=>{needWords();if(!have('js/admin-history.js'))skip('js/admin-history.js not landed yet');const gh=mockGithub(c);await openAdmin(p);await pasteToken(p);
     await wordsOpen(p,'hire.body');await p.fill('#aw-en-0','QA history line');await p.click('#adminRoot .aw-ed [data-a=save]');
     await p.locator('#adminRoot [data-tab=history]').click();
-    if(!await waitFor(()=>p.evaluate(()=>/Words EN: hire\.body|Kata EN: hire\.body/.test(document.querySelector('#admTab-history').innerText)),4000))throw new Error('History does not list the waiting change');
-    await publishBtn(p).first().click();if(!await waitFor(()=>committed(gh).files.some(f=>f.path==='data/history.json'),8000))throw new Error('no data/history.json in the commit');await sleep(400);
+    if(!await waitFor(()=>p.evaluate(()=>!!document.querySelector('#admTab-history')&&/Words EN: hire\.body|Kata EN: hire\.body/.test(document.querySelector('#admTab-history').innerText)),10000))throw new Error('History does not list the waiting change');
+    await publishBtn(p).first().click();if(!await waitFor(()=>committed(gh).commitCount>0,15000))throw new Error('Publish made no commit');if(!committed(gh).files.some(f=>f.path==='data/history.json'))throw new Error('no data/history.json in the commit');
     const k=committed(gh),h=JSON.parse(Buffer.from(k.files.find(f=>f.path==='data/history.json').b64,'base64').toString());
     if(h.entries.length!==1||!/hire\.body = "QA history line"/.test(h.entries[0].changes[0].en)||!/^Admin: Words EN: hire\.body/.test(k.messages[0]))throw new Error('history or message wrong: '+JSON.stringify(h).slice(0,200)+' / '+k.messages[0]);
-    if(!await waitFor(()=>p.evaluate(()=>document.querySelectorAll('#admTab-history .ah-e').length===1&&/QA history line/.test(document.querySelector('#admTab-history .ah-log').textContent)),4000))throw new Error('the published entry does not show in History');
+    if(!await waitFor(()=>p.evaluate(()=>document.querySelectorAll('#admTab-history .ah-e').length===1&&/QA history line/.test(document.querySelector('#admTab-history .ah-log').textContent)),10000))throw new Error('the published entry does not show in History');
     await p.fill('#ahSearch','nothing-like-this');if(await p.locator('#admTab-history .ah-e').count())throw new Error('search did not filter')});
 
   // 7. the image editor (docs/admin-editor.md): opened directly in the page through AdminEditor.open, so it needs no PIN

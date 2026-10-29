@@ -1,6 +1,7 @@
 // Admin History tab ("Riwayat"; docs/admin.md, "History"): what changed, so the owner can remember and audit it.
 // Every Publish and Undo writes one entry to data/history.json in the same commit (js/admin-shell.js), with the same
-// summary as the commit message: {at, by, kind: "publish"|"undo", title, titleId, changes: [{area, en, id}], files: [path]}.
+// summary as the commit message: {at, by, kind: "publish"|"undo", title, titleId, changes: [{area, en, id}], files: [path],
+// uploads: [{path, for, bytes, w, h, sha256} | {path, for, removed: true}]}: every uploaded file is audited.
 // This tab shows the changes still waiting to publish and the published log, newest first, with search.
 // summarize(before, after, stagedPaths) is also used by the shell to write the entry and the commit message.
 const AdminHistory = (() => {
@@ -10,7 +11,9 @@ const AdminHistory = (() => {
     published: ["Published", "Sudah terbit"], empty: ["No history yet. It starts with the next publish.", "Belum ada riwayat. Dimulai dari terbitan berikutnya."],
     search: ["Search the history", "Cari di riwayat"], by: ["by", "oleh"], files: ["{n} file(s)", "{n} berkas"], undo: ["Undo", "Pembatalan"],
     loading: ["Loading the history...", "Memuat riwayat..."], all: ["All admin changes on GitHub", "Semua perubahan admin di GitHub"], commit: ["See the commit", "Lihat commit"],
-    noMatch: ["Nothing matches.", "Tidak ada yang cocok."]
+    noMatch: ["Nothing matches.", "Tidak ada yang cocok."],
+    allEntries: ["Everything", "Semua"], onlyUploads: ["Uploads only", "Hanya unggahan"], uploadsT: ["Uploaded files", "Berkas yang diunggah"],
+    removed: ["removed", "dihapus"], fp: ["fingerprint", "sidik"]
   };
   const isObj = v => v && typeof v === "object" && !Array.isArray(v);
   const J = v => JSON.stringify(v === undefined ? null : v);
@@ -75,13 +78,43 @@ const AdminHistory = (() => {
     if (titleId.length > 100) titleId = Object.keys(count).map(k => `${areasId[k]} (${count[k]})`).join(", ");
     return { title, titleId, changes: out, files };
   }
+  // ---- the upload audit: one record per file a publish writes or removes (besides the JSON files) ----
+  // {path, for, bytes, w, h, sha256} for a new file (sha256 of the exact bytes committed), {path, for, removed: true} for a removed one.
+  async function uploads(d, staged) {
+    const out = [], hex = b => [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, "0")).join("");
+    for (const [path, content] of staged) {
+      const rec = { path, for: whatFor(d, path) };
+      if (content === null) { out.push({ ...rec, removed: true }); continue; }
+      try {
+        const bin = Uint8Array.from(atob(content), c => c.charCodeAt(0));
+        rec.bytes = bin.length;
+        rec.sha256 = crypto.subtle ? hex(await crypto.subtle.digest("SHA-256", bin)) : "";
+        try { const bm = await createImageBitmap(new Blob([bin], { type: /\.png$/.test(path) ? "image/png" : "image/jpeg" })); rec.w = bm.width; rec.h = bm.height; if (bm.close) bm.close(); } catch (e) {}
+      } catch (e) {}
+      out.push(rec);
+    }
+    return out;
+  }
+  // What a file is for, in words: the piece (full, thumb or a step), the icon or the place it shows.
+  function whatFor(d, path) {
+    for (const p of (Array.isArray(d.projects) ? d.projects : []).filter(isObj)) {
+      if (p.full === path) return `Art "${cut(p.title, 40)}": full picture`;
+      if (p.img === path) return `Art "${cut(p.title, 40)}": thumbnail`;
+      const i = (p.steps || []).findIndex(x => x && (x.full === path || x.img === path));
+      if (i >= 0) return `Art "${cut(p.title, 40)}": step ${i + 1}${p.steps[i].img === path ? " thumbnail" : ""}`;
+    }
+    const ic = isObj(d.icons) ? d.icons : {};
+    for (const [k, v] of Object.entries(ic.map || {})) if (v === path) return `Icon ${k.split("/").pop().replace(/\.png$/, "")}`;
+    for (const [k, v] of Object.entries(ic.places || {})) if (v === path) return `Icon for ${k}`;
+    return "";
+  }
   // The commit message: the title, then one line per change.
   const message = sum => sum.title + (sum.changes.length > 1 || sum.files.length ? "\n\n" + sum.changes.map(c => "- " + c.en).concat(sum.files.length ? ["", "Files: " + sum.files.join(", ")] : []).join("\n") : "");
 
   // ---- the tab ----
   let ctx = null, el = null, log = null, loading = null;
   const session = [];   // entries written in this session (shown before the site has redeployed)
-  const st = { q: "" };
+  const st = { q: "", only: false };
   const lg = () => (ctx && ctx.lang === "id") ? 1 : 0;
   const s = (k, n) => S[k][lg()].replace("{n}", n);
   const esc = x => String(x).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -95,6 +128,9 @@ const AdminHistory = (() => {
     const seen = new Set((log || []).map(x => x.at)), all = (log || []).concat(session.filter(x => !seen.has(x.at)));
     return all.sort((x, y) => String(y.at).localeCompare(String(x.at)));
   }
+  const kb = n => n >= 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB";
+  const upHtml = u => `<li class="ah-u${u.removed ? " gone" : ""}">${u.removed ? "" : `<img src="${esc(u.path)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">`}
+    <span><b>${esc(u.for || u.path.split("/").pop())}</b>${u.removed ? " (" + esc(s("removed")) + ")" : ""}<br><span class="ah-note">${esc(u.path)}${u.w ? ` \u00b7 ${u.w}\u00d7${u.h}` : ""}${u.bytes ? " \u00b7 " + kb(u.bytes) : ""}${u.sha256 ? ` \u00b7 ${esc(s("fp"))} ${esc(u.sha256.slice(0, 12))}` : ""}${u.at ? `<br>${esc(u.at)}` : ""}</span></span></li>`;
   function paint(focus) {
     if (!el || el.id !== "admTab-history" || !ctx) return;
     const pend = summarize(ctx.published, ctx.data, ctx.staged()), q = st.q.trim().toLowerCase();
@@ -104,9 +140,12 @@ const AdminHistory = (() => {
       <h3>${esc(s("published"))}</h3>
       <label class="ah-sr" for="ahSearch">${esc(s("search"))}</label><input id="ahSearch" class="ah-in" type="search" autocomplete="off" placeholder="${esc(s("search"))}" value="${esc(st.q)}">
       ${log === null ? `<p class="ah-note" role="status">${esc(s("loading"))}</p>` : !entries().length ? `<p class="ah-note">${esc(s("empty"))}</p>` : !list.length ? `<p class="ah-note">${esc(s("noMatch"))}</p>` : ""}
-      <ol class="ah-log">${list.map(x => `<li class="ah-e${x.kind === "undo" ? " ah-undo" : ""}"><details><summary><span class="ah-when">${esc(when(x))}${x.by ? " " + esc(s("by")) + " " + esc(x.by) : ""}</span>
+      <div class="ah-chips" role="group"><button type="button" class="ah-chip" data-only="0" aria-pressed="${!st.only}">${esc(s("allEntries"))}</button><button type="button" class="ah-chip" data-only="1" aria-pressed="${st.only}">${esc(s("onlyUploads"))}</button></div>
+      ${st.only ? `<ul class="ah-up ah-all">${list.flatMap(x => (x.uploads || []).map(u => upHtml({ ...u, at: when(x) + (x.by ? " " + s("by") + " " + x.by : "") }))).join("")}</ul>` : ""}
+      <ol class="ah-log"${st.only ? " hidden" : ""}>${list.map(x => `<li class="ah-e${x.kind === "undo" ? " ah-undo" : ""}"><details><summary><span class="ah-when">${esc(when(x))}${x.by ? " " + esc(s("by")) + " " + esc(x.by) : ""}</span>
         <b>${x.kind === "undo" ? esc(s("undo")) + ": " : ""}${esc((lg() && x.titleId) || x.title || "")}</b></summary>
         <ul class="ah-ch">${(x.changes || []).map(c => `<li>${esc(lg() ? c.id || c.en : c.en)}</li>`).join("")}</ul>
+        ${(x.uploads || []).length ? `<p class="ah-note"><b>${esc(s("uploadsT"))}</b></p><ul class="ah-up">${x.uploads.map(upHtml).join("")}</ul>` : ""}
         ${(x.files || []).length ? `<p class="ah-note">${esc(s("files", x.files.length))}: ${esc(x.files.join(", "))}</p>` : ""}${x.sha ? `<a href="https://github.com/rfim/ekkyarya.com/commit/${esc(x.sha)}" target="_blank" rel="noopener">${esc(s("commit"))}</a>` : ""}</details></li>`).join("")}</ol>
       <p><a class="ah-link" href="https://github.com/rfim/ekkyarya.com/commits/main/data/history.json" target="_blank" rel="noopener">${esc(s("all"))}</a></p></div>`;
     if (focus) { const f = el.querySelector(focus); if (f) { f.focus({ preventScroll: true }); if (f.setSelectionRange) f.setSelectionRange(f.value.length, f.value.length); } }
@@ -125,16 +164,25 @@ const AdminHistory = (() => {
 #adminRoot .ah-e summary{min-height:44px;padding:10px 0;cursor:pointer;display:grid;gap:2px}
 #adminRoot .ah-when{font-size:.82rem;color:var(--mute)}
 #adminRoot .ah-e details>*:last-child{margin-bottom:10px}
+#adminRoot .ah-chips{display:flex;gap:6px;flex-wrap:wrap}
+#adminRoot .ah-chip{min-height:44px;padding:8px 14px;border-radius:14px;border:2px solid var(--line);background:#fff;color:var(--ink);font:600 .92rem Fredoka,Poppins,sans-serif;cursor:pointer}
+#adminRoot .ah-chip[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+#adminRoot .ah-up{list-style:none;margin:4px 0;padding:0;display:grid;gap:6px}
+#adminRoot .ah-u{display:flex;gap:10px;align-items:center;overflow-wrap:anywhere}
+#adminRoot .ah-u img{width:56px;height:56px;object-fit:contain;border-radius:8px;border:1px solid var(--line);background:#fff;flex:none}
+#adminRoot .ah-u.gone{opacity:.7}
+#adminRoot .ah-all .ah-u{padding:8px;border:2px solid var(--line);border-radius:14px;background:#fff}
 #adminRoot .ah a{color:var(--ink);display:inline-block;padding:10px 0}
 `;
   function render(target, c) {
     ctx = c; el = target;
     if (!document.getElementById("ahCss")) { const x = document.createElement("style"); x.id = "ahCss"; x.textContent = STYLE; document.head.appendChild(x); }
-    if (!el.dataset.ah) { el.dataset.ah = "1"; if (c.onChange) c.onChange(() => paint()); el.addEventListener("input", e => { if (el.id === "admTab-history" && e.target.id === "ahSearch") { st.q = e.target.value; paint("#ahSearch"); } }); }
+    if (!el.dataset.ah) { el.dataset.ah = "1"; if (c.onChange) c.onChange(() => paint()); el.addEventListener("click", e => { const b = el.id === "admTab-history" && e.target.closest("[data-only]"); if (b) { st.only = b.dataset.only === "1"; paint(`[data-only="${b.dataset.only}"]`); } });
+      el.addEventListener("input", e => { if (el.id === "admTab-history" && e.target.id === "ahSearch") { st.q = e.target.value; paint("#ahSearch"); } }); }
     paint(); load();
   }
   const def = { title: { en: "History", id: "Riwayat" }, render };
   if (window.Admin && window.Admin.registerTab) window.Admin.registerTab("history", def);
   else (window.AdminTabs = window.AdminTabs || []).push(["history", def]);
-  return { summarize, message, render };
+  return { summarize, message, uploads, render };
 })();

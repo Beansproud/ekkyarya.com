@@ -111,7 +111,8 @@
     const H = typeof AdminHistory !== "undefined" ? AdminHistory : null;
     const sum = H ? H.summarize(JSON.parse(base), data, [...staged.keys()]) : { title: "", changes: [], files: [...staged.keys()] };
     const title = message || sum.title || "update site";
-    const entry = { at: new Date().toISOString(), by: await who(), kind: "publish", title, titleId: message ? title : sum.titleId || title, changes: sum.changes, files: [...files.keys()].sort() };
+    const entry = { at: new Date().toISOString(), by: await who(), kind: "publish", title, titleId: message ? title : sum.titleId || title, changes: sum.changes, files: [...files.keys()].sort(),
+      uploads: H && H.uploads ? await H.uploads(data, [...staged]) : [] };
     files.set("data/history.json", await historyFile(branch, entry));
     // Only these paths may be written: site.json, history.json, the two art folders and the icon folder (no "..", no other folder, no other type).
     for (const path of files.keys()) if (path !== "data/site.json" && path !== "data/history.json" && !/^assets\/work\/(?:thumb\/)?u\/[a-z0-9-]+\.jpg$/.test(path) && !/^assets\/ui\/u\/[a-z0-9-]+\.png$/.test(path)) throw new Error("bad path: " + path);
@@ -172,7 +173,8 @@
     }
     if (!entries.length) throw new Error(s("noAdmin"));
     const entry = { at: new Date().toISOString(), by: await who(), kind: "undo", title: info.message.replace(/^Admin:\s*/, ""),
-      changes: [{ area: "undo", en: "Put back as it was before " + info.sha.slice(0, 7), id: "Dikembalikan seperti sebelum " + info.sha.slice(0, 7) }], files: entries.map(e => e.path).sort() };
+      changes: [{ area: "undo", en: "Put back as it was before " + info.sha.slice(0, 7), id: "Dikembalikan seperti sebelum " + info.sha.slice(0, 7) }], files: entries.map(e => e.path).sort(),
+      uploads: entries.filter(e => !/^data\//.test(e.path)).map(e => ({ path: e.path, for: "Undo", removed: e.sha === null })) };
     const hist = await post(`/repos/${REPO}/git/blobs`, { content: await historyFile(info.branch, entry), encoding: "base64" });
     entries.push({ path: "data/history.json", mode: "100644", type: "blob", sha: hist.sha });
     const head = (await gh(`/repos/${REPO}/git/ref/heads/${info.branch}`)).object.sha;

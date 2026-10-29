@@ -140,6 +140,12 @@ Owner, 2026-10-29: "after upload etc it has some history log so he can remember 
   `{"version": 1, "entries": [{"at": "<ISO time>", "by": "<GitHub login of the token>", "kind": "publish" | "undo",
   "title": "...", "titleId": "...", "changes": [{"area": "words|icons|art|links|settings|other|undo", "en": "...", "id": "..."}],
   "files": ["<path>", ...]}]}`, the newest 300 kept. Undo never rewinds the history: it adds an "undo" entry.
+- **Every uploaded file is audited** (owner: "audit every uploaded art too ... in history"): the entry's `"uploads"` lists
+  each file the publish writes, `{"path", "for", "bytes", "w", "h", "sha256"}` (what it is for: the piece and whether it
+  is the full picture, the thumbnail or a step, or the icon or place; size; pixel size; SHA-256 of the exact bytes
+  committed, so a file can be checked later), and each file it removes, `{"path", "for", "removed": true}` (an undo
+  lists what it put back or removed). History shows them with a thumbnail, and "Uploads only" lists every upload ever,
+  newest first, with when and who.
 - The commit message carries the same summary (`Admin: <title>`, then one line per change and the files), so the git
   log on GitHub is the same audit trail.
 - The tab shows what is waiting to publish (compared with the last loaded or published site.json), then the published

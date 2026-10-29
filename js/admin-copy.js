@@ -185,8 +185,10 @@ const AdminCopy = (() => {
       return hay.includes(q);
     });
   }
+  const mine = () => !!el && el.id === "admTab-words";   // the panel is shared by all tabs: a late repaint must not draw over another tab
   function paint(focus) {
-    if (!el) return;
+    if (!mine()) return;
+    const q0 = el.querySelector("#awSearch"); if (q0) st.q = q0.value;   // typed while a repaint was on its way: keep it
     BI = ctx.builtin.copy;
     const vis = visible(), open = !!(st.q.trim() || st.filter !== "all");
     const groups = GROUPS.map(g => [g, vis.filter(k => groupOf(k) === g[0])]).filter(x => x[1].length);
@@ -271,7 +273,7 @@ const AdminCopy = (() => {
   }
   // Repaint only the parts of the open editor that follow the text (the textareas keep focus and caret).
   function repaintEditor(k) {
-    const ed = el && el.querySelector(".aw-ed"); if (!ed) return;
+    const ed = mine() && el.querySelector(".aw-ed"); if (!ed) return;
     for (const l of LANGS) { const a = ed.querySelector(`[data-iss="${l}"]`), b = ed.querySelector(`[data-read="${l}"]`); if (a) a.innerHTML = issuesHtml(k, l); if (b) b.innerHTML = readHtml(k, l); }
     const f = ed.querySelector("[data-fit]"); if (f) f.innerHTML = fitHtml(k);
     const row = el.querySelector(`.aw-row[data-key="${CSS.escape(k)}"] .aw-top`);
