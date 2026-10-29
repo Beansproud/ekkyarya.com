@@ -239,6 +239,47 @@ async function runConfig(browser,url,dev,lang){
     if(phone){if(!await waitFor(()=>p.evaluate(w=>document.querySelector('#g-start').innerText.includes(w),want),4000))throw new Error('the start page does not show the merged words')}
     else if(lang==='en'&&!await waitFor(()=>p.evaluate(()=>[...document.querySelectorAll('[data-t="nav.about"]')].some(e=>e.textContent==='QA About')),4000))throw new Error('the desktop nav does not show the merged words')});
 
+  // 5c. the Icons tab (js/admin-icons.js): one style for every icon, preview, publish the PNGs; the site swaps them
+  const ICONSTAB=have('js/admin-icons.js');
+  T('icons: a style restyles every icon, preview swaps them, publish commits PNGs',async(p,c)=>{needAdmin();if(!ICONSTAB)skip('js/admin-icons.js not landed yet');const gh=mockGithub(c);await openAdmin(p);await pasteToken(p);
+    await p.evaluate(()=>document.querySelectorAll('dialog.adm-pad[open]').forEach(d=>d.close()));
+    await p.locator('#adminRoot [data-tab=icons]').click();if(!await waitFor(()=>p.locator('#adminRoot [data-style=ink]').count().then(n=>n>0),5000))throw new Error('the Icons tab did not open');
+    await p.click('#adminRoot [data-style=ink]');
+    const n=await p.evaluate(()=>SiteData.ICONS.length);
+    if(!await waitFor(()=>p.evaluate(n=>Object.keys(((Admin.ctx.data.icons||{}).map)||{}).length===n,n),8000))throw new Error('the style did not reach every icon');
+    await p.locator('#adminRoot [data-adm=preview]').click();
+    if(!await waitFor(()=>p.evaluate(()=>[...document.querySelectorAll('img[data-ico="assets/ui/monster-head.png"]')].some(i=>/^data:image\/png/.test(i.getAttribute('src')))),4000))throw new Error('Preview did not swap the Hire icon');
+    const sp=await p.evaluate(()=>{const i=new Image();i.src='assets/ui/helmet.png';return i.getAttribute('src')});if(!/^data:image\/png/.test(sp))throw new Error('a sprite made with new Image() kept the old icon');
+    await p.locator('#adminRibbon [data-rb=stop]').click();
+    if(!await waitFor(()=>p.evaluate(()=>[...document.querySelectorAll('img[data-ico="assets/ui/monster-head.png"]')].every(i=>i.getAttribute('src')==='assets/ui/monster-head.png')),4000))throw new Error('Stop preview did not bring the icons back');
+    if(!await waitFor(()=>adminOpen(p),3000))throw new Error('admin did not come back after Stop preview');
+    await publishBtn(p).first().click();if(!await waitFor(()=>committed(gh).files.length>0,8000))throw new Error('Publish sent nothing');await sleep(500);
+    const k=committed(gh),pngs=k.files.filter(f=>/^assets\/ui\/u\/[a-z0-9-]+\.png$/.test(f.path));if(k.commitCount!==1)throw new Error(k.commitCount+' commits');
+    if(pngs.length!==n)throw new Error(pngs.length+' icon files committed, expected '+n);
+    if(pngs.some(f=>Buffer.from(f.b64,'base64').subarray(1,4).toString()!=='PNG'))throw new Error('an icon file is not a PNG');
+    const sj=JSON.parse(Buffer.from(k.files.find(f=>f.path==='data/site.json').b64,'base64').toString());
+    if(sj.icons.style!=='ink'||Object.keys(sj.icons.map).length!==n||Object.values(sj.icons.map).some(v=>!pngs.some(f=>f.path===v)))throw new Error('site.json icons do not match the files: '+JSON.stringify(sj.icons).slice(0,160));
+    await p.click('#adminRoot [data-style=original]');if(!await waitFor(()=>p.evaluate(()=>!Object.keys(((Admin.ctx.data.icons||{}).map)||{}).length),4000))throw new Error('Original did not bring every icon back: '+await p.evaluate(()=>[(document.querySelector('#adminRoot .ai-msg')||{}).textContent,document.querySelector('#adminRoot .adm-main').id,JSON.stringify(Admin.ctx.data.icons).slice(0,100)].join(' / ')))});
+  T('icons: a button gets its own icon, Back to built-in undoes it',async p=>{needAdmin();if(!ICONSTAB)skip('js/admin-icons.js not landed yet');await openAdmin(p);
+    await p.evaluate(()=>document.querySelectorAll('dialog.adm-pad[open]').forEach(d=>d.close()));
+    await p.locator('#adminRoot [data-tab=icons]').click();if(!await waitFor(()=>p.locator('#adminRoot [data-pick=hire]').count().then(n=>n>0),5000))throw new Error('no place picker for the Hire button');
+    await p.click('#adminRoot [data-pick=hire]');await p.click('#adminRoot [data-place=hire][data-icon="assets/ui/ghost.png"]');
+    if(await p.evaluate(()=>((Admin.ctx.data.icons||{}).places||{}).hire)!=='assets/ui/ghost.png')throw new Error('the choice was not kept');
+    await p.locator('#adminRoot [data-adm=preview]').click();
+    if(!await waitFor(()=>p.evaluate(()=>{const a=[...document.querySelectorAll('.g-hire img')];return a.length&&a.every(i=>i.getAttribute('src')==='assets/ui/ghost.png')}),4000))throw new Error('Preview did not show the ghost on the Hire button');
+    if(await p.evaluate(()=>document.querySelector('.g-tabs [data-tab="art"] img').getAttribute('src'))!=='assets/ui/palette.png')throw new Error('another place changed too');
+    await p.locator('#adminRibbon [data-rb=back]').click();await waitFor(()=>adminOpen(p),3000);
+    await p.click('#adminRoot [data-unplace=hire]');if(await p.evaluate(()=>!!(((Admin.ctx.data.icons||{}).places||{}).hire)))throw new Error('Back to built-in did not undo the choice')});
+  T('merged: icons map swaps the pictures, bad entries are dropped',async p=>{const c=p.context();if(!SITEDATA)skip('js/site-data.js not landed yet');
+    await c.route('**/assets/ui/u/qa-monster.png',r=>r.fulfill({status:200,contentType:'image/png',body:fs.readFileSync(px.join(SITE,'assets/ui/monster-head.png'))}));
+    await route(c,JSON.stringify({version:1,icons:{style:'qa',places:{tabArt:'assets/ui/virus.png',hire:'javascript:x',nope:'assets/ui/cat.png'},map:{'assets/ui/monster-head.png':'assets/ui/u/qa-monster.png','assets/ui/cat.png':'https://example.com/x.png','js/data.js':'assets/ui/u/qa-a.png','assets/ui/ghost.png':'assets/ui/u/../../x.png'}}}));await boot(p);
+    if(!await waitFor(()=>p.evaluate(()=>Object.keys(SiteData.icons||{}).length===1),5000))throw new Error('icon map not merged to the one good entry: '+await p.evaluate(()=>JSON.stringify(SiteData.icons)));
+    if(!await waitFor(()=>p.evaluate(()=>{const a=[...document.querySelectorAll('img')].filter(i=>i.dataset.ico==='assets/ui/monster-head.png');return a.length>0&&a.every(i=>i.getAttribute('src')==='assets/ui/u/qa-monster.png')}),4000))throw new Error('the Hire icon was not swapped on the page');
+    const r=await p.evaluate(()=>{const i=new Image();i.src='assets/ui/monster-head.png';const j=new Image();j.src='assets/ui/cat.png';return [i.getAttribute('src'),j.getAttribute('src')]});
+    if(r[0]!=='assets/ui/u/qa-monster.png'||r[1]!=='assets/ui/cat.png')throw new Error('new Image() swap wrong: '+r);
+    if(JSON.stringify(await p.evaluate(()=>SiteData.places))!=='{"tabArt":"assets/ui/virus.png"}')throw new Error('places not cleaned: '+await p.evaluate(()=>JSON.stringify(SiteData.places)));
+    if(phone&&!await waitFor(()=>p.evaluate(()=>document.querySelector('.g-tabs [data-tab="art"] img').getAttribute('src')==='assets/ui/virus.png'),3000))throw new Error('the Art tab did not get its chosen icon')});
+
   // 7. the image editor (docs/admin-editor.md): opened directly in the page through AdminEditor.open, so it needs no PIN
   const EDITOR=have('js/admin-editor.js');const needEditor=()=>{if(!EDITOR)skip('js/admin-editor.js not landed yet')};
   const edOpen=async(p,again)=>{needEditor();if(!again){await boot(p);await p.addScriptTag({url:'js/admin-editor.js'})}

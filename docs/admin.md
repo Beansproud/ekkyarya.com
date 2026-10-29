@@ -100,6 +100,31 @@ helper like the best in the industry grammar if english, and impression test".
   to the list ask (Save, Discard changes, Keep editing) when the line has unsaved changes. Closing admin keeps an
   unsaved line as a draft ("Not saved") until the page is reloaded.
 
+## Icons: style, own pictures and places (tab Icons / Ikon, `js/admin-icons.js`)
+
+Owner, 2026-10-29: "kaya icon2 itu gaween bisa diganti ya"; "add option to change all icon with differnt art style";
+"user can choos their own icon for speeisfic pages or button".
+
+- **The icons:** the 18 drawn icons in `SiteData.ICONS` (`assets/ui/*.png` used on the site and `assets/cat-*.png`). The
+  line icons drawn in SVG (the Yours tab, the desktop line icons) and the app icons (favicon, home screen) are not in it.
+- **Style for all icons:** Original, Sticker, Coloring page, Ink, Duotone, Pastel, Pop, Mono. Each one is made in the
+  browser from Ekky's own icons (no outside art), same size, transparency kept, and uploaded as PNG. Icons he replaced
+  himself keep his picture unless he ticks "Also restyle the icons I replaced myself". Original takes the style back off.
+- **Own picture:** any icon can be replaced with a picture he uploads (fitted into the icon's box, up to 256 px, PNG).
+  Back to original undoes it; All back to original undoes every swap.
+- **Places:** one button or spot can show another icon than its built-in one; the rest of the site keeps its icons.
+  Places (`SiteData.PLACES`, CSS selectors in `js/site-data.js`): `hire` (the Hire Ekky button everywhere), `tabArt`,
+  `tabMap`, `sketch`, `collab`, `stars`, `fab`, `playColor`, `playStars`, `heroWave`, `dividers`. A place takes one of the
+  18 icons (and then follows the chosen style) or his own uploaded picture. Back to built-in undoes it.
+- **Contract in `data/site.json`:**
+  `"icons": {"style": "<style>", "map": {"<built-in icon>": "assets/ui/u/<file>.png"}, "places": {"<place>": "<built-in icon or assets/ui/u/<file>.png>"}}`.
+  Files are written to `assets/ui/u/` (lowercase, digits and `-`, `.png` only); the shell refuses any other path. New
+  names on every change, so the service worker's cache never shows an old icon.
+- **Merge (`js/site-data.js`):** only known icons and places, only values under `assets/ui/u/` (or a built-in icon for a
+  place). Every `<img>` showing an icon gets the new file: those in the page, those added later (a MutationObserver)
+  and `new Image()` sprites (the `src` property). The hook is installed only when something is swapped. Preview shows
+  unpublished icons from memory (`SiteData.iconBlobs`); canvas sprites already drawn change after a reload.
+
 ## Publishing
 
 - One **Publish** button makes one commit through the GitHub contents API (`PUT /repos/rfim/ekkyarya.com/contents/...`),
@@ -118,10 +143,10 @@ a backend (later).
 
 | Dev | Branch | Owns |
 |---|---|---|
-| Admin core | `admin/core` | both doors, the PIN pad, the admin shell (tabs: Art, Links, Settings, Words, Messages), the token and Publish (GitHub API helper), `js/admin.js`, `js/site-data.js` (the loader and merge), one `<script>` line in `index.html` (tell the Shell squad) |
+| Admin core | `admin/core` | both doors, the PIN pad, the admin shell (tabs: Art, Icons, Links, Settings, Words, Messages), the token and Publish (GitHub API helper), `js/admin.js`, `js/site-data.js` (the loader and merge), one `<script>` line in `index.html` (tell the Shell squad) |
 | Admin art | `admin/art` | the Art tab: add a piece (upload, title and description in EN and ID, category, kind, roles), edit, hide, reorder the featured 6, client-side resize; `js/admin-art.js` |
 | Admin settings | `admin/settings` | the Links tab (all social links), the Settings tab (contact email, price line, the FEATURES switches with plain labels), the Messages panel; `js/admin-settings.js` |
-| Admin copy | `admin/copy` | the Words tab (every COPY key in EN and ID, checks, impression test), the `copy` merge in `js/site-data.js`; `js/admin-copy.js`, `js/admin-copy-check.js` |
+| Admin copy | `admin/copy` | the Words tab (every COPY key in EN and ID, checks, impression test) and the Icons tab (styles, own pictures, places), the `copy` and `icons` merge in `js/site-data.js`; `js/admin-copy.js`, `js/admin-copy-check.js`, `js/admin-icons.js` |
 | Admin QA | `admin/qa` | e2e for both doors, the wrong-PIN pause, the read-only mode without a token, publishing against a mocked GitHub API, the site unchanged when `data/site.json` is missing or broken; checks that normal visitors load no admin code |
 
 The admin UI uses the site's own look: paper, ink, Fredoka, 44 px targets, EN and ID.
