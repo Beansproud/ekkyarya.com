@@ -179,7 +179,11 @@ async function runConfig(browser,url,dev,lang){
     const full=paths.find(x=>/^assets\/work\/u\/[^/]+\.jpe?g$/.test(x)),thumb=paths.find(x=>/^assets\/work\/thumb\/u\/[^/]+\.jpe?g$/.test(x));
     if(!by['data/site.json'])throw new Error('data/site.json is not in the commit; paths: '+paths.join(', '));
     if(!full)throw new Error('no full image under assets/work/u/; paths: '+paths.join(', '));if(!thumb)throw new Error('no thumb under assets/work/thumb/u/; paths: '+paths.join(', '));
-    if(paths.some(x=>!/^(data\/site\.json|assets\/work\/(thumb\/)?u\/[^/]+\.jpe?g)$/.test(x)))throw new Error('unexpected path: '+paths.find(x=>!/^(data\/site\.json|assets\/work\/(thumb\/)?u\/[^/]+\.jpe?g)$/.test(x)));
+    if(paths.some(x=>!/^(data\/(site|history)\.json|assets\/work\/(thumb\/)?u\/[^/]+\.jpe?g)$/.test(x)))throw new Error('unexpected path: '+paths.find(x=>!/^(data\/(site|history)\.json|assets\/work\/(thumb\/)?u\/[^/]+\.jpe?g)$/.test(x)));
+    // the history (docs/admin.md, History): one entry saying what changed, the same summary as the commit message
+    const hist=by['data/history.json']&&JSON.parse(Buffer.from(by['data/history.json'],'base64').toString());const he=hist&&hist.entries&&hist.entries[hist.entries.length-1];
+    if(!he||he.kind!=='publish'||!(he.changes||[]).some(c=>/^Art: added "/.test(c.en))||!he.files.includes('data/site.json')||he.by!=='qa')throw new Error('no history entry for the new piece: '+JSON.stringify(he).slice(0,200));
+    if(!/Art: added/.test(k.messages[0]))throw new Error('the commit message does not say what changed: '+k.messages[0]);
     for(const [f,max] of [[full,1600],[thumb,480]]){const b=Buffer.from(by[f],'base64');if(by[f]!==b.toString('base64')||/[^A-Za-z0-9+/=]/.test(by[f]))throw new Error(f+' is not clean base64');
       const d=jpegSize(b);if(!d)throw new Error(f+' is not a JPEG');if(Math.max(d.w,d.h)!==max)throw new Error(`${f} is ${d.w}x${d.h}, long side should be ${max} for a 3200 px source`);if(b.length>1.5e6)throw new Error(f+' is '+b.length+' bytes, too big')}
     let sj;try{sj=JSON.parse(Buffer.from(by['data/site.json'],'base64').toString())}catch(e){throw new Error('data/site.json in the commit is not JSON')}
@@ -296,6 +300,17 @@ async function runConfig(browser,url,dev,lang){
     if(r[0]!=='assets/ui/u/qa-monster.png'||r[1]!=='assets/ui/cat.png')throw new Error('new Image() swap wrong: '+r);
     if(JSON.stringify(await p.evaluate(()=>SiteData.places))!=='{"tabArt":"assets/ui/virus.png"}')throw new Error('places not cleaned: '+await p.evaluate(()=>JSON.stringify(SiteData.places)));
     if(phone&&!await waitFor(()=>p.evaluate(()=>document.querySelector('.g-tabs [data-tab="art"] img').getAttribute('src')==='assets/ui/virus.png'),3000))throw new Error('the Art tab did not get its chosen icon')});
+
+  // 5d. the History tab (js/admin-history.js): what is waiting, then the published entry
+  T('history: waiting changes, then the published entry in history.json',async(p,c)=>{needWords();if(!have('js/admin-history.js'))skip('js/admin-history.js not landed yet');const gh=mockGithub(c);await openAdmin(p);await pasteToken(p);
+    await wordsOpen(p,'hire.body');await p.fill('#aw-en-0','QA history line');await p.click('#adminRoot .aw-ed [data-a=save]');
+    await p.locator('#adminRoot [data-tab=history]').click();
+    if(!await waitFor(()=>p.evaluate(()=>/Words EN: hire\.body|Kata EN: hire\.body/.test(document.querySelector('#admTab-history').innerText)),4000))throw new Error('History does not list the waiting change');
+    await publishBtn(p).first().click();if(!await waitFor(()=>committed(gh).files.some(f=>f.path==='data/history.json'),8000))throw new Error('no data/history.json in the commit');await sleep(400);
+    const k=committed(gh),h=JSON.parse(Buffer.from(k.files.find(f=>f.path==='data/history.json').b64,'base64').toString());
+    if(h.entries.length!==1||!/hire\.body = "QA history line"/.test(h.entries[0].changes[0].en)||!/^Admin: Words EN: hire\.body/.test(k.messages[0]))throw new Error('history or message wrong: '+JSON.stringify(h).slice(0,200)+' / '+k.messages[0]);
+    if(!await waitFor(()=>p.evaluate(()=>document.querySelectorAll('#admTab-history .ah-e').length===1&&/QA history line/.test(document.querySelector('#admTab-history .ah-log').textContent)),4000))throw new Error('the published entry does not show in History');
+    await p.fill('#ahSearch','nothing-like-this');if(await p.locator('#admTab-history .ah-e').count())throw new Error('search did not filter')});
 
   // 7. the image editor (docs/admin-editor.md): opened directly in the page through AdminEditor.open, so it needs no PIN
   const EDITOR=have('js/admin-editor.js');const needEditor=()=>{if(!EDITOR)skip('js/admin-editor.js not landed yet')};

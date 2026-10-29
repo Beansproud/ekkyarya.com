@@ -132,6 +132,20 @@ Owner, 2026-10-29: "kaya icon2 itu gaween bisa diganti ya"; "add option to chang
   and `new Image()` sprites (the `src` property). The hook is installed only when something is swapped. Preview shows
   unpublished icons from memory (`SiteData.iconBlobs`); canvas sprites already drawn change after a reload.
 
+## History (tab History / Riwayat, `js/admin-history.js`)
+
+Owner, 2026-10-29: "after upload etc it has some history log so he can remember or audit".
+
+- Every Publish and every Undo publish writes one entry to **`data/history.json`** in the same commit:
+  `{"version": 1, "entries": [{"at": "<ISO time>", "by": "<GitHub login of the token>", "kind": "publish" | "undo",
+  "title": "...", "titleId": "...", "changes": [{"area": "words|icons|art|links|settings|other|undo", "en": "...", "id": "..."}],
+  "files": ["<path>", ...]}]}`, the newest 300 kept. Undo never rewinds the history: it adds an "undo" entry.
+- The commit message carries the same summary (`Admin: <title>`, then one line per change and the files), so the git
+  log on GitHub is the same audit trail.
+- The tab shows what is waiting to publish (compared with the last loaded or published site.json), then the published
+  entries, newest first, in EN or ID, with search, the files of each entry and a link to the commit when known.
+- The shell may write `data/history.json` besides `data/site.json` and the image folders; nothing else.
+
 ## Publishing
 
 - One **Publish** button makes one commit through the GitHub contents API (`PUT /repos/rfim/ekkyarya.com/contents/...`),
@@ -150,7 +164,7 @@ a backend (later).
 
 | Dev | Branch | Owns |
 |---|---|---|
-| Admin core | `admin/core` | both doors, the PIN pad, the admin shell (tabs: Art, Icons, Links, Settings, Words, Messages), the token and Publish (GitHub API helper), `js/admin.js`, `js/site-data.js` (the loader and merge), one `<script>` line in `index.html` (tell the Shell squad) |
+| Admin core | `admin/core` | both doors, the PIN pad, the admin shell (tabs: Art, Icons, Links, Settings, Words, Messages, History), the token and Publish (GitHub API helper), `js/admin.js`, `js/site-data.js` (the loader and merge), one `<script>` line in `index.html` (tell the Shell squad) |
 | Admin art | `admin/art` | the Art tab: add a piece (upload, title and description in EN and ID, category, kind, roles), edit, hide, reorder the featured 6, client-side resize; `js/admin-art.js` |
 | Admin settings | `admin/settings` | the Links tab (all social links), the Settings tab (contact email, price line, the FEATURES switches with plain labels), the Messages panel; `js/admin-settings.js` |
 | Admin copy | `admin/copy` | the Words tab (every COPY key in EN and ID, checks, impression test) and the Icons tab (styles, own pictures, places), the `copy` and `icons` merge in `js/site-data.js`; `js/admin-copy.js`, `js/admin-copy-check.js`, `js/admin-icons.js` |

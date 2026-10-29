@@ -1,4 +1,4 @@
-// Admin shell: the screen behind the PIN. Tabs Art, Icons, Links, Settings, Words, Messages; each tab is a mount point that
+// Admin shell: the screen behind the PIN. Tabs Art, Icons, Links, Settings, Words, Messages, History; each tab is a mount point that
 // other scripts fill with Admin.registerTab(id, {title:{en,id}|string, render(el, ctx)}). Also the GitHub token and Publish.
 //
 // ctx given to render(el, ctx):
@@ -12,9 +12,9 @@
 (() => {
   const A = window.Admin;
   const REPO = "rfim/ekkyarya.com", API = "https://api.github.com", TOKEN_KEY = "admGhToken";
-  const TABS = ["art", "icons", "links", "settings", "words", "messages"];   // Words (js/admin-copy.js) took over the Text tab
+  const TABS = ["art", "icons", "links", "settings", "words", "messages", "history"];   // Words (js/admin-copy.js) took over the Text tab
   const TAB_TITLE = { art: { en: "Art", id: "Karya" }, links: { en: "Links", id: "Tautan" }, settings: { en: "Settings", id: "Pengaturan" },
-    icons: { en: "Icons", id: "Ikon" }, words: { en: "Words", id: "Kata-kata" }, messages: { en: "Messages", id: "Pesan" } };
+    history: { en: "History", id: "Riwayat" }, icons: { en: "Icons", id: "Ikon" }, words: { en: "Words", id: "Kata-kata" }, messages: { en: "Messages", id: "Pesan" } };
   const S = {
     title: { en: "Admin", id: "Admin" },
     close: { en: "Close", id: "Tutup" },
@@ -107,18 +107,34 @@
     const entries = [];
     const files = new Map(staged);
     if (JSON.stringify(data) !== base) files.set("data/site.json", b64(JSON.stringify(data, null, 2) + "\n"));
-    // Only these paths may be written: site.json, the two art folders and the icon folder (no "..", no other folder, no other type).
-    for (const path of files.keys()) if (path !== "data/site.json" && !/^assets\/work\/(?:thumb\/)?u\/[a-z0-9-]+\.jpg$/.test(path) && !/^assets\/ui\/u\/[a-z0-9-]+\.png$/.test(path)) throw new Error("bad path: " + path);
+    // the history (js/admin-history.js): what changed, in words, in the same commit and in its message
+    const H = typeof AdminHistory !== "undefined" ? AdminHistory : null;
+    const sum = H ? H.summarize(JSON.parse(base), data, [...staged.keys()]) : { title: "", changes: [], files: [...staged.keys()] };
+    const title = message || sum.title || "update site";
+    const entry = { at: new Date().toISOString(), by: await who(), kind: "publish", title, titleId: message ? title : sum.titleId || title, changes: sum.changes, files: [...files.keys()].sort() };
+    files.set("data/history.json", await historyFile(branch, entry));
+    // Only these paths may be written: site.json, history.json, the two art folders and the icon folder (no "..", no other folder, no other type).
+    for (const path of files.keys()) if (path !== "data/site.json" && path !== "data/history.json" && !/^assets\/work\/(?:thumb\/)?u\/[a-z0-9-]+\.jpg$/.test(path) && !/^assets\/ui\/u\/[a-z0-9-]+\.png$/.test(path)) throw new Error("bad path: " + path);
     for (const [path, content] of files) {
       if (content === null) { entries.push({ path, mode: "100644", type: "blob", sha: null }); continue; }
       const blob = await post(`/repos/${REPO}/git/blobs`, { content, encoding: "base64" });
       entries.push({ path, mode: "100644", type: "blob", sha: blob.sha });
     }
     const tree = await post(`/repos/${REPO}/git/trees`, { base_tree: commit.tree.sha, tree: entries });
-    const made = await post(`/repos/${REPO}/git/commits`, { message: "Admin: " + (message || "update site"), tree: tree.sha, parents: [head] });
+    const made = await post(`/repos/${REPO}/git/commits`, { message: "Admin: " + (H ? H.message({ ...sum, title }) : title), tree: tree.sha, parents: [head] });
     await post(`/repos/${REPO}/git/refs/heads/${branch}`, { sha: made.sha }, "PATCH");
     base = JSON.stringify(data); staged.clear();
+    dispatchEvent(new CustomEvent("admin:history", { detail: { ...entry, sha: made.sha } }));
     return made.sha;
+  }
+  // data/history.json with one more entry (the newest 300 are kept); the GitHub login of the token says who.
+  async function who() { try { return (await gh("/user")).login || ""; } catch (e) { return ""; } }
+  async function historyFile(branch, entry) {
+    let entries = [];
+    const cur = await blobAt("data/history.json", branch);
+    if (cur && cur.content) try { const j = JSON.parse(dec(cur.content)); if (j && Array.isArray(j.entries)) entries = j.entries; } catch (e) {}
+    entries.push(entry);
+    return b64(JSON.stringify({ version: 1, entries: entries.slice(-300) }, null, 1) + "\n");
   }
 
   // ---- undo the last admin publish: one new commit that puts the files back ----
@@ -138,6 +154,7 @@
   async function undoLast(info) {
     const entries = []; let siteJson = null;
     for (const f of info.files) {
+      if (f.filename === "data/history.json") continue;   // the history is never undone: the undo is written into it
       if (f.status === "renamed") throw new Error("renamed file");
       const now = await blobAt(f.filename, info.branch);
       if (f.status === "added") {
@@ -154,12 +171,17 @@
       if (f.status === "added" && f.filename === "data/site.json") siteJson = "";
     }
     if (!entries.length) throw new Error(s("noAdmin"));
+    const entry = { at: new Date().toISOString(), by: await who(), kind: "undo", title: info.message.replace(/^Admin:\s*/, ""),
+      changes: [{ area: "undo", en: "Put back as it was before " + info.sha.slice(0, 7), id: "Dikembalikan seperti sebelum " + info.sha.slice(0, 7) }], files: entries.map(e => e.path).sort() };
+    const hist = await post(`/repos/${REPO}/git/blobs`, { content: await historyFile(info.branch, entry), encoding: "base64" });
+    entries.push({ path: "data/history.json", mode: "100644", type: "blob", sha: hist.sha });
     const head = (await gh(`/repos/${REPO}/git/ref/heads/${info.branch}`)).object.sha;
     if (head !== info.head) throw new Error("MOVED");
     const headCommit = await gh(`/repos/${REPO}/git/commits/${head}`);
     const tree = await post(`/repos/${REPO}/git/trees`, { base_tree: headCommit.tree.sha, tree: entries });
     const made = await post(`/repos/${REPO}/git/commits`, { message: "Admin: undo " + info.message.replace(/^Admin:\s*/, ""), tree: tree.sha, parents: [head] });
     await post(`/repos/${REPO}/git/refs/heads/${info.branch}`, { sha: made.sha }, "PATCH");
+    dispatchEvent(new CustomEvent("admin:history", { detail: { ...entry, sha: made.sha } }));
     if (siteJson !== null) { try { data = siteJson ? { ...blank(), ...JSON.parse(dec(siteJson)) } : blank(); } catch (e) { data = blank(); } base = JSON.stringify(data); }
     return made.sha;
   }
@@ -188,6 +210,7 @@
     get data() { return data; },
     get lang() { return lang(); },
     getData: () => data,
+    get published() { return JSON.parse(base || "{}"); },   // site.json as last loaded or published (History compares against it)
     // the built-in values before the site.json merge (a copy, safe to keep): {config, features, copy}
     get builtin() {
       const b = typeof SiteData !== "undefined" && SiteData.builtin;
@@ -410,7 +433,7 @@
   A.shell = { show };
 
   // The tab scripts register themselves; a missing one only leaves its tab saying "not ready yet".
-  ["js/admin-art.js", "js/admin-icons.js", "js/admin-settings.js", "js/admin-copy.js"].forEach(src => {
+  ["js/admin-art.js", "js/admin-icons.js", "js/admin-settings.js", "js/admin-copy.js", "js/admin-history.js"].forEach(src => {
     const el = document.createElement("script"); el.src = src + "?v=" + Date.now(); el.onerror = () => el.remove(); document.head.appendChild(el);
   });
 })();
