@@ -87,6 +87,13 @@ async function runConfig(browser,url,scheme,lang){
       if(!top)throw new Error(w+': Play is covered');
       await p.tap('#gFab');await must(p,'#g-start.active',w+': Play did not bring the game back');
       await p.reload();await must(p,'#g-start.active',w+': game choice lost on reload',8000)}});
+  // owner, 10-29: the start page opens with a cartoon terminal that types Ekky's job; it types once and never moves the page
+  await T('start: terminal types who Ekky is, without moving the page',async p=>{await boot(p);await must(p,'#gTerm','no terminal');
+    const y0=await p.$eval('#gFeatured',e=>e.getBoundingClientRect().top);await sleep(6500);
+    const txt=await p.$eval('#gTermBody',e=>e.textContent),want=await p.evaluate(()=>[1,3].map(k=>t("term."+k).split("|")[1]));
+    for(const w of want)if(!txt.includes(w))throw new Error('terminal missing: '+w);
+    const y1=await p.$eval('#gFeatured',e=>e.getBoundingClientRect().top);if(Math.abs(y1-y0)>1)throw new Error('typing moved the page by '+(y1-y0)+' px');
+    if(!await p.$eval('#gTerm',e=>!!e.getAttribute('aria-label')))throw new Error('terminal has no name')});
   await T('nav: tabs + Home logo',async p=>{await boot(p);
     for(const t of ['art','map','mine']){await tab(p,t);if(await active(p)!=='g-'+t)throw new Error('tab '+t+' did not open');
       if(!await vis(p,homeEl,3000))throw new Error('no Home logo visible on '+t+' screen');

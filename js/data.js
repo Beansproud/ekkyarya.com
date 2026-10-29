@@ -155,6 +155,13 @@ const COPY = {
   en: {
     // Start screen (D11)
     "start.tagline": "Art that makes you smile. Zero uncanny valley.",
+    // the start page's terminal (owner, 10-29: "terminal window, cartoon like, that tells ekky's job, with a typing animation"):
+    // each line is "command|answer"
+    "term.title": "ekky@studio: ~",
+    "term.aria": "About Ekky",
+    "term.1": "whoami|Ekky Arya, character illustrator",
+    "term.2": "ls work/|characters  mascots  websites  stickers",
+    "term.3": "cat status.txt|Open for new projects. Say hi!",
     "start.role": "Character Illustrator",
     "start.roleLong": "Character illustrator and graphic designer",
     "hud.role": "Character Illustrator",
@@ -482,6 +489,11 @@ const COPY = {
   },
   id: {
     "start.tagline": "Gambar yang bikin senyum. Bebas uncanny valley.",
+    "term.title": "ekky@studio: ~",
+    "term.aria": "Tentang Ekky",
+    "term.1": "whoami|Ekky Arya, ilustrator karakter",
+    "term.2": "ls karya/|karakter  maskot  website  stiker",
+    "term.3": "cat status.txt|Terbuka untuk proyek baru. Sapa aku!",
     "start.role": "Ilustrator Karakter",
     "start.roleLong": "Ilustrator karakter dan desainer grafis",
     "hud.role": "Ilustrator Karakter",

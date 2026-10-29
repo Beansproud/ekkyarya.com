@@ -96,7 +96,23 @@ G.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(g){buzz(
   if(e.target.closest("[data-hire]")){buzz(10);openHire()}});
 
 /* ---- start screen: the featured six open the lightbox ---- */
-function renderStart(){if(window.fitWebPin)fitWebPin();const six=featuredSix().map(p=>({p,i:PROJECTS.indexOf(p)}));
+// The start page's terminal: three commands with their answers, typed once per visit, then a cursor that blinks a few
+// times and rests (nothing loops forever). Later visits, a language switch and reduced motion show the text at once.
+let termTyped=false,termTimer=0;
+function renderTerm(){const short=matchMedia("(max-height:700px)").matches,L=(short?[1,3]:[1,2,3]).map(k=>t("term."+k).split("|")),body=$("gTermBody");if(!body)return;   // short phones: who and status only
+  $("gTermTitle").textContent=t("term.title");$("gTerm").setAttribute("aria-label",t("term.aria"));
+  $("gTermText").textContent=L.map(([c,a])=>a).join(". ");
+  const line=([c,a],cn,an)=>`<div class="g-term-ln"><b>$</b> <span class="g-term-cmd">${esc(c.slice(0,cn))}</span></div>`+(an>=0?`<div class="g-term-out">${esc(a.slice(0,an))}</div>`:"");
+  const done=()=>{body.innerHTML=L.map(l=>line(l,l[0].length,l[1].length)).join("")+`<div class="g-term-ln"><b>$</b> <i class="g-term-cur"></i></div>`};
+  clearTimeout(termTimer);
+  done();body.style.minHeight="";body.style.minHeight=body.offsetHeight+"px";   // the finished text sets the height first, so typing never moves the page
+  if(termTyped||matchMedia("(prefers-reduced-motion: reduce)").matches){termTyped=true;return done()}
+  termTyped=true;let li=0,ci=0;
+  const step=()=>{if(li>=L.length)return done();const [c,a]=L[li];
+    if(ci<c.length){ci++;body.innerHTML=L.slice(0,li).map(l=>line(l,l[0].length,l[1].length)).join("")+line(L[li],ci,-1)+"";termTimer=setTimeout(step,55+Math.random()*60);return}
+    body.innerHTML=L.slice(0,li+1).map(l=>line(l,l[0].length,l[1].length)).join("");li++;ci=0;termTimer=setTimeout(step,380)};
+  termTimer=setTimeout(step,450)}
+function renderStart(){if(window.fitWebPin)fitWebPin();renderTerm();const six=featuredSix().map(p=>({p,i:PROJECTS.indexOf(p)}));
   // each drawing opens big on tap; Download lives in the viewer, not on the tile (owner, 10-28)
   $("gFeatured").innerHTML=six.map(({p,i})=>`<div class="g-feat-cell"><button class="g-feat" data-i="${i}" aria-label="${esc(ptitle(p))}${stepsOf(p).length?", "+esc(t("flow.count",{n:stepsOf(p).length})):""}"><img src="${thumbOf(p)}" alt="" decoding="async" fetchpriority="high"><b>${esc(ptitle(p))}</b>${flowMark(p,true)}</button>`+
     `</div>`).join("")}

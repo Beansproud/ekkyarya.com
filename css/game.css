@@ -1250,3 +1250,19 @@ body.game-mode #lightbox .lb-flow{margin-top:2px}
 .c-tools .c-tool .ico{width:26px;height:26px}
 .c-kt.on{background:#FFF1C7;border-color:#FFB400;box-shadow:0 0 0 2px #FFB400}
 .c-stage-wrap{padding:6px}
+/* ---- Start page terminal (owner, 10-29): a cartoon terminal window that types what Ekky does ---- */
+#g-start .g-term{flex:none;margin:14px 0 4px;border:3px solid #2B1342;border-radius:18px;background:#2B1342;box-shadow:0 5px 0 #2B1342;overflow:hidden;transform:rotate(-.6deg)}
+#g-start .g-term-bar{display:flex;align-items:center;gap:7px;padding:8px 12px;background:#FFB400;border-bottom:3px solid #2B1342}
+#g-start .g-term-bar i{width:13px;height:13px;border-radius:50%;border:2.5px solid #2B1342;background:#FF8FB1}
+#g-start .g-term-bar i:nth-child(2){background:#FFFFFF}
+#g-start .g-term-bar i:nth-child(3){background:#7ED9B0}
+#g-start .g-term-bar span{margin-left:6px;font:700 .82rem Fredoka,system-ui,sans-serif;color:#2B1342;letter-spacing:.02em}
+#g-start .g-term-body{padding:10px 14px 12px;font:600 .86rem/1.45 ui-monospace,"SF Mono",Menlo,Consolas,monospace;color:#FFF3DC;text-align:left}
+#g-start .g-term-ln b{color:#FFB400;font-weight:800}
+#g-start .g-term-cmd{color:#7ED9B0}
+#g-start .g-term-out{color:#FFF3DC;opacity:.92;margin-bottom:2px}
+#g-start .g-term-cur{display:inline-block;width:.6em;height:1.05em;vertical-align:-.18em;background:#FFB400;border-radius:2px;animation:g-term-blink 1s steps(2,start) 6}
+@keyframes g-term-blink{to{visibility:hidden}}
+@media (max-height:700px){#g-start .g-term{margin:8px 0 2px}#g-start .g-term-bar{padding:5px 10px}#g-start .g-term-body{padding:7px 12px 8px;font-size:.76rem;line-height:1.35}}
+#g-start .g-term-sr{color:#FFF3DC;position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+@media (prefers-reduced-motion:reduce){#g-start .g-term-cur{animation:none}#g-start .g-term{transform:none}}
