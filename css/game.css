@@ -1335,3 +1335,12 @@ body.intro-open #game .g-tabs,body.intro-open #game .g-home,body.intro-open #gam
 /* the tagline now opens the sketchbook page only (owner, 10-29) */
 #g-start .g-page-sketch .g-tagline{margin:0;font:600 .95rem/1.3 Fredoka,system-ui,sans-serif;color:#2B1342}
 #g-start .g-starts .g-tile span{white-space:normal;line-height:1.15;text-align:left}   /* "Collaborate on a project" wraps on a 360 px phone */
+/* more air on the start pages (owner, 10-29: "so we don't cramp it") */
+#g-start .g-peek{padding:18px 18px 16px;gap:14px}
+#g-start .g-peek-txt b{font-size:1.3rem;line-height:1.15}
+#g-start .g-peek-body{font-size:.95rem;margin:4px 0 6px}
+#g-start .g-deal{justify-content:space-around}
+#g-start .g-deal li{padding:8px 0 8px 54px}
+#g-start .g-deal b{font-size:1.1rem}
+#g-start .g-deal span{font-size:.9rem}
+@media (max-height:700px){#g-start .g-peek-body{display:block;font-size:.85rem}#g-start .g-deal li{padding:4px 0 4px 46px}#g-start .g-deal b{font-size:.98rem}#g-start .g-deal span{font-size:.8rem}}
