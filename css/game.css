@@ -1375,3 +1375,5 @@ body.intro-open #game .g-tabs,body.intro-open #game .g-home,body.intro-open #gam
 .g-hf-dots i.on{width:24px;opacity:1;background:#FFB400;box-shadow:0 0 0 2px #2B1342}
 #gSheet .g-hf-page .g-deal{margin:0}
 @media (prefers-reduced-motion:reduce){#game .g-intro.flash,#game .g-intro.flash .g-term{animation:none}.g-hf-dots i{transition:none}}
+#gSheet .g-hf-page .g-deal{margin:0 0 6px}
+#gSheet .g-hf-page>p{margin:6px 0 0}

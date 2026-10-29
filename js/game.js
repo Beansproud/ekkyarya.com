@@ -130,18 +130,11 @@ function flashEnd(){const el=$("gIntro");if(!flashNext)return;const go=flashNext
   el.classList.add("out");setTimeout(()=>{el.hidden=true;el.classList.remove("out","flash","ready");termKey="term";termFast=false;termDone=()=>introReady()},matchMedia("(prefers-reduced-motion: reduce)").matches?0:220);go()}
 function flashTerm(next){const el=$("gIntro");if(!el){next();return}flashNext=next;termKey="termHire";termFast=true;termDone=()=>{termTimer=setTimeout(flashEnd,750)};
   el.classList.add("flash");el.hidden=false;renderTerm()}
-function hireFlow(pl){const six=featuredSix().slice(0,3);
-  openSheet(`<h2 id="gSheetTitle" class="g-hf-h">${esc(t("hire.title"))}</h2>
-    <div class="g-hf-pager" id="gHfPager"><section class="g-hf-page"><button class="g-hf-story" data-hf="1"><span class="g-hf-pics" aria-hidden="true">${six.map(p=>`<img src="${thumbOf(p)}" alt="" decoding="async">`).join("")}</span>
-        <small class="g-hf-kick">${esc(t("story.kick"))}</small><b>${esc(t("story.title"))}</b><span>${esc(t("story.body"))}</span><small>${esc(t("story.swipe"))}</small></button></section>
-      <section class="g-hf-page"><h3 class="g-sheet-h3">${esc(t("deal.title"))}</h3><ol class="g-deal">${[1,2,3,4,5].map(k=>{const [h,b]=t("deal."+k).split("|");return `<li style="--i:${k}"><b>${esc(h)}</b><span>${esc(b)}</span></li>`}).join("")}</ol>
-        <button class="g-hf-go" data-hf-go>${esc(t("deal.go"))}${ico("i-next")}</button></section></div>
-    <div class="g-hf-dots" aria-hidden="true"><i class="on"></i><i></i></div>`);
-  const pg=$("gHfPager"),dots=[...document.querySelectorAll(".g-hf-dots i")];
-  const pages=[...pg.querySelectorAll(".g-hf-page")],sync=()=>{const k=Math.round(pg.scrollLeft/Math.max(1,pg.clientWidth));dots.forEach((d,i)=>d.classList.toggle("on",i===k));pages.forEach((p,i)=>{p.inert=i!==k})};   // the slide you are not on is inert
+function hireSlides(pl){const pg=$("gHfPager");if(!pg)return;const dots=[...document.querySelectorAll(".g-hf-dots i")],pages=[...pg.querySelectorAll(".g-hf-page")];
+  const sync=()=>{const k=Math.round(pg.scrollLeft/Math.max(1,pg.clientWidth));dots.forEach((d,i)=>d.classList.toggle("on",i===k));pages.forEach((p,i)=>{p.inert=i!==k})};   // the slide you are not on is inert
   sync();pg.addEventListener("scroll",sync,{passive:true});
   pg.querySelector("[data-hf]").addEventListener("click",()=>{buzz(8);pg.scrollTo({left:pg.clientWidth,behavior:"smooth"})});
-  pg.querySelector("[data-hf-go]").addEventListener("click",()=>{buzz(10);openHire("",pl,true)});sheetRe=()=>hireFlow(pl)}   // a language switch redraws the flow, without the flash
+  sheetRe=()=>openHire("",pl,true,true)}   // a language switch redraws the flow, without the flash   // a language switch redraws the flow, without the flash
 addEventListener("keydown",e=>{if(!$("gIntro").hidden&&(e.key==="Escape"||e.key==="Enter"&&e.target===document.body)){e.preventDefault();closeIntro()}});
 function renderStart(){if(window.fitWebPin)fitWebPin();const six=featuredSix().map(p=>({p,i:PROJECTS.indexOf(p)}));
   // each drawing opens big on tap; Download lives in the viewer, not on the tile (owner, 10-28)
@@ -462,8 +455,8 @@ $("gSheetBody").addEventListener("click",e=>{const f=e.target.closest(".g-feat")
   const s=e.target.closest("[data-see]");if(s){buzz(10);show(+s.dataset.see)}});
 
 /* ---- Final Quest: the Hire sheet (B07, B17). Opens over the current screen; closing returns there. ---- */
-function openHire(prefill,pl,direct){const l=LEVELS[4];
-  if(!prefill&&!direct&&!warming)return flashTerm(()=>hireFlow(pl));   // the Hire Ekky button: terminal, then the flow
+function openHire(prefill,pl,direct,flow){const l=LEVELS[4];
+  if(!prefill&&!direct&&!warming)return flashTerm(()=>openHire("",pl,true,true));   // the Hire Ekky button: the terminal flash, then the flow
   // Quick actions lead with the business email; every other channel shows only when CONFIG has it (B15).
   const links=[["instagram","hire.instagram"]].filter(([k])=>CONFIG.links[k]);   // owner: the sheet shows Email, Copy email and Instagram only; the other links live on Mine
   const quick=`<div class="g-quick">
@@ -471,7 +464,13 @@ function openHire(prefill,pl,direct){const l=LEVELS[4];
       ${CONFIG.email?`<button class="g-btn alt" type="button" id="gCopyMail">${ico("i-copy")} ${esc(t("hire.copy"))}</button>`:""}</div>
     ${links.length?`<p class="g-links">${links.map(([k,c])=>`<a href="${esc(CONFIG.links[k])}" target="_blank" rel="noopener">${esc(t(c))}</a>`).join("")}</p>`:""}`;
   const types=t("hire.form.types").split("|");
-  openSheet(`<h2 id="gSheetTitle">${uiImg(l.icon,"h-ico")}${esc(t("hire.title"))}</h2>
+  // the flow (owner, 10-29): slide 1 the story card; slide 2 the steps with the ways to reach Ekky right under them ("combine it")
+  const six=flow?featuredSix().slice(0,3):[];
+  const flowA=flow?`<div class="g-hf-pager" id="gHfPager"><section class="g-hf-page"><button class="g-hf-story" data-hf="1"><span class="g-hf-pics" aria-hidden="true">${six.map(p=>`<img src="${thumbOf(p)}" alt="" decoding="async">`).join("")}</span>
+        <small class="g-hf-kick">${esc(t("story.kick"))}</small><b>${esc(t("story.title"))}</b><span>${esc(t("story.body"))}</span><small>${esc(t("story.swipe"))}</small></button></section>
+      <section class="g-hf-page"><h3 class="g-sheet-h3">${esc(t("deal.title"))}</h3><ol class="g-deal">${[1,2,3,4,5].map(k=>{const [h,b]=t("deal."+k).split("|");return `<li style="--i:${k}"><b>${esc(h)}</b><span>${esc(b)}</span></li>`}).join("")}</ol>`:"";
+  const flowB=flow?`</section></div><div class="g-hf-dots" aria-hidden="true"><i class="on"></i><i></i></div>`:"";
+  openSheet(`<h2 id="gSheetTitle">${uiImg(l.icon,"h-ico")}${esc(t("hire.title"))}</h2>${flowA}
     <p>${esc(t("hire.body"))}</p>${quick}<p class="g-small">${esc(t("hire.price"))}</p>
     <h3 class="g-sheet-h3">${esc(t("hire.form.title"))}</h3>
     <form id="gForm" novalidate>
@@ -479,7 +478,8 @@ function openHire(prefill,pl,direct){const l=LEVELS[4];
       <label>${esc(t("hire.form.type"))}<select name="type">${types.map(o=>`<option>${esc(o)}</option>`).join("")}</select></label>
       <label>${esc(t("hire.form.msg"))}<textarea name="message" required minlength="10" placeholder="${esc(t("hire.form.msg.ph"))}">${esc(prefill||"")}</textarea><span class="err"></span></label>
       <button class="g-btn" type="submit" style="width:100%">${ico("i-send")} ${esc(t("hire.form.send"))}</button>
-    </form>`+madeFrom(pl));
+    </form>${flowB}`+madeFrom(pl));
+  if(flow)hireSlides(pl);
   const c=$("gCopyMail");if(c)c.onclick=async()=>{try{await navigator.clipboard.writeText(CONFIG.email);say(t("hire.copied"),"i-check")}catch{say(CONFIG.email)}};
 }
 $("gSheetBody").addEventListener("input",e=>{const i=e.target;if(i.classList&&i.classList.contains("bad")&&i.validity.valid){i.classList.remove("bad");i.setAttribute("aria-invalid","false");i.parentElement.querySelector(".err").textContent=""}});
